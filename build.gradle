@@ -1,0 +1,111 @@
+// Default tasks
+defaultTasks 'licenseFormatMain', 'licenseFormatTest', 'clean', 'build', 'shadowJar'
+
+// Apply plugins
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'license'
+apply plugin: 'shadow'
+
+// Basic project information
+group = 'ca.sapon'
+archivesBaseName = 'jici'
+version = '0.0.1-SNAPSHOT'
+mainClassName = "ca.sapon.jici.Main"
+
+// Extended project information
+ext.projectName = 'JICI'
+ext.inceptionYear = '2015'
+ext.currentYear = '2015'
+ext.packaging = 'jar'
+ext.url = 'http://sapon.ca/jici'
+ext.description = 'Java intepreter and code interaction'
+ext.author = 'Aleksi Sapon'
+
+// Minimum version of Java required
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// Define variables
+ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
+ext.commit = project.hasProperty("commit") ? commit : 'unknown'
+
+// Configuration settings
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds' // Always check for new snapshots
+}
+
+// Plugin repositories and dependencies
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+    }
+}
+
+// Non-plugin repositories and dependencies
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+dependencies {
+    testCompile 'junit:junit:4.8.2'
+}
+
+// Filter, process, and include resources
+processResources {
+    from(rootProject.rootDir) {
+        include 'LICENSE.txt'
+    }
+}
+
+// Include dependencies in final JAR
+shadow {
+    artifactAttached = false
+    include '**'
+    exclude 'junit/**'
+}
+
+// License header formatting
+import nl.javadude.gradle.plugins.license.License
+
+tasks.withType(License).each { licenseTask ->
+    licenseTask.exclude '**/*.frag'
+    licenseTask.exclude '**/*.ttf'
+    licenseTask.exclude '**/*.vert'
+    licenseTask.exclude '**/*.yml'
+    licenseTask.exclude '**/*.xml'
+}
+license {
+    ext.name = projectName
+    ext.author = author
+    ext.url = url
+    ext.year = inceptionYear + '-' + currentYear
+    header rootProject.file('HEADER.txt')
+    ignoreFailures true
+    strictCheck true
+}
+
+// Source compiler configuration
+configure([compileJava, compileTestJava]) {
+    options.compilerArgs << '-Xlint:all'
+    options.compilerArgs << '-Xlint:-path'
+    options.deprecation = true
+}
+
+// JAR manifest configuration
+jar {
+    manifest {
+        attributes "Main-Class": mainClassName,
+            "Built-By": System.properties['user.name'],
+            "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+            "Implementation-Title": name,
+            "Implementation-Version": version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+            "Implementation-Vendor": url
+    }
+}

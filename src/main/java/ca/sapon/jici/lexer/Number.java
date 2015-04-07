@@ -21,43 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.lexer;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Token;
+public class Number extends Token {
+    private final long number;
 
-import java.util.List;
+    public Number(String source) {
+        super(source);
+        number = Long.parseLong(source);
+    }
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n\n");
-
-        /*
-
-          Object obj = new Object();
-          obj.hashCode();
-
-          String test = "Test";
-          System.out.println(test);
-
-          int num = 13;
-          System.out.println(num);
-
-        */
-
-        List<Token> tokens = Lexer.lex(
-            "Object obj = new Object();\n" +
-            "obj.hashCode();\n" +
-
-            "String test = \"Test\\nthis\";\n" +
-            "System.out.println(test);\n" +
-
-            "int num = 13;\n" +
-            "System.out.println(num);\n"
-        );
-
-        for (Token token : tokens) {
-            System.out.println(token.getSource());
-        }
+    public long getNumber() {
+        return number;
     }
 }

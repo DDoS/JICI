@@ -30,6 +30,7 @@ import java.util.List;
 
 public class Lexer {
     private static final Map<Character, Symbol> SYMBOLS = new HashMap<>();
+    private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
 
     static {
         // punctuation
@@ -64,28 +65,99 @@ public class Lexer {
         addSymbol('}');
         // other
         addSymbol('\\');
+        // control flow
+        addKeyword("assert");
+        addKeyword("if");
+        addKeyword("else");
+        addKeyword("while");
+        addKeyword("do");
+        addKeyword("for");
+        addKeyword("break");
+        addKeyword("continue");
+        addKeyword("switch");
+        addKeyword("case");
+        addKeyword("default");
+        addKeyword("return");
+        addKeyword("throw");
+        addKeyword("try");
+        addKeyword("catch");
+        addKeyword("finally");
+        // primitive types
+        addKeyword("void");
+        addKeyword("boolean");
+        addKeyword("byte");
+        addKeyword("short");
+        addKeyword("char");
+        addKeyword("int");
+        addKeyword("long");
+        addKeyword("float");
+        addKeyword("double");
+        // class
+        addKeyword("class");
+        addKeyword("interface");
+        addKeyword("enum");
+        addKeyword("abstract");
+        addKeyword("extends");
+        addKeyword("implements");
+        addKeyword("super");
+        addKeyword("this");
+        // package
+        addKeyword("package");
+        addKeyword("import");
+        // modifiers
+        addKeyword("strictfp");
+        addKeyword("transient");
+        addKeyword("volatile");
+        addKeyword("public");
+        addKeyword("protected");
+        addKeyword("private");
+        addKeyword("final");
+        addKeyword("static");
+        addKeyword("synchronized");
+        addKeyword("native");
+        addKeyword("throws");
+        // operator
+        addKeyword("new");
+        addKeyword("instanceof");
+        // unused
+        addKeyword("goto");
+        addKeyword("const");
     }
 
-    public static List<Token> lex(String source) {
+    public static List<Token> lex(String source) throws LexerException {
         final List<Token> tokens = new ArrayList<>();
 
         for (int i = 0, j; i < source.length(); i = j) {
             final char c = source.charAt(i);
 
+            final Token token;
             if (Character.isWhitespace(c)) {
                 j = consumeWhitespace(source, i);
+                token = null;
             } else if (Character.isLetter(c)) {
                 j = consumeLetters(source, i);
-                tokens.add(new Text(source.substring(i, j)));
+                final String letters = source.substring(i, j);
+                final Keyword keyword = KEYWORDS.get(letters);
+                if (keyword != null) {
+                    token = keyword;
+                } else {
+                    token = new Text(letters);
+                }
             } else if (Character.isDigit(c)) {
                 j = consumeDigits(source, i);
-                tokens.add(new Number(source.substring(i, j)));
+                token = new Number(source.substring(i, j));
             } else {
-                Symbol symbol = SYMBOLS.get(c);
+                final Symbol symbol = SYMBOLS.get(c);
                 if (symbol != null) {
-                    tokens.add(symbol);
+                    token = symbol;
+                } else {
+                    throw new LexerException("Unknown symbol: '" + c + "'");
                 }
                 j = i + 1;
+            }
+
+            if (token != null) {
+                tokens.add(token);
             }
         }
 
@@ -109,5 +181,17 @@ public class Lexer {
 
     private static void addSymbol(char source) {
         SYMBOLS.put(source, new Symbol(source));
+    }
+
+    private static void addKeyword(String source) {
+        KEYWORDS.put(source, new Keyword(source));
+    }
+
+    public static class LexerException extends Exception {
+        private static final long serialVersionUID = 1;
+
+        public LexerException(String message) {
+            super(message);
+        }
     }
 }

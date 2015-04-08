@@ -134,14 +134,14 @@ public class Lexer {
             if (Character.isWhitespace(c)) {
                 j = consumeWhitespace(source, i);
                 token = null;
-            } else if (Character.isLetter(c)) {
-                j = consumeLetters(source, i);
-                final String letters = source.substring(i, j);
-                final Keyword keyword = KEYWORDS.get(letters);
+            } else if (Character.isJavaIdentifierStart(c)) {
+                j = consumeIdentifierParts(source, i);
+                final String identifier = source.substring(i, j);
+                final Keyword keyword = KEYWORDS.get(identifier);
                 if (keyword != null) {
                     token = keyword;
                 } else {
-                    token = new Text(letters);
+                    token = new Identifier(identifier);
                 }
             } else if (Character.isDigit(c)) {
                 j = consumeDigits(source, i);
@@ -169,8 +169,8 @@ public class Lexer {
         return i;
     }
 
-    private static int consumeLetters(String source, int i) {
-        while (++i < source.length() && Character.isLetterOrDigit(source.charAt(i)));
+    private static int consumeIdentifierParts(String source, int i) {
+        while (++i < source.length() && Character.isJavaIdentifierPart(source.charAt(i)));
         return i;
     }
 

@@ -23,8 +23,8 @@
  */
 package ca.sapon.jici.lexer;
 
-public class Text extends Token {
-    public Text(String source) {
+public class Identifier extends Token {
+    public Identifier(String source) {
         super(source);
     }
 }

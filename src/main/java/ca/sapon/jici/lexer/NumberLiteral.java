@@ -23,10 +23,10 @@
  */
 package ca.sapon.jici.lexer;
 
-public class Number extends Token {
+public class NumberLiteral extends Token {
     private final long number;
 
-    public Number(String source) {
+    public NumberLiteral(String source) {
         super(source);
         number = Long.parseLong(source);
     }

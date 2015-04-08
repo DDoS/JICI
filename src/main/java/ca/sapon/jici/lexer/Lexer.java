@@ -38,8 +38,6 @@ public class Lexer {
         addSymbol(',');
         addSymbol(':');
         addSymbol(';');
-        addSymbol('"');
-        addSymbol('\'');
         // math
         addSymbol('=');
         addSymbol('+');
@@ -63,8 +61,6 @@ public class Lexer {
         addSymbol(']');
         addSymbol('{');
         addSymbol('}');
-        // other
-        addSymbol('\\');
         // control flow
         addKeyword("assert");
         addKeyword("if");
@@ -135,7 +131,7 @@ public class Lexer {
                 j = consumeWhitespace(source, i);
                 token = null;
             } else if (Character.isJavaIdentifierStart(c)) {
-                j = consumeIdentifierParts(source, i);
+                j = consumeIdentifier(source, i);
                 final String identifier = source.substring(i, j);
                 final Keyword keyword = KEYWORDS.get(identifier);
                 if (keyword != null) {
@@ -144,16 +140,22 @@ public class Lexer {
                     token = new Identifier(identifier);
                 }
             } else if (Character.isDigit(c)) {
-                j = consumeDigits(source, i);
-                token = new Number(source.substring(i, j));
+                j = consumeNumberLiteral(source, i);
+                token = new NumberLiteral(source.substring(i, j));
             } else {
                 final Symbol symbol = SYMBOLS.get(c);
                 if (symbol != null) {
+                    j = i + 1;
                     token = symbol;
+                } else if (c == '\'') {
+                    j = consumeCharacterLiteral(source, i);
+                    token = new CharacterLiteral(source.substring(i, j));
+                } else if (c == '"') {
+                    j = consumeStringLiteral(source, i);
+                    token = new StringLiteral(source.substring(i, j));
                 } else {
-                    throw new LexerException("Unknown symbol: '" + c + "'");
+                    throw new LexerException("Unknown symbol", source, i);
                 }
-                j = i + 1;
             }
 
             if (token != null) {
@@ -169,13 +171,27 @@ public class Lexer {
         return i;
     }
 
-    private static int consumeIdentifierParts(String source, int i) {
+    private static int consumeIdentifier(String source, int i) {
         while (++i < source.length() && Character.isJavaIdentifierPart(source.charAt(i)));
         return i;
     }
 
-    private static int consumeDigits(String source, int i) {
+    private static int consumeNumberLiteral(String source, int i) {
         while (++i < source.length() && Character.isDigit(source.charAt(i)));
+        return i;
+    }
+
+    private static int consumeCharacterLiteral(String source, int i) {
+        while (++i < source.length() && Character.isLetter(source.charAt(i)));
+        return i;
+    }
+
+    private static int consumeStringLiteral(String source, int i) {
+        char pc = '\0', c = '\0';
+        while (++i < source.length() && (pc == '\\' || c != '"')) {
+            pc = c;
+            c = source.charAt(i);
+        }
         return i;
     }
 
@@ -190,8 +206,11 @@ public class Lexer {
     public static class LexerException extends Exception {
         private static final long serialVersionUID = 1;
 
-        public LexerException(String message) {
-            super(message);
+        public LexerException(String cause, String source, int index) {
+            super(
+                cause + " caused by '" + source.charAt(index) + "' at position " + index + "\n" +
+                source.substring(Math.max(0, index - 5), Math.min(index + 5, source.length()))
+            );
         }
     }
 }

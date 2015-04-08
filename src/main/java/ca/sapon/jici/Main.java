@@ -38,7 +38,7 @@ public class Main {
           Object obj = new Object();
           obj.hashCode();
 
-          String test = "Test";
+          String test = "this is \t a \"test\"";
           System.out.println(test);
 
           int num = 13;
@@ -46,18 +46,22 @@ public class Main {
 
         */
 
+        final String source =
+            "Object obj = new Object();\n" +
+            "obj.hashCode();\n" +
+
+            "String test = \"this is \\t a \\\"test\\\"\";\n" +
+            "System.out.println(test);\n" +
+
+            "int num = 13;\n" +
+            "System.out.println(num);\n"
+        ;
+
+        System.out.println("Lexing:\n" + source);
+
         final List<Token> tokens;
         try {
-            tokens = Lexer.lex(
-                "Object obj = new Object();\n" +
-                "obj.hashCode();\n" +
-
-                "String test = \"Test\\nthis\";\n" +
-                "System.out.println(test);\n" +
-
-                "int num = 13;\n" +
-                "System.out.println(num);\n"
-            );
+            tokens = Lexer.lex(source);
 
             for (Token token : tokens) {
                 System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());

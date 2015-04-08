@@ -50,8 +50,9 @@ public class Main {
             "Object obj = new Object();\n" +
             "obj.hashCode();\n" +
 
+            "char letter = 'a';\n" +
             "String test = \"this is \\t a \\\"test\\\"\";\n" +
-            "System.out.println(test);\n" +
+            "System.out.println(a + test);\n" +
 
             "int num = 13;\n" +
             "System.out.println(num);\n"

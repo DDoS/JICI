@@ -182,13 +182,16 @@ public class Lexer {
     }
 
     private static int consumeCharacterLiteral(String source, int i) {
-        while (++i < source.length() && Character.isLetter(source.charAt(i)));
-        return i;
+        return consumeEnclosedLiteral(source, i, '\'');
     }
 
     private static int consumeStringLiteral(String source, int i) {
+        return consumeEnclosedLiteral(source, i, '"');
+    }
+
+    private static int consumeEnclosedLiteral(String source, int i, char enclosure) {
         char pc = '\0', c = '\0';
-        while (++i < source.length() && (pc == '\\' || c != '"')) {
+        while (++i < source.length() && (pc == '\\' || c != enclosure)) {
             pc = c;
             c = source.charAt(i);
         }

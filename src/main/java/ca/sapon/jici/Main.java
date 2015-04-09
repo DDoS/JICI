@@ -41,8 +41,8 @@ public class Main {
             "String test = \"this is \\t a \\\"test\\\"\";\n" +
             "System.out.println(a + test);\n" +
 
-            "long integer = -13_000L;\n" +
-            "double decimal = 1.e-2d;\n" +
+            "long integer = 0xF_00L;\n" +
+            "double decimal = 1.2e-2d;\n" +
             "System.out.println(integer + decimal);"
         ;
 

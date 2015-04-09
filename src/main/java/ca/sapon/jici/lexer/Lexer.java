@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer;
 
 import java.util.ArrayList;
+import java.util.function.IntPredicate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -189,45 +190,94 @@ public class Lexer {
     }
 
     private static int consumeNumberLiteral(String source, int i) {
-        // a string of characters without whitespace or symbols starting with a digit or a decimal,
+        // a string of alphanimeric characters without symbols starting with a digit or a decimal point,
         // with the following exceptions
+        //   - underscores are allowed between non identifier alphanumerics or underscores
         //   - one decimal separator allowed in the mantissa
         //     - if it begins the number it must be followed by a digit
-        //   - a negative or positive sign after an exponent identifier for floating point
+        //   - a negative or positive sign after an exponent identifier
         //     - the exponent identifier is e or E for decimal
         //     - the exponent identifier is p or P for hexadecimal
         // notes
         //   - prefix signs are handled as operators
-        //   - underscores are not symbols
         //   - no validation is done on the radixes
         char pc = '\0', c = '\0';
         boolean inMantissa = true;
-        boolean decimalSeparator;
+        boolean decimalSeparatorFound;
         boolean hexadecimal = false;
-        if (source.charAt(i) == '.') {
-            if (++i > source.length() || !Character.isDigit(source.charAt(i))) {
+        if (isDecimalSeparator(source.charAt(i))) {
+            if (++i > source.length() || !Character.isDigit(pc = source.charAt(i))) {
                 return i - 1;
             }
-            decimalSeparator = true;
+            decimalSeparatorFound = true;
         } else {
-            decimalSeparator = false;
+            decimalSeparatorFound = false;
         }
-        while (++i < source.length() && !Character.isWhitespace(c = source.charAt(i)) &&
-                    (c == '.' && !decimalSeparator && inMantissa ||
-                    (c == '-' || c == '+') && (hexadecimal ? pc == 'p' || pc == 'P' : pc == 'e' || pc == 'E') ||
-                    !SYMBOLS.containsKey(c))) {
-            if (!decimalSeparator) {
-                decimalSeparator = c == '.';
+        while (++i < source.length() &&
+                    (Character.isLetterOrDigit(c = source.charAt(i)) ||
+                    isDigitSeparator(c) &&
+                        canPrecedeDigitSeparator(pc, hexadecimal, inMantissa) &&
+                        canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa) ||
+                    isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa ||
+                    isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal) ||
+                    !SYMBOLS.containsKey(c) && !isDigitSeparator(c))) {
+            if (!decimalSeparatorFound) {
+                decimalSeparatorFound = isDecimalSeparator(c);
             }
             if (pc == '\0') {
-                hexadecimal = c == 'x' || c == 'X';
+                hexadecimal = isHexadecimalIdentifier(c);
             }
-            if (inMantissa && (hexadecimal ? c == 'p' || c == 'P' : c == 'e' || c == 'E')) {
+            if (inMantissa && isExponentSeparator(c, hexadecimal)) {
                 inMantissa = false;
             }
             pc = c;
         }
-        return i;
+        return isSignIdentifier(pc) ? i - 1 : i;
+    }
+
+    private static boolean isSpecialIdentifier(char c, boolean hexadecimal, boolean inMantissa) {
+        return isSignIdentifier(c) || isDecimalSeparator(c) || isExponentSeparator(c, hexadecimal)
+                || isRadixIdentifier(c) || isTypeIdentifier(c, inMantissa);
+    }
+
+    private static boolean isSignIdentifier(char c) {
+        return c == '-' || c == '+';
+    }
+
+    private static boolean isDecimalSeparator(char c) {
+        return c == '.';
+    }
+
+    private static boolean isExponentSeparator(char c, boolean hexadecimal) {
+        return hexadecimal ? c == 'p' || c == 'P' : c == 'e' || c == 'E';
+    }
+
+    private static boolean isDigitSeparator(char c) {
+        return c == '_';
+    }
+
+    private static boolean isRadixIdentifier(char c) {
+        return isHexadecimalIdentifier(c) || isBinaryIdentifier(c);
+    }
+
+    private static boolean isHexadecimalIdentifier(char c) {
+        return c == 'x' || c == 'X';
+    }
+
+    private static boolean isBinaryIdentifier(char c) {
+        return c == 'b' || c == 'B';
+    }
+
+    private static boolean isTypeIdentifier(char c, boolean inMantissa) {
+        return c == 'l' || c == 'L' || !inMantissa && (c == 'f' || c == 'F' || c == 'd' || c == 'D');
+    }
+
+    private static boolean canPrecedeDigitSeparator(char c, boolean hexadecimal, boolean inMantissa) {
+        return isDigitSeparator(c) || !isSpecialIdentifier(c, hexadecimal, inMantissa);
+    }
+
+    private static boolean canFollowDigitSeparator(String source, int i, boolean hexadecimal, boolean inMantissa) {
+        return i < source.length() && canPrecedeDigitSeparator(source.charAt(i), hexadecimal, inMantissa);
     }
 
     private static int consumeCharacterLiteral(String source, int i) {

@@ -21,43 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.lexer;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
+public class NullLiteral extends Token {
+    private static final String nullSource = "null";
+    private static final NullLiteral THE_NULL = new NullLiteral();
 
-import java.util.List;
+    private NullLiteral() {
+        super(nullSource);
+    }
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
+    public static boolean is(String source) {
+        return nullSource.equals(source);
+    }
 
-        final String source =
-            "Object obj = new Object();\n" +
-            "obj.hashCode();\n" +
-            "obj = null;\n" +
-
-            "char letter = 'a';\n" +
-            "String test = \"this is \\t a \\\"test\\\"\";\n" +
-            "System.out.println(a + test);\n" +
-
-            "long integer = 0xF_00L;\n" +
-            "double decimal = 1.2e-2d;\n" +
-            "System.out.println(integer + decimal);"
-        ;
-
-        System.out.println("Lexing:\n" + source + "\n");
-
-        final List<Token> tokens;
-        try {
-            tokens = Lexer.lex(source);
-
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-        } catch (LexerException exception) {
-            exception.printStackTrace();
-        }
+    public static NullLiteral get() {
+        return THE_NULL;
     }
 }

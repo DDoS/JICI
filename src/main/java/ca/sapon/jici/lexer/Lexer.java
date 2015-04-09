@@ -134,11 +134,15 @@ public class Lexer {
             } else if (Character.isJavaIdentifierStart(c)) {
                 j = consumeIdentifier(source, i);
                 final String identifier = source.substring(i, j);
-                final Keyword keyword = KEYWORDS.get(identifier);
-                if (keyword != null) {
-                    token = keyword;
+                if (NullLiteral.is(identifier)) {
+                    token = NullLiteral.get();
                 } else {
-                    token = new Identifier(identifier);
+                    final Keyword keyword = KEYWORDS.get(identifier);
+                    if (keyword != null) {
+                        token = keyword;
+                    } else {
+                        token = new Identifier(identifier);
+                    }
                 }
             } else if (Character.isDigit(c)) {
                 j = consumeNumberLiteral(source, i);

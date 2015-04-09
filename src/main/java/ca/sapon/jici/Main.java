@@ -31,20 +31,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("JICI\n\n");
-
-        /*
-
-          Object obj = new Object();
-          obj.hashCode();
-
-          String test = "this is \t a \"test\"";
-          System.out.println(test);
-
-          int num = 13;
-          System.out.println(num);
-
-        */
+        System.out.println("JICI\n");
 
         final String source =
             "Object obj = new Object();\n" +
@@ -54,11 +41,12 @@ public class Main {
             "String test = \"this is \\t a \\\"test\\\"\";\n" +
             "System.out.println(a + test);\n" +
 
-            "int num = 13;\n" +
-            "System.out.println(num);\n"
+            "long integer = -13_000L;\n" +
+            "double decimal = 1.e-2d;\n" +
+            "System.out.println(integer + decimal);"
         ;
 
-        System.out.println("Lexing:\n" + source);
+        System.out.println("Lexing:\n" + source + "\n");
 
         final List<Token> tokens;
         try {

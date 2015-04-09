@@ -143,10 +143,14 @@ public class Lexer {
                 j = consumeNumberLiteral(source, i);
                 token = new NumberLiteral(source.substring(i, j));
             } else {
-                final Symbol symbol = SYMBOLS.get(c);
-                if (symbol != null) {
-                    j = i + 1;
-                    token = symbol;
+                if (c == '.') {
+                    j = consumeNumberLiteral(source, i);
+                    if (i != j) {
+                        token = new NumberLiteral(source.substring(i, j));
+                    } else {
+                        j = i + 1;
+                        token = SYMBOLS.get('.');
+                    }
                 } else if (c == '\'') {
                     j = consumeCharacterLiteral(source, i);
                     token = new CharacterLiteral(source.substring(i, j));
@@ -154,7 +158,13 @@ public class Lexer {
                     j = consumeStringLiteral(source, i);
                     token = new StringLiteral(source.substring(i, j));
                 } else {
-                    throw new LexerException("Unknown symbol", source, i);
+                    final Symbol symbol = SYMBOLS.get(c);
+                    if (symbol != null) {
+                        j = i + 1;
+                        token = symbol;
+                    } else {
+                        throw new LexerException("Unknown symbol", source, i);
+                    }
                 }
             }
 
@@ -167,25 +177,66 @@ public class Lexer {
     }
 
     private static int consumeWhitespace(String source, int i) {
+        // just whitespace
         while (++i < source.length() && Character.isWhitespace(source.charAt(i)));
         return i;
     }
 
     private static int consumeIdentifier(String source, int i) {
+        // just java identifier parts
         while (++i < source.length() && Character.isJavaIdentifierPart(source.charAt(i)));
         return i;
     }
 
     private static int consumeNumberLiteral(String source, int i) {
-        while (++i < source.length() && Character.isDigit(source.charAt(i)));
+        // a string of characters without whitespace or symbols starting with a digit or a decimal,
+        // with the following exceptions
+        //   - one decimal separator allowed in the mantissa
+        //     - if it begins the number it must be followed by a digit
+        //   - a negative or positive sign after an exponent identifier for floating point
+        //     - the exponent identifier is e or E for decimal
+        //     - the exponent identifier is p or P for hexadecimal
+        // notes
+        //   - prefix signs are handled as operators
+        //   - underscores are not symbols
+        //   - no validation is done on the radixes
+        char pc = '\0', c = '\0';
+        boolean inMantissa = true;
+        boolean decimalSeparator;
+        boolean hexadecimal = false;
+        if (source.charAt(i) == '.') {
+            if (++i > source.length() || !Character.isDigit(source.charAt(i))) {
+                return i - 1;
+            }
+            decimalSeparator = true;
+        } else {
+            decimalSeparator = false;
+        }
+        while (++i < source.length() && !Character.isWhitespace(c = source.charAt(i)) &&
+                    (c == '.' && !decimalSeparator && inMantissa ||
+                    (c == '-' || c == '+') && (hexadecimal ? pc == 'p' || pc == 'P' : pc == 'e' || pc == 'E') ||
+                    !SYMBOLS.containsKey(c))) {
+            if (!decimalSeparator) {
+                decimalSeparator = c == '.';
+            }
+            if (pc == '\0') {
+                hexadecimal = c == 'x' || c == 'X';
+            }
+            if (inMantissa && (hexadecimal ? c == 'p' || c == 'P' : c == 'e' || c == 'E')) {
+                inMantissa = false;
+            }
+            pc = c;
+        }
         return i;
     }
 
     private static int consumeCharacterLiteral(String source, int i) {
+        // a string of characters enclosed in '
         return consumeEnclosedLiteral(source, i, '\'');
     }
 
     private static int consumeStringLiteral(String source, int i) {
+        // a string of characters enclosed in "
         return consumeEnclosedLiteral(source, i, '"');
     }
 

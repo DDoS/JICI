@@ -24,14 +24,7 @@
 package ca.sapon.jici.lexer;
 
 public class NumberLiteral extends Token {
-    private final long number;
-
     public NumberLiteral(String source) {
         super(source);
-        number = Long.parseLong(source);
-    }
-
-    public long getNumber() {
-        return number;
     }
 }

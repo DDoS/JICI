@@ -86,6 +86,7 @@ public class Symbol extends Token {
         add("?");
         add("..");
         add("...");
+        add("->");
     }
 
     private Symbol(String source) {

@@ -24,7 +24,7 @@
 package ca.sapon.jici;
 
 import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Lexer.LexerException;
+import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Token;
 
 import java.util.List;

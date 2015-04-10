@@ -23,6 +23,11 @@
  */
 package ca.sapon.jici.lexer;
 
+import ca.sapon.jici.lexer.literal.CharacterLiteral;
+import ca.sapon.jici.lexer.literal.NullLiteral;
+import ca.sapon.jici.lexer.literal.StringLiteral;
+import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+
 import java.util.ArrayList;
 import java.util.List;
 

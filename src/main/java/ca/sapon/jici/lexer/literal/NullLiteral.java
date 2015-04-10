@@ -21,10 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.lexer.literal;
 
-public class CharacterLiteral extends Literal {
-    public CharacterLiteral(String source) {
-        super(source);
+public class NullLiteral extends Literal {
+    private static final String nullSource = "null";
+    private static final NullLiteral THE_NULL = new NullLiteral();
+
+    private NullLiteral() {
+        super(nullSource);
+    }
+
+    public static boolean is(String source) {
+        return nullSource.equals(source);
+    }
+
+    public static NullLiteral get() {
+        return THE_NULL;
     }
 }

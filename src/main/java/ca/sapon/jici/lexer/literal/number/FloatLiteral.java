@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.lexer.literal.number;
 
-public class Literal extends Token {
-    public Literal(String source) {
+public class FloatLiteral extends NumberLiteral {
+    public FloatLiteral(String source) {
         super(source);
     }
 }

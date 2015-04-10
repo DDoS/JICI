@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.lexer.literal.number;
 
 public class LongLiteral extends NumberLiteral {
     public LongLiteral(String source) {

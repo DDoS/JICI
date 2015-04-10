@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
-public class StringLiteral extends Token {
+public class StringLiteral extends Literal {
     public StringLiteral(String source) {
         super(source);
     }

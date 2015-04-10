@@ -23,8 +23,8 @@
  */
 package ca.sapon.jici.lexer;
 
-public class CharacterLiteral extends Literal {
-    public CharacterLiteral(String source) {
+public class FloatLiteral extends NumberLiteral {
+    public FloatLiteral(String source) {
         super(source);
     }
 }

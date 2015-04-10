@@ -70,11 +70,11 @@ public class Lexer {
             } else if (Character.isDigit(c)) {
                 // consume a number literal (starts with a digit)
                 j = consumeNumberLiteral(source, i);
-                token = new NumberLiteral(source.substring(i, j));
+                token = NumberLiteral.get(source.substring(i, j));
             } else {
                 // try to consume a number literal (floating point can start by a decimal separator)
                 if (c == '.' && i != (j = consumeNumberLiteral(source, i))) {
-                    token = new NumberLiteral(source.substring(i, j));
+                    token = NumberLiteral.get(source.substring(i, j));
                 } else if (c == '\'') {
                     // consume a character literal (starts with ')
                     j = consumeCharacterLiteral(source, i);

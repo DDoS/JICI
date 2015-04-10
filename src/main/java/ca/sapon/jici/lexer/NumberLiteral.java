@@ -23,8 +23,58 @@
  */
 package ca.sapon.jici.lexer;
 
-public class NumberLiteral extends Token {
-    public NumberLiteral(String source) {
+public abstract class NumberLiteral extends Literal {
+    protected NumberLiteral(String source) {
         super(source);
+    }
+
+    public static NumberLiteral get(String source) {
+        // is a floating point if
+        //   - has a decimal separator
+        //   - has a p or P
+        //   - doesn't start with 0x, 0X, 0b or OB and ends with f, F, d, D
+        // else is an integer
+        // is a float if ends with f or F, else double
+        // is an long if ends with l or L, else int
+        boolean hasDecimalSeparator = false;
+        boolean hasP = false;
+        final int length = source.length();
+        for (int i = 0; i < length; i++) {
+            final char c = source.charAt(i);
+            if (c == '.') {
+                hasDecimalSeparator = true;
+            } else if (c == 'p') {
+                hasP = true;
+            }
+        }
+        if (hasDecimalSeparator || hasP) {
+            return getFloatingPoint(source);
+        }
+        if (length > 1 && source.charAt(0) == '0' && equalsNoCase(source.charAt(1), 'x')) {
+            return getInteger(source);
+        }
+        final char end = source.charAt(length - 1);
+        if (equalsNoCase(end, 'f')) {
+            return new FloatLiteral(source);
+        } else if (equalsNoCase(end, 'd')) {
+            return new DoubleLiteral(source);
+        }
+        return getInteger(source);
+    }
+
+    private static NumberLiteral getInteger(String source) {
+        return endsWithNoCase(source, 'l') ? new LongLiteral(source) : new IntLiteral(source);
+    }
+
+    private static NumberLiteral getFloatingPoint(String source) {
+        return endsWithNoCase(source, 'f') ? new FloatLiteral(source) : new DoubleLiteral(source);
+    }
+
+    private static boolean endsWithNoCase(String source, char end) {
+        return equalsNoCase(source.charAt(source.length() - 1), end);
+    }
+
+    private static boolean equalsNoCase(char a, char b) {
+        return Character.toLowerCase(a) == b;
     }
 }

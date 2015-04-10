@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
-public class NullLiteral extends Token {
+public class NullLiteral extends Literal {
     private static final String nullSource = "null";
     private static final NullLiteral THE_NULL = new NullLiteral();
 

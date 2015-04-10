@@ -23,8 +23,85 @@
  */
 package ca.sapon.jici.lexer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Keyword extends Token {
-    public Keyword(String source) {
+    private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
+
+    static {
+        // control flow
+        add("assert");
+        add("if");
+        add("else");
+        add("while");
+        add("do");
+        add("for");
+        add("break");
+        add("continue");
+        add("switch");
+        add("case");
+        add("default");
+        add("return");
+        add("throw");
+        add("try");
+        add("catch");
+        add("finally");
+        // primitive types
+        add("void");
+        add("boolean");
+        add("byte");
+        add("short");
+        add("char");
+        add("int");
+        add("long");
+        add("float");
+        add("double");
+        // class
+        add("class");
+        add("interface");
+        add("enum");
+        add("abstract");
+        add("extends");
+        add("implements");
+        add("super");
+        add("this");
+        // package
+        add("package");
+        add("import");
+        // modifiers
+        add("strictfp");
+        add("transient");
+        add("volatile");
+        add("public");
+        add("protected");
+        add("private");
+        add("final");
+        add("static");
+        add("synchronized");
+        add("native");
+        add("throws");
+        // operator
+        add("new");
+        add("instanceof");
+        // unused
+        add("goto");
+        add("const");
+    }
+
+    private Keyword(String source) {
         super(source);
+    }
+
+    public static boolean is(String source) {
+        return KEYWORDS.containsKey(source);
+    }
+
+    public static Keyword get(String source) {
+        return KEYWORDS.get(source);
+    }
+
+    private static void add(String source) {
+        KEYWORDS.put(source, new Keyword(source));
     }
 }

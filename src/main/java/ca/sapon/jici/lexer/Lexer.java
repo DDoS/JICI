@@ -24,74 +24,9 @@
 package ca.sapon.jici.lexer;
 
 import java.util.ArrayList;
-import java.util.function.IntPredicate;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 
 public class Lexer {
-    private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
-
-    static {
-        // control flow
-        addKeyword("assert");
-        addKeyword("if");
-        addKeyword("else");
-        addKeyword("while");
-        addKeyword("do");
-        addKeyword("for");
-        addKeyword("break");
-        addKeyword("continue");
-        addKeyword("switch");
-        addKeyword("case");
-        addKeyword("default");
-        addKeyword("return");
-        addKeyword("throw");
-        addKeyword("try");
-        addKeyword("catch");
-        addKeyword("finally");
-        // primitive types
-        addKeyword("void");
-        addKeyword("boolean");
-        addKeyword("byte");
-        addKeyword("short");
-        addKeyword("char");
-        addKeyword("int");
-        addKeyword("long");
-        addKeyword("float");
-        addKeyword("double");
-        // class
-        addKeyword("class");
-        addKeyword("interface");
-        addKeyword("enum");
-        addKeyword("abstract");
-        addKeyword("extends");
-        addKeyword("implements");
-        addKeyword("super");
-        addKeyword("this");
-        // package
-        addKeyword("package");
-        addKeyword("import");
-        // modifiers
-        addKeyword("strictfp");
-        addKeyword("transient");
-        addKeyword("volatile");
-        addKeyword("public");
-        addKeyword("protected");
-        addKeyword("private");
-        addKeyword("final");
-        addKeyword("static");
-        addKeyword("synchronized");
-        addKeyword("native");
-        addKeyword("throws");
-        // operator
-        addKeyword("new");
-        addKeyword("instanceof");
-        // unused
-        addKeyword("goto");
-        addKeyword("const");
-    }
-
     public static List<Token> lex(String source) throws LexerException {
         final List<Token> tokens = new ArrayList<>();
 
@@ -108,7 +43,7 @@ public class Lexer {
                 if (NullLiteral.is(identifier)) {
                     token = NullLiteral.get();
                 } else {
-                    final Keyword keyword = KEYWORDS.get(identifier);
+                    final Keyword keyword = Keyword.get(identifier);
                     if (keyword != null) {
                         token = keyword;
                     } else {
@@ -276,10 +211,6 @@ public class Lexer {
             }
         }
         return j;
-    }
-
-    private static void addKeyword(String source) {
-        KEYWORDS.put(source, new Keyword(source));
     }
 
     public static class LexerException extends Exception {

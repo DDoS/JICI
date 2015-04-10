@@ -30,38 +30,9 @@ import java.util.Map;
 import java.util.List;
 
 public class Lexer {
-    private static final Map<Character, Symbol> SYMBOLS = new HashMap<>();
     private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
 
     static {
-        // punctuation
-        addSymbol('.');
-        addSymbol(',');
-        addSymbol(':');
-        addSymbol(';');
-        // math
-        addSymbol('=');
-        addSymbol('+');
-        addSymbol('-');
-        addSymbol('*');
-        addSymbol('/');
-        addSymbol('%');
-        // logical
-        addSymbol('!');
-        addSymbol('&');
-        addSymbol('|');
-        addSymbol('~');
-        addSymbol('^');
-        addSymbol('<');
-        addSymbol('>');
-        addSymbol('?');
-        // enclosing
-        addSymbol('(');
-        addSymbol(')');
-        addSymbol('[');
-        addSymbol(']');
-        addSymbol('{');
-        addSymbol('}');
         // control flow
         addKeyword("assert");
         addKeyword("if");
@@ -148,14 +119,8 @@ public class Lexer {
                 j = consumeNumberLiteral(source, i);
                 token = new NumberLiteral(source.substring(i, j));
             } else {
-                if (c == '.') {
-                    j = consumeNumberLiteral(source, i);
-                    if (i != j) {
-                        token = new NumberLiteral(source.substring(i, j));
-                    } else {
-                        j = i + 1;
-                        token = SYMBOLS.get('.');
-                    }
+                if (c == '.' && i != (j = consumeNumberLiteral(source, i))) {
+                    token = new NumberLiteral(source.substring(i, j));
                 } else if (c == '\'') {
                     j = consumeCharacterLiteral(source, i);
                     token = new CharacterLiteral(source.substring(i, j));
@@ -163,10 +128,9 @@ public class Lexer {
                     j = consumeStringLiteral(source, i);
                     token = new StringLiteral(source.substring(i, j));
                 } else {
-                    final Symbol symbol = SYMBOLS.get(c);
-                    if (symbol != null) {
-                        j = i + 1;
-                        token = symbol;
+                    j = consumeSymbol(source, i);
+                    if (i != j) {
+                        token = Symbol.get(source.substring(i, j));
                     } else {
                         throw new LexerException("Unknown symbol", source, i);
                     }
@@ -224,7 +188,7 @@ public class Lexer {
                         canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa) ||
                     isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa ||
                     isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal) ||
-                    !SYMBOLS.containsKey(c) && !isDigitSeparator(c))) {
+                    !Symbol.is(c) && !isDigitSeparator(c))) {
             if (!decimalSeparatorFound) {
                 decimalSeparatorFound = isDecimalSeparator(c);
             }
@@ -303,8 +267,15 @@ public class Lexer {
         return i;
     }
 
-    private static void addSymbol(char source) {
-        SYMBOLS.put(source, new Symbol(source));
+    private static int consumeSymbol(String source, int i) {
+        // attempt to consume compound symbols
+        int j = i;
+        while (Symbol.is(source.substring(i, j + 1))) {
+            if (++j >= source.length()) {
+                break;
+            }
+        }
+        return j;
     }
 
     private static void addKeyword(String source) {

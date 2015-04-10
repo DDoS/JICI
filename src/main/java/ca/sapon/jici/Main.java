@@ -34,9 +34,9 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "Object obj = new Object();\n" +
-            "obj.hashCode();\n" +
-            "obj = null;\n" +
+            "Object _obj = new Object();\n" +
+            "_obj.hashCode();\n" +
+            "_obj = null;\n" +
 
             "char letter = 'a';\n" +
             "String test = \"this is \\t a \\\"test\\\"\";\n" +
@@ -44,7 +44,9 @@ public class Main {
 
             "long integer = 0xF_00L;\n" +
             "double decimal = 1.2e-2d;\n" +
-            "System.out.println(integer + decimal);"
+            "integer--;\n" +
+            "decimal += .2f;\n" +
+            "System.out.println(integer - decimal);"
         ;
 
         System.out.println("Lexing:\n" + source + "\n");

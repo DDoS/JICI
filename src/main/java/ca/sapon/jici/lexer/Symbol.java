@@ -23,8 +23,102 @@
  */
 package ca.sapon.jici.lexer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Symbol extends Token {
-    public Symbol(char source) {
-        super(String.valueOf(source));
+    private static final Map<String, Symbol> SYMBOLS = new HashMap<>();
+    private static final Symbol[] CHAR_SYMBOLS = new Symbol[256];
+
+    static {
+        // punctuation
+        add(".");
+        add(",");
+        add(":");
+        add(";");
+        // math
+        add("+");
+        add("-");
+        add("*");
+        add("/");
+        add("%");
+        add("++");
+        add("--");
+        // bitwise
+        add("&");
+        add("|");
+        add("~");
+        add("^");
+        // shift
+        add("<<");
+        add(">>");
+        add(">>>");
+        // boolean
+        add("!");
+        add("&&");
+        add("||");
+        // comparison
+        add("<");
+        add(">");
+        add(">=");
+        add("<=");
+        add("==");
+        add("!=");
+        // assignment
+        add("=");
+        add("+=");
+        add("-=");
+        add("*=");
+        add("/=");
+        add("%=");
+        add("&=");
+        add("|=");
+        add("~=");
+        add("^=");
+        // enclosing
+        add("(");
+        add(")");
+        add("[");
+        add("]");
+        add("{");
+        add("}");
+        // other
+        add("?");
+        add("..");
+        add("...");
+    }
+
+    private Symbol(String source) {
+        super(source);
+    }
+
+    public static boolean is(char source) {
+        return CHAR_SYMBOLS[source] != null;
+    }
+
+    public static boolean is(String source) {
+        if (source.length() == 1) {
+            return is(source.charAt(0));
+        }
+        return SYMBOLS.containsKey(source);
+    }
+
+    public static Symbol get(char source) {
+        return CHAR_SYMBOLS[source];
+    }
+
+    public static Symbol get(String source) {
+        if (source.length() == 1) {
+            return get(source.charAt(0));
+        }
+        return SYMBOLS.get(source);
+    }
+
+    private static void add(String source) {
+        final Symbol symbol = new Symbol(source);
+        SYMBOLS.put(source, symbol);
+        if (source.length() == 1) {
+            CHAR_SYMBOLS[source.charAt(0)] = symbol;
+        }
     }
 }

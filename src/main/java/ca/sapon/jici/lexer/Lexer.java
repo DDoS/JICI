@@ -26,23 +26,40 @@ package ca.sapon.jici.lexer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
+ */
 public class Lexer {
-    public static List<Token> lex(String source) throws LexerException {
-        final List<Token> tokens = new ArrayList<>();
 
+    /**
+     * Returns a list of {@link ca.sapon.jici.lexer.Token} lexed from the given source string.
+     * This list is composed of identifier, literals (null, integer, long, float, double, char and String), keywords and symbols.
+     *
+     * @param source The source to lex
+     * @return The list of lexed tokens
+     * @throws LexerException If the source is malformed. The message identifies the offending character
+     */
+    public static List<Token> lex(String source) throws LexerException {
+        // this builds a list of tokens, which are identifiers, literals and symbols
+        final List<Token> tokens = new ArrayList<>();
+        // traverse the string, attempting to consume tokens
         for (int i = 0, j; i < source.length(); i = j) {
             final char c = source.charAt(i);
-
+            // tries to generate a token, generates null on failure
             final Token token;
             if (Character.isWhitespace(c)) {
+                // ignore all whitespace
                 j = consumeWhitespace(source, i);
                 token = null;
             } else if (Character.isJavaIdentifierStart(c)) {
+                // try to consume an identifier (starts by a Java identifier)
                 j = consumeIdentifier(source, i);
                 final String identifier = source.substring(i, j);
+                // check if it is a null literal
                 if (NullLiteral.is(identifier)) {
                     token = NullLiteral.get();
                 } else {
+                    // check if it is a keyword
                     final Keyword keyword = Keyword.get(identifier);
                     if (keyword != null) {
                         token = keyword;
@@ -51,34 +68,44 @@ public class Lexer {
                     }
                 }
             } else if (Character.isDigit(c)) {
+                // consume a number literal (starts with a digit)
                 j = consumeNumberLiteral(source, i);
                 token = new NumberLiteral(source.substring(i, j));
             } else {
+                // try to consume a number literal (floating point can start by a decimal separator)
                 if (c == '.' && i != (j = consumeNumberLiteral(source, i))) {
                     token = new NumberLiteral(source.substring(i, j));
                 } else if (c == '\'') {
+                    // consume a character literal (starts with ')
                     j = consumeCharacterLiteral(source, i);
                     token = new CharacterLiteral(source.substring(i, j));
                 } else if (c == '"') {
+                    // consume a string literal (starts with ")
                     j = consumeStringLiteral(source, i);
                     token = new StringLiteral(source.substring(i, j));
                 } else {
+                    // try to consume a char or compound symbol (starts with a symbol)
                     j = consumeSymbol(source, i);
                     if (i != j) {
                         token = Symbol.get(source.substring(i, j));
                     } else {
+                        // if no symbol is consumed, the char is unknown
                         throw new LexerException("Unknown symbol", source, i);
                     }
                 }
             }
-
+            // only add tokens on success
             if (token != null) {
                 tokens.add(token);
             }
         }
-
         return tokens;
     }
+
+    /*
+     * These are the consumers, they take the source and the index of the first char to consume and return
+     * the index + 1 of the last consumed char. If the returned index is the same nothing was consumed.
+     */
 
     private static int consumeWhitespace(String source, int i) {
         // just whitespace
@@ -108,6 +135,7 @@ public class Lexer {
         boolean inMantissa = true;
         boolean decimalSeparatorFound;
         boolean hexadecimal = false;
+        // if the first char is a decimal separator, we need a following digit and we found a separator
         if (isDecimalSeparator(source.charAt(i))) {
             if (++i > source.length() || !Character.isDigit(pc = source.charAt(i))) {
                 return i - 1;
@@ -116,6 +144,7 @@ public class Lexer {
         } else {
             decimalSeparatorFound = false;
         }
+        // the main consumer loop, implements the description above
         while (++i < source.length() &&
                     (Character.isLetterOrDigit(c = source.charAt(i)) ||
                     isDigitSeparator(c) &&
@@ -124,17 +153,21 @@ public class Lexer {
                     isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa ||
                     isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal) ||
                     !Symbol.is(c) && !isDigitSeparator(c))) {
+            // check if we found a decimal separator
             if (!decimalSeparatorFound) {
                 decimalSeparatorFound = isDecimalSeparator(c);
             }
+            // the second char consumed will always be where the hexadecimal identifier is
             if (pc == '\0') {
                 hexadecimal = isHexadecimalIdentifier(c);
             }
+            // check if we have found an exponent separator and move out of the mantissa
             if (inMantissa && isExponentSeparator(c, hexadecimal)) {
                 inMantissa = false;
             }
             pc = c;
         }
+        // ignore trailing signs
         return isSignIdentifier(pc) ? i - 1 : i;
     }
 
@@ -195,6 +228,7 @@ public class Lexer {
 
     private static int consumeEnclosedLiteral(String source, int i, char enclosure) {
         char pc = '\0', c = '\0';
+        // stop when we find the matching enclosure, ignoring escaped ones
         while (++i < source.length() && (pc == '\\' || c != enclosure)) {
             pc = c;
             c = source.charAt(i);
@@ -205,6 +239,7 @@ public class Lexer {
     private static int consumeSymbol(String source, int i) {
         // attempt to consume compound symbols
         int j = i;
+        // stop when we no longer have a symbol, and return the previous index
         while (Symbol.is(source.substring(i, j + 1))) {
             if (++j >= source.length()) {
                 break;

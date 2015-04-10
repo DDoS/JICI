@@ -59,7 +59,7 @@ public class Main {
                 System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
             }
         } catch (LexerException exception) {
-            exception.printStackTrace();
+            System.out.printf("Exception: %s\n", exception.getMessage());
         }
     }
 }

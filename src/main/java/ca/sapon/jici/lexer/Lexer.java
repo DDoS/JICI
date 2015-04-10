@@ -285,11 +285,31 @@ public class Lexer {
     public static class LexerException extends Exception {
         private static final long serialVersionUID = 1;
 
-        public LexerException(String cause, String source, int index) {
-            super(
-                cause + " caused by '" + source.charAt(index) + "' at position " + index + "\n" +
-                source.substring(Math.max(0, index - 5), Math.min(index + 5, source.length()))
-            );
+        public LexerException(String error, String source, int index) {
+            super(generateMessage(error, source, index));
+        }
+
+        private static String generateMessage(String error, String source, int index) {
+            final char offender = source.charAt(index);
+            int start, end;
+            start = end = index;
+            while (--start >= 0 && source.charAt(start) != '\n');
+            while (++end < source.length() && source.charAt(end) != '\n');
+            source = source.substring(start + 1, end);
+            index -= start;
+            final StringBuilder builder = new StringBuilder(error)
+                    .append(" error caused by '")
+                    .append(offender)
+                    .append("' at position ")
+                    .append(index)
+                    .append(" in \n")
+                    .append(source)
+                    .append('\n');
+            for (int i = 0; i < index - 1; i++) {
+                builder.append(' ');
+            }
+            builder.append('^');
+            return builder.toString();
         }
     }
 }

@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
+ * A Java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
  */
 public class Lexer {
 
@@ -227,11 +227,21 @@ public class Lexer {
     }
 
     private static int consumeEnclosedLiteral(String source, int i, char enclosure) {
-        char pc = '\0', c = '\0';
-        // stop when we find the matching enclosure, ignoring escaped ones
-        while (++i < source.length() && (pc == '\\' || c != enclosure)) {
-            pc = c;
-            c = source.charAt(i);
+        char c;
+        // if the count of consecutive escapes is odd, escaping is active
+        int escapeCount = 0;
+        // consume until we find the matching enclosure, ignoring escaped ones
+        i++;
+        while (i < source.length()) {
+            c = source.charAt(i++);
+            if (c == enclosure && (escapeCount & 1) == 0) {
+                break;
+            }
+            if (c == '\\') {
+                escapeCount++;
+            } else {
+                escapeCount = 0;
+            }
         }
         return i;
     }

@@ -39,7 +39,7 @@ public class Main {
             "_obj = null;\n" +
 
             "char letter = 'a';\n" +
-            "String test = \"this is \\t a \\\"test\\\"\";\n" +
+            "String test = \"this is \\t a \\\"test\\\"\\\\\";\n" +
             "System.out.println(a + test);\n" +
 
             "long integer = 0xF_00L;\n" +

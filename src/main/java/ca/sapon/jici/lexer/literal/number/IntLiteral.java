@@ -23,8 +23,10 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.lexer.TokenID;
+
 public class IntLiteral extends NumberLiteral {
     public IntLiteral(String source) {
-        super(source);
+        super(TokenID.LITERAL_INT, source);
     }
 }

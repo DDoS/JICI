@@ -26,71 +26,74 @@ package ca.sapon.jici.lexer;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sapon.jici.lexer.TokenID;
+
 public class Symbol extends Token {
     private static final Map<String, Symbol> SYMBOLS = new HashMap<>();
     private static final Symbol[] CHAR_SYMBOLS = new Symbol[256];
 
     static {
         // punctuation
-        add(".");
-        add(",");
-        add(":");
-        add(";");
+        add(TokenID.SYMBOL_PERIOD, ".");
+        add(TokenID.SYMBOL_COMMA, ",");
+        add(TokenID.SYMBOL_COLON, ":");
+        add(TokenID.SYMBOL_SEMICOLON, ";");
         // math
-        add("+");
-        add("-");
-        add("*");
-        add("/");
-        add("%");
-        add("++");
-        add("--");
+        add(TokenID.SYMBOL_PLUS, "+");
+        add(TokenID.SYMBOL_MINUS, "-");
+        add(TokenID.SYMBOL_TIMES, "*");
+        add(TokenID.SYMBOL_DIVIDE, "/");
+        add(TokenID.SYMBOL_MODULO, "%");
+        add(TokenID.SYMBOL_INCREMENT, "++");
+        add(TokenID.SYMBOL_DECREMENT, "--");
         // bitwise
-        add("&");
-        add("|");
-        add("~");
-        add("^");
+        add(TokenID.SYMBOL_BITWISE_AND, "&");
+        add(TokenID.SYMBOL_BITWISE_OR, "|");
+        add(TokenID.SYMBOL_BITWISE_NOT, "~");
+        add(TokenID.SYMBOL_BITWISE_XOR, "^");
         // shift
-        add("<<");
-        add(">>");
-        add(">>>");
+        add(TokenID.SYMBOL_LOGICAL_LEFT_SHIFT, "<<");
+        add(TokenID.SYMBOL_ARITHMETIC_RIGHT_SHIFT, ">>");
+        add(TokenID.SYMBOL_LOGICAL_RIGHT_SHIFT, ">>>");
         // boolean
-        add("!");
-        add("&&");
-        add("||");
+        add(TokenID.SYMBOL_BOOLEAN_NOT, "!");
+        add(TokenID.SYMBOL_BOOLEAN_AND, "&&");
+        add(TokenID.SYMBOL_BOOLEAN_OR, "||");
         // comparison
-        add("<");
-        add(">");
-        add(">=");
-        add("<=");
-        add("==");
-        add("!=");
+        add(TokenID.SYMBOL_LESSER, "<");
+        add(TokenID.SYMBOL_GREATER, ">");
+        add(TokenID.SYMBOL_GREATER_OR_EQUAL, ">=");
+        add(TokenID.SYMBOL_LESSER_OR_EQUAL, "<=");
+        add(TokenID.SYMBOL_EQUAL, "==");
+        add(TokenID.SYMBOL_NOT_EQUAL, "!=");
         // assignment
-        add("=");
-        add("+=");
-        add("-=");
-        add("*=");
-        add("/=");
-        add("%=");
-        add("&=");
-        add("|=");
-        add("~=");
-        add("^=");
+        add(TokenID.SYMBOL_ASSIGN, "=");
+        add(TokenID.SYMBOL_ADD_ASSIGN, "+=");
+        add(TokenID.SYMBOL_SUBTRACT_ASSIGN, "-=");
+        add(TokenID.SYMBOL_MULTIPLY_ASSIGN, "*=");
+        add(TokenID.SYMBOL_DIVIDE_ASSIGN, "/=");
+        add(TokenID.SYMBOL_REMAINDER_ASSIGN, "%=");
+        add(TokenID.SYMBOL_BITWISE_AND_ASSIGN, "&=");
+        add(TokenID.SYMBOL_BITWISE_OR_ASSIGN, "|=");
+        add(TokenID.SYMBOL_BITWISE_NOT_ASSIGN, "~=");
+        add(TokenID.SYMBOL_BITWISE_XOR_ASSIGN, "^=");
         // enclosing
-        add("(");
-        add(")");
-        add("[");
-        add("]");
-        add("{");
-        add("}");
+        add(TokenID.SYMBOL_OPEN_PARENTHESIS, "(");
+        add(TokenID.SYMBOL_CLOSE_PARENTHESIS, ")");
+        add(TokenID.SYMBOL_OPEN_BRACKET, "[");
+        add(TokenID.SYMBOL_CLOSE_BRACKET, "]");
+        add(TokenID.SYMBOL_OPEN_BRACE, "{");
+        add(TokenID.SYMBOL_CLOSE_BRACE, "}");
         // other
-        add("?");
-        add("..");
-        add("...");
-        add("->");
+        add(TokenID.SYMBOL_QUESTION_MARK, "?");
+        add(TokenID.SYMBOL_DOUBLE_PERIOD, "..");
+        add(TokenID.SYMBOL_TRIPLE_PERIOD, "...");
+        add(TokenID.SYMBOL_ARROW, "->");
+        add(TokenID.SYMBOL_AT, "@");
     }
 
-    private Symbol(String source) {
-        super(source);
+    private Symbol(TokenID id, String source) {
+        super(id, source);
     }
 
     public static boolean is(char source) {
@@ -115,8 +118,8 @@ public class Symbol extends Token {
         return SYMBOLS.get(source);
     }
 
-    private static void add(String source) {
-        final Symbol symbol = new Symbol(source);
+    private static void add(TokenID id, String source) {
+        final Symbol symbol = new Symbol(id, source);
         SYMBOLS.put(source, symbol);
         if (source.length() == 1) {
             CHAR_SYMBOLS[source.charAt(0)] = symbol;

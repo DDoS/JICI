@@ -23,12 +23,14 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.lexer.TokenID;
+
 public class NullLiteral extends Literal {
     private static final String nullSource = "null";
     private static final NullLiteral THE_NULL = new NullLiteral();
 
     private NullLiteral() {
-        super(nullSource);
+        super(TokenID.LITERAL_NULL, nullSource);
     }
 
     public static boolean is(String source) {

@@ -23,11 +23,12 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
 
 public abstract class NumberLiteral extends Literal {
-    protected NumberLiteral(String source) {
-        super(source);
+    protected NumberLiteral(TokenID id, String source) {
+        super(id, source);
     }
 
     public static NumberLiteral get(String source) {

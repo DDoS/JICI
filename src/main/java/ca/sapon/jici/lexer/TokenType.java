@@ -21,13 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer.literal;
+package ca.sapon.jici.lexer;
 
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.lexer.TokenID;
-
-public abstract class Literal extends Token {
-    protected Literal(TokenID id, String source) {
-        super(id, source);
-    }
+public enum TokenType {
+    IDENTIFIER,
+    LITERAL,
+    ACCESS_MODIFIER,
+    OTHER_MODIFIER,
+    PRIMITIVE_TYPE,
+    CLASS_TYPE,
+    UNARY_OPERATOR,
+    BINARY_OPERATOR,
+    CALL_OPERATOR,
+    UNUSED,
+    UNSPECIFIED
 }

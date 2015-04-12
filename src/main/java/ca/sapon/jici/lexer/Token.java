@@ -24,10 +24,20 @@
 package ca.sapon.jici.lexer;
 
 public class Token {
+    private final TokenID id;
     private final String source;
 
-    public Token(String source) {
+    public Token(TokenID id, String source) {
+        this.id = id;
         this.source = source;
+    }
+
+    public TokenID getID() {
+        return id;
+    }
+
+    public TokenType getType() {
+        return id.getType();
     }
 
     public String getSource() {

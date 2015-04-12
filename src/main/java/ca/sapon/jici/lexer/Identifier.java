@@ -25,6 +25,6 @@ package ca.sapon.jici.lexer;
 
 public class Identifier extends Token {
     public Identifier(String source) {
-        super(source);
+        super(TokenID.IDENTIFIER, source);
     }
 }

@@ -26,71 +26,79 @@ package ca.sapon.jici.lexer;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sapon.jici.lexer.TokenID;
+
 public class Keyword extends Token {
     private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
 
     static {
         // control flow
-        add("assert");
-        add("if");
-        add("else");
-        add("while");
-        add("do");
-        add("for");
-        add("break");
-        add("continue");
-        add("switch");
-        add("case");
-        add("default");
-        add("return");
-        add("throw");
-        add("try");
-        add("catch");
-        add("finally");
-        // primitive types
-        add("void");
-        add("boolean");
-        add("byte");
-        add("short");
-        add("char");
-        add("int");
-        add("long");
-        add("float");
-        add("double");
-        // class
-        add("class");
-        add("interface");
-        add("enum");
-        add("abstract");
-        add("extends");
-        add("implements");
-        add("super");
-        add("this");
+        add(TokenID.KEYWORD_ASSERT , "assert");
+        add(TokenID.KEYWORD_IF, "if");
+        add(TokenID.KEYWORD_ELSE, "else");
+        add(TokenID.KEYWORD_WHILE, "while");
+        add(TokenID.KEYWORD_DO, "do");
+        add(TokenID.KEYWORD_FOR, "for");
+        add(TokenID.KEYWORD_BREAK, "break");
+        add(TokenID.KEYWORD_CONTINUE, "continue");
+        add(TokenID.KEYWORD_SWITCH, "switch");
+        add(TokenID.KEYWORD_CASE, "case");
+        add(TokenID.KEYWORD_DEFAULT, "default");
+        add(TokenID.KEYWORD_RETURN, "return");
+        add(TokenID.KEYWORD_THROW, "throw");
+        add(TokenID.KEYWORD_TRY, "try");
+        add(TokenID.KEYWORD_CATCH, "catch");
+        add(TokenID.KEYWORD_FINALLY, "finally");
+        // void type
+        add(TokenID.KEYWORD_VOID, "void");
+        // primitive type
+        add(TokenID.KEYWORD_BOOLEAN, "boolean");
+        add(TokenID.KEYWORD_BYTE, "byte");
+        add(TokenID.KEYWORD_SHORT, "short");
+        add(TokenID.KEYWORD_CHAR, "char");
+        add(TokenID.KEYWORD_INT, "int");
+        add(TokenID.KEYWORD_LONG, "long");
+        add(TokenID.KEYWORD_FLOAT, "float");
+        add(TokenID.KEYWORD_DOUBLE, "double");
+        // class type
+        add(TokenID.KEYWORD_CLASS, "class");
+        add(TokenID.KEYWORD_INTERFACE, "interface");
+        add(TokenID.KEYWORD_ENUM, "enum");
+        // inheritence
+        add(TokenID.KEYWORD_EXTENDS, "extends");
+        add(TokenID.KEYWORD_IMPLEMENTS, "implements");
+        // identifier
+        add(TokenID.KEYWORD_SUPER, "super");
+        add(TokenID.KEYWORD_THIS, "this");
         // package
-        add("package");
-        add("import");
-        // modifiers
-        add("strictfp");
-        add("transient");
-        add("volatile");
-        add("public");
-        add("protected");
-        add("private");
-        add("final");
-        add("static");
-        add("synchronized");
-        add("native");
-        add("throws");
+        add(TokenID.KEYWORD_PACKAGE, "package");
+        // import
+        add(TokenID.KEYWORD_IMPORT, "import");
+        // access modifier
+        add(TokenID.KEYWORD_PUBLIC, "public");
+        add(TokenID.KEYWORD_PROTECTED, "protected");
+        add(TokenID.KEYWORD_PRIVATE, "private");
+        // exception modifier
+        add(TokenID.KEYWORD_THROWS, "throws");
+        // other modifier
+        add(TokenID.KEYWORD_ABSTRACT, "abstract");
+        add(TokenID.KEYWORD_STRICTFP, "strictfp");
+        add(TokenID.KEYWORD_TRANSIENT, "transient");
+        add(TokenID.KEYWORD_VOLATILE, "volatile");
+        add(TokenID.KEYWORD_FINAL, "final");
+        add(TokenID.KEYWORD_STATIC, "static");
+        add(TokenID.KEYWORD_SYNCHRONIZED, "synchronized");
+        add(TokenID.KEYWORD_NATIVE, "native");
         // operator
-        add("new");
-        add("instanceof");
+        add(TokenID.KEYWORD_NEW, "new");
+        add(TokenID.KEYWORD_INSTANCEOF, "instanceof");
         // unused
-        add("goto");
-        add("const");
+        add(TokenID.KEYWORD_GOTO, "goto");
+        add(TokenID.KEYWORD_CONST, "const");
     }
 
-    private Keyword(String source) {
-        super(source);
+    private Keyword(TokenID id, String source) {
+        super(id, source);
     }
 
     public static boolean is(String source) {
@@ -101,7 +109,7 @@ public class Keyword extends Token {
         return KEYWORDS.get(source);
     }
 
-    private static void add(String source) {
-        KEYWORDS.put(source, new Keyword(source));
+    private static void add(TokenID id, String source) {
+        KEYWORDS.put(source, new Keyword(id, source));
     }
 }

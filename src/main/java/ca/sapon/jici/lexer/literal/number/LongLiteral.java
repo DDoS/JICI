@@ -23,8 +23,10 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.lexer.TokenID;
+
 public class LongLiteral extends NumberLiteral {
     public LongLiteral(String source) {
-        super(source);
+        super(TokenID.LITERAL_LONG, source);
     }
 }

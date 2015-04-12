@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.lexer;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,6 +121,10 @@ public class Symbol extends Token {
             return get(source.charAt(0));
         }
         return SYMBOLS.get(source);
+    }
+
+    public static Collection<Symbol> getAll() {
+        return Collections.unmodifiableCollection(SYMBOLS.values());
     }
 
     private static void add(TokenID id, String source) {

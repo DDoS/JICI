@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.lexer;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,6 +109,10 @@ public class Keyword extends Token {
 
     public static Keyword get(String source) {
         return KEYWORDS.get(source);
+    }
+
+    public static Collection<Keyword> getAll() {
+        return Collections.unmodifiableCollection(KEYWORDS.values());
     }
 
     private static void add(TokenID id, String source) {

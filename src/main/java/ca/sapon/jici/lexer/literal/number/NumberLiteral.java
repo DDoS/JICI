@@ -35,19 +35,23 @@ public abstract class NumberLiteral extends Literal {
         // is a floating point if
         //   - has a decimal separator
         //   - has a p or P
-        //   - doesn't start with 0x, 0X, 0b or OB and ends with f, F, d, D
-        // else is an integer
+        // is an integer if
+        //   - starts with 0x, 0X, 0b or 0B
+        //
         // is a float if ends with f or F, else double
+        // is a double if has an e
         // is an long if ends with l or L, else int
         boolean hasDecimalSeparator = false;
-        boolean hasP = false;
+        boolean hasP = false, hasE = false;
         final int length = source.length();
         for (int i = 0; i < length; i++) {
             final char c = source.charAt(i);
             if (c == '.') {
                 hasDecimalSeparator = true;
-            } else if (c == 'p') {
+            } else if (equalsNoCase(c, 'p')) {
                 hasP = true;
+            } else if (equalsNoCase(c, 'e')) {
+                hasE = true;
             }
         }
         if (hasDecimalSeparator || hasP) {
@@ -59,7 +63,7 @@ public abstract class NumberLiteral extends Literal {
         final char end = source.charAt(length - 1);
         if (equalsNoCase(end, 'f')) {
             return new FloatLiteral(source);
-        } else if (equalsNoCase(end, 'd')) {
+        } else if (hasE || equalsNoCase(end, 'd')) {
             return new DoubleLiteral(source);
         }
         return getInteger(source);

@@ -142,7 +142,7 @@ public class Lexer {
         boolean hexadecimal = false;
         // if the first char is a decimal separator, we need a following digit and we found a separator
         if (isDecimalSeparator(source.charAt(i))) {
-            if (++i > source.length() || !Character.isDigit(pc = source.charAt(i))) {
+            if (++i >= source.length() || !Character.isDigit(pc = source.charAt(i))) {
                 return i - 1;
             }
             decimalSeparatorFound = true;

@@ -21,19 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.parser;
 
-public enum TokenType {
-    IDENTIFIER,
-    LITERAL,
-    ACCESS_MODIFIER,
-    OTHER_MODIFIER,
-    PRIMITIVE_TYPE,
-    CLASS_TYPE,
-    UNARY_OPERATOR,
-    BINARY_OPERATOR,
-    CALL_OPERATOR,
-    ASSIGNMENT,
-    UNUSED,
-    UNSPECIFIED
+import ca.sapon.jici.lexer.Identifier;
+
+public class Declaration implements Statement {
+    private final Identifier type;
+    private final Identifier name;
+    private final Expression value;
+
+    public Declaration(Identifier type, Identifier name) {
+        this(type, name, null);
+    }
+
+    public Declaration(Identifier type, Identifier name, Expression value) {
+        this.type = type;
+        this.name = name;
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "Declaration(" + type + " " + name + (value == null ? "" : " = " + value) + ")";
+    }
 }

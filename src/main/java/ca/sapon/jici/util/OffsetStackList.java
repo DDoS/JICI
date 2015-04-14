@@ -21,19 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.util;
 
-public enum TokenType {
-    IDENTIFIER,
-    LITERAL,
-    ACCESS_MODIFIER,
-    OTHER_MODIFIER,
-    PRIMITIVE_TYPE,
-    CLASS_TYPE,
-    UNARY_OPERATOR,
-    BINARY_OPERATOR,
-    CALL_OPERATOR,
-    ASSIGNMENT,
-    UNUSED,
-    UNSPECIFIED
+import java.util.AbstractList;
+import java.util.List;
+import java.util.Stack;
+
+public class OffsetStackList<E> extends AbstractList<E> {
+    private final List<E> list;
+    private final Stack<Integer> offsets = new Stack<>();
+    private int topOffset = 0;
+
+    public OffsetStackList(List<E> list) {
+        this.list = list;
+    }
+
+    public int popOffset() {
+        return topOffset = offsets.pop();
+    }
+
+    public void pushOffset() {
+        offsets.push(topOffset);
+    }
+
+    public int peekOffset() {
+        return topOffset = offsets.peek();
+    }
+
+    public int incrementOffset(int increment) {
+        return topOffset += increment;
+    }
+
+    @Override
+    public E get(int index) {
+        return list.get(index + topOffset);
+    }
+
+    @Override
+    public int size() {
+        return list.size() - topOffset;
+    }
+
+    @Override
+    public E set(int index, E element) {
+        return list.set(index + topOffset, element);
+    }
+
+    @Override
+    public void add(int index, E element) {
+        list.add(index + topOffset, element);
+    }
+
+    @Override
+    public E remove(int index) {
+        return list.remove(index + topOffset);
+    }
 }

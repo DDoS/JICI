@@ -21,19 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.parser;
 
-public enum TokenType {
-    IDENTIFIER,
-    LITERAL,
-    ACCESS_MODIFIER,
-    OTHER_MODIFIER,
-    PRIMITIVE_TYPE,
-    CLASS_TYPE,
-    UNARY_OPERATOR,
-    BINARY_OPERATOR,
-    CALL_OPERATOR,
-    ASSIGNMENT,
-    UNUSED,
-    UNSPECIFIED
+import ca.sapon.jici.lexer.Identifier;
+
+public class Assignment implements Statement, Expression {
+    private final Identifier assignee;
+    private final Expression value;
+
+    public Assignment(Identifier assignee, Expression value) {
+        this.assignee = assignee;
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment(" + assignee + " = " + value + ")";
+    }
 }

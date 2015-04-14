@@ -26,6 +26,8 @@ package ca.sapon.jici;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Token;
+import ca.sapon.jici.parser.Parser;
+import ca.sapon.jici.parser.Statement;
 
 import java.util.List;
 
@@ -34,29 +36,23 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "Object _obj = new Object();\n" +
-            "_obj.hashCode();\n" +
-            "_obj = null;\n" +
-
-            "char letter = 'a';\n" +
-            "String test = \"this is \\t a \\\"test\\\"\\\\\";\n" +
-            "System.out.println(a + test);\n" +
-
-            "long integer = 0xF_00L;\n" +
-            "double decimal = 1.2e-2d;\n" +
-            "integer--;\n" +
-            "decimal += .2f;\n" +
-            "System.out.println(integer - decimal);"
+            "Object obj = null;\n" +
+            "obj = null;"
         ;
 
-        System.out.println("Lexing:\n" + source + "\n");
+        System.out.println("Source:\n" + source);
 
-        final List<Token> tokens;
         try {
-            tokens = Lexer.lex(source);
-
+            System.out.println("\nLexing:");
+            final List<Token> tokens = Lexer.lex(source);
             for (Token token : tokens) {
                 System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
+            }
+
+            System.out.println("\nParsing:");
+            final List<Statement> statements = Parser.parse(tokens);
+            for (Statement statement : statements) {
+                System.out.println(statement);
             }
         } catch (LexerException exception) {
             System.out.printf("Exception: %s\n", exception.getMessage());

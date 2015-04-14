@@ -48,7 +48,8 @@ public class Lexer {
         // this builds a list of tokens, which are identifiers, literals and symbols
         final List<Token> tokens = new ArrayList<>();
         // traverse the string, attempting to consume tokens
-        for (int i = 0, j; i < source.length(); i = j) {
+        final int length = source.length();
+        for (int i = 0, j; i < length; i = j) {
             final char c = source.charAt(i);
             // tries to generate a token, generates null on failure
             final Token token;

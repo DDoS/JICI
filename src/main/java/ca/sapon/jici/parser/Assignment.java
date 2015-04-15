@@ -26,10 +26,10 @@ package ca.sapon.jici.parser;
 import ca.sapon.jici.lexer.Identifier;
 
 public class Assignment implements Statement, Expression {
-    private final Identifier assignee;
+    private final Expression assignee;
     private final Expression value;
 
-    public Assignment(Identifier assignee, Expression value) {
+    public Assignment(Expression assignee, Expression value) {
         this.assignee = assignee;
         this.value = value;
     }

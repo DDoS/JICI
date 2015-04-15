@@ -31,4 +31,9 @@ public class Variable implements Expression {
     public Variable(Identifier name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return name.toString();
+    }
 }

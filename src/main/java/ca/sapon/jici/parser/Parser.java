@@ -49,93 +49,118 @@ public class Parser {
             tokens.incrementOffset(1);
             return new Empty();
         }
-        switch (token0.getType()) {
-            case IDENTIFIER: {
-                Statement statement;
-                // try to parse a declaration
-                tokens.pushOffset();
-                statement = parseDeclaration(tokens);
-                if (statement == null) {
-                    // try to parse an assignment
-                    tokens.peekOffset();
-                    statement = parseAssignment(tokens);
-                    if (statement == null) {
-                        // TODO: use parse exception
-                        throw new IllegalArgumentException();
-                    }
-                }
-                if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_SEMICOLON) {
-                    tokens.incrementOffset(1);
-                    return statement;
-                }
-                // TODO: use parse exception
-                throw new IllegalArgumentException();
-            }
-            default: {
-                // TODO: use parse exception
-                throw new IllegalArgumentException();
-            }
+        // try to parse an expression that is also a statement
+        final Expression expression = parseExpression(tokens);
+        if (!(expression instanceof Statement)) {
+            throw new IllegalArgumentException("Expected statement");
         }
+        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_SEMICOLON) {
+            tokens.incrementOffset(1);
+            return  (Statement) expression;
+        }
+        throw new IllegalArgumentException("Illegal statement");
     }
 
     private static Statement parseDeclaration(OffsetStackList<Token> tokens) {
-        if (tokens.size() >= 2) {
-            final Token token0 = tokens.get(0);
-            final Token token1 = tokens.get(1);
-            // try to parse a type and nam
-            if (token0.getType() == TokenType.IDENTIFIER && token1.getType() == TokenType.IDENTIFIER) {
-                tokens.incrementOffset(2);
-                Expression value = null;
-                if (tokens.size() >= 1) {
-                    final Token token2 = tokens.get(0);
-                    // try to parse an assignment and expression
-                    if (token2.getID() == TokenID.SYMBOL_ASSIGN) {
-                        tokens.incrementOffset(1);
-                        value = parseExpression(tokens);
-                        if (value == null) {
-                            // TODO: use parse exception
-                            throw new IllegalArgumentException();
-                        }
-                    }
-                }
-                return new Declaration((Identifier) token0, (Identifier) token1, value);
-            }
-        }
-        return null;
-    }
-
-    private static Assignment parseAssignment(OffsetStackList<Token> tokens) {
-        if (tokens.size() >= 2) {
-            final Token token0 = tokens.get(0);
-            final Token token1 = tokens.get(1);
-            // try to parse a name, assignment and expression
-            if (token0.getType() == TokenType.IDENTIFIER && token1.getType() == TokenType.ASSIGNMENT) {
-                tokens.incrementOffset(2);
-                final Expression value = parseExpression(tokens);
-                if (value == null) {
-                    // TODO: use parse exception
-                    throw new IllegalArgumentException();
-                }
-                return new Assignment((Identifier) token0, value);
-            }
-        }
         return null;
     }
 
     private static Expression parseExpression(OffsetStackList<Token> tokens) {
+        return parseAssignment(tokens);
+    }
+
+    private static Expression parseAssignment(OffsetStackList<Token> tokens) {
+        final Expression assignee = parseAccess(tokens);
+        if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
+            tokens.incrementOffset(1);
+            final Expression value = parseAssignment(tokens);
+            return new Assignment(assignee, value);
+        }
+        return assignee;
+    }
+
+    private static Expression parseAccess(OffsetStackList<Token> tokens) {
+        final Expression object = parseAtom(tokens);
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_PERIOD) {
+                tokens.incrementOffset(1);
+                Expression member = parseAtom(tokens);
+                final Access access = new Access(object, member);
+                return parseAccess(tokens, access);
+            }
+        }
+        return object;
+    }
+
+    private static Expression parseAccess(OffsetStackList<Token> tokens, Access object) {
+        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD) {
+            tokens.incrementOffset(1);
+            Expression member = parseAtom(tokens);
+            final Access access = new Access(object, member);
+            return parseAccess(tokens, access);
+        }
+        return object;
+    }
+
+    private static Expression parseAtom(OffsetStackList<Token> tokens) {
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
             switch (token0.getType()) {
-                case IDENTIFIER: {
-                    tokens.incrementOffset(1);
-                    return new Variable((Identifier) token0);
-                }
                 case LITERAL: {
                     tokens.incrementOffset(1);
                     return (Literal) token0;
                 }
+                case IDENTIFIER: {
+                    tokens.incrementOffset(1);
+                    return new Variable((Identifier) token0);
+                }
+                default: {
+                    if (token0.getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
+                        tokens.incrementOffset(1);
+                        final Expression expression = parseExpression(tokens);
+                        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                            tokens.incrementOffset(1);
+                            return expression;
+                        }
+                        throw new IllegalArgumentException("Expected ')'");
+                    }
+                }
             }
         }
-        return null;
+        throw new IllegalArgumentException("Expected literal, variable or '('");
     }
+
+    /*
+        ASSIGNMENT:    (CONDITIONAL = ASSIGNMENT) _ CONDITIONAL
+
+        CONDITIONAL:   BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
+
+        BOOLEAN_OR:    BOOLEAN_AND || BOOLEAN_OR _ BOOLEAN_AND
+
+        BOOLEAN_AND:   BITWISE_OR && BOOLEAN_AND _ BITWISE_OR
+
+        BITWISE_OR:    BITWISE_XOR | BITWISE_OR _ BITWISE_XOR
+
+        BITWISE_XOR:   BITWISE_AND ^ BITWISE_XOR _ BITWISE_AND
+
+        BITWISE_AND:   EQUAL & BITWISE_AND _ EQUAL
+
+        EQUAL:         COMPARISON == EQUAL _ COMPARISON
+
+        COMPARISON:    SHIFT >= COMPARISON _ SHIFT
+
+        SHIFT:         ADD >> SHIFT _ ADD
+
+        ADD:           MULTIPLY + ADD _ MULTIPLY
+
+        MULTIPLY:      MULTIPLY(UNARY * UNARY) _ UNARY
+        MULTIPLY(M):   MULTIPLY(M * UNARY) _ M
+
+        UNARY:         ++ACCESS _ ACCESS++ _ ACESS
+
+        ACCESS:        ATOM.ACCESS _ ATOM() _ ATOM
+
+        ATOM:          LITREAL _ VARIABLE _ (EXPRESSION)
+    */
 }

@@ -87,6 +87,12 @@ public class LexerTest {
     }
 
     @Test
+    public void testLexBooleanLiteral() throws LexerException {
+        testLex(TokenID.LITERAL_TRUE, "true");
+        testLex(TokenID.LITERAL_FALSE, "false");
+    }
+
+    @Test
     public void testLexCharacterLiteral() throws LexerException {
         testLex(TokenID.LITERAL_CHARACTER, "'a'");
         testLex(TokenID.LITERAL_CHARACTER, "'\\''");

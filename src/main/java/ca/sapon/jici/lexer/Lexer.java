@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
+import ca.sapon.jici.lexer.literal.BooleanLiteral;
 import ca.sapon.jici.lexer.literal.CharacterLiteral;
 import ca.sapon.jici.lexer.literal.NullLiteral;
 import ca.sapon.jici.lexer.literal.StringLiteral;
@@ -64,6 +65,8 @@ public class Lexer {
                 // check if it is a null literal
                 if (NullLiteral.is(identifier)) {
                     token = NullLiteral.get();
+                } else if (BooleanLiteral.is(identifier)) {
+                    token = BooleanLiteral.get(identifier);
                 } else {
                     // check if it is a keyword
                     final Keyword keyword = Keyword.get(identifier);
@@ -151,14 +154,14 @@ public class Lexer {
             decimalSeparatorFound = false;
         }
         // the main consumer loop, implements the description above
-        while (++i < source.length() &&
-                    (Character.isLetterOrDigit(c = source.charAt(i)) ||
-                    isDigitSeparator(c) &&
-                        canPrecedeDigitSeparator(pc, hexadecimal, inMantissa) &&
-                        canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa) ||
-                    isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa ||
-                    isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal) ||
-                    !Symbol.is(c) && !isDigitSeparator(c))) {
+        while (++i < source.length()
+                && (Character.isLetterOrDigit(c = source.charAt(i))
+                    || isDigitSeparator(c)
+                        && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa)
+                        && canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa)
+                    || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
+                    || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal)
+                    || !Symbol.is(c) && !isDigitSeparator(c))) {
             // check if we found a decimal separator
             if (!decimalSeparatorFound) {
                 decimalSeparatorFound = isDecimalSeparator(c);

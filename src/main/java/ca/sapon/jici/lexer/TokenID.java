@@ -151,6 +151,8 @@ public enum TokenID {
     SYMBOL_AT(TokenType.UNSPECIFIED),
 
 
+    LITERAL_TRUE(TokenType.LITERAL),
+    LITERAL_FALSE(TokenType.LITERAL),
     LITERAL_CHARACTER(TokenType.LITERAL),
     LITERAL_NULL(TokenType.LITERAL),
     LITERAL_STRING(TokenType.LITERAL),

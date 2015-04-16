@@ -129,7 +129,7 @@ public class Lexer {
     }
 
     private static int consumeNumberLiteral(String source, int i) {
-        // a string of alphanimeric characters without symbols starting with a digit or a decimal point,
+        // a string of alphanimeric characters starting with a digit or a decimal point,
         // with the following exceptions
         //   - underscores are allowed between non identifier alphanumerics or underscores
         //   - one decimal separator allowed in the mantissa
@@ -144,7 +144,7 @@ public class Lexer {
         boolean inMantissa = true;
         boolean decimalSeparatorFound;
         boolean hexadecimal = false;
-        // if the first char is a decimal separator, we need a following digit and we found a separator
+        // if the first char is a decimal separator, we need a following digit and we found a decimal separator
         if (isDecimalSeparator(source.charAt(i))) {
             if (++i >= source.length() || !Character.isDigit(pc = source.charAt(i))) {
                 return i - 1;
@@ -160,8 +160,7 @@ public class Lexer {
                         && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa)
                         && canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa)
                     || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
-                    || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal)
-                    || !Symbol.is(c) && !isDigitSeparator(c))) {
+                    || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))) {
             // check if we found a decimal separator
             if (!decimalSeparatorFound) {
                 decimalSeparatorFound = isDecimalSeparator(c);

@@ -25,6 +25,7 @@ package ca.sapon.jici.parser;
 
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.Literal;
+import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
@@ -58,7 +59,7 @@ public class Parser {
             tokens.incrementOffset(1);
             return  (Statement) expression;
         }
-        throw new IllegalArgumentException("Illegal statement");
+        throw new IllegalArgumentException("Expected ';'");
     }
 
     private static Statement parseDeclaration(OffsetStackList<Token> tokens) {
@@ -70,7 +71,7 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseAccess(tokens);
+        final Expression assignee = parseUnary(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
@@ -79,13 +80,46 @@ public class Parser {
         return assignee;
     }
 
+    private static Expression parseUnary(OffsetStackList<Token> tokens) {
+        if (tokens.size() >= 1) {
+            Token token0 = tokens.get(0);
+            TokenID token0ID = token0.getID();
+            if (token0.getType() == TokenType.UNARY_OPERATOR
+                    || token0ID == TokenID.SYMBOL_PLUS
+                    || token0ID == TokenID.SYMBOL_MINUS) {
+                tokens.incrementOffset(1);
+                final Expression value = parseUnary(tokens);
+                if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
+                    return new IncrementOperation(value, (Symbol) token0, false);
+                }
+                return new UnaryOperation(value, (Symbol) token0, false);
+            }
+            final Expression value = parseAccess(tokens);
+            return parseUnary(tokens, value);
+        }
+        throw new IllegalArgumentException("Expected at least one token");
+    }
+
+    private static Expression parseUnary(OffsetStackList<Token> tokens, Expression inner) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
+            if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
+                tokens.incrementOffset(1);
+                final Expression value = new IncrementOperation(inner, (Symbol) token0, true);
+                return parseUnary(tokens, value);
+            }
+        }
+        return inner;
+    }
+
     private static Expression parseAccess(OffsetStackList<Token> tokens) {
         final Expression object = parseAtom(tokens);
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
             if (token0.getID() == TokenID.SYMBOL_PERIOD) {
                 tokens.incrementOffset(1);
-                Expression member = parseAtom(tokens);
+                final Expression member = parseAtom(tokens);
                 final Access access = new Access(object, member);
                 return parseAccess(tokens, access);
             }
@@ -96,7 +130,7 @@ public class Parser {
     private static Expression parseAccess(OffsetStackList<Token> tokens, Access object) {
         if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD) {
             tokens.incrementOffset(1);
-            Expression member = parseAtom(tokens);
+            final Expression member = parseAtom(tokens);
             final Access access = new Access(object, member);
             return parseAccess(tokens, access);
         }
@@ -132,35 +166,24 @@ public class Parser {
     }
 
     /*
-        ASSIGNMENT:    (CONDITIONAL = ASSIGNMENT) _ CONDITIONAL
+        EXPRESSION:       ASSIGNMENT
+        EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
 
-        CONDITIONAL:   BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
+        ASSIGNMENT:       CONDITIONAL = ASSIGNMENT _ CONDITIONAL
+        CONDITIONAL:      BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
+        BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
+        BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
+        BITWISE_OR:       BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
+        BITWISE_XOR:      BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
+        BITWISE_AND:      BITWISE_AND & EQUAL _ EQUAL
+        EQUAL:            EQUAL == COMPARISON _ COMPARISON
+        COMPARISON:       COMPARISON >= SHIFT _ SHIFT
+        SHIFT:            SHIFT >> ADD _ ADD
+        ADD:              ADD + MULTIPLY _ MULTIPLY
+        MULTIPLY:         MULTIPLY * UNARY _ UNARY
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ ACESS
+        ACCESS:           ACCESS.ATOM _ ATOM(EXPRESSION_LIST) _ ATOM[EXPRESSION] _ ATOM
 
-        BOOLEAN_OR:    BOOLEAN_AND || BOOLEAN_OR _ BOOLEAN_AND
-
-        BOOLEAN_AND:   BITWISE_OR && BOOLEAN_AND _ BITWISE_OR
-
-        BITWISE_OR:    BITWISE_XOR | BITWISE_OR _ BITWISE_XOR
-
-        BITWISE_XOR:   BITWISE_AND ^ BITWISE_XOR _ BITWISE_AND
-
-        BITWISE_AND:   EQUAL & BITWISE_AND _ EQUAL
-
-        EQUAL:         COMPARISON == EQUAL _ COMPARISON
-
-        COMPARISON:    SHIFT >= COMPARISON _ SHIFT
-
-        SHIFT:         ADD >> SHIFT _ ADD
-
-        ADD:           MULTIPLY + ADD _ MULTIPLY
-
-        MULTIPLY:      MULTIPLY(UNARY * UNARY) _ UNARY
-        MULTIPLY(M):   MULTIPLY(M * UNARY) _ M
-
-        UNARY:         ++ACCESS _ ACCESS++ _ ACESS
-
-        ACCESS:        ATOM.ACCESS _ ATOM() _ ATOM
-
-        ATOM:          LITREAL _ VARIABLE _ (EXPRESSION)
+        ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
     */
 }

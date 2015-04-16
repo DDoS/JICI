@@ -82,7 +82,7 @@ public class Parser {
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ ACESS
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACESS) UNARY _ new ACCESS(EXPRESSION_LIST) _ ACESS
         ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
         ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
@@ -137,8 +137,8 @@ public class Parser {
 
     private static Expression parseUnary(OffsetStackList<Token> tokens) {
         if (tokens.size() >= 1) {
-            Token token0 = tokens.get(0);
-            TokenID token0ID = token0.getID();
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
             if (token0.getType() == TokenType.UNARY_OPERATOR
                     || token0ID == TokenID.SYMBOL_PLUS
                     || token0ID == TokenID.SYMBOL_MINUS) {
@@ -171,23 +171,48 @@ public class Parser {
     private static Expression parseAccess(OffsetStackList<Token> tokens) {
         final Expression object = parseAtom(tokens);
         if (tokens.size() >= 1) {
-            final Token token0 = tokens.get(0);
-            if (token0.getID() == TokenID.SYMBOL_PERIOD) {
-                tokens.incrementOffset(1);
-                final Expression member = parseAtom(tokens);
-                final Access access = new Access(object, member);
-                return parseAccess(tokens, access);
+            switch (tokens.get(0).getID()) {
+                case SYMBOL_PERIOD: {
+                    tokens.incrementOffset(1);
+                    final Expression member = parseAtom(tokens);
+                    final Access access = new Access(object, member);
+                    return parseAccess(tokens, access);
+                }
+                case SYMBOL_OPEN_BRACKET: {
+                    tokens.incrementOffset(1);
+                    final Expression index = parseExpression(tokens);
+                    if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+                        tokens.incrementOffset(1);
+                        return new IndexOperation(object, index);
+                    }
+                    throw new IllegalArgumentException("Expected ']'");
+                }
             }
         }
         return object;
     }
 
     private static Expression parseAccess(OffsetStackList<Token> tokens, Access object) {
-        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD) {
-            tokens.incrementOffset(1);
-            final Expression member = parseAtom(tokens);
-            final Access access = new Access(object, member);
-            return parseAccess(tokens, access);
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
+            switch (tokens.get(0).getID()) {
+                case SYMBOL_PERIOD: {
+                    tokens.incrementOffset(1);
+                    final Expression member = parseAtom(tokens);
+                    final Access access = new Access(object, member);
+                    return parseAccess(tokens, access);
+                }
+                case SYMBOL_OPEN_BRACKET: {
+                    tokens.incrementOffset(1);
+                    final Expression index = parseExpression(tokens);
+                    if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+                        tokens.incrementOffset(1);
+                        return new IndexOperation(object, index);
+                    }
+                    throw new IllegalArgumentException("Expected ']'");
+                }
+            }
         }
         return object;
     }

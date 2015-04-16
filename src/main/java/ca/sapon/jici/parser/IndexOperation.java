@@ -21,40 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.Statement;
+public class IndexOperation implements Expression {
+    private final Expression object;
+    private final Expression index;
 
-import java.util.List;
+    public IndexOperation(Expression object, Expression index) {
+        this.object = object;
+        this.index = index;
+    }
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
-
-        final String source =
-            "obj.test.nest[+1] = array[-3 * -4];"
-        ;
-
-        System.out.println("Source:\n" + source);
-
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
+    @Override
+    public String toString() {
+        return "IndexOperation(" + object + "[" + index + "])";
     }
 }

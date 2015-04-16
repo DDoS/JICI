@@ -24,19 +24,20 @@
 package ca.sapon.jici.parser;
 
 import ca.sapon.jici.lexer.Symbol;
-import ca.sapon.jici.lexer.TokenID;
 
-public class IncrementOperation extends UnaryOperation implements Statement {
-    private final boolean up;
+public class BinaryOperation implements Expression {
+    private final Expression value0;
+    private final Expression value1;
+    private final Symbol operator;
 
-    public IncrementOperation(Expression value, Symbol symbol, boolean post) {
-        super(value, symbol, post);
-        up = symbol.getID() == TokenID.SYMBOL_INCREMENT;
+    public BinaryOperation(Expression value0, Expression value1, Symbol operator) {
+        this.value0 = value0;
+        this.value1 = value1;
+        this.operator = operator;
     }
 
     @Override
     public String toString() {
-        final String operator = up ? "++" : "--";
-        return "IncrementOperation(" + (post ? value + operator : operator + value) + ")";
+        return "BinaryOperation(" + value0 + " " + operator + " " + value1 + ")";
     }
 }

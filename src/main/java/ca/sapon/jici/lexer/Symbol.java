@@ -43,7 +43,7 @@ public class Symbol extends Token {
         // math
         add(TokenID.SYMBOL_PLUS, "+");
         add(TokenID.SYMBOL_MINUS, "-");
-        add(TokenID.SYMBOL_TIMES, "*");
+        add(TokenID.SYMBOL_MULTIPLY, "*");
         add(TokenID.SYMBOL_DIVIDE, "/");
         add(TokenID.SYMBOL_MODULO, "%");
         add(TokenID.SYMBOL_INCREMENT, "++");

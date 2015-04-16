@@ -66,18 +66,73 @@ public class Parser {
         return null;
     }
 
+    /*
+        EXPRESSION:       ASSIGNMENT
+        EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
+
+        ASSIGNMENT:       CONDITIONAL = ASSIGNMENT _ CONDITIONAL
+        CONDITIONAL:      BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
+        BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
+        BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
+        BITWISE_OR:       BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
+        BITWISE_XOR:      BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
+        BITWISE_AND:      BITWISE_AND & EQUAL _ EQUAL
+        EQUAL:            EQUAL == COMPARISON _ COMPARISON
+        COMPARISON:       COMPARISON >= SHIFT _ SHIFT
+        SHIFT:            SHIFT >> ADD _ ADD
+        ADD:              ADD + MULTIPLY _ MULTIPLY
+        MULTIPLY:         MULTIPLY * UNARY _ UNARY
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ ACESS
+        ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
+
+        ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
+    */
+
     private static Expression parseExpression(OffsetStackList<Token> tokens) {
         return parseAssignment(tokens);
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseUnary(tokens);
+        final Expression assignee = parseMultiply(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseMultiply(OffsetStackList<Token> tokens) {
+        final Expression value0 = parseUnary(tokens);
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
+            if (token0ID == TokenID.SYMBOL_MULTIPLY
+                    || token0ID == TokenID.SYMBOL_DIVIDE
+                    || token0ID == TokenID.SYMBOL_MODULO) {
+                tokens.incrementOffset(1);
+                final Expression value1 = parseUnary(tokens);
+                final BinaryOperation multiply = new BinaryOperation(value0, value1, (Symbol) token0);
+                return parseMultiply(tokens, multiply);
+            }
+        }
+        return value0;
+    }
+
+    private static Expression parseMultiply(OffsetStackList<Token> tokens, BinaryOperation leftMultiply) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
+            if (token0ID == TokenID.SYMBOL_MULTIPLY
+                    || token0ID == TokenID.SYMBOL_DIVIDE
+                    || token0ID == TokenID.SYMBOL_MODULO) {
+                tokens.incrementOffset(1);
+                final Expression value1 = parseUnary(tokens);
+                final BinaryOperation multiply = new BinaryOperation(leftMultiply, value1, (Symbol) token0);
+                return parseMultiply(tokens, multiply);
+            }
+        }
+        return leftMultiply;
     }
 
     private static Expression parseUnary(OffsetStackList<Token> tokens) {
@@ -90,7 +145,7 @@ public class Parser {
                 tokens.incrementOffset(1);
                 final Expression value = parseUnary(tokens);
                 if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
-                    return new IncrementOperation(value, (Symbol) token0, false);
+                    return new Increment(value, (Symbol) token0, false);
                 }
                 return new UnaryOperation(value, (Symbol) token0, false);
             }
@@ -106,7 +161,7 @@ public class Parser {
             final TokenID token0ID = token0.getID();
             if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
                 tokens.incrementOffset(1);
-                final Expression value = new IncrementOperation(inner, (Symbol) token0, true);
+                final Expression value = new Increment(inner, (Symbol) token0, true);
                 return parseUnary(tokens, value);
             }
         }
@@ -164,26 +219,4 @@ public class Parser {
         }
         throw new IllegalArgumentException("Expected literal, variable or '('");
     }
-
-    /*
-        EXPRESSION:       ASSIGNMENT
-        EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
-
-        ASSIGNMENT:       CONDITIONAL = ASSIGNMENT _ CONDITIONAL
-        CONDITIONAL:      BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
-        BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
-        BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
-        BITWISE_OR:       BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
-        BITWISE_XOR:      BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
-        BITWISE_AND:      BITWISE_AND & EQUAL _ EQUAL
-        EQUAL:            EQUAL == COMPARISON _ COMPARISON
-        COMPARISON:       COMPARISON >= SHIFT _ SHIFT
-        SHIFT:            SHIFT >> ADD _ ADD
-        ADD:              ADD + MULTIPLY _ MULTIPLY
-        MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ ACESS
-        ACCESS:           ACCESS.ATOM _ ATOM(EXPRESSION_LIST) _ ATOM[EXPRESSION] _ ATOM
-
-        ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
-    */
 }

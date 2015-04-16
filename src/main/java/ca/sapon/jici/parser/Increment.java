@@ -21,40 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.Statement;
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.lexer.TokenID;
 
-import java.util.List;
+public class Increment extends UnaryOperation implements Statement {
+    private final boolean up;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
+    public Increment(Expression value, Symbol symbol, boolean post) {
+        super(value, symbol, post);
+        up = symbol.getID() == TokenID.SYMBOL_INCREMENT;
+    }
 
-        final String source =
-            "obj.test.nest = 3 * ~1 / 4.0;"
-        ;
-
-        System.out.println("Source:\n" + source);
-
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
+    @Override
+    public String toString() {
+        final String operator = up ? "++" : "--";
+        return "Increment(" + (post ? value + operator : operator + value) + ")";
     }
 }

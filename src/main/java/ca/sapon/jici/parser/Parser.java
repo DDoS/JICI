@@ -93,13 +93,31 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseMultiply(tokens);
+        final Expression assignee = parseAdd(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseAdd(OffsetStackList<Token> tokens) {
+        return parseAdd(tokens, parseMultiply(tokens));
+    }
+
+    private static Expression parseAdd(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            final TokenID token0ID = token0.getID();
+            if (token0ID == TokenID.SYMBOL_PLUS || token0ID == TokenID.SYMBOL_MINUS) {
+                tokens.incrementOffset(1);
+                final Expression right = parseMultiply(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseAdd(tokens, add);
+            }
+        }
+        return left;
     }
 
     private static Expression parseMultiply(OffsetStackList<Token> tokens) {

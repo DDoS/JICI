@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "i = !~t++--;"
+            "i = 3 + ~5 * (6 - 2) + t.a; i = 1 + 2 + 3 - 4;" 
         ;
 
         System.out.println("Source:\n" + source);

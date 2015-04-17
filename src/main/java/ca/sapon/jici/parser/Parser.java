@@ -103,23 +103,10 @@ public class Parser {
     }
 
     private static Expression parseMultiply(OffsetStackList<Token> tokens) {
-        final Expression value0 = parseUnary(tokens);
-        if (tokens.size() >= 1) {
-            final Token token0 = tokens.get(0);
-            final TokenID token0ID = token0.getID();
-            if (token0ID == TokenID.SYMBOL_MULTIPLY
-                    || token0ID == TokenID.SYMBOL_DIVIDE
-                    || token0ID == TokenID.SYMBOL_MODULO) {
-                tokens.incrementOffset(1);
-                final Expression value1 = parseUnary(tokens);
-                final BinaryOperation multiply = new BinaryOperation(value0, value1, (Symbol) token0);
-                return parseMultiply(tokens, multiply);
-            }
-        }
-        return value0;
+        return parseMultiply(tokens, parseUnary(tokens));
     }
 
-    private static Expression parseMultiply(OffsetStackList<Token> tokens, BinaryOperation leftMultiply) {
+    private static Expression parseMultiply(OffsetStackList<Token> tokens, Expression left) {
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
             final TokenID token0ID = token0.getID();
@@ -127,12 +114,12 @@ public class Parser {
                     || token0ID == TokenID.SYMBOL_DIVIDE
                     || token0ID == TokenID.SYMBOL_MODULO) {
                 tokens.incrementOffset(1);
-                final Expression value1 = parseUnary(tokens);
-                final BinaryOperation multiply = new BinaryOperation(leftMultiply, value1, (Symbol) token0);
+                final Expression right = parseUnary(tokens);
+                final BinaryOperation multiply = new BinaryOperation(left, right, (Symbol) token0);
                 return parseMultiply(tokens, multiply);
             }
         }
-        return leftMultiply;
+        return left;
     }
 
     private static Expression parseUnary(OffsetStackList<Token> tokens) {
@@ -169,30 +156,10 @@ public class Parser {
     }
 
     private static Expression parseAccess(OffsetStackList<Token> tokens) {
-        final Expression object = parseAtom(tokens);
-        if (tokens.size() >= 1) {
-            switch (tokens.get(0).getID()) {
-                case SYMBOL_PERIOD: {
-                    tokens.incrementOffset(1);
-                    final Expression member = parseAtom(tokens);
-                    final Access access = new Access(object, member);
-                    return parseAccess(tokens, access);
-                }
-                case SYMBOL_OPEN_BRACKET: {
-                    tokens.incrementOffset(1);
-                    final Expression index = parseExpression(tokens);
-                    if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
-                        tokens.incrementOffset(1);
-                        return new IndexOperation(object, index);
-                    }
-                    throw new IllegalArgumentException("Expected ']'");
-                }
-            }
-        }
-        return object;
+        return parseAccess(tokens, parseAtom(tokens));
     }
 
-    private static Expression parseAccess(OffsetStackList<Token> tokens, Access object) {
+    private static Expression parseAccess(OffsetStackList<Token> tokens, Expression object) {
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
             final TokenID token0ID = token0.getID();

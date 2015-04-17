@@ -82,8 +82,8 @@ public class Parser {
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACESS) UNARY _ new ACCESS(EXPRESSION_LIST) _ ACESS
-        ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACESS) UNARY _ new ACCESS(EXPRESSION_LIST).ACCESS _ ACESS
+        ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST).ACCESS _ ACCESS[EXPRESSION].ACCESS _ ATOM
 
         ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
     */
@@ -175,7 +175,8 @@ public class Parser {
                     final Expression index = parseExpression(tokens);
                     if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
                         tokens.incrementOffset(1);
-                        return new IndexOperation(object, index);
+                        final IndexOperation indexOperation = new IndexOperation(object, index);
+                        return parseAccess(tokens, indexOperation);
                     }
                     throw new IllegalArgumentException("Expected ']'");
                 }

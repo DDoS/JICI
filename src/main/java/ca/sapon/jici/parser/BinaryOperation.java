@@ -23,21 +23,15 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Symbol;
+public abstract class BinaryOperation implements Expression {
+    protected final Expression left;
+    protected final Expression right;
 
-public class BinaryOperation implements Expression {
-    private final Expression value0;
-    private final Expression value1;
-    private final Symbol operator;
-
-    public BinaryOperation(Expression value0, Expression value1, Symbol operator) {
-        this.value0 = value0;
-        this.value1 = value1;
-        this.operator = operator;
+    protected BinaryOperation(Expression left, Expression right) {
+        this.left = left;
+        this.right = right;
     }
 
     @Override
-    public String toString() {
-        return "BinaryOperation(" + value0 + " " + operator + " " + value1 + ")";
-    }
+    public abstract String toString();
 }

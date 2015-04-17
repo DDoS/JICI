@@ -23,17 +23,13 @@
  */
 package ca.sapon.jici.parser;
 
-public class IndexOperation implements Expression {
-    private final Expression object;
-    private final Expression index;
-
+public class IndexOperation extends BinaryOperation {
     public IndexOperation(Expression object, Expression index) {
-        this.object = object;
-        this.index = index;
+        super(object, index);
     }
 
     @Override
     public String toString() {
-        return "IndexOperation(" + object + "[" + index + "])";
+        return "IndexOperation(" + left + "[" + right + "])";
     }
 }

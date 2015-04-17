@@ -23,19 +23,13 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Identifier;
-
-public class Assignment implements Statement, Expression {
-    private final Expression assignee;
-    private final Expression value;
-
+public class Assignment extends BinaryOperation implements Statement {
     public Assignment(Expression assignee, Expression value) {
-        this.assignee = assignee;
-        this.value = value;
+        super(assignee, value);
     }
 
     @Override
     public String toString() {
-        return "Assignment(" + assignee + " = " + value + ")";
+        return "Assignment(" + left + " = " + right + ")";
     }
 }

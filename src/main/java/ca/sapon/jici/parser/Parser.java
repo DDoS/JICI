@@ -82,7 +82,7 @@ public class Parser {
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACESS) UNARY _ new ACCESS(EXPRESSION_LIST).ACCESS _ ACESS
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACCESS) UNARY _ new ACCESS _ ACCESS
         ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST).ACCESS _ ACCESS[EXPRESSION].ACCESS _ ATOM
 
         ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
@@ -115,7 +115,7 @@ public class Parser {
                     || token0ID == TokenID.SYMBOL_MODULO) {
                 tokens.incrementOffset(1);
                 final Expression right = parseUnary(tokens);
-                final BinaryOperation multiply = new BinaryOperation(left, right, (Symbol) token0);
+                final BinaryArithmetic multiply = new BinaryArithmetic(left, right, (Symbol) token0);
                 return parseMultiply(tokens, multiply);
             }
         }
@@ -130,26 +130,45 @@ public class Parser {
                     || token0ID == TokenID.SYMBOL_PLUS
                     || token0ID == TokenID.SYMBOL_MINUS) {
                 tokens.incrementOffset(1);
-                final Expression value = parseUnary(tokens);
-                if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
-                    return new Increment(value, (Symbol) token0, false);
+                final Expression inner = parseUnary(tokens);
+                switch (token0ID) {
+                    case SYMBOL_INCREMENT: {
+                        return new Increment(inner, false, true);
+                    }
+                    case SYMBOL_DECREMENT: {
+                        return new Increment(inner, false, false);
+                    }
+                    default: {
+                        return new UnaryArithmetic(inner, false, (Symbol) token0);
+                    }
                 }
-                return new UnaryOperation(value, (Symbol) token0, false);
             }
-            final Expression value = parseAccess(tokens);
-            return parseUnary(tokens, value);
+            final Expression inner = parseAccess(tokens);
+            return parseUnary(tokens, inner);
         }
         throw new IllegalArgumentException("Expected at least one token");
     }
 
     private static Expression parseUnary(OffsetStackList<Token> tokens, Expression inner) {
         if (tokens.size() >= 1) {
-            final Token token0 = tokens.get(0);
-            final TokenID token0ID = token0.getID();
-            if (token0ID == TokenID.SYMBOL_INCREMENT || token0ID == TokenID.SYMBOL_DECREMENT) {
+            final Expression outer;
+            switch (tokens.get(0).getID()) {
+                case SYMBOL_INCREMENT: {
+                    outer = new Increment(inner, true, true);
+                    break;
+                }
+                case SYMBOL_DECREMENT: {
+                    outer = new Increment(inner, true, false);
+                    break;
+                }
+                default: {
+                    outer = null;
+                    break;
+                }
+            }
+            if (outer != null) {
                 tokens.incrementOffset(1);
-                final Expression value = new Increment(inner, (Symbol) token0, true);
-                return parseUnary(tokens, value);
+                return parseUnary(tokens, outer);
             }
         }
         return inner;

@@ -23,17 +23,13 @@
  */
 package ca.sapon.jici.parser;
 
-public class Access implements Expression {
-    private final Expression object;
-    private final Expression member;
-
+public class Access extends BinaryOperation {
     public Access(Expression object, Expression member) {
-        this.object = object;
-        this.member = member;
+        super(object, member);
     }
 
     @Override
     public String toString() {
-        return "Access(" + object + "." + member + ")";
+        return "Access(" + left + "." + right + ")";
     }
 }

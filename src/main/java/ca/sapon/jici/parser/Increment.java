@@ -23,20 +23,17 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Symbol;
-import ca.sapon.jici.lexer.TokenID;
-
 public class Increment extends UnaryOperation implements Statement {
     private final boolean up;
 
-    public Increment(Expression value, Symbol symbol, boolean post) {
-        super(value, symbol, post);
-        up = symbol.getID() == TokenID.SYMBOL_INCREMENT;
+    public Increment(Expression inner, boolean post, boolean up) {
+        super(inner, post);
+        this.up = up;
     }
 
     @Override
     public String toString() {
         final String operator = up ? "++" : "--";
-        return "Increment(" + (post ? value + operator : operator + value) + ")";
+        return "Increment(" + (post ? inner + operator : operator + inner) + ")";
     }
 }

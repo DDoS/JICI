@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "t.g.h = ~obj.test.nest[1 * 5 % 6].use.me[3] * 9;"
+            "i = !~t++--;"
         ;
 
         System.out.println("Source:\n" + source);

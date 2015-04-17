@@ -23,21 +23,15 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Symbol;
-
-public class UnaryOperation implements Expression {
-    protected final Expression value;
-    protected final Symbol operator;
+public abstract class UnaryOperation implements Expression {
+    protected final Expression inner;
     protected final boolean post;
 
-    public UnaryOperation(Expression value, Symbol operator, boolean post) {
-        this.value = value;
-        this.operator = operator;
+    protected UnaryOperation(Expression inner, boolean post) {
+        this.inner = inner;
         this.post = post;
     }
 
     @Override
-    public String toString() {
-        return "UnaryOperation(" + (post ? value.toString() + operator.toString() : operator.toString() + value.toString()) + ")";
-    }
+    public abstract String toString();
 }

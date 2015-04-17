@@ -93,13 +93,30 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseAdd(tokens);
+        final Expression assignee = parseShift(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseShift(OffsetStackList<Token> tokens) {
+        return parseShift(tokens, parseAdd(tokens));
+    }
+
+    private static Expression parseShift(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getType() == TokenType.SHIFT_OPERATOR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseAdd(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseShift(tokens, add);
+            }
+        }
+        return left;
     }
 
     private static Expression parseAdd(OffsetStackList<Token> tokens) {
@@ -109,8 +126,7 @@ public class Parser {
     private static Expression parseAdd(OffsetStackList<Token> tokens, Expression left) {
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
-            final TokenID token0ID = token0.getID();
-            if (token0ID == TokenID.SYMBOL_PLUS || token0ID == TokenID.SYMBOL_MINUS) {
+            if (token0.getType() == TokenType.ADD_OPERATOR) {
                 tokens.incrementOffset(1);
                 final Expression right = parseMultiply(tokens);
                 final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
@@ -127,10 +143,7 @@ public class Parser {
     private static Expression parseMultiply(OffsetStackList<Token> tokens, Expression left) {
         if (tokens.size() >= 1) {
             final Token token0 = tokens.get(0);
-            final TokenID token0ID = token0.getID();
-            if (token0ID == TokenID.SYMBOL_MULTIPLY
-                    || token0ID == TokenID.SYMBOL_DIVIDE
-                    || token0ID == TokenID.SYMBOL_MODULO) {
+            if (token0.getType() == TokenType.MULTIPLY_OPERATOR) {
                 tokens.incrementOffset(1);
                 final Expression right = parseUnary(tokens);
                 final BinaryArithmetic multiply = new BinaryArithmetic(left, right, (Symbol) token0);

@@ -73,7 +73,7 @@ public class Parser {
         EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
 
         ASSIGNMENT:       CONDITIONAL = ASSIGNMENT _ CONDITIONAL
-        CONDITIONAL:      BOOLEAN_OR ? CONDITIONAL : CONDITIONAL _ BOOLEAN_OR
+        CONDITIONAL:      BOOLEAN_OR ? EXPRESSION : CONDITIONAL _ BOOLEAN_OR
         BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
         BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
         BITWISE_OR:       BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
@@ -95,13 +95,28 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseBooleanOR(tokens);
+        final Expression assignee = parseConditional(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseConditional(OffsetStackList<Token> tokens) {
+        final Expression test = parseBooleanOR(tokens);
+        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_QUESTION_MARK) {
+            tokens.incrementOffset(1);
+            final Expression left = parseExpression(tokens);
+            if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_COLON) {
+                tokens.incrementOffset(1);
+                final Expression right = parseConditional(tokens);
+                return new Conditional(test, left, right);
+            }
+            throw new IllegalArgumentException("Expected ':'");
+        }
+        return test;
     }
 
     private static Expression parseBooleanOR(OffsetStackList<Token> tokens) {
@@ -332,8 +347,6 @@ public class Parser {
 
     private static Expression parseAccess(OffsetStackList<Token> tokens, Expression object) {
         if (tokens.size() >= 1) {
-            final Token token0 = tokens.get(0);
-            final TokenID token0ID = token0.getID();
             switch (tokens.get(0).getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.incrementOffset(1);

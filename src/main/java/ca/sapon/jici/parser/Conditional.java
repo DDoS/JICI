@@ -21,40 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.Statement;
+public class Conditional implements Expression {
+    private final Expression test;
+    private final Expression left;
+    private final Expression right;
 
-import java.util.List;
+    public Conditional(Expression test, Expression left, Expression right) {
+        this.test = test;
+        this.left = left;
+        this.right = right;
+    }
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
-
-        final String source =
-            "l.b = r ? s : (++t);"
-        ;
-
-        System.out.println("Source:\n" + source);
-
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
+    @Override
+    public String toString() {
+        return "Conditional(" + test + " ? " + left + " : " + right + ")";
     }
 }

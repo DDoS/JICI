@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "i = 3 >= '0' < M;"
+            "i = 1 || 2 && 3 | 4 ^ 5 & 6 == 7 == 6 & 5 ^ 4 | 3 && 2 || 1;"
         ;
 
         System.out.println("Source:\n" + source);

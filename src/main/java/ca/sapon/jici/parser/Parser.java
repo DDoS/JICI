@@ -95,13 +95,115 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseComparison(tokens);
+        final Expression assignee = parseBooleanOR(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseBooleanOR(OffsetStackList<Token> tokens) {
+        return parseBooleanOR(tokens, parseBooleanAND(tokens));
+    }
+
+    private static Expression parseBooleanOR(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_BOOLEAN_OR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseBooleanAND(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseBooleanOR(tokens, add);
+            }
+        }
+        return left;
+    }
+
+    private static Expression parseBooleanAND(OffsetStackList<Token> tokens) {
+        return parseBooleanAND(tokens, parseBitwiseOR(tokens));
+    }
+
+    private static Expression parseBooleanAND(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_BOOLEAN_AND) {
+                tokens.incrementOffset(1);
+                final Expression right = parseBitwiseOR(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseBooleanAND(tokens, add);
+            }
+        }
+        return left;
+    }
+
+    private static Expression parseBitwiseOR(OffsetStackList<Token> tokens) {
+        return parseBitwiseOR(tokens, parseBitwiseXOR(tokens));
+    }
+
+    private static Expression parseBitwiseOR(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_BITWISE_OR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseBitwiseXOR(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseBitwiseOR(tokens, add);
+            }
+        }
+        return left;
+    }
+
+    private static Expression parseBitwiseXOR(OffsetStackList<Token> tokens) {
+        return parseBitwiseXOR(tokens, parseBitwiseAND(tokens));
+    }
+
+    private static Expression parseBitwiseXOR(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_BITWISE_XOR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseBitwiseAND(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseBitwiseXOR(tokens, add);
+            }
+        }
+        return left;
+    }
+
+    private static Expression parseBitwiseAND(OffsetStackList<Token> tokens) {
+        return parseBitwiseAND(tokens, parseEqual(tokens));
+    }
+
+    private static Expression parseBitwiseAND(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getID() == TokenID.SYMBOL_BITWISE_AND) {
+                tokens.incrementOffset(1);
+                final Expression right = parseEqual(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseBitwiseAND(tokens, add);
+            }
+        }
+        return left;
+    }
+
+    private static Expression parseEqual(OffsetStackList<Token> tokens) {
+        return parseEqual(tokens, parseComparison(tokens));
+    }
+
+    private static Expression parseEqual(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getType() == TokenType.EQUAL_OPERATOR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseComparison(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseEqual(tokens, add);
+            }
+        }
+        return left;
     }
 
     private static Expression parseComparison(OffsetStackList<Token> tokens) {

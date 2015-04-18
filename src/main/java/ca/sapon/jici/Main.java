@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "i = 3 + 5 >> 1 * 2 / ~3;"
+            "i = 3 >= '0' < M;"
         ;
 
         System.out.println("Source:\n" + source);

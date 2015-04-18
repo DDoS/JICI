@@ -67,6 +67,8 @@ public class Parser {
     }
 
     /*
+        NAME:             IDENTIFIER.NAME _ IDENTIFIER
+
         EXPRESSION:       ASSIGNMENT
         EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
 
@@ -78,14 +80,14 @@ public class Parser {
         BITWISE_XOR:      BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
         BITWISE_AND:      BITWISE_AND & EQUAL _ EQUAL
         EQUAL:            EQUAL == COMPARISON _ COMPARISON
-        COMPARISON:       COMPARISON >= SHIFT _ SHIFT
+        COMPARISON:       COMPARISON >= SHIFT _ SHIFT instanceof NAME _ SHIFT
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (ACCESS) UNARY _ new ACCESS _ ACCESS
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ new NAME(EXPRESSION_LIST).ACCESS _ ACCESS
         ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST).ACCESS _ ACCESS[EXPRESSION].ACCESS _ ATOM
 
-        ATOM:             LITREAL _ VARIABLE _ (EXPRESSION)
+        ATOM:             LITREAL _ IDENTIFIER _ (EXPRESSION)
     */
 
     private static Expression parseExpression(OffsetStackList<Token> tokens) {
@@ -93,13 +95,30 @@ public class Parser {
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
-        final Expression assignee = parseShift(tokens);
+        final Expression assignee = parseComparison(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
             tokens.incrementOffset(1);
             final Expression value = parseAssignment(tokens);
             return new Assignment(assignee, value);
         }
         return assignee;
+    }
+
+    private static Expression parseComparison(OffsetStackList<Token> tokens) {
+        return parseComparison(tokens, parseShift(tokens));
+    }
+
+    private static Expression parseComparison(OffsetStackList<Token> tokens, Expression left) {
+        if (tokens.size() >= 1) {
+            final Token token0 = tokens.get(0);
+            if (token0.getType() == TokenType.COMPARISON_OPERATOR) {
+                tokens.incrementOffset(1);
+                final Expression right = parseShift(tokens);
+                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token0);
+                return parseComparison(tokens, add);
+            }
+        }
+        return left;
     }
 
     private static Expression parseShift(OffsetStackList<Token> tokens) {

@@ -93,6 +93,7 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_QUESTION_MARK, "?");
         add(TokenID.SYMBOL_DOUBLE_PERIOD, "..");
         add(TokenID.SYMBOL_TRIPLE_PERIOD, "...");
+        add(TokenID.SYMBOL_DOUBLE_COLON, "::");
         add(TokenID.SYMBOL_ARROW, "->");
         add(TokenID.SYMBOL_AT, "@");
     }

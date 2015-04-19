@@ -39,6 +39,7 @@ public enum TokenType {
     MULTIPLY_OPERATOR,
     CALL_OPERATOR,
     ASSIGNMENT,
+    COMMENT_DELIMITER,
     UNUSED,
     UNSPECIFIED
 }

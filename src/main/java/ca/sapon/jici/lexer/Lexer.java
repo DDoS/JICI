@@ -100,7 +100,21 @@ public class Lexer {
                     // try to consume a char or compound symbol (starts with a symbol)
                     j = consumeSymbol(source, i);
                     if (i != j) {
-                        token = Symbol.get(source.substring(i, j));
+                        final Symbol symbol = Symbol.get(source.substring(i, j));
+                        // consume comments and drop their starting symbols
+                        switch (symbol.getID()) {
+                            case SYMBOL_DOUBLE_SLASH:
+                                j = consumeLineComment(source, i);
+                                token = null;
+                                break;
+                            case SYMBOL_SLASH_STAR:
+                                j = consumeBlockComment(source, i);
+                                token = null;
+                                break;
+                            default:
+                                token = symbol;
+                                break;
+                        }
                     } else {
                         // if no symbol is consumed, the char is unknown
                         throw new LexerException("Unknown symbol", source, i);
@@ -120,9 +134,26 @@ public class Lexer {
      * the index + 1 of the last consumed char. If the returned index is the same nothing was consumed.
      */
 
-    private static int consumeWhitespace(String source, int i) {
-        // just whitespace
-        while (++i < source.length() && Character.isWhitespace(source.charAt(i)));
+    private static int consumeLineComment(String source, int i) {
+        // consume everything until a line terminator is reached
+        while (++i < source.length() && !isLineTerminator(source.charAt(i)));
+        return i;
+    }
+
+    private static int consumeBlockComment(String source, int i) {
+        // consume everything until we hit at "*/", including it
+        char c, pc = '\0', ppc = '\0';
+        while (++i < source.length()) {
+            c = source.charAt(i);
+            if (ppc == '*' && pc == '/') {
+                break;
+            }
+            ppc = pc;
+            pc = c;
+        }
+        return i;
+    }
+
     private static int consumeSpaces(String source, int i) {
         // consume spaces but not line terminators
         while (++i < source.length() && isSpace(source.charAt(i)));

@@ -89,6 +89,10 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_CLOSE_BRACKET, "]");
         add(TokenID.SYMBOL_OPEN_BRACE, "{");
         add(TokenID.SYMBOL_CLOSE_BRACE, "}");
+        // comment
+        add(TokenID.SYMBOL_DOUBLE_SLASH, "//");
+        add(TokenID.SYMBOL_SLASH_STAR, "/*");
+        add(TokenID.SYMBOL_STAR_SLASH, "*/");
         // other
         add(TokenID.SYMBOL_QUESTION_MARK, "?");
         add(TokenID.SYMBOL_DOUBLE_PERIOD, "..");

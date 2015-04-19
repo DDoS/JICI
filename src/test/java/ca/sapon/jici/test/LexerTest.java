@@ -29,6 +29,7 @@ import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.lexer.TokenType;
 
 import java.util.List;
 
@@ -82,7 +83,9 @@ public class LexerTest {
     @Test
     public void testLexSymbol() throws LexerException {
         for (Symbol symbol : Symbol.getAll()) {
-            testLex(symbol.getID(), symbol.getSource());
+            if (symbol.getType() != TokenType.COMMENT_DELIMITER) {
+                testLex(symbol.getID(), symbol.getSource());
+            }
         }
     }
 
@@ -230,6 +233,25 @@ public class LexerTest {
         testLex(TokenID.LITERAL_LONG, "017L");
 
         testLex(TokenID.LITERAL_LONG, "1234567890l");
+    }
+
+    @Test
+    public void testLexComments() throws LexerException {
+        Assert.assertEquals(0, Lexer.lex("//abcd").size());
+        Assert.assertEquals(0, Lexer.lex("//abcd\n").size());
+        Assert.assertEquals(0, Lexer.lex("//abcd\r").size());
+        Assert.assertEquals(0, Lexer.lex("//abcd\r\n").size());
+
+        Assert.assertEquals(0, Lexer.lex("/*abcd").size());
+        Assert.assertEquals(0, Lexer.lex("/*abcd*/").size());
+
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("//0\na"));
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("//0\ra"));
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("//0\r\na"));
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("/*0*/a"));
+
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("///*\na"));
+        assertEquals(TokenID.IDENTIFIER, "a", Lexer.lex("/*//*/a"));
     }
 
     @Test

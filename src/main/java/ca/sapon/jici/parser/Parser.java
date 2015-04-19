@@ -32,6 +32,7 @@ import ca.sapon.jici.lexer.TokenType;
 import ca.sapon.jici.util.OffsetStackList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -84,14 +85,27 @@ public class Parser {
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ new NAME(EXPRESSION_LIST) _ ACCESS
-        ACCESS:           ACCESS.IDENTIFIER _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ new NAME() _ new NAME(EXPRESSION_LIST) _ ACCESS
+        ACCESS:           ACCESS.IDENTIFIER _ ACCESS() _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
         ATOM:             LITREAL _ IDENTIFIER _ (EXPRESSION)
     */
 
     private static Expression parseExpression(OffsetStackList<Token> tokens) {
         return parseAssignment(tokens);
+    }
+
+    private static List<Expression> parseExpressionList(OffsetStackList<Token> tokens) {
+        return parseExpressionList(tokens, new ArrayList<Expression>());
+    }
+
+    private static List<Expression> parseExpressionList(OffsetStackList<Token> tokens, List<Expression> list) {
+        list.add(parseExpression(tokens));
+        if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_COMMA) {
+            tokens.incrementOffset(1);
+            return parseExpressionList(tokens, list);
+        }
+        return list;
     }
 
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
@@ -371,6 +385,22 @@ public class Parser {
                         return parseAccess(tokens, indexOperation);
                     }
                     throw new IllegalArgumentException("Expected ']'");
+                }
+                case SYMBOL_OPEN_PARENTHESIS: {
+                    tokens.incrementOffset(1);
+                    final List<Expression> arguments;
+                    if (tokens.size() >= 1 && tokens.get(0).getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                        tokens.incrementOffset(1);
+                        arguments = Collections.emptyList();
+                    } else {
+                        arguments = parseExpressionList(tokens);
+                        if (tokens.size() < 1 || tokens.get(0).getID() != TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                            throw new IllegalArgumentException("Expected ')'");
+                        }
+                        tokens.incrementOffset(1);
+                    }
+                    final CallOperation callOperation = new CallOperation(object, arguments);
+                    return parseAccess(tokens, callOperation);
                 }
             }
         }

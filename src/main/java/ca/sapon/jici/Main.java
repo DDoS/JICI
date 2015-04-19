@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "l.m[9] = (m.k).r[1].j;"
+            "ge[1].wom();"
         ;
 
         System.out.println("Source:\n" + source);

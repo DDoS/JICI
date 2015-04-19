@@ -379,7 +379,7 @@ public class Parser {
                 }
                 case IDENTIFIER: {
                     tokens.incrementOffset(1);
-                    return new Variable((Identifier) token0);
+                    return (Identifier) token0;
                 }
                 default: {
                     if (token0.getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {

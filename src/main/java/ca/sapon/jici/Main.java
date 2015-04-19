@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "l.b = r ? s : (++t);"
+            "l.b = (m.k).r[1].j;"
         ;
 
         System.out.println("Source:\n" + source);

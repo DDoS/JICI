@@ -84,8 +84,8 @@ public class Parser {
         SHIFT:            SHIFT >> ADD _ ADD
         ADD:              ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ new NAME(EXPRESSION_LIST).ACCESS _ ACCESS
-        ACCESS:           ACCESS.ATOM _ ACCESS(EXPRESSION_LIST).ACCESS _ ACCESS[EXPRESSION].ACCESS _ ATOM
+        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ new NAME(EXPRESSION_LIST) _ ACCESS
+        ACCESS:           ACCESS.IDENTIFIER _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
         ATOM:             LITREAL _ IDENTIFIER _ (EXPRESSION)
     */
@@ -350,9 +350,13 @@ public class Parser {
             switch (tokens.get(0).getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.incrementOffset(1);
-                    final Expression member = parseAtom(tokens);
-                    final Access access = new Access(object, member);
-                    return parseAccess(tokens, access);
+                    final Token token0 = tokens.get(0);
+                    if (token0 instanceof Identifier) {
+                        tokens.incrementOffset(1);
+                        final Access access = new Access(object, (Identifier) token0);
+                        return parseAccess(tokens, access);
+                    }
+                    throw new IllegalArgumentException("Expected identifier");
                 }
                 case SYMBOL_OPEN_BRACKET: {
                     tokens.incrementOffset(1);

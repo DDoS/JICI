@@ -23,8 +23,10 @@
  */
 package ca.sapon.jici.parser;
 
+import ca.sapon.jici.lexer.Identifier;
+
 public class Access extends BinaryOperation {
-    public Access(Expression object, Expression member) {
+    public Access(Expression object, Identifier member) {
         super(object, member);
     }
 

@@ -72,7 +72,7 @@ public class Parser {
         EXPRESSION:       ASSIGNMENT
         EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
 
-        ASSIGNMENT:       CONDITIONAL = ASSIGNMENT _ CONDITIONAL
+        ASSIGNMENT:       ACCESS = ASSIGNMENT _ CONDITIONAL
         CONDITIONAL:      BOOLEAN_OR ? EXPRESSION : CONDITIONAL _ BOOLEAN_OR
         BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
         BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
@@ -97,9 +97,13 @@ public class Parser {
     private static Expression parseAssignment(OffsetStackList<Token> tokens) {
         final Expression assignee = parseConditional(tokens);
         if (tokens.size() >= 1 && tokens.get(0).getType() == TokenType.ASSIGNMENT) {
-            tokens.incrementOffset(1);
-            final Expression value = parseAssignment(tokens);
-            return new Assignment(assignee, value);
+            if (assignee instanceof Identifier || assignee instanceof Access
+                    || assignee instanceof IndexOperation) {
+                tokens.incrementOffset(1);
+                final Expression value = parseAssignment(tokens);
+                return new Assignment(assignee, value);
+            }
+            throw new IllegalArgumentException("Expected identifier or index operation");
         }
         return assignee;
     }

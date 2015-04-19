@@ -54,13 +54,9 @@ public class Lexer {
             final char c = source.charAt(i);
             // tries to generate a token, generates null on failure
             final Token token;
-            if (isSpace(c)) {
-                // ignore all spaces
-                j = consumeSpaces(source, i);
-                token = null;
-            } else if (isLineTerminator(c)) {
-                // consume a line terminator
-                j = consumeLineTerminator(source, i);
+            if (isWhitespace(c)) {
+                // ignore all whitespace
+                j = consumeWhitepace(source, i);
                 token = null;
             } else if (Character.isJavaIdentifierStart(c)) {
                 // try to consume an identifier (starts by a Java identifier)
@@ -154,9 +150,9 @@ public class Lexer {
         return i;
     }
 
-    private static int consumeSpaces(String source, int i) {
-        // consume spaces but not line terminators
-        while (++i < source.length() && isSpace(source.charAt(i)));
+    private static int consumeWhitepace(String source, int i) {
+        // consume whitespace
+        while (++i < source.length() && isWhitespace(source.charAt(i)));
         return i;
     }
 
@@ -319,6 +315,10 @@ public class Lexer {
             }
         }
         return j;
+    }
+
+    private static boolean isWhitespace(char c) {
+        return isSpace(c) || isLineTerminator(c);
     }
 
     private static boolean isSpace(char c) {

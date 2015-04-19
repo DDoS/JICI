@@ -368,11 +368,13 @@ public class Parser {
             switch (tokens.get(0).getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.incrementOffset(1);
-                    final Token token0 = tokens.get(0);
-                    if (token0 instanceof Identifier) {
-                        tokens.incrementOffset(1);
-                        final Access access = new Access(object, (Identifier) token0);
-                        return parseAccess(tokens, access);
+                    if (tokens.size() >= 1) {
+                        final Token token0 = tokens.get(0);
+                        if (token0 instanceof Identifier) {
+                            tokens.incrementOffset(1);
+                            final Access access = new Access(object, (Identifier) token0);
+                            return parseAccess(tokens, access);
+                        }
                     }
                     throw new IllegalArgumentException("Expected identifier");
                 }

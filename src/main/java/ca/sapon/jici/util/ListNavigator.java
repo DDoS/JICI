@@ -27,53 +27,64 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.Stack;
 
-public class OffsetStackList<E> extends AbstractList<E> {
+public class ListNavigator<E> {
     private final List<E> list;
-    private final Stack<Integer> offsets = new Stack<>();
-    private int topOffset = 0;
+    private final Stack<Integer> positions = new Stack<>();
+    private int topPosition = 0;
 
-    public OffsetStackList(List<E> list) {
+    public ListNavigator(List<E> list) {
         this.list = list;
     }
 
-    public int popOffset() {
-        return topOffset = offsets.pop();
+    public int position() {
+        return topPosition;
     }
 
-    public void pushOffset() {
-        offsets.push(topOffset);
+    public int popPosition() {
+        return topPosition = positions.pop();
     }
 
-    public int peekOffset() {
-        return topOffset = offsets.peek();
+    public void pushPosition() {
+        positions.push(topPosition);
     }
 
-    public int incrementOffset(int increment) {
-        return topOffset += increment;
+    public int peekPosition() {
+        return topPosition = positions.peek();
     }
 
-    @Override
-    public E get(int index) {
-        return list.get(index + topOffset);
+    public int advance() {
+        return advance(1);
     }
 
-    @Override
-    public int size() {
-        return list.size() - topOffset;
+    public int advance(int increment) {
+        return topPosition += increment;
     }
 
-    @Override
-    public E set(int index, E element) {
-        return list.set(index + topOffset, element);
+    public int retreat() {
+        return retreat(1);
     }
 
-    @Override
-    public void add(int index, E element) {
-        list.add(index + topOffset, element);
+    public int retreat(int increment) {
+        return advance(-increment);
     }
 
-    @Override
-    public E remove(int index) {
-        return list.remove(index + topOffset);
+    public int remaining() {
+        return list.size() - topPosition;
+    }
+
+    public boolean has() {
+        return has(1);
+    }
+
+    public boolean has(int remaining) {
+        return remaining() >= remaining;
+    }
+
+    public E get() {
+        return get(0);
+    }
+
+    public E get(int forward) {
+        return list.get(topPosition + forward);
     }
 }

@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "ge[1].wom();"
+            "ge[1].wom(\"h\", '1');"
         ;
 
         System.out.println("Source:\n" + source);

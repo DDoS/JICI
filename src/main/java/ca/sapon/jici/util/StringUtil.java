@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
-
-import ca.sapon.jici.util.StringUtil;
+package ca.sapon.jici.util;
 
 import java.util.List;
 
-public class CallOperation implements Expression, Statement {
-    private final Expression method;
-    private final List<Expression> arguments;
-
-    public CallOperation(Expression method, List<Expression> arguments) {
-        this.method = method;
-        this.arguments = arguments;
+public final class StringUtil {
+    private StringUtil() {
     }
 
-    @Override
-    public String toString() {
-        return new StringBuilder("CallOperation(").append(method)
-                .append('(').append(StringUtil.toString(arguments, ", "))
-                .append("))").toString();
+    public static String toString(List<?> list, String separator) {
+        final int size = list.size() - 1;
+        if (size >= 0) {
+            final StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                builder.append(list.get(i));
+                builder.append(separator);
+            }
+            return builder.append(list.get(size)).toString();
+        }
+        return "";
     }
 }

@@ -23,22 +23,24 @@
  */
 package ca.sapon.jici.parser;
 
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
 
 import java.util.List;
 
-public class CallOperation implements Expression, Statement {
-    private final Expression method;
+public class ConstructOperation implements Expression, Statement {
+    private final List<Identifier> name;
     private final List<Expression> arguments;
 
-    public CallOperation(Expression method, List<Expression> arguments) {
-        this.method = method;
+    public ConstructOperation(List<Identifier> name, List<Expression> arguments) {
+        this.name = name;
         this.arguments = arguments;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder("CallOperation(").append(method)
+        return new StringBuilder("ConstructOperation(new ")
+                .append(StringUtil.toString(name, "."))
                 .append('(').append(StringUtil.toString(arguments, ", "))
                 .append("))").toString();
     }

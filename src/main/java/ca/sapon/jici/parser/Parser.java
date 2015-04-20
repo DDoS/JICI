@@ -268,6 +268,11 @@ public class Parser {
                 final Expression right = parseShift(tokens);
                 final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
                 return parseComparison(tokens, add);
+            } else if (token.getID() == TokenID.KEYWORD_INSTANCEOF) {
+                tokens.advance();
+                final List<Identifier> type = parseName(tokens);
+                final TypeCheck typeCheck = new TypeCheck(left, type);
+                return parseComparison(tokens, typeCheck);
             }
         }
         return left;

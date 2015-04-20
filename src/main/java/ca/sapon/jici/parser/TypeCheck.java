@@ -23,21 +23,22 @@
  */
 package ca.sapon.jici.parser;
 
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
 
 import java.util.List;
 
-public class CallOperation implements Expression, Statement {
-    private final Expression method;
-    private final List<Expression> arguments;
+public class TypeCheck implements Expression {
+    private final Expression object;
+    private final List<Identifier> type;
 
-    public CallOperation(Expression method, List<Expression> arguments) {
-        this.method = method;
-        this.arguments = arguments;
+    public TypeCheck(Expression object, List<Identifier> type) {
+        this.object = object;
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "CallOperation(" + method + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "TypeCheck(" + object + " instanceof " + StringUtil.toString(type, ".") + ")";
     }
 }

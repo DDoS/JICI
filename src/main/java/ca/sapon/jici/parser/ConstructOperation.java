@@ -39,9 +39,6 @@ public class ConstructOperation implements Expression, Statement {
 
     @Override
     public String toString() {
-        return new StringBuilder("ConstructOperation(new ")
-                .append(StringUtil.toString(name, "."))
-                .append('(').append(StringUtil.toString(arguments, ", "))
-                .append("))").toString();
+        return "ConstructOperation(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

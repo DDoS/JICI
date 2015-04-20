@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "m = !new test().get().index[j << 2];"
+            "m = 3 > 1 instanceof Boolean > 2;"
         ;
 
         System.out.println("Source:\n" + source);

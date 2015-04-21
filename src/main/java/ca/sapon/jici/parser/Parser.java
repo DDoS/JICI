@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser;
 
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
@@ -88,7 +89,7 @@ public class Parser {
         UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ (PRIMITIVE_TYPE) UNARY _ ACCESS
         ACCESS:           ACCESS.IDENTIFIER _ ACCESS.class _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ ATOM
 
-        ATOM:             LITREAL _ IDENTIFIER _ (EXPRESSION)
+        ATOM:             LITREAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -420,6 +421,10 @@ public class Parser {
                             tokens.advance();
                             final ClassAccess access = new ClassAccess(object);
                             return parseAccess(tokens, access);
+                        } else if (token.getType() == TokenType.SELF_REFERENCE) {
+                            tokens.advance();
+                            final SelfReference reference = new SelfReference(object, (Keyword) token);
+                            return parseAccess(tokens, reference);
                         }
                     }
                     throw new IllegalArgumentException("Expected identifier or \"class\"");
@@ -469,6 +474,10 @@ public class Parser {
                 case IDENTIFIER: {
                     tokens.advance();
                     return (Identifier) token;
+                }
+                case SELF_REFERENCE: {
+                    tokens.advance();
+                    return new SelfReference((Keyword) token);
                 }
                 default: {
                     if (token.getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {

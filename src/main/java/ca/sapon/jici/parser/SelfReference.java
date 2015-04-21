@@ -21,26 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.lexer;
+package ca.sapon.jici.parser;
 
-public enum TokenType {
-    IDENTIFIER,
-    LITERAL,
-    ACCESS_MODIFIER,
-    OTHER_MODIFIER,
-    PRIMITIVE_TYPE,
-    CLASS_TYPE,
-    SELF_REFERENCE,
-    UNARY_OPERATOR,
-    BINARY_OPERATOR,
-    EQUAL_OPERATOR,
-    COMPARISON_OPERATOR,
-    SHIFT_OPERATOR,
-    ADD_OPERATOR,
-    MULTIPLY_OPERATOR,
-    CALL_OPERATOR,
-    ASSIGNMENT,
-    COMMENT_DELIMITER,
-    UNUSED,
-    UNSPECIFIED
+import ca.sapon.jici.lexer.Keyword;
+
+public class SelfReference implements Expression {
+    private final Expression object;
+    private final Keyword reference;
+
+    public SelfReference(Keyword reference) {
+        this(null, reference);
+    }
+
+    public SelfReference(Expression object, Keyword reference) {
+        this.object = object;
+        this.reference = reference;
+    }
+
+    @Override
+    public String toString() {
+        return "SelfReference(" + (object == null ? reference : object + "." + reference) + ")";
+    }
 }

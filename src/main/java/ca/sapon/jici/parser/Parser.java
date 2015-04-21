@@ -350,6 +350,30 @@ public class Parser {
                         return new UnaryArithmetic(inner, false, (Symbol) token);
                     }
                 }
+            } else if (tokenID == TokenID.SYMBOL_OPEN_PARENTHESIS && tokens.has(2)) {
+                tokens.pushPosition();
+                tokens.advance();
+                final List<Identifier> classType;
+                final boolean primitiveType;
+                final Token type = tokens.get();
+                if (type.getType() == TokenType.PRIMITIVE_TYPE) {
+                    tokens.advance();
+                    primitiveType = true;
+                    classType = null;
+                } else {
+                    classType = parseName(tokens);
+                    primitiveType = false;
+                }
+                if ((primitiveType || classType.size() > 0) && tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                    tokens.advance();
+                    try {
+                        final Expression inner = parseUnary(tokens);
+                        return primitiveType ? new PrimitiveCast((Keyword) type, inner) : new ClassCast(classType, inner);
+                    } catch (IllegalArgumentException exception) {
+                        // this is not a cast, but an access
+                    }
+                }
+                tokens.popPosition();
             }
             final Expression inner = parseAccess(tokens);
             return parseUnary(tokens, inner);

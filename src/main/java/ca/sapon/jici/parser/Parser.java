@@ -52,15 +52,21 @@ public class Parser {
             tokens.advance();
             return new Empty();
         }
+        // try to parse an import
+        try {
+            tokens.pushPosition();
+            final Import _import = parseImport(tokens);
+            tokens.discardPosition();
+            return _import;
+        } catch (IllegalArgumentException exception) {
+            tokens.popPosition();
+        }
         // try to parse a declaration
         try {
             tokens.pushPosition();
             final Declaration declaration = parseDeclaration(tokens);
-            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
-                tokens.advance();
-                tokens.discardPosition();
-                return declaration;
-            }
+            tokens.discardPosition();
+            return declaration;
         } catch (IllegalArgumentException exception) {
             tokens.popPosition();
         }
@@ -84,7 +90,7 @@ public class Parser {
         VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION
         VARIABLE_LSIT:   VARIABLE, VARIABLE_LSIT _ VARIABLE
 
-        DECLARATION:     TYPE VARIABLE_LSIT
+        DECLARATION:     TYPE VARIABLE_LSIT;
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -101,10 +107,11 @@ public class Parser {
                     tokens.advance();
                     return parseName(tokens, name);
                 }
+                return name;
+            } else if (token.getID() == TokenID.SYMBOL_MULTIPLY && !name.isEmpty()) {
+                tokens.retreat();
+                return name;
             }
-        }
-        if (!name.isEmpty()) {
-            return name;
         }
         throw new IllegalArgumentException("Expected identifier");
     }
@@ -152,9 +159,41 @@ public class Parser {
 
     private static Declaration parseDeclaration(ListNavigator<Token> tokens) {
         if (tokens.has()) {
-            return new Declaration(parseType(tokens), parseVariableList(tokens));
+            final Declaration declaration = new Declaration(parseType(tokens), parseVariableList(tokens));
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
+                tokens.advance();
+                return declaration;
+            }
+            throw new IllegalArgumentException("Expected ';'");
         }
         throw new IllegalArgumentException("Expected identifier or primitive type");
+    }
+
+    /*
+        IMPORT:          import NAME; _ import NAME.*;
+    */
+
+    private static Import parseImport(ListNavigator<Token> tokens) {
+        if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_IMPORT) {
+            tokens.advance();
+            final List<Identifier> name = parseName(tokens);
+            if (tokens.has()) {
+                final Token token = tokens.get();
+                if (token.getID() == TokenID.SYMBOL_PERIOD && tokens.has(2) && tokens.get(1).getID() == TokenID.SYMBOL_MULTIPLY) {
+                    tokens.advance(2);
+                    if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
+                        tokens.advance();
+                        return new Import(name, true);
+                    }
+                } else if (token.getID() == TokenID.SYMBOL_SEMICOLON) {
+                    tokens.advance();
+                    return new Import(name, false);
+                }
+                throw new IllegalArgumentException("Expected ';'");
+            }
+            throw new IllegalArgumentException("Expected '*' or ';'");
+        }
+        throw new IllegalArgumentException("Expected \"import\"");
     }
 
     /*

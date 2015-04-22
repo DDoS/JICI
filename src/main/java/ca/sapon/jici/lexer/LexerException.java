@@ -31,19 +31,18 @@ public class LexerException extends Exception {
     }
 
     private static String generateMessage(String error, String source, int index) {
-        final char offender = source.charAt(index);
+        final String offender = escapeOffender(source.charAt(index));
         // find start and end of line containing the offender
-        int start, end;
-        start = end = index;
+        int start = index, end = index - 1;
         while (--start >= 0 && source.charAt(start) != '\n');
         while (++end < source.length() && source.charAt(end) != '\n');
         source = source.substring(start + 1, end);
         index -= start;
         // build the error message with source and cursor lines
         final StringBuilder builder = new StringBuilder(error)
-                .append(" error caused by '")
+                .append(" caused by ")
                 .append(offender)
-                .append("' at position ")
+                .append(" at position ")
                 .append(index)
                 .append(" in \n")
                 .append(source)
@@ -53,5 +52,12 @@ public class LexerException extends Exception {
         }
         builder.append('^');
         return builder.toString();
+    }
+
+    private static String escapeOffender(char offender) {
+        if (Character.isWhitespace(offender)) {
+            return Character.getName(offender);
+        }
+        return '\'' + String.valueOf(offender) + '\'';
     }
 }

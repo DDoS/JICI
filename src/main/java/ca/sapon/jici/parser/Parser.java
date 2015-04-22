@@ -23,18 +23,18 @@
  */
 package ca.sapon.jici.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.Keyword;
-import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
+import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.util.ListNavigator;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Parser {
     public static List<Statement> parse(List<Token> tokens) {
@@ -97,16 +97,21 @@ public class Parser {
     }
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens, List<Identifier> name) {
-        final Token token = tokens.get();
-        if (token instanceof Identifier) {
-            tokens.advance();
-            name.add((Identifier) token);
-            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_PERIOD) {
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            if (token instanceof Identifier) {
                 tokens.advance();
-                return parseName(tokens, name);
+                name.add((Identifier) token);
+                if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_PERIOD) {
+                    tokens.advance();
+                    return parseName(tokens, name);
+                }
             }
         }
-        return name;
+        if (!name.isEmpty()) {
+            return name;
+        }
+        throw new IllegalArgumentException("Expected identifier");
     }
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
@@ -353,7 +358,7 @@ public class Parser {
             } else if (tokenID == TokenID.SYMBOL_OPEN_PARENTHESIS && tokens.has(2)) {
                 tokens.pushPosition();
                 tokens.advance();
-                final List<Identifier> classType;
+                List<Identifier> classType;
                 final boolean primitiveType;
                 final Token type = tokens.get();
                 if (type.getType() == TokenType.PRIMITIVE_TYPE) {
@@ -361,10 +366,15 @@ public class Parser {
                     primitiveType = true;
                     classType = null;
                 } else {
-                    classType = parseName(tokens);
+                    try {
+                        classType = parseName(tokens);
+                    } catch (IllegalArgumentException exception) {
+                        // not a type
+                        classType = null;
+                    }
                     primitiveType = false;
                 }
-                if ((primitiveType || classType.size() > 0) && tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                if ((primitiveType || classType != null) && tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
                     tokens.advance();
                     try {
                         final Expression inner = parseUnary(tokens);
@@ -402,30 +412,27 @@ public class Parser {
     private static Expression parseAccess(ListNavigator<Token> tokens) {
         if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_NEW) {
             tokens.advance();
-            if (tokens.has()) {
-                final List<Identifier> name = parseName(tokens);
-                if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
-                    tokens.advance();
-                    if (tokens.has()) {
-                        final List<Expression> arguments;
-                        if (tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
-                            tokens.advance();
-                            arguments = Collections.emptyList();
-                        } else {
-                            arguments = parseExpressionList(tokens);
-                            if (!tokens.has() || tokens.get().getID() != TokenID.SYMBOL_CLOSE_PARENTHESIS) {
-                                throw new IllegalArgumentException("Expected ')'");
-                            }
-                            tokens.advance();
+            final List<Identifier> name = parseName(tokens);
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
+                tokens.advance();
+                if (tokens.has()) {
+                    final List<Expression> arguments;
+                    if (tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                        tokens.advance();
+                        arguments = Collections.emptyList();
+                    } else {
+                        arguments = parseExpressionList(tokens);
+                        if (!tokens.has() || tokens.get().getID() != TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                            throw new IllegalArgumentException("Expected ')'");
                         }
-                        final ConstructOperation constructOperation = new ConstructOperation(name, arguments);
-                        return parseAccess(tokens, constructOperation);
+                        tokens.advance();
                     }
-                    throw new IllegalArgumentException("Expected expression list or ')'");
+                    final ConstructOperation constructOperation = new ConstructOperation(name, arguments);
+                    return parseAccess(tokens, constructOperation);
                 }
-                throw new IllegalArgumentException("Expected '('");
+                throw new IllegalArgumentException("Expected expression list or ')'");
             }
-            throw new IllegalArgumentException("Expected identifier");
+            throw new IllegalArgumentException("Expected '('");
         }
         return parseAccess(tokens, parseAtom(tokens));
     }

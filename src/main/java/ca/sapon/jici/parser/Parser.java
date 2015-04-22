@@ -84,7 +84,7 @@ public class Parser {
         VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION
         VARIABLE_LSIT:   VARIABLE, VARIABLE_LSIT _ VARIABLE
 
-        DECLARATION:     PRIMITIVE_TYPE VARIABLE_LSIT _ NAME VARIABLE_LSIT
+        DECLARATION:     TYPE VARIABLE_LSIT
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -107,6 +107,18 @@ public class Parser {
             return name;
         }
         throw new IllegalArgumentException("Expected identifier");
+    }
+
+    private static Type parseType(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            if (token.getType() == TokenType.PRIMITIVE_TYPE) {
+                tokens.advance();
+                return new PrimitiveType((Keyword) token);
+            }
+            return new ClassType(parseName(tokens));
+        }
+        throw new IllegalArgumentException("Expected primitive type or identifier");
     }
 
     private static Variable parseVariable(ListNavigator<Token> tokens) {
@@ -140,19 +152,7 @@ public class Parser {
 
     private static Declaration parseDeclaration(ListNavigator<Token> tokens) {
         if (tokens.has()) {
-            final Token token = tokens.get();
-            final List<Identifier> classType;
-            final boolean primitiveType;
-            if (token.getType() == TokenType.PRIMITIVE_TYPE) {
-                tokens.advance();
-                primitiveType = true;
-                classType = null;
-            } else {
-                classType = parseName(tokens);
-                primitiveType = false;
-            }
-            final List<Variable> variables = parseVariableList(tokens);
-            return primitiveType ? new Declaration((Keyword) token, variables) : new Declaration(classType, variables);
+            return new Declaration(parseType(tokens), parseVariableList(tokens));
         }
         throw new IllegalArgumentException("Expected identifier or primitive type");
     }
@@ -173,7 +173,7 @@ public class Parser {
         SHIFT:           SHIFT >> ADD _ ADD
         ADD:             ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:        MULTIPLY * UNARY _ UNARY
-        UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ (PRIMITIVE_TYPE) UNARY _ ACCESS
+        UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.class _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ ATOM
 
         ATOM:            LITREAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
@@ -423,31 +423,16 @@ public class Parser {
             } else if (tokenID == TokenID.SYMBOL_OPEN_PARENTHESIS && tokens.has(2)) {
                 tokens.pushPosition();
                 tokens.advance();
-                List<Identifier> classType;
-                final boolean primitiveType;
-                final Token type = tokens.get();
-                if (type.getType() == TokenType.PRIMITIVE_TYPE) {
-                    tokens.advance();
-                    primitiveType = true;
-                    classType = null;
-                } else {
-                    try {
-                        classType = parseName(tokens);
-                    } catch (IllegalArgumentException exception) {
-                        // not a type
-                        classType = null;
-                    }
-                    primitiveType = false;
-                }
-                if ((primitiveType || classType != null) && tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
-                    tokens.advance();
-                    try {
+                try {
+                    final Type type = parseType(tokens);
+                    if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                        tokens.advance();
                         final Expression inner = parseUnary(tokens);
                         tokens.discardPosition();
-                        return primitiveType ? new PrimitiveCast((Keyword) type, inner) : new ClassCast(classType, inner);
-                    } catch (IllegalArgumentException exception) {
-                        // this is not a cast, but an access
+                        return new Cast(type, inner);
                     }
+                } catch (IllegalArgumentException exception) {
+                    // this is not a cast, but an access
                 }
                 tokens.popPosition();
             }

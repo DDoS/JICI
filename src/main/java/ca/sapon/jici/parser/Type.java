@@ -23,23 +23,10 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.lexer.Keyword;
-import ca.sapon.jici.util.StringUtil;
-
-import java.util.List;
-
-public class Declaration implements Statement {
-    private final Type type;
-    private final List<Variable> variables;
-
-    public Declaration(Type type, List<Variable> variables) {
-        this.type = type;
-        this.variables = variables;
+public abstract class Type {
+    protected Type() {
     }
 
     @Override
-    public String toString() {
-        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
-    }
+    public abstract String toString();
 }

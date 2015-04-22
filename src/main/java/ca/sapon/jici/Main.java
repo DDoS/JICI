@@ -36,8 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "String m, j, k;" +
-            "int i = 0, r = 1, l, c;"
+            "m = 3 * (Object) (int) (9) * 5;"
         ;
 
         System.out.println("Source:\n" + source);

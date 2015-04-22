@@ -28,17 +28,15 @@ import ca.sapon.jici.util.StringUtil;
 
 import java.util.List;
 
-public class ClassCast implements Expression {
+public class ClassType extends Type {
     private final List<Identifier> type;
-    private final Expression object;
 
-    public ClassCast(List<Identifier> type, Expression object) {
+    public ClassType(List<Identifier> type) {
         this.type = type;
-        this.object = object;
     }
 
     @Override
     public String toString() {
-        return "ClassCast((" + StringUtil.toString(type, ".") + ") " + object + ")";
+        return "ClassType(" + StringUtil.toString(type, ".") + ")";
     }
 }

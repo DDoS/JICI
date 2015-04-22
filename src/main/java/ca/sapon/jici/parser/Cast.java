@@ -23,21 +23,22 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Keyword;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.util.StringUtil;
 
 import java.util.List;
 
-public class PrimitiveCast implements Expression {
-    private final Keyword type;
+public class Cast implements Expression {
+    private final Type type;
     private final Expression object;
 
-    public PrimitiveCast(Keyword type, Expression object) {
+    public Cast(Type type, Expression object) {
         this.type = type;
         this.object = object;
     }
 
     @Override
     public String toString() {
-        return "PrimitiveCast((" + type + ") " + object + ")";
+        return "Cast((" + type + ") " + object + ")";
     }
 }

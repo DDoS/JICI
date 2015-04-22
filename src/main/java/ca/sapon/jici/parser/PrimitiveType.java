@@ -23,23 +23,17 @@
  */
 package ca.sapon.jici.parser;
 
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.Keyword;
-import ca.sapon.jici.util.StringUtil;
 
-import java.util.List;
+public class PrimitiveType extends Type {
+    private final Keyword type;
 
-public class Declaration implements Statement {
-    private final Type type;
-    private final List<Variable> variables;
-
-    public Declaration(Type type, List<Variable> variables) {
+    public PrimitiveType(Keyword type) {
         this.type = type;
-        this.variables = variables;
     }
 
     @Override
     public String toString() {
-        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
+        return "PrimitiveType(" + type + ")";
     }
 }

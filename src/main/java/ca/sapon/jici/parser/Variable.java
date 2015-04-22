@@ -24,33 +24,22 @@
 package ca.sapon.jici.parser;
 
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.lexer.Keyword;
-import ca.sapon.jici.util.StringUtil;
 
-import java.util.List;
+public class Variable {
+    private final Identifier name;
+    private final Expression value;
 
-public class Declaration implements Statement {
-    private final List<Identifier> classType;
-    private final Keyword primitiveType;
-    private final List<Variable> variables;
-
-    public Declaration(List<Identifier> classType, List<Variable> variables) {
-        this(classType, null, variables);
+    public Variable(Identifier name) {
+        this(name, null);
     }
 
-    public Declaration(Keyword primitiveType, List<Variable> variables) {
-        this(null, primitiveType, variables);
-    }
-
-    private Declaration(List<Identifier> classType, Keyword primitiveType, List<Variable> variables) {
-        this.classType = classType;
-        this.primitiveType = primitiveType;
-        this.variables = variables;
+    public Variable(Identifier name, Expression value) {
+        this.name = name;
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        return "Declaration(" + (classType != null ? StringUtil.toString(classType, ".") : primitiveType)
-                + " " + StringUtil.toString(variables, ", ") + ")";
+        return "Variable(" + name + (value != null ? " = " + value : "") + ")";
     }
 }

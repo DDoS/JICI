@@ -52,44 +52,39 @@ public class Parser {
             tokens.advance();
             return new Empty();
         }
+        // try to parse a declaration
+        try {
+            tokens.pushPosition();
+            final Declaration declaration = parseDeclaration(tokens);
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
+                tokens.advance();
+                tokens.discardPosition();
+                return declaration;
+            }
+        } catch (IllegalArgumentException exception) {
+            tokens.popPosition();
+        }
         // try to parse an expression that is also a statement
         final Expression expression = parseExpression(tokens);
-        if (!(expression instanceof Statement)) {
-            throw new IllegalArgumentException("Expected statement");
+        if (expression instanceof Statement) {
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
+                tokens.advance();
+                return (Statement) expression;
+            }
+            throw new IllegalArgumentException("Expected ';'");
         }
-        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
-            tokens.advance();
-            return (Statement) expression;
-        }
-        throw new IllegalArgumentException("Expected ';'");
-    }
-
-    private static Statement parseDeclaration(ListNavigator<Token> tokens) {
-        return null;
+        throw new IllegalArgumentException("Expected statement");
     }
 
     /*
-        NAME:             IDENTIFIER.NAME _ IDENTIFIER
+        NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        EXPRESSION:       ASSIGNMENT
-        EXPRESSION_LIST:  EXPRESSION, EXPRESSION_LIST _ EXPRESSION
+        TYPE:            NAME _ PRIMITIVE_TYPE
 
-        ASSIGNMENT:       ACCESS = ASSIGNMENT _ CONDITIONAL
-        CONDITIONAL:      BOOLEAN_OR ? EXPRESSION : CONDITIONAL _ BOOLEAN_OR
-        BOOLEAN_OR:       BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
-        BOOLEAN_AND:      BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
-        BITWISE_OR:       BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
-        BITWISE_XOR:      BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
-        BITWISE_AND:      BITWISE_AND & EQUAL _ EQUAL
-        EQUAL:            EQUAL == COMPARISON _ COMPARISON
-        COMPARISON:       COMPARISON >= SHIFT _ SHIFT instanceof NAME _ SHIFT
-        SHIFT:            SHIFT >> ADD _ ADD
-        ADD:              ADD + MULTIPLY _ MULTIPLY
-        MULTIPLY:         MULTIPLY * UNARY _ UNARY
-        UNARY:            +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ (PRIMITIVE_TYPE) UNARY _ ACCESS
-        ACCESS:           ACCESS.IDENTIFIER _ ACCESS.class _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ ATOM
+        VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION
+        VARIABLE_LSIT:   VARIABLE, VARIABLE_LSIT _ VARIABLE
 
-        ATOM:             LITREAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
+        DECLARATION:     PRIMITIVE_TYPE VARIABLE_LSIT _ NAME VARIABLE_LSIT
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -113,6 +108,76 @@ public class Parser {
         }
         throw new IllegalArgumentException("Expected identifier");
     }
+
+    private static Variable parseVariable(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            if (token instanceof Identifier) {
+                tokens.advance();
+                if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_ASSIGN) {
+                    tokens.advance();
+                    final Expression value = parseExpression(tokens);
+                    return new Variable((Identifier) token, value);
+                }
+                return new Variable((Identifier) token);
+            }
+        }
+        throw new IllegalArgumentException("Expected identifier");
+    }
+
+    private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
+        return parseVariableList(tokens, new ArrayList<Variable>());
+    }
+
+    private static List<Variable> parseVariableList(ListNavigator<Token> tokens, List<Variable> list) {
+        list.add(parseVariable(tokens));
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+            tokens.advance();
+            return parseVariableList(tokens, list);
+        }
+        return list;
+    }
+
+    private static Declaration parseDeclaration(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            final List<Identifier> classType;
+            final boolean primitiveType;
+            if (token.getType() == TokenType.PRIMITIVE_TYPE) {
+                tokens.advance();
+                primitiveType = true;
+                classType = null;
+            } else {
+                classType = parseName(tokens);
+                primitiveType = false;
+            }
+            final List<Variable> variables = parseVariableList(tokens);
+            return primitiveType ? new Declaration((Keyword) token, variables) : new Declaration(classType, variables);
+        }
+        throw new IllegalArgumentException("Expected identifier or primitive type");
+    }
+
+    /*
+        EXPRESSION:      ASSIGNMENT
+        EXPRESSION_LIST: EXPRESSION, EXPRESSION_LIST _ EXPRESSION
+
+        ASSIGNMENT:      ACCESS = ASSIGNMENT _ CONDITIONAL
+        CONDITIONAL:     BOOLEAN_OR ? EXPRESSION : CONDITIONAL _ BOOLEAN_OR
+        BOOLEAN_OR:      BOOLEAN_OR || BOOLEAN_AND _ BOOLEAN_AND
+        BOOLEAN_AND:     BOOLEAN_AND && BITWISE_OR _ BITWISE_OR
+        BITWISE_OR:      BITWISE_OR | BITWISE_XOR _ BITWISE_XOR
+        BITWISE_XOR:     BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
+        BITWISE_AND:     BITWISE_AND & EQUAL _ EQUAL
+        EQUAL:           EQUAL == COMPARISON _ COMPARISON
+        COMPARISON:      COMPARISON >= SHIFT _ SHIFT instanceof NAME _ SHIFT
+        SHIFT:           SHIFT >> ADD _ ADD
+        ADD:             ADD + MULTIPLY _ MULTIPLY
+        MULTIPLY:        MULTIPLY * UNARY _ UNARY
+        UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (NAME) UNARY _ (PRIMITIVE_TYPE) UNARY _ ACCESS
+        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.class _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ ATOM
+
+        ATOM:            LITREAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
+    */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
         return parseAssignment(tokens);
@@ -378,6 +443,7 @@ public class Parser {
                     tokens.advance();
                     try {
                         final Expression inner = parseUnary(tokens);
+                        tokens.discardPosition();
                         return primitiveType ? new PrimitiveCast((Keyword) type, inner) : new ClassCast(classType, inner);
                     } catch (IllegalArgumentException exception) {
                         // this is not a cast, but an access

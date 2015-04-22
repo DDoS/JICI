@@ -52,6 +52,10 @@ public class ListNavigator<E> {
         return topPosition = positions.peek();
     }
 
+    public void discardPosition() {
+        positions.pop();
+    }
+
     public int advance() {
         return advance(1);
     }

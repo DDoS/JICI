@@ -275,24 +275,28 @@ public class Lexer {
         return i < source.length() && canPrecedeDigitSeparator(source.charAt(i), hexadecimal, inMantissa);
     }
 
-    private static int consumeCharacterLiteral(String source, int i) {
+    private static int consumeCharacterLiteral(String source, int i) throws LexerException {
         // a string of characters enclosed in '
         return consumeEnclosedLiteral(source, i, '\'');
     }
 
-    private static int consumeStringLiteral(String source, int i) {
+    private static int consumeStringLiteral(String source, int i) throws LexerException {
         // a string of characters enclosed in "
         return consumeEnclosedLiteral(source, i, '"');
     }
 
-    private static int consumeEnclosedLiteral(String source, int i, char enclosure) {
+    private static int consumeEnclosedLiteral(String source, int i, char enclosure) throws LexerException {
         char c;
         // if the count of consecutive escapes is odd, escaping is active
         int escapeCount = 0;
         // consume until we find the matching enclosure, ignoring escaped ones
         i++;
         while (i < source.length()) {
-            c = source.charAt(i++);
+            c = source.charAt(i);
+            if (isLineTerminator(c)) {
+                throw new LexerException("Expected '" + enclosure + "'", source, i);
+            }
+            i++;
             if (c == enclosure && (escapeCount & 1) == 0) {
                 break;
             }

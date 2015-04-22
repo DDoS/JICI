@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "boolean m = j instanceof java.lang.String;"
+            "String = \"test\";"
         ;
 
         System.out.println("Source:\n" + source);

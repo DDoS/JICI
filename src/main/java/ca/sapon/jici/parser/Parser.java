@@ -208,7 +208,7 @@ public class Parser {
         BITWISE_XOR:     BITWISE_XOR ^ BITWISE_AND _ BITWISE_AND
         BITWISE_AND:     BITWISE_AND & EQUAL _ EQUAL
         EQUAL:           EQUAL == COMPARISON _ COMPARISON
-        COMPARISON:      COMPARISON >= SHIFT _ SHIFT instanceof NAME _ SHIFT
+        COMPARISON:      COMPARISON >= SHIFT _ SHIFT instanceof TYPE _ SHIFT
         SHIFT:           SHIFT >> ADD _ ADD
         ADD:             ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:        MULTIPLY * UNARY _ UNARY
@@ -380,7 +380,7 @@ public class Parser {
                 return parseComparison(tokens, add);
             } else if (token.getID() == TokenID.KEYWORD_INSTANCEOF) {
                 tokens.advance();
-                final List<Identifier> type = parseName(tokens);
+                final Type type = parseType(tokens);
                 final TypeCheck typeCheck = new TypeCheck(left, type);
                 return parseComparison(tokens, typeCheck);
             }

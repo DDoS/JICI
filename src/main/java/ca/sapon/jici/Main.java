@@ -36,7 +36,7 @@ public class Main {
         System.out.println("JICI\n");
 
         final String source =
-            "import java.lang.*;"
+            "boolean m = j instanceof java.lang.String;"
         ;
 
         System.out.println("Source:\n" + source);

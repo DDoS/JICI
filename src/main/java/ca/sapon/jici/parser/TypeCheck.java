@@ -24,21 +24,20 @@
 package ca.sapon.jici.parser;
 
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.StringUtil;
 
 import java.util.List;
 
 public class TypeCheck implements Expression {
     private final Expression object;
-    private final List<Identifier> type;
+    private final Type type;
 
-    public TypeCheck(Expression object, List<Identifier> type) {
+    public TypeCheck(Expression object, Type type) {
         this.object = object;
         this.type = type;
     }
 
     @Override
     public String toString() {
-        return "TypeCheck(" + object + " instanceof " + StringUtil.toString(type, ".") + ")";
+        return "TypeCheck(" + object + " instanceof " + type + ")";
     }
 }

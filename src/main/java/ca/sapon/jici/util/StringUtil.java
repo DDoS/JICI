@@ -41,4 +41,34 @@ public final class StringUtil {
         }
         return "";
     }
+
+    public static char decodeUnicodeSequence(String source, int i) {
+        // format: \\uXXXX where X is a hexadecimal digit
+        // (starts with 1 backslash, but it needs to be escaped for this to compile)
+        if (i + 6 > source.length()) {
+            throw new InvalidUnicodeSequence(source.substring(i, source.length()));
+        }
+        if (source.charAt(i) != '\\' || source.charAt(i + 1) != 'u') {
+            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
+        }
+        // we need to make sure the first digit isn't a sign for the next step
+        final char firstDigit = source.charAt(i + 2);
+        if (firstDigit == '-' || firstDigit == '+') {
+            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
+        }
+        // try to parse a short and convert it to a character
+        try {
+            return (char) Short.parseShort(source.substring(i + 2, i + 6), 16);
+        } catch (NumberFormatException exception) {
+            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
+        }
+    }
+
+    public static class InvalidUnicodeSequence extends RuntimeException {
+        private static final long serialVersionUID = 1;
+
+        public InvalidUnicodeSequence(String sequence) {
+            super("\"" + sequence + "\" is not of form \\uXXXX, where X is a hexadecimal digit");
+        }
+    }
 }

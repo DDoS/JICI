@@ -28,6 +28,7 @@ import ca.sapon.jici.lexer.literal.CharacterLiteral;
 import ca.sapon.jici.lexer.literal.NullLiteral;
 import ca.sapon.jici.lexer.literal.StringLiteral;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+import ca.sapon.jici.util.StringConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,20 +49,22 @@ public class Lexer {
     public static List<Token> lex(String source) throws LexerException {
         // this builds a list of tokens, which are identifiers, literals and symbols
         final List<Token> tokens = new ArrayList<>();
+        final StringConsumer consumer = new StringConsumer(source);
         // traverse the string, attempting to consume tokens
         final int length = source.length();
-        for (int i = 0, j; i < length; i = j) {
-            final char c = source.charAt(i);
+        while (consumer.has()) {
+            final int last = consumer.position();
+            final char c = consumer.get();
             // tries to generate a token, generates null on failure
             final Token token;
             if (isWhitespace(c)) {
                 // ignore all whitespace
-                j = consumeWhitepace(source, i);
+                consumeWhitepace(consumer);
                 token = null;
             } else if (Character.isJavaIdentifierStart(c)) {
                 // try to consume an identifier (starts by a Java identifier)
-                j = consumeIdentifier(source, i);
-                final String identifier = source.substring(i, j);
+                consumeIdentifier(consumer);
+                final String identifier = consumer.consumed(last);
                 // check if it is a null literal
                 if (NullLiteral.is(identifier)) {
                     token = NullLiteral.get();
@@ -78,33 +81,33 @@ public class Lexer {
                 }
             } else if (Character.isDigit(c)) {
                 // consume a number literal (starts with a digit)
-                j = consumeNumberLiteral(source, i);
-                token = NumberLiteral.get(source.substring(i, j));
+                consumeNumberLiteral(consumer);
+                token = NumberLiteral.get(consumer.consumed(last));
             } else {
                 // try to consume a number literal (floating point can start by a decimal separator)
-                if (c == '.' && i != (j = consumeNumberLiteral(source, i))) {
-                    token = NumberLiteral.get(source.substring(i, j));
+                if (c == '.' && consumeNumberLiteral(consumer) != last) {
+                    token = NumberLiteral.get(consumer.consumed(last));
                 } else if (c == '\'') {
                     // consume a character literal (starts with ')
-                    j = consumeCharacterLiteral(source, i);
-                    token = new CharacterLiteral(source.substring(i, j));
+                    consumeCharacterLiteral(consumer);
+                    token = new CharacterLiteral(consumer.consumed(last));
                 } else if (c == '"') {
                     // consume a string literal (starts with ")
-                    j = consumeStringLiteral(source, i);
-                    token = new StringLiteral(source.substring(i, j));
+                    consumeStringLiteral(consumer);
+                    token = new StringLiteral(consumer.consumed(last));
                 } else {
                     // try to consume a char or compound symbol (starts with a symbol)
-                    j = consumeSymbol(source, i);
-                    if (i != j) {
-                        final Symbol symbol = Symbol.get(source.substring(i, j));
+                    consumeSymbol(consumer);
+                    if (consumer.position() != last) {
+                        final Symbol symbol = Symbol.get(consumer.consumed(last));
                         // consume comments and drop their starting symbols
                         switch (symbol.getID()) {
                             case SYMBOL_DOUBLE_SLASH:
-                                j = consumeLineComment(source, i);
+                                consumeLineComment(consumer);
                                 token = null;
                                 break;
                             case SYMBOL_SLASH_STAR:
-                                j = consumeBlockComment(source, i);
+                                consumeBlockComment(consumer);
                                 token = null;
                                 break;
                             default:
@@ -113,7 +116,7 @@ public class Lexer {
                         }
                     } else {
                         // if no symbol is consumed, the char is unknown
-                        throw new LexerException("Unknown symbol", source, i);
+                        throw new LexerException("Unknown symbol", source, consumer.position());
                     }
                 }
             }
@@ -125,61 +128,50 @@ public class Lexer {
         return tokens;
     }
 
-    /*
-     * These are the consumers, they take the source and the index of the first char to consume and return
-     * the index + 1 of the last consumed char. If the returned index is the same nothing was consumed.
-     */
-
-    private static int consumeLineComment(String source, int i) {
+    private static void consumeLineComment(StringConsumer consumer) {
         // consume everything until a line terminator is reached
-        while (++i < source.length() && !isLineTerminator(source.charAt(i)));
-        return i;
+        while (consumer.consume() && !isLineTerminator(consumer.get()));
     }
 
-    private static int consumeBlockComment(String source, int i) {
+    private static void consumeBlockComment(StringConsumer consumer) {
         // consume everything until we hit at "*/", including it
         char c, pc = '\0', ppc = '\0';
-        while (++i < source.length()) {
-            c = source.charAt(i);
+        while (consumer.consume()) {
+            c = consumer.get();
             if (ppc == '*' && pc == '/') {
                 break;
             }
             ppc = pc;
             pc = c;
         }
-        return i;
     }
 
-    private static int consumeWhitepace(String source, int i) {
+    private static void consumeWhitepace(StringConsumer consumer) {
         // consume whitespace
-        while (++i < source.length() && isWhitespace(source.charAt(i)));
-        return i;
+        while (consumer.consume() && isWhitespace(consumer.get()));
     }
 
-    private static int consumeLineTerminator(String source, int i) {
-        // line terminators, but not spaces
-        char c = source.charAt(i);
-        // LF
+    private static void consumeLineTerminator(StringConsumer consumer) {
+        // single line terminator no spaces
+        final char c = consumer.get();
         if (c == '\n') {
-            return i + 1;
-        }
-        // CR
-        if (c == '\r') {
-            // CR + LF
-            if (++i < source.length() && source.charAt(i) == '\n') {
-                return i + 1;
+            // LF
+            consumer.consume();
+        } else if (c == '\r') {
+            // CR
+            if (consumer.consume() && consumer.get() == '\n') {
+                // CR + LF
+                consumer.consume();
             }
         }
-        return i;
     }
 
-    private static int consumeIdentifier(String source, int i) {
+    private static void consumeIdentifier(StringConsumer consumer) {
         // just java identifier parts
-        while (++i < source.length() && Character.isJavaIdentifierPart(source.charAt(i)));
-        return i;
+        while (consumer.consume() && Character.isJavaIdentifierPart(consumer.get()));
     }
 
-    private static int consumeNumberLiteral(String source, int i) {
+    private static int consumeNumberLiteral(StringConsumer consumer) {
         // a string of alphanimeric characters starting with a digit or a decimal point,
         // with the following exceptions
         //   - underscores are allowed between non identifier alphanumerics or underscores
@@ -196,20 +188,21 @@ public class Lexer {
         boolean decimalSeparatorFound;
         boolean hexadecimal = false;
         // if the first char is a decimal separator, we need a following digit and we found a decimal separator
-        if (isDecimalSeparator(source.charAt(i))) {
-            if (++i >= source.length() || !Character.isDigit(pc = source.charAt(i))) {
-                return i - 1;
+        if (isDecimalSeparator(consumer.get())) {
+            if (!consumer.consume() || !Character.isDigit(pc = consumer.get())) {
+                consumer.expel();
+                return consumer.position();
             }
             decimalSeparatorFound = true;
         } else {
             decimalSeparatorFound = false;
         }
         // the main consumer loop, implements the description above
-        while (++i < source.length()
-                && (Character.isLetterOrDigit(c = source.charAt(i))
+        while (consumer.consume()
+                && (Character.isLetterOrDigit(c = consumer.get())
                     || isDigitSeparator(c)
                         && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa)
-                        && canFollowDigitSeparator(source, i + 1, hexadecimal, inMantissa)
+                        && canFollowDigitSeparator(consumer, hexadecimal, inMantissa)
                     || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
                     || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))) {
             // check if we found a decimal separator
@@ -227,7 +220,10 @@ public class Lexer {
             pc = c;
         }
         // ignore trailing signs
-        return isSignIdentifier(pc) ? i - 1 : i;
+        if (isSignIdentifier(pc)) {
+            consumer.expel();
+        }
+        return consumer.position();
     }
 
     private static boolean isSpecialIdentifier(char c, boolean hexadecimal, boolean inMantissa) {
@@ -271,32 +267,32 @@ public class Lexer {
         return isDigitSeparator(c) || !isSpecialIdentifier(c, hexadecimal, inMantissa);
     }
 
-    private static boolean canFollowDigitSeparator(String source, int i, boolean hexadecimal, boolean inMantissa) {
-        return i < source.length() && canPrecedeDigitSeparator(source.charAt(i), hexadecimal, inMantissa);
+    private static boolean canFollowDigitSeparator(StringConsumer consumer, boolean hexadecimal, boolean inMantissa) {
+        return consumer.has(1) && canPrecedeDigitSeparator(consumer.get(1), hexadecimal, inMantissa);
     }
 
-    private static int consumeCharacterLiteral(String source, int i) throws LexerException {
+    private static void consumeCharacterLiteral(StringConsumer consumer) throws LexerException {
         // a string of characters enclosed in '
-        return consumeEnclosedLiteral(source, i, '\'');
+        consumeEnclosedLiteral(consumer, '\'');
     }
 
-    private static int consumeStringLiteral(String source, int i) throws LexerException {
+    private static void consumeStringLiteral(StringConsumer consumer) throws LexerException {
         // a string of characters enclosed in "
-        return consumeEnclosedLiteral(source, i, '"');
+        consumeEnclosedLiteral(consumer, '"');
     }
 
-    private static int consumeEnclosedLiteral(String source, int i, char enclosure) throws LexerException {
+    private static void consumeEnclosedLiteral(StringConsumer consumer, char enclosure) throws LexerException {
         char c;
         // if the count of consecutive escapes is odd, escaping is active
         int escapeCount = 0;
         // consume until we find the matching enclosure, ignoring escaped ones
-        i++;
-        while (i < source.length()) {
-            c = source.charAt(i);
+        consumer.consume();
+        while (consumer.has()) {
+            c = consumer.get();
             if (isLineTerminator(c)) {
-                throw new LexerException("Expected '" + enclosure + "'", source, i);
+                throw new LexerException("Expected '" + enclosure + "'", consumer.string(), consumer.position());
             }
-            i++;
+            consumer.consume();
             if (c == enclosure && (escapeCount & 1) == 0) {
                 break;
             }
@@ -306,19 +302,19 @@ public class Lexer {
                 escapeCount = 0;
             }
         }
-        return i;
     }
 
-    private static int consumeSymbol(String source, int i) {
+    private static void consumeSymbol(StringConsumer consumer) {
         // attempt to consume compound symbols
-        int j = i;
-        // stop when we no longer have a symbol, and return the previous index
-        while (Symbol.is(source.substring(i, j + 1))) {
-            if (++j >= source.length()) {
-                break;
+        final int start = consumer.position();
+        // consume as long as we have a symbol
+        do {
+            if (!consumer.has()) {
+                return;
             }
-        }
-        return j;
+            consumer.consume();
+        } while (Symbol.is(consumer.consumed(start)));
+        consumer.expel();
     }
 
     private static boolean isWhitespace(char c) {

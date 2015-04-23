@@ -21,40 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.util;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.Statement;
+public class StringConsumer {
+    private final String string;
+    private int position = 0;
 
-import java.util.List;
+    public StringConsumer(String string) {
+        this.string = string;
+    }
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
+    public String string() {
+        return string;
+    }
 
-        final String source =
-            "String m = 3 * 5 + (Integer) 0x1_e.fp2 / .4d >= new test.Test(3, 2, '0');"
-        ;
+    public int position() {
+        return position;
+    }
 
-        System.out.println("Source:\n" + source);
+    public boolean consume() {
+        return ++position < string.length();
+    }
 
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
+    public boolean expel() {
+        return --position >= string.length();
+    }
 
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
+    public boolean has() {
+        return has(0);
+    }
+
+    public boolean has(int offset) {
+        return position + offset < string.length();
+    }
+
+    public char get() {
+        return get(0);
+    }
+
+    public char get(int offset) {
+        return string.charAt(position + offset);
+    }
+
+    public String consumed() {
+        return consumed(0);
+    }
+
+    public String consumed(int offset) {
+        return string.substring(offset, position);
     }
 }

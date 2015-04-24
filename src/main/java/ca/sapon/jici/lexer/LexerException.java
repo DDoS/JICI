@@ -34,8 +34,10 @@ public class LexerException extends Exception {
         final String offender = escapeOffender(source.charAt(index));
         // find start and end of line containing the offender
         int start = index, end = index - 1;
-        while (--start >= 0 && source.charAt(start) != '\n');
-        while (++end < source.length() && source.charAt(end) != '\n');
+        while (--start >= 0 && source.charAt(start) != '\n') {
+        }
+        while (++end < source.length() && source.charAt(end) != '\n') {
+        }
         source = source.substring(start + 1, end);
         index -= start;
         // build the error message with source and cursor lines

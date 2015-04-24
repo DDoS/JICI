@@ -23,16 +23,15 @@
  */
 package ca.sapon.jici.test;
 
+import java.util.List;
+
+import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
-
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -259,12 +258,12 @@ public class LexerTest {
         try {
             testLex(null, "#");
             Assert.fail();
-        } catch (LexerException exception) {
+        } catch (LexerException ignored) {
         }
         try {
             testLex(null, "te#st");
             Assert.fail();
-        } catch (LexerException exception) {
+        } catch (LexerException ignored) {
         }
     }
 
@@ -280,9 +279,5 @@ public class LexerTest {
     private void assertEquals(TokenID expectedID, String expectedSource, Token actual) {
         Assert.assertEquals("Expected ID didn't match actual ID", expectedID, actual.getID());
         Assert.assertEquals("Expected source didn't match actual source", expectedSource, actual.getSource());
-    }
-
-    private void assertEquals(Token expected, Token actual) {
-        Assert.assertEquals("Expected token didn't match actual token", expected, actual);
     }
 }

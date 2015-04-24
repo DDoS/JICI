@@ -23,6 +23,9 @@
  */
 package ca.sapon.jici.lexer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.sapon.jici.lexer.literal.BooleanLiteral;
 import ca.sapon.jici.lexer.literal.CharacterLiteral;
 import ca.sapon.jici.lexer.literal.NullLiteral;
@@ -30,17 +33,13 @@ import ca.sapon.jici.lexer.literal.StringLiteral;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.util.StringConsumer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A Java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
  */
 public class Lexer {
-
     /**
-     * Returns a list of {@link ca.sapon.jici.lexer.Token} lexed from the given source string.
-     * This list is composed of identifier, literals (null, integer, long, float, double, char and String), keywords and symbols.
+     * Returns a list of {@link ca.sapon.jici.lexer.Token} lexed from the given source string. This list is composed of identifier, literals (null, integer, long, float, double, char and String),
+     * keywords and symbols.
      *
      * @param source The source to lex
      * @return The list of lexed tokens
@@ -51,7 +50,6 @@ public class Lexer {
         final List<Token> tokens = new ArrayList<>();
         final StringConsumer consumer = new StringConsumer(source);
         // traverse the string, attempting to consume tokens
-        final int length = source.length();
         while (consumer.has()) {
             final int last = consumer.position();
             final char c = consumer.get();
@@ -59,7 +57,7 @@ public class Lexer {
             final Token token;
             if (isWhitespace(c)) {
                 // ignore all whitespace
-                consumeWhitepace(consumer);
+                consumeWhitespace(consumer);
                 token = null;
             } else if (Character.isJavaIdentifierStart(c)) {
                 // try to consume an identifier (starts by a Java identifier)
@@ -130,7 +128,8 @@ public class Lexer {
 
     private static void consumeLineComment(StringConsumer consumer) {
         // consume everything until a line terminator is reached
-        while (consumer.consume() && !isLineTerminator(consumer.get()));
+        while (consumer.consume() && !isLineTerminator(consumer.get())) {
+        }
     }
 
     private static void consumeBlockComment(StringConsumer consumer) {
@@ -146,9 +145,10 @@ public class Lexer {
         }
     }
 
-    private static void consumeWhitepace(StringConsumer consumer) {
+    private static void consumeWhitespace(StringConsumer consumer) {
         // consume whitespace
-        while (consumer.consume() && isWhitespace(consumer.get()));
+        while (consumer.consume() && isWhitespace(consumer.get())) {
+        }
     }
 
     private static void consumeLineTerminator(StringConsumer consumer) {
@@ -168,11 +168,12 @@ public class Lexer {
 
     private static void consumeIdentifier(StringConsumer consumer) {
         // just java identifier parts
-        while (consumer.consume() && Character.isJavaIdentifierPart(consumer.get()));
+        while (consumer.consume() && Character.isJavaIdentifierPart(consumer.get())) {
+        }
     }
 
     private static int consumeNumberLiteral(StringConsumer consumer) {
-        // a string of alphanimeric characters starting with a digit or a decimal point,
+        // a string of alphanumeric characters starting with a digit or a decimal point,
         // with the following exceptions
         //   - underscores are allowed between non identifier alphanumerics or underscores
         //   - one decimal separator allowed in the mantissa
@@ -182,8 +183,8 @@ public class Lexer {
         //     - the exponent identifier is p or P for hexadecimal
         // notes
         //   - prefix signs are handled as operators
-        //   - no validation is done on the radixes
-        char pc = '\0', c = '\0';
+        //   - no validation is done on the radix
+        char pc = '\0', c;
         boolean inMantissa = true;
         boolean decimalSeparatorFound;
         boolean hexadecimal = false;
@@ -200,11 +201,9 @@ public class Lexer {
         // the main consumer loop, implements the description above
         while (consumer.consume()
                 && (Character.isLetterOrDigit(c = consumer.get())
-                    || isDigitSeparator(c)
-                        && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa)
-                        && canFollowDigitSeparator(consumer, hexadecimal, inMantissa)
-                    || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
-                    || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))) {
+                || isDigitSeparator(c) && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa) && canFollowDigitSeparator(consumer, hexadecimal, inMantissa)
+                || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
+                || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))) {
             // check if we found a decimal separator
             if (!decimalSeparatorFound) {
                 decimalSeparatorFound = isDecimalSeparator(c);

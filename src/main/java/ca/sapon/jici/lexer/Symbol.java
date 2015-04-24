@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.sapon.jici.lexer.TokenID;
-
 public class Symbol extends Token {
     private static final Map<String, Symbol> SYMBOLS = new HashMap<>();
     private static final Symbol[] CHAR_SYMBOLS = new Symbol[256];

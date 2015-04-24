@@ -27,7 +27,7 @@ import java.util.List;
 
 import ca.sapon.jici.parser.expression.Expression;
 
-public abstract  class Call implements Expression {
+public abstract class Call implements Expression {
     protected final List<Expression> arguments;
 
     protected Call(List<Expression> arguments) {

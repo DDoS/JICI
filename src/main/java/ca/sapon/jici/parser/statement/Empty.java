@@ -23,8 +23,6 @@
  */
 package ca.sapon.jici.parser.statement;
 
-import ca.sapon.jici.parser.statement.Statement;
-
 public class Empty implements Statement {
     @Override
     public String toString() {

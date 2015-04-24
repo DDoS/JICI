@@ -23,7 +23,6 @@
  */
 package ca.sapon.jici.util;
 
-import java.util.AbstractList;
 import java.util.List;
 import java.util.Stack;
 

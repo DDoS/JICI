@@ -28,14 +28,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.sapon.jici.lexer.TokenID;
-
 public class Keyword extends Token {
     private static final Map<String, Keyword> KEYWORDS = new HashMap<>();
 
     static {
         // control flow
-        add(TokenID.KEYWORD_ASSERT , "assert");
+        add(TokenID.KEYWORD_ASSERT, "assert");
         add(TokenID.KEYWORD_IF, "if");
         add(TokenID.KEYWORD_ELSE, "else");
         add(TokenID.KEYWORD_WHILE, "while");

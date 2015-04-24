@@ -73,6 +73,14 @@ public class Parser {
         return statements;
     }
 
+    public static Statement parseStatement(List<Token> tokens) {
+        return parseStatement(new ListNavigator<>(tokens));
+    }
+
+    public static Expression parseExpression(List<Token> tokens) {
+        return parseExpression(new ListNavigator<>(tokens));
+    }
+
     private static Statement parseStatement(ListNavigator<Token> tokens) {
         final Token token = tokens.get();
         if (token.getID() == TokenID.SYMBOL_SEMICOLON) {
@@ -242,7 +250,7 @@ public class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.class _ ACCESS(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ ATOM
 
-        ATOM:            LITREAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
+        ATOM:            LITERAL _ IDENTIFIER _ this _ super _ (EXPRESSION)
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {

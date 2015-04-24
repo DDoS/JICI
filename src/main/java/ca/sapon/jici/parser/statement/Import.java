@@ -39,6 +39,6 @@ public class Import implements Statement {
 
     @Override
     public String toString() {
-        return "Import(import " + StringUtil.toString(name, ".") + (_package ? ".*" : "") + ")";
+        return "Import(" + StringUtil.toString(name, ".") + (_package ? ".*" : "") + ")";
     }
 }

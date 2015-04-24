@@ -21,19 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.logic;
 
-public class Increment extends UnaryOperation implements Statement {
-    private final boolean up;
+import ca.sapon.jici.parser.expression.Expression;
 
-    public Increment(Expression inner, boolean post, boolean up) {
-        super(inner, post);
-        this.up = up;
+public class Conditional implements Expression {
+    private final Expression test;
+    private final Expression left;
+    private final Expression right;
+
+    public Conditional(Expression test, Expression left, Expression right) {
+        this.test = test;
+        this.left = left;
+        this.right = right;
     }
 
     @Override
     public String toString() {
-        final String operator = up ? "++" : "--";
-        return "Increment(" + (post ? inner + operator : operator + inner) + ")";
+        return "Conditional(" + test + " ? " + left + " : " + right + ")";
     }
 }

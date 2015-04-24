@@ -21,8 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.arithmetic;
 
-public interface Expression {
-    String toString();
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
+
+public class Assignment implements Expression, Statement {
+    private final Expression assignee;
+    private final Expression value;
+    private final Symbol operator;
+
+    public Assignment(Expression assignee, Expression value, Symbol operator) {
+        this.assignee = assignee;
+        this.value = value;
+        this.operator = operator;
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment(" + assignee + " " + operator + " " + value + ")";
+    }
 }

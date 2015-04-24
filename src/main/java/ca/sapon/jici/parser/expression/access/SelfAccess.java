@@ -21,17 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.access;
 
-public abstract class UnaryOperation implements Expression {
-    protected final Expression inner;
-    protected final boolean post;
+import ca.sapon.jici.lexer.Keyword;
+import ca.sapon.jici.parser.expression.Expression;
 
-    protected UnaryOperation(Expression inner, boolean post) {
-        this.inner = inner;
-        this.post = post;
+public class SelfAccess extends Access {
+    private final Keyword reference;
+
+    public SelfAccess(Keyword reference) {
+        this(null, reference);
+    }
+
+    public SelfAccess(Expression object, Keyword reference) {
+        super(object);
+        this.reference = reference;
     }
 
     @Override
-    public abstract String toString();
+    public String toString() {
+        return "SelfAccess(" + (object == null ? reference : object + "." + reference) + ")";
+    }
 }

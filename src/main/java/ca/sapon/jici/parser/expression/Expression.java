@@ -21,40 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.parser.expression;
 
-import java.util.List;
-
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.statement.Statement;
-
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
-
-        final String source =
-            "m *= j.get(1, g) * ~--5++ + (int) (0x1_e.fp2 / .4d) >= new test.Test(3, 2, '0') instanceof Stuff;"
-        ;
-
-        System.out.println("Source:\n" + source);
-
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
-    }
+public interface Expression {
+    String toString();
 }

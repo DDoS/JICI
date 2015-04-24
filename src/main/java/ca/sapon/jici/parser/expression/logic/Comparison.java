@@ -21,21 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.logic;
 
-public class Conditional implements Expression {
-    private final Expression test;
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
+
+public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
+    private final Symbol operator;
 
-    public Conditional(Expression test, Expression left, Expression right) {
-        this.test = test;
+    public Comparison(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
+        this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "Conditional(" + test + " ? " + left + " : " + right + ")";
+        return "Comparison(" + left + " " + operator + " " + right + ")";
     }
 }

@@ -21,24 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.statement;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.StringUtil;
-
-import java.util.List;
-
-public class ConstructOperation implements Expression, Statement {
-    private final List<Identifier> name;
-    private final List<Expression> arguments;
-
-    public ConstructOperation(List<Identifier> name, List<Expression> arguments) {
-        this.name = name;
-        this.arguments = arguments;
-    }
-
-    @Override
-    public String toString() {
-        return "ConstructOperation(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
-    }
+public interface Statement {
+    String toString();
 }

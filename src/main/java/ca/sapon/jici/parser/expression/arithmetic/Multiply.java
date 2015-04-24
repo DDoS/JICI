@@ -21,20 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
 
-public class BinaryArithmetic extends BinaryOperation {
+public class Multiply implements Expression {
+    private final Expression left;
+    private final Expression right;
     private final Symbol operator;
 
-    public BinaryArithmetic(Expression left, Expression right, Symbol operator) {
-        super(left, right);
+    public Multiply(Expression left, Expression right, Symbol operator) {
+        this.left = left;
+        this.right = right;
         this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "BinaryArithmetic(" + left + " " + operator + " " + right + ")";
+        return "Multiply(" + left + " " + operator + " " + right + ")";
     }
 }

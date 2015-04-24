@@ -21,24 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.statement;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.parser.statement.Statement;
 
-import java.util.List;
-
-public class Import implements Statement {
-    private final List<Identifier> name;
-    private final boolean _package;
-
-    public Import(List<Identifier> name, boolean _package) {
-        this.name = name;
-        this._package = _package;
-    }
-
+public class Empty implements Statement {
     @Override
     public String toString() {
-        return "Import(import " + StringUtil.toString(name, ".") + (_package ? ".*" : "") + ")";
+        return "Empty()";
     }
 }

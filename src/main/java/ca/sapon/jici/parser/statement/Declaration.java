@@ -21,40 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.parser.statement;
 
 import java.util.List;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.util.StringUtil;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
+public class Declaration implements Statement {
+    private final Type type;
+    private final List<Variable> variables;
 
-        final String source =
-            "m *= j.get(1, g) * ~--5++ + (int) (0x1_e.fp2 / .4d) >= new test.Test(3, 2, '0') instanceof Stuff;"
-        ;
+    public Declaration(Type type, List<Variable> variables) {
+        this.type = type;
+        this.variables = variables;
+    }
 
-        System.out.println("Source:\n" + source);
+    @Override
+    public String toString() {
+        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
+    }
 
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
+    public static class Variable {
+        private final Identifier name;
+        private final Expression value;
 
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
+        public Variable(Identifier name) {
+            this(name, null);
+        }
+
+        public Variable(Identifier name, Expression value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "Variable(" + name + (value != null ? " = " + value : "") + ")";
         }
     }
 }

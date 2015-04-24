@@ -21,25 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.access;
 
-import ca.sapon.jici.lexer.Keyword;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.expression.Expression;
 
-public class SelfReference implements Expression {
-    private final Expression object;
-    private final Keyword reference;
+public class FieldAccess extends Access {
+    private final Identifier member;
 
-    public SelfReference(Keyword reference) {
-        this(null, reference);
-    }
-
-    public SelfReference(Expression object, Keyword reference) {
-        this.object = object;
-        this.reference = reference;
+    public FieldAccess(Expression object, Identifier member) {
+        super(object);
+        this.member = member;
     }
 
     @Override
     public String toString() {
-        return "SelfReference(" + (object == null ? reference : object + "." + reference) + ")";
+        return "FieldAccess(" + object + "." + member + ")";
     }
 }

@@ -21,12 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.type;
 
-public abstract class Type {
-    protected Type() {
+import ca.sapon.jici.lexer.Keyword;
+
+public class PrimitiveType implements Type {
+    private final Keyword type;
+
+    public PrimitiveType(Keyword type) {
+        this.type = type;
     }
 
     @Override
-    public abstract String toString();
+    public String toString() {
+        return "PrimitiveType(" + type + ")";
+    }
 }

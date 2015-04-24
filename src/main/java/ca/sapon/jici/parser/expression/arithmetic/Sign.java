@@ -21,23 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.arithmetic;
 
-import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
 
-import java.util.List;
+public class Sign implements Expression {
+    private final Expression inner;
+    private final Symbol operator;
 
-public class TypeCheck implements Expression {
-    private final Expression object;
-    private final Type type;
-
-    public TypeCheck(Expression object, Type type) {
-        this.object = object;
-        this.type = type;
+    public Sign(Expression inner, Symbol operator) {
+        this.inner = inner;
+        this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "TypeCheck(" + object + " instanceof " + type + ")";
+        return "Sign(" + operator.toString() + inner.toString() + ")";
     }
 }

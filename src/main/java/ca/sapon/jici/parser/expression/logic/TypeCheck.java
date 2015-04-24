@@ -21,8 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.logic;
 
-public interface Statement {
-    String toString();
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.type.Type;
+
+public class TypeCheck implements Expression {
+    private final Expression object;
+    private final Type type;
+
+    public TypeCheck(Expression object, Type type) {
+        this.object = object;
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "TypeCheck(" + object + " instanceof " + type + ")";
+    }
 }

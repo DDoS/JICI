@@ -34,6 +34,33 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
 import ca.sapon.jici.lexer.literal.Literal;
+import ca.sapon.jici.parser.expression.access.FieldAccess;
+import ca.sapon.jici.parser.expression.arithmetic.Add;
+import ca.sapon.jici.parser.expression.arithmetic.Assignment;
+import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
+import ca.sapon.jici.parser.expression.logic.BooleanLogic;
+import ca.sapon.jici.parser.expression.call.MethodCall;
+import ca.sapon.jici.parser.expression.Cast;
+import ca.sapon.jici.parser.expression.access.ClassAccess;
+import ca.sapon.jici.parser.expression.logic.Comparison;
+import ca.sapon.jici.parser.expression.logic.Conditional;
+import ca.sapon.jici.parser.expression.call.ConstructorCall;
+import ca.sapon.jici.parser.expression.access.SelfAccess;
+import ca.sapon.jici.parser.expression.arithmetic.Shift;
+import ca.sapon.jici.parser.expression.arithmetic.Sign;
+import ca.sapon.jici.parser.expression.logic.TypeCheck;
+import ca.sapon.jici.parser.statement.Declaration.Variable;
+import ca.sapon.jici.parser.statement.Empty;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.arithmetic.Increment;
+import ca.sapon.jici.parser.expression.access.IndexAccess;
+import ca.sapon.jici.parser.expression.arithmetic.Multiply;
+import ca.sapon.jici.parser.statement.Declaration;
+import ca.sapon.jici.parser.statement.Import;
+import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.parser.type.ClassType;
+import ca.sapon.jici.parser.type.PrimitiveType;
+import ca.sapon.jici.parser.type.Type;
 import ca.sapon.jici.util.ListNavigator;
 
 public class Parser {
@@ -94,7 +121,7 @@ public class Parser {
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
-        return parseName(tokens, new ArrayList<Identifier>());
+        return parseName(tokens, new ArrayList<>());
     }
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens, List<Identifier> name) {
@@ -145,7 +172,7 @@ public class Parser {
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
-        return parseVariableList(tokens, new ArrayList<Variable>());
+        return parseVariableList(tokens, new ArrayList<>());
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens, List<Variable> list) {
@@ -223,7 +250,7 @@ public class Parser {
     }
 
     private static List<Expression> parseExpressionList(ListNavigator<Token> tokens) {
-        return parseExpressionList(tokens, new ArrayList<Expression>());
+        return parseExpressionList(tokens, new ArrayList<>());
     }
 
     private static List<Expression> parseExpressionList(ListNavigator<Token> tokens, List<Expression> list) {
@@ -237,14 +264,16 @@ public class Parser {
 
     private static Expression parseAssignment(ListNavigator<Token> tokens) {
         final Expression assignee = parseConditional(tokens);
-        if (tokens.has() && tokens.get().getType() == TokenType.ASSIGNMENT) {
-            if (assignee instanceof Identifier || assignee instanceof Access
-                    || assignee instanceof IndexOperation) {
-                tokens.advance();
-                final Expression value = parseAssignment(tokens);
-                return new Assignment(assignee, value);
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            if (token.getType() == TokenType.ASSIGNMENT) {
+                if (assignee instanceof Identifier || assignee instanceof FieldAccess || assignee instanceof IndexAccess) {
+                    tokens.advance();
+                    final Expression value = parseAssignment(tokens);
+                    return new Assignment(assignee, value, (Symbol) token);
+                }
+                throw new IllegalArgumentException("Expected identifier or index operation");
             }
-            throw new IllegalArgumentException("Expected identifier or index operation");
         }
         return assignee;
     }
@@ -274,7 +303,7 @@ public class Parser {
             if (token.getID() == TokenID.SYMBOL_BOOLEAN_OR) {
                 tokens.advance();
                 final Expression right = parseBooleanAND(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final BooleanLogic add = new BooleanLogic(left, right, (Symbol) token);
                 return parseBooleanOR(tokens, add);
             }
         }
@@ -291,7 +320,7 @@ public class Parser {
             if (token.getID() == TokenID.SYMBOL_BOOLEAN_AND) {
                 tokens.advance();
                 final Expression right = parseBitwiseOR(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final BooleanLogic add = new BooleanLogic(left, right, (Symbol) token);
                 return parseBooleanAND(tokens, add);
             }
         }
@@ -308,7 +337,7 @@ public class Parser {
             if (token.getID() == TokenID.SYMBOL_BITWISE_OR) {
                 tokens.advance();
                 final Expression right = parseBitwiseXOR(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final BitwiseLogic add = new BitwiseLogic(left, right, (Symbol) token);
                 return parseBitwiseOR(tokens, add);
             }
         }
@@ -325,7 +354,7 @@ public class Parser {
             if (token.getID() == TokenID.SYMBOL_BITWISE_XOR) {
                 tokens.advance();
                 final Expression right = parseBitwiseAND(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final BitwiseLogic add = new BitwiseLogic(left, right, (Symbol) token);
                 return parseBitwiseXOR(tokens, add);
             }
         }
@@ -342,7 +371,7 @@ public class Parser {
             if (token.getID() == TokenID.SYMBOL_BITWISE_AND) {
                 tokens.advance();
                 final Expression right = parseEqual(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final BitwiseLogic add = new BitwiseLogic(left, right, (Symbol) token);
                 return parseBitwiseAND(tokens, add);
             }
         }
@@ -359,7 +388,7 @@ public class Parser {
             if (token.getType() == TokenType.EQUAL_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseComparison(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final Comparison add = new Comparison(left, right, (Symbol) token);
                 return parseEqual(tokens, add);
             }
         }
@@ -376,7 +405,7 @@ public class Parser {
             if (token.getType() == TokenType.COMPARISON_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseShift(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final Comparison add = new Comparison(left, right, (Symbol) token);
                 return parseComparison(tokens, add);
             } else if (token.getID() == TokenID.KEYWORD_INSTANCEOF) {
                 tokens.advance();
@@ -398,7 +427,7 @@ public class Parser {
             if (token.getType() == TokenType.SHIFT_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseAdd(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final Shift add = new Shift(left, right, (Symbol) token);
                 return parseShift(tokens, add);
             }
         }
@@ -415,7 +444,7 @@ public class Parser {
             if (token.getType() == TokenType.ADD_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseMultiply(tokens);
-                final BinaryArithmetic add = new BinaryArithmetic(left, right, (Symbol) token);
+                final Add add = new Add(left, right, (Symbol) token);
                 return parseAdd(tokens, add);
             }
         }
@@ -432,7 +461,7 @@ public class Parser {
             if (token.getType() == TokenType.MULTIPLY_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseUnary(tokens);
-                final BinaryArithmetic multiply = new BinaryArithmetic(left, right, (Symbol) token);
+                final Multiply multiply = new Multiply(left, right, (Symbol) token);
                 return parseMultiply(tokens, multiply);
             }
         }
@@ -442,38 +471,47 @@ public class Parser {
     private static Expression parseUnary(ListNavigator<Token> tokens) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            final TokenID tokenID = token.getID();
-            if (token.getType() == TokenType.UNARY_OPERATOR
-                    || tokenID == TokenID.SYMBOL_PLUS
-                    || tokenID == TokenID.SYMBOL_MINUS) {
-                tokens.advance();
-                final Expression inner = parseUnary(tokens);
-                switch (tokenID) {
-                    case SYMBOL_INCREMENT: {
-                        return new Increment(inner, false, true);
-                    }
-                    case SYMBOL_DECREMENT: {
-                        return new Increment(inner, false, false);
-                    }
-                    default: {
-                        return new UnaryArithmetic(inner, false, (Symbol) token);
-                    }
+            switch (token.getID()) {
+                case SYMBOL_INCREMENT:
+                case SYMBOL_DECREMENT: {
+                    tokens.advance();
+                    final Expression inner = parseUnary(tokens);
+                    return new Increment(inner, (Symbol) token, false);
                 }
-            } else if (tokenID == TokenID.SYMBOL_OPEN_PARENTHESIS && tokens.has(2)) {
-                tokens.pushPosition();
-                tokens.advance();
-                try {
-                    final Type type = parseType(tokens);
-                    if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                case SYMBOL_PLUS:
+                case SYMBOL_MINUS: {
+                    tokens.advance();
+                    final Expression inner = parseUnary(tokens);
+                    return new Sign(inner, (Symbol) token);
+                }
+                case SYMBOL_BOOLEAN_NOT: {
+                    tokens.advance();
+                    final Expression inner = parseUnary(tokens);
+                    return new BooleanLogic(inner, (Symbol) token);
+                }
+                case SYMBOL_BITWISE_NOT: {
+                    tokens.advance();
+                    final Expression inner = parseUnary(tokens);
+                    return new BitwiseLogic(inner, (Symbol) token);
+                }
+                case SYMBOL_OPEN_PARENTHESIS: {
+                    if (tokens.has(2)) {
+                        tokens.pushPosition();
                         tokens.advance();
-                        final Expression inner = parseUnary(tokens);
-                        tokens.discardPosition();
-                        return new Cast(type, inner);
+                        try {
+                            final Type type = parseType(tokens);
+                            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                                tokens.advance();
+                                final Expression inner = parseUnary(tokens);
+                                tokens.discardPosition();
+                                return new Cast(type, inner);
+                            }
+                        } catch (IllegalArgumentException exception) {
+                            // this is not a cast, but an access
+                        }
+                        tokens.popPosition();
                     }
-                } catch (IllegalArgumentException exception) {
-                    // this is not a cast, but an access
                 }
-                tokens.popPosition();
             }
             final Expression inner = parseAccess(tokens);
             return parseUnary(tokens, inner);
@@ -483,15 +521,12 @@ public class Parser {
 
     private static Expression parseUnary(ListNavigator<Token> tokens, Expression inner) {
         if (tokens.has()) {
-            switch (tokens.get().getID()) {
-                case SYMBOL_INCREMENT: {
-                    tokens.advance();
-                    final Expression outer = new Increment(inner, true, true);
-                    return parseUnary(tokens, outer);
-                }
+            final Token token = tokens.get();
+            switch (token.getID()) {
+                case SYMBOL_INCREMENT:
                 case SYMBOL_DECREMENT: {
                     tokens.advance();
-                    final Expression outer = new Increment(inner, true, false);
+                    final Expression outer = new Increment(inner, (Symbol) token, true);
                     return parseUnary(tokens, outer);
                 }
             }
@@ -517,8 +552,8 @@ public class Parser {
                         }
                         tokens.advance();
                     }
-                    final ConstructOperation constructOperation = new ConstructOperation(name, arguments);
-                    return parseAccess(tokens, constructOperation);
+                    final ConstructorCall call = new ConstructorCall(name, arguments);
+                    return parseAccess(tokens, call);
                 }
                 throw new IllegalArgumentException("Expected expression list or ')'");
             }
@@ -536,7 +571,7 @@ public class Parser {
                         final Token token = tokens.get();
                         if (token instanceof Identifier) {
                             tokens.advance();
-                            final Access access = new Access(object, (Identifier) token);
+                            final FieldAccess access = new FieldAccess(object, (Identifier) token);
                             return parseAccess(tokens, access);
                         } else if (token.getID() == TokenID.KEYWORD_CLASS) {
                             tokens.advance();
@@ -544,8 +579,8 @@ public class Parser {
                             return parseAccess(tokens, access);
                         } else if (token.getType() == TokenType.SELF_REFERENCE) {
                             tokens.advance();
-                            final SelfReference reference = new SelfReference(object, (Keyword) token);
-                            return parseAccess(tokens, reference);
+                            final SelfAccess access = new SelfAccess(object, (Keyword) token);
+                            return parseAccess(tokens, access);
                         }
                     }
                     throw new IllegalArgumentException("Expected identifier or \"class\"");
@@ -555,8 +590,8 @@ public class Parser {
                     final Expression index = parseExpression(tokens);
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
                         tokens.advance();
-                        final IndexOperation indexOperation = new IndexOperation(object, index);
-                        return parseAccess(tokens, indexOperation);
+                        final IndexAccess access = new IndexAccess(object, index);
+                        return parseAccess(tokens, access);
                     }
                     throw new IllegalArgumentException("Expected ']'");
                 }
@@ -574,8 +609,8 @@ public class Parser {
                             }
                             tokens.advance();
                         }
-                        final CallOperation callOperation = new CallOperation(object, arguments);
-                        return parseAccess(tokens, callOperation);
+                        final MethodCall call = new MethodCall(object, arguments);
+                        return parseAccess(tokens, call);
                     }
                     throw new IllegalArgumentException("Expected expression list or ')'");
                 }
@@ -598,7 +633,7 @@ public class Parser {
                 }
                 case SELF_REFERENCE: {
                     tokens.advance();
-                    return new SelfReference((Keyword) token);
+                    return new SelfAccess((Keyword) token);
                 }
                 default: {
                     if (token.getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {

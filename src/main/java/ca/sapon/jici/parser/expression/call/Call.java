@@ -21,15 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.call;
 
-public class Assignment extends BinaryOperation implements Statement {
-    public Assignment(Expression assignee, Expression value) {
-        super(assignee, value);
+import java.util.List;
+
+import ca.sapon.jici.parser.expression.Expression;
+
+public abstract  class Call implements Expression {
+    protected final List<Expression> arguments;
+
+    protected Call(List<Expression> arguments) {
+        this.arguments = arguments;
     }
 
     @Override
-    public String toString() {
-        return "Assignment(" + left + " = " + right + ")";
-    }
+    public abstract String toString();
 }

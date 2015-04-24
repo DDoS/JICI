@@ -21,24 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.access;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.parser.expression.Expression;
 
-import java.util.List;
+public class IndexAccess extends Access {
+    private final Expression index;
 
-public class Cast implements Expression {
-    private final Type type;
-    private final Expression object;
-
-    public Cast(Type type, Expression object) {
-        this.type = type;
-        this.object = object;
+    public IndexAccess(Expression object, Expression index) {
+        super(object);
+        this.index = index;
     }
 
     @Override
     public String toString() {
-        return "Cast((" + type + ") " + object + ")";
+        return "IndexAccess(" + object + "[" + index + "])";
     }
 }

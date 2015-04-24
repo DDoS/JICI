@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.call;
 
-import ca.sapon.jici.lexer.Identifier;
+import java.util.List;
 
-public class Variable {
-    private final Identifier name;
-    private final Expression value;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.StringUtil;
 
-    public Variable(Identifier name) {
-        this(name, null);
-    }
+public class MethodCall extends Call implements Statement {
+    private final Expression method;
 
-    public Variable(Identifier name, Expression value) {
-        this.name = name;
-        this.value = value;
+    public MethodCall(Expression method, List<Expression> arguments) {
+        super(arguments);
+        this.method = method;
     }
 
     @Override
     public String toString() {
-        return "Variable(" + name + (value != null ? " = " + value : "") + ")";
+        return "MethodCall(" + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

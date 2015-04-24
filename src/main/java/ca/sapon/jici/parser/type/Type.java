@@ -21,17 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.type;
 
-import ca.sapon.jici.lexer.Identifier;
-
-public class Access extends BinaryOperation {
-    public Access(Expression object, Identifier member) {
-        super(object, member);
-    }
-
-    @Override
-    public String toString() {
-        return "Access(" + left + "." + right + ")";
-    }
+public interface Type {
+    String toString();
 }

@@ -21,25 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.logic;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.lexer.Keyword;
-import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
 
-import java.util.List;
+public class BooleanLogic implements Expression {
+    private final Expression left;
+    private final Expression right;
+    private final Symbol operator;
 
-public class Declaration implements Statement {
-    private final Type type;
-    private final List<Variable> variables;
+    public BooleanLogic(Expression inner, Symbol operator) {
+        this(null, inner, operator);
+    }
 
-    public Declaration(Type type, List<Variable> variables) {
-        this.type = type;
-        this.variables = variables;
+    public BooleanLogic(Expression left, Expression right, Symbol operator) {
+        this.left = left;
+        this.right = right;
+        this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
+        return "BooleanLogic(" + (left == null ? operator.toString() + right.toString() : left + " " + operator + " " + right) + ")";
     }
 }

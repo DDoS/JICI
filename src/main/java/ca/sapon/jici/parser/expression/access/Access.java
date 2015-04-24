@@ -21,23 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.access;
 
-import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.parser.expression.Expression;
 
-import java.util.List;
+public abstract class Access implements Expression {
+    protected final Expression object;
 
-public class CallOperation implements Expression, Statement {
-    private final Expression method;
-    private final List<Expression> arguments;
-
-    public CallOperation(Expression method, List<Expression> arguments) {
-        this.method = method;
-        this.arguments = arguments;
+    protected Access(Expression object) {
+        this.object = object;
     }
 
     @Override
-    public String toString() {
-        return "CallOperation(" + method + "(" + StringUtil.toString(arguments, ", ") + "))";
-    }
+    public abstract String toString();
 }

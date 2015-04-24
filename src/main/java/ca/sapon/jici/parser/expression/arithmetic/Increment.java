@@ -21,22 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.arithmetic;
 
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
 
-import java.util.List;
+public class Increment implements Expression, Statement {
+    private final Expression inner;
+    private final Symbol operator;
+    private final boolean post;
 
-public class ClassType extends Type {
-    private final List<Identifier> type;
-
-    public ClassType(List<Identifier> type) {
-        this.type = type;
+    public Increment(Expression inner, Symbol operator, boolean post) {
+        this.inner = inner;
+        this.operator = operator;
+        this.post = post;
     }
 
     @Override
     public String toString() {
-        return "ClassType(" + StringUtil.toString(type, ".") + ")";
+        return "Increment(" + (post ? inner.toString() + operator.toString() : operator.toString() + inner.toString()) + ")";
     }
 }

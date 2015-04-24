@@ -21,17 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.type;
 
-public abstract class BinaryOperation implements Expression {
-    protected final Expression left;
-    protected final Expression right;
+import java.util.List;
 
-    protected BinaryOperation(Expression left, Expression right) {
-        this.left = left;
-        this.right = right;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.util.StringUtil;
+
+public class ClassType implements Type {
+    private final List<Identifier> type;
+
+    public ClassType(List<Identifier> type) {
+        this.type = type;
     }
 
     @Override
-    public abstract String toString();
+    public String toString() {
+        return "ClassType(" + StringUtil.toString(type, ".") + ")";
+    }
 }

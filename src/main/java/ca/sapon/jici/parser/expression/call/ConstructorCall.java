@@ -21,19 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser;
+package ca.sapon.jici.parser.expression.call;
 
-import ca.sapon.jici.lexer.Keyword;
+import java.util.List;
 
-public class PrimitiveType extends Type {
-    private final Keyword type;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.StringUtil;
 
-    public PrimitiveType(Keyword type) {
-        this.type = type;
+public class ConstructorCall extends Call implements Statement {
+    private final List<Identifier> name;
+
+    public ConstructorCall(List<Identifier> name, List<Expression> arguments) {
+        super(arguments);
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return "PrimitiveType(" + type + ")";
+        return "ConstructorCall(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

@@ -145,7 +145,7 @@ public class Parser {
                     return parseName(tokens, name);
                 }
                 return name;
-            } else if ((token.getID() == TokenID.SYMBOL_MULTIPLY || token.getID() == TokenID.KEYWORD_CLASS) && !name.isEmpty()) {
+            } else if (!name.isEmpty()) {
                 tokens.retreat();
                 return name;
             }
@@ -252,7 +252,7 @@ public class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS.IDENTIFIER[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ TYPE _ TYPE.class _ new NAME(EXPRESSION_LIST) _ NAME(EXPRESSION_LIST) _ NAME[EXPRESSION] _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME(EXPRESSION_LIST) _ NAME[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ TYPE.class _ (EXPRESSION)
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
@@ -591,35 +591,43 @@ public class Parser {
                     tokens.advance();
                     return (Literal) token;
                 }
-                case PRIMITIVE_TYPE:
+                case PRIMITIVE_TYPE: {
+                    tokens.advance();
+                    if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                        tokens.advance(2);
+                        return new ClassAccess(new PrimitiveType((Keyword) token));
+                    }
+                    tokens.retreat();
+                    break;
+                }
                 case IDENTIFIER: {
-                    final Type type = parseType(tokens);
+                    final List<Identifier> name = parseName(tokens);
                     if (tokens.has()) {
                         switch (tokens.get().getID()) {
                             case SYMBOL_PERIOD: {
                                 tokens.advance();
                                 if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_CLASS) {
                                     tokens.advance();
-                                    return new ClassAccess(type);
+                                    return new ClassAccess(new ClassType(name));
                                 }
                                 tokens.retreat();
                                 break;
                             }
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
-                                final Reference reference = new AmbiguousReference(type);
+                                final Reference reference = new AmbiguousReference(name);
                                 final List<Expression> arguments = parseArguments(tokens);
                                 return new MethodCall(reference, arguments);
                             }
                             case SYMBOL_OPEN_BRACKET: {
                                 tokens.advance();
-                                final Reference reference = new AmbiguousReference(type);
+                                final Reference reference = new AmbiguousReference(name);
                                 final Expression index = parseIndex(tokens);
                                 return new IndexAccess(reference, index);
                             }
                         }
                     }
-                    return new AmbiguousReference(type);
+                    return new AmbiguousReference(name);
                 }
                 default: {
                     switch (token.getID()) {

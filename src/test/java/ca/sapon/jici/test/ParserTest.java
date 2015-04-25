@@ -23,6 +23,7 @@ public class ParserTest {
     public void testParseAccess() throws LexerException {
         testParseExpression("FieldAccess(\"f\".m)", "\"f\".m");
         testParseExpression("ClassAccess(test.class)", "test.class");
+        testParseExpression("ClassAccess(int.class)", "int.class");
         testParseExpression("IndexAccess(test[m])", "test[m]");
         testParseExpression("MethodCall(test())", "test()");
         testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");

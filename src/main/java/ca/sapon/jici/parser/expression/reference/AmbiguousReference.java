@@ -23,18 +23,21 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.util.List;
+
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.util.StringUtil;
 
 public class AmbiguousReference implements Reference, Expression {
-    private final Type reference;
+    private final List<Identifier> name;
 
-    public AmbiguousReference(Type reference) {
-        this.reference = reference;
+    public AmbiguousReference(List<Identifier> name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return reference.toString();
+        return StringUtil.toString(name, ".");
     }
 }

@@ -35,7 +35,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m = test.class;";
+        final String source = "m = java.util.List.class.getSimpleName();";
 
         System.out.println("Source:\n" + source);
 

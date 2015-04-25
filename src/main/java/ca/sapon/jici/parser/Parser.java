@@ -131,7 +131,7 @@ public class Parser {
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
-        return parseName(tokens, new ArrayList<>());
+        return parseName(tokens, new ArrayList<Identifier>());
     }
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens, List<Identifier> name) {
@@ -182,7 +182,7 @@ public class Parser {
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
-        return parseVariableList(tokens, new ArrayList<>());
+        return parseVariableList(tokens, new ArrayList<Variable>());
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens, List<Variable> list) {
@@ -260,7 +260,7 @@ public class Parser {
     }
 
     private static List<Expression> parseExpressionList(ListNavigator<Token> tokens) {
-        return parseExpressionList(tokens, new ArrayList<>());
+        return parseExpressionList(tokens, new ArrayList<Expression>());
     }
 
     private static List<Expression> parseExpressionList(ListNavigator<Token> tokens, List<Expression> list) {

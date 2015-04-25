@@ -23,8 +23,8 @@ ext.description = 'Java intepreter and code interaction'
 ext.author = 'Aleksi Sapon'
 
 // Minimum version of Java required
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
 
 // Define variables
 ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'

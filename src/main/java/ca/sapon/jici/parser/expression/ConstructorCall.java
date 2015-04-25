@@ -21,21 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.access;
+package ca.sapon.jici.parser.expression;
+
+import java.util.List;
 
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.StringUtil;
 
-public class FieldAccess extends Access {
-    private final Identifier member;
+public class ConstructorCall implements Statement, Expression {
+    private final List<Identifier> name;
+    private final List<Expression> arguments;
 
-    public FieldAccess(Expression object, Identifier member) {
-        super(object);
-        this.member = member;
+    public ConstructorCall(List<Identifier> name, List<Expression> arguments) {
+        this.arguments = arguments;
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return "FieldAccess(" + object + "." + member + ")";
+        return "ConstructorCall(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

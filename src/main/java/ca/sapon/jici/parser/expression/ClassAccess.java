@@ -21,17 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.access;
+package ca.sapon.jici.parser.expression;
 
-import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.type.Type;
 
-public class ClassAccess extends Access {
-    public ClassAccess(Expression object) {
-        super(object);
+public class ClassAccess implements Expression {
+    private final Type type;
+
+    public ClassAccess(Type type) {
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "ClassAccess(" + object + ".class" + ")";
+        return "ClassAccess(" + type + ".class" + ")";
     }
 }

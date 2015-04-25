@@ -23,9 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
-import ca.sapon.jici.parser.expression.Expression;
-
-public class Identifier extends Token implements Expression {
+public class Identifier extends Token {
     public Identifier(String source) {
         super(TokenID.IDENTIFIER, source);
     }

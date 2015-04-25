@@ -21,19 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.call;
+package ca.sapon.jici.parser.expression.reference;
 
 import java.util.List;
 
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.StringUtil;
 
-public abstract class Call implements Expression {
-    protected final List<Expression> arguments;
+public class MethodCall extends Dereference implements Statement {
+    private final List<Expression> arguments;
 
-    protected Call(List<Expression> arguments) {
+    public MethodCall(Reference reference, List<Expression> arguments) {
+        super(reference);
         this.arguments = arguments;
     }
 
     @Override
-    public abstract String toString();
+    public String toString() {
+        return "MethodCall(" + reference + "(" + StringUtil.toString(arguments, ", ") + "))";
+    }
 }

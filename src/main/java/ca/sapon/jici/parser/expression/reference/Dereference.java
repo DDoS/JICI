@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.access;
+package ca.sapon.jici.parser.expression.reference;
 
 import ca.sapon.jici.parser.expression.Expression;
 
-public abstract class Access implements Expression {
-    protected final Expression object;
+public abstract class Dereference implements Expression {
+    protected final Reference reference;
 
-    protected Access(Expression object) {
-        this.object = object;
+    protected Dereference(Reference reference) {
+        this.reference = reference;
     }
 
     @Override

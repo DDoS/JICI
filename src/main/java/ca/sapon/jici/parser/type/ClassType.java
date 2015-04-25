@@ -37,6 +37,6 @@ public class ClassType implements Type {
 
     @Override
     public String toString() {
-        return "ClassType(" + StringUtil.toString(type, ".") + ")";
+        return StringUtil.toString(type, ".");
     }
 }

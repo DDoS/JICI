@@ -17,14 +17,11 @@ public class ParserTest {
         testParseExpression("1d", "1d");
 
         testParseExpression("test", "test");
-
-        testParseExpression("SelfAccess(this)", "this");
-        testParseExpression("SelfAccess(super)", "super");
     }
 
     @Test
     public void testParseAccess() throws LexerException {
-        testParseExpression("FieldAccess(test.m)", "test.m");
+        testParseExpression("FieldAccess(\"f\".m)", "\"f\".m");
         testParseExpression("ClassAccess(test.class)", "test.class");
         testParseExpression("IndexAccess(test[m])", "test[m]");
         testParseExpression("MethodCall(test())", "test()");
@@ -32,7 +29,7 @@ public class ParserTest {
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
 
-        testParseExpression("MethodCall(FieldAccess(IndexAccess(FieldAccess(ConstructorCall(new M()).t)[1]).k)())", "new M().t[1].k()");
+        testParseExpression("MethodCall(FieldAccess(IndexAccess(ConstructorCall(new M()).t[1]).m).k())", "new M().t[1].m.k()");
     }
 
     @Test
@@ -48,10 +45,10 @@ public class ParserTest {
         testParseExpression("Increment(test++)", "test++");
         testParseExpression("Increment(test--)", "test--");
 
-        testParseExpression("Cast((PrimitiveType(int)) test)", "(int) test");
-        testParseExpression("Cast((ClassType(Object)) test)", "(Object) test");
+        testParseExpression("Cast((int) test)", "(int) test");
+        testParseExpression("Cast((Object) test)", "(Object) test");
 
-        testParseExpression("Cast((ClassType(Object)) BooleanLogic(!Increment(--Increment(++Increment(Increment(test--)++)))))", "(Object) !--++test--++");
+        testParseExpression("Cast((Object) BooleanLogic(!Increment(--Increment(++Increment(Increment(test--)++)))))", "(Object) !--++test--++");
     }
 
     @Test
@@ -87,9 +84,9 @@ public class ParserTest {
         testParseExpression("Comparison(l <= r)", "l <= r");
         testParseExpression("Comparison(l >= r)", "l >= r");
 
-        testParseExpression("TypeCheck(l instanceof ClassType(Object))", "l instanceof Object");
+        testParseExpression("TypeCheck(l instanceof Object)", "l instanceof Object");
 
-        testParseExpression("TypeCheck(Comparison(Comparison(Comparison(a < b) > c) <= d) instanceof ClassType(e))", "a < b > c <= d instanceof e");
+        testParseExpression("TypeCheck(Comparison(Comparison(Comparison(a < b) > c) <= d) instanceof e)", "a < b > c <= d instanceof e");
     }
 
     @Test
@@ -180,18 +177,18 @@ public class ParserTest {
                         "Add(n + " +
                         "Multiply(j * " +
                         "BooleanLogic(!" +
-                        "FieldAccess(m.k" +
+                        "MethodCall(m.k()" +
                         "))))))))))))))",
-                "x = v ? y : a || d && z | g ^ q & t == r >= p >> n + j * !m.k");
+                "x = v ? y : a || d && z | g ^ q & t == r >= p >> n + j * !m.k()");
     }
 
     @Test
     public void testParseDeclaration() throws LexerException {
-        testParseStatement("Declaration(ClassType(Object) Variable(m))", "Object m;");
-        testParseStatement("Declaration(ClassType(Object) Variable(m), Variable(k), Variable(j))", "Object m, k, j;");
+        testParseStatement("Declaration(Object m)", "Object m;");
+        testParseStatement("Declaration(Object m, k, j)", "Object m, k, j;");
 
-        testParseStatement("Declaration(ClassType(Object) Variable(m = 1))", "Object m = 1;");
-        testParseStatement("Declaration(ClassType(Object) Variable(m = 1), Variable(k = 2), Variable(j = 3))", "Object m = 1, k = 2, j = 3;");
+        testParseStatement("Declaration(Object m = 1)", "Object m = 1;");
+        testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");
     }
 
     @Test

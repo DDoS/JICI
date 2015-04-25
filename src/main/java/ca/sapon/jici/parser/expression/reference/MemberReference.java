@@ -21,45 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.statement;
-
-import java.util.List;
+package ca.sapon.jici.parser.expression.reference;
 
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.Type;
-import ca.sapon.jici.util.StringUtil;
 
-public class Declaration implements Statement {
-    private final Type type;
-    private final List<Variable> variables;
+public class MemberReference implements Reference {
+    private final Expression object;
+    private final Identifier member;
 
-    public Declaration(Type type, List<Variable> variables) {
-        this.type = type;
-        this.variables = variables;
+    public MemberReference(Expression object, Identifier member) {
+        this.object = object;
+        this.member = member;
     }
 
     @Override
     public String toString() {
-        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
-    }
-
-    public static class Variable {
-        private final Identifier name;
-        private final Expression value;
-
-        public Variable(Identifier name) {
-            this(name, null);
-        }
-
-        public Variable(Identifier name, Expression value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return name + (value != null ? " = " + value : "");
-        }
+        return object + "." + member;
     }
 }

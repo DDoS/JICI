@@ -21,25 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.call;
+package ca.sapon.jici.parser.expression.reference;
 
-import java.util.List;
-
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.util.StringUtil;
 
-public class ConstructorCall extends Call implements Statement {
-    private final List<Identifier> name;
+public class IndexAccess extends Dereference implements Reference {
+    private final Expression index;
 
-    public ConstructorCall(List<Identifier> name, List<Expression> arguments) {
-        super(arguments);
-        this.name = name;
+    public IndexAccess(Reference reference, Expression index) {
+        super(reference);
+        this.index = index;
     }
 
     @Override
     public String toString() {
-        return "ConstructorCall(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "IndexAccess(" + reference + "[" + index + "])";
     }
 }

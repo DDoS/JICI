@@ -21,20 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.access;
+package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.parser.expression.Expression;
-
-public class IndexAccess extends Access {
-    private final Expression index;
-
-    public IndexAccess(Expression object, Expression index) {
-        super(object);
-        this.index = index;
+public class FieldAccess extends Dereference implements Reference {
+    public FieldAccess(Reference reference) {
+        super(reference);
     }
 
     @Override
     public String toString() {
-        return "IndexAccess(" + object + "[" + index + "])";
+        return "FieldAccess(" + reference + ")";
     }
 }

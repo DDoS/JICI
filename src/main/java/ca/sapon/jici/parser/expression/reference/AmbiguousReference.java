@@ -21,25 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.access;
+package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.type.Type;
 
-public class SelfAccess extends Access {
-    private final Keyword reference;
+public class AmbiguousReference implements Reference, Expression {
+    private final Type reference;
 
-    public SelfAccess(Keyword reference) {
-        this(null, reference);
-    }
-
-    public SelfAccess(Expression object, Keyword reference) {
-        super(object);
+    public AmbiguousReference(Type reference) {
         this.reference = reference;
     }
 
     @Override
     public String toString() {
-        return "SelfAccess(" + (object == null ? reference : object + "." + reference) + ")";
+        return reference.toString();
     }
 }

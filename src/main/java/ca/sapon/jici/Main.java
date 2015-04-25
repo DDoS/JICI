@@ -35,7 +35,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m *= j.get(1, g) * ~--5++ + (int) (0x1_e.fp2 / .4d) >= new test.Test(3, 2, '0') instanceof Stuff;";
+        final String source = "m = test.class;";
 
         System.out.println("Source:\n" + source);
 

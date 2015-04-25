@@ -42,8 +42,13 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexWhitespace() throws LexerException {
-        Assert.assertEquals(0, Lexer.lex(" \n\t\r\f").size());
+    public void testLexSpaces() throws LexerException {
+        Assert.assertEquals(0, Lexer.lex(" \t\f").size());
+    }
+
+    @Test
+    public void testLexLineTerminators() throws LexerException {
+        Assert.assertEquals(0, Lexer.lex("\r\n").size());
     }
 
     @Test

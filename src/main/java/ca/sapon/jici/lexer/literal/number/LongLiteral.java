@@ -36,7 +36,7 @@ public class LongLiteral extends NumberLiteral {
 
     public long evaluate() {
         if (!valueCached) {
-            this.value = Long.decode(getSignChar() + source);
+            this.value = Long.decode(getSource());
             valueCached = true;
         }
         return value;

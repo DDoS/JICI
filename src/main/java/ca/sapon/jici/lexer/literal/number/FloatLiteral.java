@@ -36,7 +36,7 @@ public class FloatLiteral extends NumberLiteral {
 
     public float evaluate() {
         if (!valueCached) {
-            this.value = Float.parseFloat(getSignChar() + source);
+            this.value = Float.parseFloat(getSource());
             valueCached = true;
         }
         return value;

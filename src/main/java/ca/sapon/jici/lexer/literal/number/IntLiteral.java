@@ -36,7 +36,7 @@ public class IntLiteral extends NumberLiteral {
 
     public int evaluate() {
         if (!valueCached) {
-            this.value = Integer.decode(getSignChar() + source);
+            this.value = Integer.decode(getSource());
             valueCached = true;
         }
         return value;

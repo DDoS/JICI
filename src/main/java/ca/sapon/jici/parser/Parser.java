@@ -34,6 +34,7 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
 import ca.sapon.jici.lexer.literal.Literal;
+import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
 import ca.sapon.jici.parser.expression.ConstructorCall;
@@ -492,7 +493,12 @@ public class Parser {
                 case SYMBOL_MINUS: {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new Sign(inner, (Symbol) token);
+                    if (inner instanceof NumberLiteral) {
+                        ((NumberLiteral) inner).applySign(token.getID() == TokenID.SYMBOL_MINUS);
+                        return inner;
+                    } else {
+                        return new Sign(inner, (Symbol) token);
+                    }
                 }
                 case SYMBOL_BOOLEAN_NOT: {
                     tokens.advance();

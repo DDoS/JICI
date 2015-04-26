@@ -35,7 +35,7 @@ public class DoubleLiteral extends NumberLiteral {
 
     public double evaluate() {
         if (!valueCached) {
-            this.value = Double.parseDouble(getSignChar() + source);
+            this.value = Double.parseDouble(getSource());
             valueCached = true;
         }
         return value;

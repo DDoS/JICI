@@ -29,18 +29,19 @@ import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.util.StringUtil;
 
 public abstract class NumberLiteral extends Literal {
-    private int sign = 0;
+    private boolean negative = false;
 
     protected NumberLiteral(TokenID id, String source) {
         super(id, source);
     }
 
-    public void setSign(int sign) {
-        this.sign = sign;
+    public void applySign(boolean negative) {
+        this.negative ^= negative;
     }
 
-    protected char getSignChar() {
-        return sign >= 0 ? '+' : '-';
+    @Override
+    public String getSource() {
+        return negative ? '-' + super.getSource() : super.getSource();
     }
 
     public static NumberLiteral get(String source) {

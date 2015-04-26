@@ -58,6 +58,12 @@ public class ParserTest {
 
     @Test
     public void testParseUnary() throws LexerException {
+        testParseExpression("1", "+1");
+        testParseExpression("-1", "-1");
+        testParseExpression("-1", "+-1");
+        testParseExpression("-1", "-+1");
+        testParseExpression("1", "- -1");
+
         testParseExpression("Sign(+test)", "+test");
         testParseExpression("Sign(-test)", "-test");
 

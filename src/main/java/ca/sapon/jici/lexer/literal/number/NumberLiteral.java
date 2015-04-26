@@ -23,15 +23,29 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
+import ca.sapon.jici.util.StringUtil;
 
 public abstract class NumberLiteral extends Literal {
+    private int sign = 0;
+
     protected NumberLiteral(TokenID id, String source) {
         super(id, source);
     }
 
+    public void setSign(int sign) {
+        this.sign = sign;
+    }
+
+    protected char getSignChar() {
+        return sign >= 0 ? '+' : '-';
+    }
+
     public static NumberLiteral get(String source) {
+        // remove number separators
+        source = StringUtil.removeAll(source, '_');
         // is a floating point if
         //   - has a decimal separator
         //   - has a p or P
@@ -48,22 +62,22 @@ public abstract class NumberLiteral extends Literal {
             final char c = source.charAt(i);
             if (c == '.') {
                 hasDecimalSeparator = true;
-            } else if (equalsNoCase(c, 'p')) {
+            } else if (StringUtil.equalsNoCaseASCII(c, 'p')) {
                 hasP = true;
-            } else if (equalsNoCase(c, 'e')) {
+            } else if (StringUtil.equalsNoCaseASCII(c, 'e')) {
                 hasE = true;
             }
         }
         if (hasDecimalSeparator || hasP) {
             return getFloatingPoint(source);
         }
-        if (length > 1 && source.charAt(0) == '0' && equalsNoCase(source.charAt(1), 'x')) {
+        if (length > 1 && source.charAt(0) == '0' && StringUtil.equalsNoCaseASCII(source.charAt(1), 'x')) {
             return getInteger(source);
         }
         final char end = source.charAt(length - 1);
-        if (equalsNoCase(end, 'f')) {
+        if (StringUtil.equalsNoCaseASCII(end, 'f')) {
             return new FloatLiteral(source);
-        } else if (hasE || equalsNoCase(end, 'd')) {
+        } else if (hasE || StringUtil.equalsNoCaseASCII(end, 'd')) {
             return new DoubleLiteral(source);
         }
         return getInteger(source);
@@ -78,10 +92,6 @@ public abstract class NumberLiteral extends Literal {
     }
 
     private static boolean endsWithNoCase(String source, char end) {
-        return equalsNoCase(source.charAt(source.length() - 1), end);
-    }
-
-    private static boolean equalsNoCase(char a, char b) {
-        return Character.toLowerCase(a) == b;
+        return StringUtil.equalsNoCaseASCII(source.charAt(source.length() - 1), end);
     }
 }

@@ -25,7 +25,7 @@ package ca.sapon.jici.lexer;
 
 public abstract class Token {
     private final TokenID id;
-    private final String source;
+    protected final String source;
 
     protected Token(TokenID id, String source) {
         this.id = id;

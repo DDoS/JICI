@@ -26,6 +26,23 @@ package ca.sapon.jici.util;
 import java.util.List;
 
 public final class StringUtil {
+    private static final int[] DIGIT_VALUES = new int[256];
+
+    static {
+        for (int i = 0; i < DIGIT_VALUES.length; i++) {
+            DIGIT_VALUES[i] = -1;
+        }
+        for (int c = '0', i = 0; c <= '9'; c++, i++) {
+            DIGIT_VALUES[c] = i;
+        }
+        for (int c = 'a', i = 10; c <= 'z'; c++, i++) {
+            DIGIT_VALUES[c] = i;
+        }
+        for (int c = 'A', i = 10; c <= 'Z'; c++, i++) {
+            DIGIT_VALUES[c] = i;
+        }
+    }
+
     private StringUtil() {
     }
 
@@ -40,6 +57,31 @@ public final class StringUtil {
             return builder.append(list.get(size)).toString();
         }
         return "";
+    }
+
+    public static String removeAll(String string, char remove) {
+        final int length = string.length();
+        final char[] chars = new char[length];
+        int count = 0;
+        for (int i = 0; i < length; i++) {
+            final char c = string.charAt(i);
+            if (c != remove) {
+                chars[count++] = c;
+            }
+        }
+        return String.valueOf(chars, 0, count);
+    }
+
+    public static int getDigitValue(char digit, int radix) {
+        if (digit >= 256) {
+            return -1;
+        }
+        final int value = DIGIT_VALUES[digit];
+        return value >= radix ? -1 : value;
+    }
+
+    public static boolean equalsNoCaseASCII(char a, char b) {
+        return (a & ~32) == (b & ~32);
     }
 
     public static char decodeUnicodeSequence(String source, int i) {

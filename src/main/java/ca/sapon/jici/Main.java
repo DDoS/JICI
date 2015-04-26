@@ -35,7 +35,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m = java.util.List.class.getSimpleName();";
+        final String source = "m = -1_2;";
 
         System.out.println("Source:\n" + source);
 

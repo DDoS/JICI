@@ -26,7 +26,18 @@ package ca.sapon.jici.lexer.literal.number;
 import ca.sapon.jici.lexer.TokenID;
 
 public class DoubleLiteral extends NumberLiteral {
+    private double value;
+    private boolean valueCached = false;
+
     public DoubleLiteral(String source) {
         super(TokenID.LITERAL_DOUBLE, source);
+    }
+
+    public double evaluate() {
+        if (!valueCached) {
+            this.value = Double.parseDouble(getSignChar() + source);
+            valueCached = true;
+        }
+        return value;
     }
 }

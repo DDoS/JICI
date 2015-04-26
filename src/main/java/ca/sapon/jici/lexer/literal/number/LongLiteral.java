@@ -24,9 +24,21 @@
 package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class LongLiteral extends NumberLiteral {
+    private long value;
+    private boolean valueCached = false;
+
     public LongLiteral(String source) {
         super(TokenID.LITERAL_LONG, source);
+    }
+
+    public long evaluate() {
+        if (!valueCached) {
+            this.value = Long.decode(getSignChar() + source);
+            valueCached = true;
+        }
+        return value;
     }
 }

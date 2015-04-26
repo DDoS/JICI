@@ -69,12 +69,12 @@ public class Lexer {
                 final String identifier = consumer.consumed(last);
                 // check if it is a null literal
                 if (NullLiteral.is(identifier)) {
-                    token = NullLiteral.get();
+                    token = NullLiteral.THE_NULL;
                 } else if (BooleanLiteral.is(identifier)) {
-                    token = BooleanLiteral.get(identifier);
+                    token = BooleanLiteral.from(identifier);
                 } else {
                     // check if it is a keyword
-                    final Keyword keyword = Keyword.get(identifier);
+                    final Keyword keyword = Keyword.from(identifier);
                     if (keyword != null) {
                         token = keyword;
                     } else {
@@ -84,11 +84,11 @@ public class Lexer {
             } else if (Character.isDigit(c)) {
                 // consume a number literal (starts with a digit)
                 consumeNumberLiteral(consumer);
-                token = NumberLiteral.get(consumer.consumed(last));
+                token = NumberLiteral.from(consumer.consumed(last));
             } else {
                 // try to consume a number literal (floating point can start by a decimal separator)
                 if (c == '.' && consumeNumberLiteral(consumer) != last) {
-                    token = NumberLiteral.get(consumer.consumed(last));
+                    token = NumberLiteral.from(consumer.consumed(last));
                 } else if (c == '\'') {
                     // consume a character literal (starts with ')
                     consumeCharacterLiteral(consumer);
@@ -101,7 +101,7 @@ public class Lexer {
                     // try to consume a char or compound symbol (starts with a symbol)
                     consumeSymbol(consumer);
                     if (consumer.position() != last) {
-                        final Symbol symbol = Symbol.get(consumer.consumed(last));
+                        final Symbol symbol = Symbol.from(consumer.consumed(last));
                         // consume comments and drop their starting symbols
                         switch (symbol.getID()) {
                             case SYMBOL_DOUBLE_SLASH:

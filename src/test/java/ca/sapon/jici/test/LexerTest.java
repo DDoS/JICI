@@ -79,14 +79,14 @@ public class LexerTest {
 
     @Test
     public void testLexKeyword() throws LexerException {
-        for (Keyword keyword : Keyword.getAll()) {
+        for (Keyword keyword : Keyword.all()) {
             testLex(keyword.getID(), keyword.getSource());
         }
     }
 
     @Test
     public void testLexSymbol() throws LexerException {
-        for (Symbol symbol : Symbol.getAll()) {
+        for (Symbol symbol : Symbol.all()) {
             if (symbol.getType() != TokenType.COMMENT_DELIMITER) {
                 testLex(symbol.getID(), symbol.getSource());
             }

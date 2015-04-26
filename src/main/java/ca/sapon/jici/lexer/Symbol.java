@@ -115,18 +115,18 @@ public class Symbol extends Token {
         return SYMBOLS.containsKey(source);
     }
 
-    public static Symbol get(char source) {
+    public static Symbol from(char source) {
         return CHAR_SYMBOLS[source];
     }
 
-    public static Symbol get(String source) {
+    public static Symbol from(String source) {
         if (source.length() == 1) {
-            return get(source.charAt(0));
+            return from(source.charAt(0));
         }
         return SYMBOLS.get(source);
     }
 
-    public static Collection<Symbol> getAll() {
+    public static Collection<Symbol> all() {
         return Collections.unmodifiableCollection(SYMBOLS.values());
     }
 

@@ -39,7 +39,7 @@ public class BooleanLiteral extends Literal {
         return trueSource.equals(source) || falseSource.equals(source);
     }
 
-    public static BooleanLiteral get(String source) {
+    public static BooleanLiteral from(String source) {
         return source.equals(trueSource) ? THE_TRUE : THE_FALSE;
     }
 }

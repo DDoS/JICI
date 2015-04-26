@@ -44,7 +44,7 @@ public abstract class NumberLiteral extends Literal {
         return negative ? '-' + super.getSource() : super.getSource();
     }
 
-    public static NumberLiteral get(String source) {
+    public static NumberLiteral from(String source) {
         // remove number separators
         source = StringUtil.removeAll(source, '_');
         // is a floating point if

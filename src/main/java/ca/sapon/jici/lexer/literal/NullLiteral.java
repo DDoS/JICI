@@ -26,8 +26,8 @@ package ca.sapon.jici.lexer.literal;
 import ca.sapon.jici.lexer.TokenID;
 
 public class NullLiteral extends Literal {
+    public static final NullLiteral THE_NULL = new NullLiteral();
     private static final String nullSource = "null";
-    private static final NullLiteral THE_NULL = new NullLiteral();
 
     private NullLiteral() {
         super(TokenID.LITERAL_NULL, nullSource);
@@ -35,9 +35,5 @@ public class NullLiteral extends Literal {
 
     public static boolean is(String source) {
         return nullSource.equals(source);
-    }
-
-    public static NullLiteral get() {
-        return THE_NULL;
     }
 }

@@ -105,11 +105,11 @@ public class Keyword extends Token {
         return KEYWORDS.containsKey(source);
     }
 
-    public static Keyword get(String source) {
+    public static Keyword from(String source) {
         return KEYWORDS.get(source);
     }
 
-    public static Collection<Keyword> getAll() {
+    public static Collection<Keyword> all() {
         return Collections.unmodifiableCollection(KEYWORDS.values());
     }
 

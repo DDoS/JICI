@@ -35,7 +35,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m = 0;";
+        final String source = "m = \"test\" + 'a';";
 
         System.out.println("Source:\n" + source);
 

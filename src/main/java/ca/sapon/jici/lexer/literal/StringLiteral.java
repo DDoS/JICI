@@ -31,17 +31,17 @@ public class StringLiteral extends Literal {
     private ObjectValue value = null;
 
     public StringLiteral(String source) {
-        super(TokenID.LITERAL_STRING, source);
+        super(TokenID.LITERAL_STRING, source.substring(1, source.length() - 1));
     }
 
     public void evaluate() {
         if (value == null) {
             final String source = getSource();
-            final int length = source.length() - 1;
+            final int length = source.length();
             final char[] chars = new char[length];
             int count = 0;
             boolean escaped = false;
-            for (int i = 1; i < length; i++) {
+            for (int i = 0; i < length; i++) {
                 if (escaped) {
                     chars[count++] = StringUtil.decodeJavaEscape(source.charAt(i));
                     escaped = false;
@@ -57,5 +57,10 @@ public class StringLiteral extends Literal {
             }
             value = ObjectValue.of(String.valueOf(chars, 0, count));
         }
+    }
+
+    @Override
+    public String toString() {
+        return "\"" + getSource() + "\"";
     }
 }

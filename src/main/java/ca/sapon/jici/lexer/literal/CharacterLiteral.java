@@ -31,24 +31,29 @@ public class CharacterLiteral extends Literal {
     private CharValue value = null;
 
     public CharacterLiteral(String source) {
-        super(TokenID.LITERAL_CHARACTER, source);
+        super(TokenID.LITERAL_CHARACTER, source.substring(1, source.length() - 1));
     }
 
     public void evaluate() {
         if (value == null) {
             final String source = getSource();
-            // format: 'X' or '\X' where X is any character
+            // format: X or \X where X is any character
             switch (source.length()) {
-                case 3:
-                    value = CharValue.of(source.charAt(1));
+                case 1:
+                    value = CharValue.of(source.charAt(0));
                     return;
-                case 4:
-                    if (source.charAt(1) == '\\') {
-                        value = CharValue.of(StringUtil.decodeJavaEscape(source.charAt(2)));
+                case 2:
+                    if (source.charAt(0) == '\\') {
+                        value = CharValue.of(StringUtil.decodeJavaEscape(source.charAt(1)));
                         return;
                     }
             }
-            throw new IllegalArgumentException("Malformed character literal: " + source);
+            throw new IllegalArgumentException("Malformed character literal: '" + source + "'");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "'" + getSource() + "'";
     }
 }

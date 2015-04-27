@@ -37,21 +37,42 @@ public class ParserTest {
         testParseExpression("1", "1");
         testParseExpression("1L", "1L");
         testParseExpression("1f", "1f");
-        testParseExpression("1", "1d");
+        testParseExpression("1d", "1d");
+
+        testParseExpression("true", "true");
+        testParseExpression("false", "false");
+
+        testParseExpression("null", "null");
+
+        testParseExpression("'a'", "'a'");
+
+        testParseExpression("\"a\"", "\"a\"");
 
         testParseExpression("test", "test");
+        testParseExpression("test.stuff", "test.stuff");
+
+        testParseExpression("MethodCall(test())", "test()");
+        testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");
+
+        testParseExpression("IndexAccess(test[m])", "test[m]");
+
+        testParseExpression("ConstructorCall(new Test())", "new Test()");
+        testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
+
+        testParseExpression("ClassAccess(test.class)", "test.class");
+        testParseExpression("ClassAccess(int.class)", "int.class");
+
+        testParseExpression("test", "(test)");
     }
 
     @Test
     public void testParseAccess() throws LexerException {
         testParseExpression("FieldAccess(\"f\".m)", "\"f\".m");
-        testParseExpression("ClassAccess(test.class)", "test.class");
-        testParseExpression("ClassAccess(int.class)", "int.class");
-        testParseExpression("IndexAccess(test[m])", "test[m]");
-        testParseExpression("MethodCall(test())", "test()");
-        testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");
-        testParseExpression("ConstructorCall(new Test())", "new Test()");
-        testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
+
+        testParseExpression("MethodCall(\"f\".m())", "\"f\".m()");
+        testParseExpression("MethodCall(\"f\".m(1))", "\"f\".m(1)");
+
+        testParseExpression("IndexAccess(\"f\".m[1])", "\"f\".m[1]");
 
         testParseExpression("MethodCall(FieldAccess(IndexAccess(ConstructorCall(new M()).t[1]).m).k())", "new M().t[1].m.k()");
     }

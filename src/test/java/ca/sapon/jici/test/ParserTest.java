@@ -35,8 +35,8 @@ public class ParserTest {
     @Test
     public void testParseAtom() throws LexerException {
         testParseExpression("1", "1");
-        testParseExpression("1", "1L");
-        testParseExpression("1", "1f");
+        testParseExpression("1L", "1L");
+        testParseExpression("1f", "1f");
         testParseExpression("1", "1d");
 
         testParseExpression("test", "test");

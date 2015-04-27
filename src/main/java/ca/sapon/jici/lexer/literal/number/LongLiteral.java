@@ -38,4 +38,9 @@ public class LongLiteral extends NumberLiteral {
             value = LongValue.of(Long.decode(getSource()));
         }
     }
+
+    @Override
+    public String toString() {
+        return getSource() + 'L';
+    }
 }

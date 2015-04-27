@@ -38,4 +38,9 @@ public class DoubleLiteral extends NumberLiteral {
             value = DoubleValue.of(Double.parseDouble(getSource()));
         }
     }
+
+    @Override
+    public String toString() {
+        return getSource() + 'd';
+    }
 }

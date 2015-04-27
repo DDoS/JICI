@@ -38,4 +38,9 @@ public class FloatLiteral extends NumberLiteral {
             value = FloatValue.of(Float.parseFloat(getSource()));
         }
     }
+
+    @Override
+    public String toString() {
+        return getSource() + 'f';
+    }
 }

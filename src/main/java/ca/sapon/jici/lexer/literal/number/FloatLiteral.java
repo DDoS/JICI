@@ -25,7 +25,6 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.FloatValue;
 import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.util.StringUtil;
 
 public class FloatLiteral extends NumberLiteral {
     private FloatValue value = null;

@@ -25,7 +25,6 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.IntValue;
 import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.util.StringUtil;
 
 public class IntLiteral extends NumberLiteral {
     private IntValue value = null;

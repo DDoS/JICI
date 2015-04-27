@@ -23,7 +23,6 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.util.StringUtil;

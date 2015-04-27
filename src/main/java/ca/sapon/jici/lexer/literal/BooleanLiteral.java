@@ -24,7 +24,6 @@
 package ca.sapon.jici.lexer.literal;
 
 import ca.sapon.jici.evaluator.BooleanValue;
-import ca.sapon.jici.evaluator.Result;
 import ca.sapon.jici.lexer.TokenID;
 
 public class BooleanLiteral extends Literal {

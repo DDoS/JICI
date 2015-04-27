@@ -24,8 +24,6 @@
 package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.IntValue;
-import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.util.StringUtil;
 
 public class ZeroLiteral extends IntLiteral {
     public static final ZeroLiteral THE_ZERO = new ZeroLiteral();

@@ -80,19 +80,24 @@ public abstract class NumberLiteral extends Literal {
         }
         final char end = source.charAt(length - 1);
         if (StringUtil.equalsNoCaseASCII(end, 'f')) {
-            return new FloatLiteral(source);
-        } else if (hasE || StringUtil.equalsNoCaseASCII(end, 'd')) {
+            return new FloatLiteral(source.substring(0, length - 1));
+        } else if (StringUtil.equalsNoCaseASCII(end, 'd')) {
+            return new DoubleLiteral(source.substring(0, length - 1));
+        } else if (hasE) {
             return new DoubleLiteral(source);
         }
         return getInteger(source);
     }
 
     private static NumberLiteral getInteger(String source) {
-        return endsWithNoCase(source, 'l') ? new LongLiteral(source) : new IntLiteral(source);
+        return endsWithNoCase(source, 'l') ? new LongLiteral(source.substring(0, source.length() - 1)) : new IntLiteral(source);
     }
 
     private static NumberLiteral getFloatingPoint(String source) {
-        return endsWithNoCase(source, 'f') ? new FloatLiteral(source) : new DoubleLiteral(source);
+        if (endsWithNoCase(source, 'f')) {
+            return new FloatLiteral(source.substring(0, source.length() - 1));
+        }
+        return endsWithNoCase(source, 'd') ? new DoubleLiteral(source.substring(0, source.length() - 1)) : new DoubleLiteral(source);
     }
 
     private static boolean endsWithNoCase(String source, char end) {

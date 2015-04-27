@@ -23,10 +23,32 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.evaluator.CharValue;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class CharacterLiteral extends Literal {
+    private CharValue value = null;
+
     public CharacterLiteral(String source) {
         super(TokenID.LITERAL_CHARACTER, source);
+    }
+
+    public void evaluate() {
+        if (value == null) {
+            final String source = getSource();
+            // format: 'X' or '\X' where X is any character
+            switch (source.length()) {
+                case 3:
+                    value = CharValue.of(source.charAt(1));
+                    return;
+                case 4:
+                    if (source.charAt(1) == '\\') {
+                        value = CharValue.of(StringUtil.decodeJavaEscape(source.charAt(2)));
+                        return;
+                    }
+            }
+            throw new IllegalArgumentException("Malformed character literal: " + source);
+        }
     }
 }

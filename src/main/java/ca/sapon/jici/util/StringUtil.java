@@ -84,33 +84,66 @@ public final class StringUtil {
         return (a & ~32) == (b & ~32);
     }
 
-    public static char decodeUnicodeSequence(String source, int i) {
-        // format: \\uXXXX where X is a hexadecimal digit
-        // (starts with 1 backslash, but it needs to be escaped for this to compile)
-        if (i + 6 > source.length()) {
-            throw new InvalidUnicodeSequence(source.substring(i, source.length()));
-        }
-        if (source.charAt(i) != '\\' || source.charAt(i + 1) != 'u') {
-            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
-        }
-        // we need to make sure the first digit isn't a sign for the next step
-        final char firstDigit = source.charAt(i + 2);
-        if (firstDigit == '-' || firstDigit == '+') {
-            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
-        }
-        // try to parse a short and convert it to a character
-        try {
-            return (char) Short.parseShort(source.substring(i + 2, i + 6), 16);
-        } catch (NumberFormatException exception) {
-            throw new InvalidUnicodeSequence(source.substring(i, i + 6));
+    public static char decodeJavaEscape(char escape) {
+        switch (escape) {
+            case 'b':
+                return '\b';
+            case 't':
+                return '\t';
+            case 'n':
+                return '\n';
+            case 'f':
+                return '\f';
+            case 'r':
+                return '\r';
+            case '"':
+                return '\"';
+            case '\'':
+                return '\'';
+            case '\\':
+                return '\\';
+            case '0':
+                return '\0';
+            case '1':
+                return '\1';
+            case '2':
+                return '\2';
+            case '3':
+                return '\3';
+            case '4':
+                return '\4';
+            case '5':
+                return '\6';
+            case '6':
+                return '\6';
+            case '7':
+                return '\7';
+            default:
+                throw new IllegalArgumentException("'" + escape + "' is neither b, t, n, f, r, \", ', \\, 0, 1, 2, 3, 4, 5, 6 or 7");
         }
     }
 
-    public static class InvalidUnicodeSequence extends RuntimeException {
-        private static final long serialVersionUID = 1;
-
-        public InvalidUnicodeSequence(String sequence) {
-            super("\"" + sequence + "\" is not of form \\uXXXX, where X is a hexadecimal digit");
+    public static char decodeUnicodeEscape(String escape) {
+        // format: XXXX where X is a hexadecimal digit
+        if (escape.length() == 4) {
+            int digit = getDigitValue(escape.charAt(3), 16);
+            if (digit >= 0) {
+                int value = digit;
+                digit = getDigitValue(escape.charAt(2), 16);
+                if (digit >= 0) {
+                    value += digit << 4;
+                    digit = getDigitValue(escape.charAt(1), 16);
+                    if (digit >= 0) {
+                        value += digit << 8;
+                        digit = getDigitValue(escape.charAt(0), 16);
+                        if (digit >= 0) {
+                            value += digit << 12;
+                            return (char) value;
+                        }
+                    }
+                }
+            }
         }
+        throw new IllegalArgumentException("Expected 4 hexadecimal digits: " + escape);
     }
 }

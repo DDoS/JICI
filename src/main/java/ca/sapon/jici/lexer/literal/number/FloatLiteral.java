@@ -23,22 +23,20 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.evaluator.FloatValue;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
 public class FloatLiteral extends NumberLiteral {
-    private float value;
-    private boolean valueCached = false;
+    private FloatValue value = null;
 
     public FloatLiteral(String source) {
         super(TokenID.LITERAL_FLOAT, source);
     }
 
-    public float evaluate() {
-        if (!valueCached) {
-            this.value = Float.parseFloat(getSource());
-            valueCached = true;
+    public void evaluate() {
+        if (value == null) {
+            value = FloatValue.of(Float.parseFloat(getSource()));
         }
-        return value;
     }
 }

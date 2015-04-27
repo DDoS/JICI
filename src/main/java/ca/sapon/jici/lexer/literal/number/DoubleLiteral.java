@@ -23,21 +23,19 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.evaluator.DoubleValue;
 import ca.sapon.jici.lexer.TokenID;
 
 public class DoubleLiteral extends NumberLiteral {
-    private double value;
-    private boolean valueCached = false;
+    private DoubleValue value = null;
 
     public DoubleLiteral(String source) {
         super(TokenID.LITERAL_DOUBLE, source);
     }
 
-    public double evaluate() {
-        if (!valueCached) {
-            this.value = Double.parseDouble(getSource());
-            valueCached = true;
+    public void evaluate() {
+        if (value == null) {
+            value = DoubleValue.of(Double.parseDouble(getSource()));
         }
-        return value;
     }
 }

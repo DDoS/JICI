@@ -23,22 +23,20 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
 public class LongLiteral extends NumberLiteral {
-    private long value;
-    private boolean valueCached = false;
+    private LongValue value = null;
 
     public LongLiteral(String source) {
         super(TokenID.LITERAL_LONG, source);
     }
 
-    public long evaluate() {
-        if (!valueCached) {
-            this.value = Long.decode(getSource());
-            valueCached = true;
+    public void evaluate() {
+        if (value == null) {
+            value = LongValue.of(Long.decode(getSource()));
         }
-        return value;
     }
 }

@@ -23,10 +23,39 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.evaluator.ObjectValue;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class StringLiteral extends Literal {
+    private ObjectValue value = null;
+
     public StringLiteral(String source) {
         super(TokenID.LITERAL_STRING, source);
+    }
+
+    public void evaluate() {
+        if (value == null) {
+            final String source = getSource();
+            final int length = source.length() - 1;
+            final char[] chars = new char[length];
+            int count = 0;
+            boolean escaped = false;
+            for (int i = 1; i < length; i++) {
+                if (escaped) {
+                    chars[count++] = StringUtil.decodeJavaEscape(source.charAt(i));
+                    escaped = false;
+                } else {
+                    final char c = source.charAt(i);
+                    if (c == '\\') {
+                        escaped = true;
+                    } else {
+                        chars[count++] = c;
+                        escaped = false;
+                    }
+                }
+            }
+            value = ObjectValue.of(String.valueOf(chars, 0, count));
+        }
     }
 }

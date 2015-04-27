@@ -23,22 +23,20 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.evaluator.IntValue;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
 public class IntLiteral extends NumberLiteral {
-    private int value;
-    private boolean valueCached = false;
+    private IntValue value = null;
 
     public IntLiteral(String source) {
         super(TokenID.LITERAL_INT, source);
     }
 
-    public int evaluate() {
-        if (!valueCached) {
-            this.value = Integer.decode(getSource());
-            valueCached = true;
+    public void evaluate() {
+        if (value == null) {
+            value = IntValue.of(Integer.decode(getSource()));
         }
-        return value;
     }
 }

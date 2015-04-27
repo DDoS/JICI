@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.evaluator.BooleanValue;
+import ca.sapon.jici.evaluator.Result;
 import ca.sapon.jici.lexer.TokenID;
 
 public class BooleanLiteral extends Literal {
@@ -30,9 +32,14 @@ public class BooleanLiteral extends Literal {
     private static final String falseSource = "false";
     private static final BooleanLiteral THE_TRUE = new BooleanLiteral(true);
     private static final BooleanLiteral THE_FALSE = new BooleanLiteral(false);
+    private final BooleanValue value;
 
     private BooleanLiteral(boolean value) {
         super(value ? TokenID.LITERAL_TRUE : TokenID.LITERAL_FALSE, value ? trueSource : falseSource);
+        this.value = BooleanValue.of(value);
+    }
+
+    public void evaluate() {
     }
 
     public static boolean is(String source) {

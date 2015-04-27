@@ -21,38 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.lexer.literal.number;
 
-import java.util.List;
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.statement.Statement;
+public class ZeroLiteral extends IntLiteral {
+    public static final ZeroLiteral THE_ZERO = new ZeroLiteral();
+    private final IntValue value;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n");
+    private ZeroLiteral() {
+        super("0");
+        value = IntValue.of(0);
+    }
 
-        final String source = "m = 0;";
-
-        System.out.println("Source:\n" + source);
-
-        try {
-            System.out.println("\nLexing:");
-            final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-        } catch (LexerException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
-        }
+    public void evaluate() {
     }
 }

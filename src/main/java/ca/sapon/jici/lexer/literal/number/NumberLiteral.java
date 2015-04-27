@@ -45,6 +45,11 @@ public abstract class NumberLiteral extends Literal {
     }
 
     public static NumberLiteral from(String source) {
+        final int length = source.length();
+        // fast track 0 integers since they are very common
+        if (length == 1 && source.charAt(0) == '0') {
+            return ZeroLiteral.THE_ZERO;
+        }
         // remove number separators
         source = StringUtil.removeAll(source, '_');
         // is a floating point if
@@ -58,7 +63,6 @@ public abstract class NumberLiteral extends Literal {
         // is an long if ends with l or L, else int
         boolean hasDecimalSeparator = false;
         boolean hasP = false, hasE = false;
-        final int length = source.length();
         for (int i = 0; i < length; i++) {
             final char c = source.charAt(i);
             if (c == '.') {

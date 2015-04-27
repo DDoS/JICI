@@ -72,6 +72,39 @@ public final class StringUtil {
         return String.valueOf(chars, 0, count);
     }
 
+    public static int findRadix(String source) {
+        if (source.length() < 2) {
+            return 10;
+        }
+        if (source.charAt(0) == '0') {
+            switch (source.charAt(1)) {
+                case 'b':
+                case 'B':
+                    return 2;
+                case 'x':
+                case 'X':
+                    return 16;
+                default:
+                    return 8;
+            }
+        }
+        return 10;
+    }
+
+    public static String removeRadixIdentifier(String source, int radix) {
+        switch (radix) {
+            case 2:
+            case 16:
+                return source.substring(2);
+            case 8:
+                return source.substring(1);
+            case 10:
+                return source;
+            default:
+                throw new IllegalArgumentException("No known radix identifier for " + radix);
+        }
+    }
+
     public static int getDigitValue(char digit, int radix) {
         if (digit >= 256) {
             return -1;

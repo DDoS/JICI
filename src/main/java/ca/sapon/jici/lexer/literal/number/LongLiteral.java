@@ -25,6 +25,7 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class LongLiteral extends NumberLiteral {
     private LongValue value = null;
@@ -35,7 +36,10 @@ public class LongLiteral extends NumberLiteral {
 
     public void evaluate() {
         if (value == null) {
-            value = LongValue.of(Long.decode(getSource()));
+            String source = getSource();
+            final int radix = StringUtil.findRadix(source);
+            source = StringUtil.removeRadixIdentifier(source, radix);
+            value = LongValue.of(Long.parseLong(source, radix));
         }
     }
 

@@ -52,7 +52,7 @@ import ca.sapon.jici.parser.expression.logic.Conditional;
 import ca.sapon.jici.parser.expression.logic.TypeCheck;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
-import ca.sapon.jici.parser.expression.reference.IndexAccess;
+import ca.sapon.jici.parser.expression.IndexAccess;
 import ca.sapon.jici.parser.expression.reference.MemberReference;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
 import ca.sapon.jici.parser.expression.reference.Reference;
@@ -251,9 +251,9 @@ public class Parser {
         ADD:             ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:        MULTIPLY * UNARY _ UNARY
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
-        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS.IDENTIFIER[EXPRESSION] _ ATOM
+        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ NAME _ NAME(EXPRESSION_LIST) _ NAME[EXPRESSION] _ new NAME(EXPRESSION_LIST) _ TYPE.class _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME(EXPRESSION_LIST) _ new NAME(EXPRESSION_LIST) _ TYPE.class _ (EXPRESSION)
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
@@ -561,36 +561,39 @@ public class Parser {
     }
 
     private static Expression parseAccess(ListNavigator<Token> tokens, Expression object) {
-        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_PERIOD) {
-            tokens.advance();
-            if (tokens.has()) {
-                final Token token = tokens.get();
-                if (token.getType() == TokenType.IDENTIFIER) {
+        if (tokens.has()) {
+            switch (tokens.get().getID()) {
+                case SYMBOL_PERIOD: {
                     tokens.advance();
                     if (tokens.has()) {
-                        switch (tokens.get().getID()) {
-                            case SYMBOL_OPEN_PARENTHESIS: {
+                        final Token token = tokens.get();
+                        if (token.getType() == TokenType.IDENTIFIER) {
+                            tokens.advance();
+                            final Reference reference = new MemberReference(object, (Identifier) token);
+                            final Expression access;
+                            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
-                                final Reference reference = new MemberReference(object, (Identifier) token);
                                 final List<Expression> arguments = parseArguments(tokens);
-                                final MethodCall call = new MethodCall(reference, arguments);
-                                return parseAccess(tokens, call);
+                                access = new MethodCall(reference, arguments);
+                            } else {
+                                access = new FieldAccess(reference);
                             }
-                            case SYMBOL_OPEN_BRACKET: {
-                                tokens.advance();
-                                final Reference reference = new MemberReference(object, (Identifier) token);
-                                final Expression index = parseIndex(tokens);
-                                final IndexAccess access = new IndexAccess(reference, index);
-                                return parseAccess(tokens, access);
-                            }
+                            return parseAccess(tokens, access);
                         }
                     }
-                    final Reference reference = new MemberReference(object, (Identifier) token);
-                    final FieldAccess access = new FieldAccess(reference);
-                    return parseAccess(tokens, access);
+                    throw new ParseError("Expected identifier");
+                }
+                case SYMBOL_OPEN_BRACKET: {
+                    tokens.advance();
+                    final Expression index = parseExpression(tokens);
+                    if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+                        tokens.advance();
+                        final IndexAccess access = new IndexAccess(object, index);
+                        return parseAccess(tokens, access);
+                    }
+                    throw new ParseError("Expected ']'");
                 }
             }
-            throw new ParseError("Expected identifier");
         }
         return object;
     }
@@ -631,12 +634,6 @@ public class Parser {
                                 final List<Expression> arguments = parseArguments(tokens);
                                 return new MethodCall(reference, arguments);
                             }
-                            case SYMBOL_OPEN_BRACKET: {
-                                tokens.advance();
-                                final Reference reference = new AmbiguousReference(name);
-                                final Expression index = parseIndex(tokens);
-                                return new IndexAccess(reference, index);
-                            }
                         }
                     }
                     return new AmbiguousReference(name);
@@ -667,15 +664,6 @@ public class Parser {
             }
         }
         throw new ParseFailure("Expected literal, identifier, \"new\" or '('");
-    }
-
-    private static Expression parseIndex(ListNavigator<Token> tokens) {
-        final Expression index = parseExpression(tokens);
-        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
-            tokens.advance();
-            return index;
-        }
-        throw new ParseError("Expected ']'");
     }
 
     private static List<Expression> parseArguments(ListNavigator<Token> tokens) {

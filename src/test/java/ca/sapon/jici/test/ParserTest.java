@@ -53,8 +53,6 @@ public class ParserTest {
         testParseExpression("MethodCall(test())", "test()");
         testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");
 
-        testParseExpression("IndexAccess(test[m])", "test[m]");
-
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
 
@@ -71,9 +69,9 @@ public class ParserTest {
         testParseExpression("MethodCall(\"f\".m())", "\"f\".m()");
         testParseExpression("MethodCall(\"f\".m(1))", "\"f\".m(1)");
 
-        testParseExpression("IndexAccess(\"f\".m[1])", "\"f\".m[1]");
+        testParseExpression("IndexAccess(test[m])", "test[m]");
 
-        testParseExpression("MethodCall(FieldAccess(IndexAccess(ConstructorCall(new M()).t[1]).m).k())", "new M().t[1].m.k()");
+        testParseExpression("MethodCall(FieldAccess(IndexAccess(FieldAccess(ConstructorCall(new M()).t)[1]).m).k())", "new M().t[1].m.k()");
     }
 
     @Test

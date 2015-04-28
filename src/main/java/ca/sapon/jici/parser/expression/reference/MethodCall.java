@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression.reference;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
@@ -40,5 +41,10 @@ public class MethodCall extends Dereference implements Statement {
     @Override
     public String toString() {
         return "MethodCall(" + reference + "(" + StringUtil.toString(arguments, ", ") + "))";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

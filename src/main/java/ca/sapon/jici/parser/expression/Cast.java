@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.type.Type;
 
 public class Cast implements Expression {
@@ -37,5 +38,10 @@ public class Cast implements Expression {
     @Override
     public String toString() {
         return "Cast((" + type + ") " + object + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

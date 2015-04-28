@@ -107,4 +107,9 @@ public class BooleanLiteral extends Literal implements Value {
     public static BooleanLiteral from(String source) {
         return source.equals(trueSource) ? THE_TRUE : THE_FALSE;
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

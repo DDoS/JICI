@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -41,5 +42,10 @@ public class Assignment implements Expression, Statement {
     @Override
     public String toString() {
         return "Assignment(" + assignee + " " + operator + " " + value + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

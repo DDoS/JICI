@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import ca.sapon.jici.evaluator.Value;
+
 public class FieldAccess extends Dereference implements Reference {
     public FieldAccess(Reference reference) {
         super(reference);
@@ -31,5 +33,10 @@ public class FieldAccess extends Dereference implements Reference {
     @Override
     public String toString() {
         return "FieldAccess(" + reference + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

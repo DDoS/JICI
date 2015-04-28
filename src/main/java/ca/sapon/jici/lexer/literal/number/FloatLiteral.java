@@ -108,4 +108,9 @@ public class FloatLiteral extends NumberLiteral implements Value {
     public String toString() {
         return getSource() + 'f';
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

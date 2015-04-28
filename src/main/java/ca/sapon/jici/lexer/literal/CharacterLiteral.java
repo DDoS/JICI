@@ -122,4 +122,9 @@ public class CharacterLiteral extends Literal implements Value {
     public String toString() {
         return "'" + getSource() + "'";
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

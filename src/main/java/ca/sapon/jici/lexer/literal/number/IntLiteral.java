@@ -107,4 +107,9 @@ public class IntLiteral extends NumberLiteral implements Value {
     public boolean isPrimitive() {
         return true;
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

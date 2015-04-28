@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -38,5 +39,10 @@ public class Sign implements Expression {
     @Override
     public String toString() {
         return "Sign(" + operator.toString() + inner.toString() + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

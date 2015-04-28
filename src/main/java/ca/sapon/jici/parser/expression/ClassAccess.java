@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.type.Type;
 
 public class ClassAccess implements Expression {
@@ -35,5 +36,10 @@ public class ClassAccess implements Expression {
     @Override
     public String toString() {
         return "ClassAccess(" + type + ".class" + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

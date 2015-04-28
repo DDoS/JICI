@@ -112,4 +112,9 @@ public class LongLiteral extends NumberLiteral implements Value {
     public String toString() {
         return getSource() + 'L';
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

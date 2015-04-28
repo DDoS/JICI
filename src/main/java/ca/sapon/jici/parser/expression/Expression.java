@@ -23,6 +23,10 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.Value;
+
 public interface Expression {
     String toString();
+
+    Value getValue();
 }

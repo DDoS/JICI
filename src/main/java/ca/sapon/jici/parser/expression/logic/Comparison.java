@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -40,5 +41,10 @@ public class Comparison implements Expression {
     @Override
     public String toString() {
         return "Comparison(" + left + " " + operator + " " + right + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

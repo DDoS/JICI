@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
@@ -41,5 +42,10 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public String toString() {
         return "ConstructorCall(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -44,5 +45,10 @@ public class BooleanLogic implements Expression {
     @Override
     public String toString() {
         return "BooleanLogic(" + (left == null ? operator.toString() + right.toString() : left + " " + operator + " " + right) + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

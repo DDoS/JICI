@@ -108,4 +108,9 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     public String toString() {
         return getSource() + 'd';
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

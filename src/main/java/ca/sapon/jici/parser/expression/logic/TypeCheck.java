@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
 
@@ -38,5 +39,10 @@ public class TypeCheck implements Expression {
     @Override
     public String toString() {
         return "TypeCheck(" + object + " instanceof " + type + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

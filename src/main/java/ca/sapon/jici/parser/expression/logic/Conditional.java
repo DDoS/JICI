@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class Conditional implements Expression {
@@ -39,5 +40,10 @@ public class Conditional implements Expression {
     @Override
     public String toString() {
         return "Conditional(" + test + " ? " + left + " : " + right + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

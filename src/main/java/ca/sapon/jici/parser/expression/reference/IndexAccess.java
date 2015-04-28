@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class IndexAccess extends Dereference implements Reference {
@@ -36,5 +37,10 @@ public class IndexAccess extends Dereference implements Reference {
     @Override
     public String toString() {
         return "IndexAccess(" + reference + "[" + index + "])";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

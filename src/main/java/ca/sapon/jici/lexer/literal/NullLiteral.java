@@ -98,4 +98,9 @@ public class NullLiteral extends Literal implements Value {
     public static boolean is(String source) {
         return nullSource.equals(source);
     }
+
+    @Override
+    public Value getValue() {
+        return this;
+    }
 }

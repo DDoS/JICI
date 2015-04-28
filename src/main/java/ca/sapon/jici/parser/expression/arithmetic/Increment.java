@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -41,5 +42,10 @@ public class Increment implements Expression, Statement {
     @Override
     public String toString() {
         return "Increment(" + (post ? inner.toString() + operator.toString() : operator.toString() + inner.toString()) + ")";
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 }

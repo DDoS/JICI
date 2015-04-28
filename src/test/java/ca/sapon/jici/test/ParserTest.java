@@ -48,7 +48,7 @@ public class ParserTest {
         testParseExpression("\"a\"", "\"a\"");
 
         testParseExpression("test", "test");
-        testParseExpression("test.stuff", "test.stuff");
+        testParseExpression("FieldAccess(test.stuff)", "test.stuff");
 
         testParseExpression("MethodCall(test())", "test()");
         testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");

@@ -36,7 +36,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m = (test);";
+        final String source = "m = test()[m];";
 
         System.out.println("Source:\n" + source);
 

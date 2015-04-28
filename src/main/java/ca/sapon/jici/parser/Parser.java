@@ -53,6 +53,7 @@ import ca.sapon.jici.parser.expression.logic.TypeCheck;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
 import ca.sapon.jici.parser.expression.IndexAccess;
+import ca.sapon.jici.parser.expression.reference.ContextReference;
 import ca.sapon.jici.parser.expression.reference.MemberReference;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
 import ca.sapon.jici.parser.expression.reference.Reference;
@@ -569,14 +570,14 @@ public class Parser {
                         final Token token = tokens.get();
                         if (token.getType() == TokenType.IDENTIFIER) {
                             tokens.advance();
-                            final Reference reference = new MemberReference(object, (Identifier) token);
+                            final Reference reference = new MemberReference(object);
                             final Expression access;
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArguments(tokens);
-                                access = new MethodCall(reference, arguments);
+                                access = new MethodCall(reference, (Identifier) token, arguments);
                             } else {
-                                access = new FieldAccess(reference);
+                                access = new FieldAccess(reference, (Identifier) token);
                             }
                             return parseAccess(tokens, access);
                         }
@@ -630,13 +631,26 @@ public class Parser {
                             }
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
-                                final Reference reference = new AmbiguousReference(name);
+                                final Identifier method = name.remove(name.size() - 1);
+                                final Reference reference;
+                                if (name.isEmpty()) {
+                                    reference = new ContextReference();
+                                } else {
+                                    reference = new AmbiguousReference(name);
+                                }
                                 final List<Expression> arguments = parseArguments(tokens);
-                                return new MethodCall(reference, arguments);
+                                return new MethodCall(reference, method, arguments);
                             }
                         }
                     }
-                    return new AmbiguousReference(name);
+                    final Identifier field = name.remove(name.size() - 1);
+                    final Reference reference;
+                    if (name.isEmpty()) {
+                        reference = new ContextReference();
+                    } else {
+                        reference = new AmbiguousReference(name);
+                    }
+                    return new FieldAccess(reference, field);
                 }
                 default: {
                     switch (token.getID()) {

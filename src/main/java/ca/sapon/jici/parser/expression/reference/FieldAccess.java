@@ -23,16 +23,20 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.evaluator.Value;
 
 public class FieldAccess extends Dereference implements Reference {
-    public FieldAccess(Reference reference) {
+    private final Identifier field;
+
+    public FieldAccess(Reference reference, Identifier field) {
         super(reference);
+        this.field = field;
     }
 
     @Override
     public String toString() {
-        return "FieldAccess(" + reference + ")";
+        return reference instanceof ContextReference ? field.toString() : "FieldAccess(" + reference + "." + field + ")";
     }
 
     @Override

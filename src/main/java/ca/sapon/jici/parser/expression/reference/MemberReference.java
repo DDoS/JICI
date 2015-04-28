@@ -29,11 +29,9 @@ import ca.sapon.jici.parser.expression.Expression;
 
 public class MemberReference implements Reference {
     private final Expression object;
-    private final Identifier member;
 
-    public MemberReference(Expression object, Identifier member) {
+    public MemberReference(Expression object) {
         this.object = object;
-        this.member = member;
     }
 
     @Override
@@ -43,6 +41,6 @@ public class MemberReference implements Reference {
 
     @Override
     public String toString() {
-        return object + "." + member;
+        return object.toString();
     }
 }

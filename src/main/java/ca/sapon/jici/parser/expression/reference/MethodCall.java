@@ -26,21 +26,24 @@ package ca.sapon.jici.parser.expression.reference;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall extends Dereference implements Statement {
+    private final Identifier method;
     private final List<Expression> arguments;
 
-    public MethodCall(Reference reference, List<Expression> arguments) {
+    public MethodCall(Reference reference, Identifier method, List<Expression> arguments) {
         super(reference);
+        this.method = method;
         this.arguments = arguments;
     }
 
     @Override
     public String toString() {
-        return "MethodCall(" + reference + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "MethodCall(" + (reference instanceof ContextReference ? "" : reference + ".") + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 
     @Override

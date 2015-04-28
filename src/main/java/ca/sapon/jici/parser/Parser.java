@@ -96,7 +96,7 @@ public class Parser {
             final Import _import = parseImport(tokens);
             tokens.discardPosition();
             return _import;
-        } catch (IllegalArgumentException exception) {
+        } catch (ParseFailure exception) {
             tokens.popPosition();
         }
         // try to parse a declaration
@@ -105,7 +105,7 @@ public class Parser {
             final Declaration declaration = parseDeclaration(tokens);
             tokens.discardPosition();
             return declaration;
-        } catch (IllegalArgumentException exception) {
+        } catch (ParseFailure exception) {
             tokens.popPosition();
         }
         // try to parse an expression that is also a statement
@@ -115,9 +115,9 @@ public class Parser {
                 tokens.advance();
                 return (Statement) expression;
             }
-            throw new IllegalArgumentException("Expected ';'");
+            throw new ParseError("Expected ';'");
         }
-        throw new IllegalArgumentException("Expected statement");
+        throw new ParseFailure("Expected statement");
     }
 
     /*
@@ -151,7 +151,7 @@ public class Parser {
                 return name;
             }
         }
-        throw new IllegalArgumentException("Expected identifier");
+        throw new ParseFailure("Expected identifier");
     }
 
     private static Type parseType(ListNavigator<Token> tokens) {
@@ -163,7 +163,7 @@ public class Parser {
             }
             return new ClassType(parseName(tokens));
         }
-        throw new IllegalArgumentException("Expected primitive type or identifier");
+        throw new ParseFailure("Expected primitive type or identifier");
     }
 
     private static Variable parseVariable(ListNavigator<Token> tokens) {
@@ -179,7 +179,7 @@ public class Parser {
                 return new Variable((Identifier) token);
             }
         }
-        throw new IllegalArgumentException("Expected identifier");
+        throw new ParseFailure("Expected identifier");
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
@@ -202,9 +202,9 @@ public class Parser {
                 tokens.advance();
                 return declaration;
             }
-            throw new IllegalArgumentException("Expected ';'");
+            throw new ParseError("Expected ';'");
         }
-        throw new IllegalArgumentException("Expected identifier or primitive type");
+        throw new ParseFailure("Expected identifier or primitive type");
     }
 
     /*
@@ -227,11 +227,11 @@ public class Parser {
                     tokens.advance();
                     return new Import(name, false);
                 }
-                throw new IllegalArgumentException("Expected ';'");
+                throw new ParseError("Expected ';'");
             }
-            throw new IllegalArgumentException("Expected '*' or ';'");
+            throw new ParseError("Expected '*' or ';'");
         }
-        throw new IllegalArgumentException("Expected \"import\"");
+        throw new ParseFailure("Expected \"import\"");
     }
 
     /*
@@ -283,7 +283,7 @@ public class Parser {
                     final Expression value = parseAssignment(tokens);
                     return new Assignment((Reference) assignee, value, (Symbol) token);
                 }
-                throw new IllegalArgumentException("Expected reference");
+                throw new ParseError("Expected reference");
             }
         }
         return assignee;
@@ -299,7 +299,7 @@ public class Parser {
                 final Expression right = parseConditional(tokens);
                 return new Conditional(test, left, right);
             }
-            throw new IllegalArgumentException("Expected ':'");
+            throw new ParseError("Expected ':'");
         }
         return test;
     }
@@ -490,7 +490,7 @@ public class Parser {
                     if (inner instanceof Reference) {
                         return new Increment((Reference) inner, (Symbol) token, false);
                     }
-                    throw new IllegalArgumentException("Expected reference");
+                    throw new ParseError("Expected reference");
                 }
                 case SYMBOL_PLUS:
                 case SYMBOL_MINUS: {
@@ -525,7 +525,7 @@ public class Parser {
                                 tokens.discardPosition();
                                 return new Cast(type, inner);
                             }
-                        } catch (IllegalArgumentException exception) {
+                        } catch (ParseFailure exception) {
                             // this is not a cast, but an access
                         }
                         tokens.popPosition();
@@ -535,7 +535,7 @@ public class Parser {
             final Expression inner = parseAccess(tokens);
             return parseUnary(tokens, inner);
         }
-        throw new IllegalArgumentException("Expected a token");
+        throw new ParseFailure("Expected a token");
     }
 
     private static Expression parseUnary(ListNavigator<Token> tokens, Expression inner) {
@@ -549,7 +549,7 @@ public class Parser {
                         final Expression outer = new Increment((Reference) inner, (Symbol) token, true);
                         return parseUnary(tokens, outer);
                     }
-                    throw new IllegalArgumentException("Expected reference");
+                    throw new ParseError("Expected reference");
                 }
             }
         }
@@ -590,7 +590,7 @@ public class Parser {
                     return parseAccess(tokens, access);
                 }
             }
-            throw new IllegalArgumentException("Expected identifier");
+            throw new ParseError("Expected identifier");
         }
         return object;
     }
@@ -650,7 +650,7 @@ public class Parser {
                                 tokens.advance();
                                 return expression;
                             }
-                            throw new IllegalArgumentException("Expected ')'");
+                            throw new ParseError("Expected ')'");
                         }
                         case KEYWORD_NEW: {
                             tokens.advance();
@@ -660,13 +660,13 @@ public class Parser {
                                 final List<Expression> arguments = parseArguments(tokens);
                                 return new ConstructorCall(name, arguments);
                             }
-                            throw new IllegalArgumentException("Expected '('");
+                            throw new ParseError("Expected '('");
                         }
                     }
                 }
             }
         }
-        throw new IllegalArgumentException("Expected literal, identifier, \"new\" or '('");
+        throw new ParseFailure("Expected literal, identifier, \"new\" or '('");
     }
 
     private static Expression parseIndex(ListNavigator<Token> tokens) {
@@ -675,7 +675,7 @@ public class Parser {
             tokens.advance();
             return index;
         }
-        throw new IllegalArgumentException("Expected ']'");
+        throw new ParseError("Expected ']'");
     }
 
     private static List<Expression> parseArguments(ListNavigator<Token> tokens) {
@@ -686,10 +686,26 @@ public class Parser {
         } else {
             arguments = parseExpressionList(tokens);
             if (!tokens.has() || tokens.get().getID() != TokenID.SYMBOL_CLOSE_PARENTHESIS) {
-                throw new IllegalArgumentException("Expected ')'");
+                throw new ParseError("Expected ')'");
             }
             tokens.advance();
         }
         return arguments;
+    }
+
+    private static class ParseFailure extends ParserException {
+        private static final long serialVersionUID = 1;
+
+        private ParseFailure(String message) {
+            super(message);
+        }
+    }
+
+    private static class ParseError extends ParserException {
+        private static final long serialVersionUID = 1;
+
+        private ParseError(String message) {
+            super(message);
+        }
     }
 }

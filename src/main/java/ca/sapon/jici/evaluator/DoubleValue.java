@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class DoubleValue implements Result {
+public class DoubleValue implements Value {
     private final double value;
 
     private DoubleValue(double value) {
@@ -82,8 +82,8 @@ public class DoubleValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.DOUBLE;
+    public ValueType getType() {
+        return ValueType.DOUBLE;
     }
 
     @Override

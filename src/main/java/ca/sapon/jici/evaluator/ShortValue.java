@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class ShortValue implements Result {
+public class ShortValue implements Value {
     private static final ShortValue[] COMMON_VALUES = new ShortValue[256];
     private final short value;
 
@@ -89,8 +89,8 @@ public class ShortValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.SHORT;
+    public ValueType getType() {
+        return ValueType.SHORT;
     }
 
     @Override

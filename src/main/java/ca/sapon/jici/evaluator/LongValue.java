@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class LongValue implements Result {
+public class LongValue implements Value {
     private static final LongValue[] COMMON_VALUES = new LongValue[256];
     private final long value;
 
@@ -89,8 +89,8 @@ public class LongValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.LONG;
+    public ValueType getType() {
+        return ValueType.LONG;
     }
 
     @Override

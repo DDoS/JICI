@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class FloatValue implements Result {
+public class FloatValue implements Value {
     private final float value;
 
     private FloatValue(float value) {
@@ -82,8 +82,8 @@ public class FloatValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.FLOAT;
+    public ValueType getType() {
+        return ValueType.FLOAT;
     }
 
     @Override

@@ -23,28 +23,14 @@
  */
 package ca.sapon.jici.evaluator;
 
-public interface Result {
-    boolean asBoolean();
-
-    byte asByte();
-
-    short asShort();
-
-    char asChar();
-
-    int asInt();
-
-    long asLong();
-
-    float asFloat();
-
-    double asDouble();
-
-    Object asObject();
-
-    <T> T getValue();
-
-    ResultType getType();
-
-    boolean isPrimitive();
+public enum ValueType {
+    BOOLEAN,
+    BYTE,
+    SHORT,
+    CHAR,
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    OBJECT
 }

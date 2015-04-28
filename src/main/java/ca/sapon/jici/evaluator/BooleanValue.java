@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class BooleanValue implements Result {
+public class BooleanValue implements Value {
     private static final BooleanValue THE_TRUE = new BooleanValue(true);
     private static final BooleanValue THE_FALSE = new BooleanValue(false);
     private final boolean value;
@@ -84,8 +84,8 @@ public class BooleanValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.BOOLEAN;
+    public ValueType getType() {
+        return ValueType.BOOLEAN;
     }
 
     @Override

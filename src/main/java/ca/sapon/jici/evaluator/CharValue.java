@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class CharValue implements Result {
+public class CharValue implements Value {
     private static final CharValue[] COMMON_VALUES = new CharValue[256];
     private final char value;
 
@@ -89,8 +89,8 @@ public class CharValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.CHAR;
+    public ValueType getType() {
+        return ValueType.CHAR;
     }
 
     @Override

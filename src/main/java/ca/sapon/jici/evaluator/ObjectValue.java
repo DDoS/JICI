@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class ObjectValue implements Result {
+public class ObjectValue implements Value {
     private static final ObjectValue THE_NULL = new ObjectValue(null);
     private final Object value;
 
@@ -104,8 +104,8 @@ public class ObjectValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.OBJECT;
+    public ValueType getType() {
+        return ValueType.OBJECT;
     }
 
     @Override

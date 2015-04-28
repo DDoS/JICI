@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class IntValue implements Result {
+public class IntValue implements Value {
     private static final IntValue[] COMMON_VALUES = new IntValue[256];
     private final int value;
 
@@ -89,8 +89,8 @@ public class IntValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.INT;
+    public ValueType getType() {
+        return ValueType.INT;
     }
 
     @Override

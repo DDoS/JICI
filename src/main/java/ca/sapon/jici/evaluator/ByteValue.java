@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public class ByteValue implements Result {
+public class ByteValue implements Value {
     private static final ByteValue[] ALL_VALUES = new ByteValue[256];
     private final byte value;
 
@@ -89,8 +89,8 @@ public class ByteValue implements Result {
     }
 
     @Override
-    public ResultType getType() {
-        return ResultType.BYTE;
+    public ValueType getType() {
+        return ValueType.BYTE;
     }
 
     @Override

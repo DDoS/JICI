@@ -45,7 +45,7 @@ public class Lexer {
      * @return The list of lexed tokens
      * @throws LexerException If the source is malformed. The message identifies the offending character
      */
-    public static List<Token> lex(String source) throws LexerException {
+    public static List<Token> lex(String source) {
         // this builds a list of tokens, which are identifiers, literals and symbols
         final List<Token> tokens = new ArrayList<>();
         final StringConsumer consumer = new StringConsumer(source);
@@ -274,17 +274,17 @@ public class Lexer {
         return consumer.has(1) && canPrecedeDigitSeparator(consumer.get(1), hexadecimal, inMantissa);
     }
 
-    private static void consumeCharacterLiteral(StringConsumer consumer) throws LexerException {
+    private static void consumeCharacterLiteral(StringConsumer consumer) {
         // a string of characters enclosed in '
         consumeEnclosedLiteral(consumer, '\'');
     }
 
-    private static void consumeStringLiteral(StringConsumer consumer) throws LexerException {
+    private static void consumeStringLiteral(StringConsumer consumer) {
         // a string of characters enclosed in "
         consumeEnclosedLiteral(consumer, '"');
     }
 
-    private static void consumeEnclosedLiteral(StringConsumer consumer, char enclosure) throws LexerException {
+    private static void consumeEnclosedLiteral(StringConsumer consumer, char enclosure) {
         char c;
         // if the count of consecutive escapes is odd, escaping is active
         int escapeCount = 0;

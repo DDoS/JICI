@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
-public class LexerException extends Exception {
+public class LexerException extends RuntimeException {
     private static final long serialVersionUID = 1;
 
     public LexerException(String error, String source, int index) {

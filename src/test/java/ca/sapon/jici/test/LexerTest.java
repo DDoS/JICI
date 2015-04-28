@@ -37,22 +37,22 @@ import org.junit.Test;
 
 public class LexerTest {
     @Test
-    public void testLexEmpty() throws LexerException {
+    public void testLexEmpty() {
         Assert.assertEquals(0, Lexer.lex("").size());
     }
 
     @Test
-    public void testLexSpaces() throws LexerException {
+    public void testLexSpaces() {
         Assert.assertEquals(0, Lexer.lex(" \t\f").size());
     }
 
     @Test
-    public void testLexLineTerminators() throws LexerException {
+    public void testLexLineTerminators() {
         Assert.assertEquals(0, Lexer.lex("\r\n").size());
     }
 
     @Test
-    public void testLexIdentifier() throws LexerException {
+    public void testLexIdentifier() {
         testLex(TokenID.IDENTIFIER, "t");
         testLex(TokenID.IDENTIFIER, "test");
 
@@ -78,14 +78,14 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexKeyword() throws LexerException {
+    public void testLexKeyword() {
         for (Keyword keyword : Keyword.all()) {
             testLex(keyword.getID(), keyword.getSource());
         }
     }
 
     @Test
-    public void testLexSymbol() throws LexerException {
+    public void testLexSymbol() {
         for (Symbol symbol : Symbol.all()) {
             if (symbol.getType() != TokenType.COMMENT_DELIMITER) {
                 testLex(symbol.getID(), symbol.getSource());
@@ -94,13 +94,13 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexBooleanLiteral() throws LexerException {
+    public void testLexBooleanLiteral() {
         testLex(TokenID.LITERAL_TRUE, "true");
         testLex(TokenID.LITERAL_FALSE, "false");
     }
 
     @Test
-    public void testLexCharacterLiteral() throws LexerException {
+    public void testLexCharacterLiteral() {
         testLex(TokenID.LITERAL_CHARACTER, "a", "'a'");
         testLex(TokenID.LITERAL_CHARACTER, "\\'", "'\\''");
         testLex(TokenID.LITERAL_CHARACTER, "\\\\", "'\\\\'");
@@ -109,7 +109,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexStringLiteral() throws LexerException {
+    public void testLexStringLiteral() {
         testLex(TokenID.LITERAL_STRING, "", "\"\"");
         testLex(TokenID.LITERAL_STRING, "t", "\"t\"");
         testLex(TokenID.LITERAL_STRING, "test", "\"test\"");
@@ -120,12 +120,12 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexNullLiteral() throws LexerException {
+    public void testLexNullLiteral() {
         testLex(TokenID.LITERAL_NULL, "null");
     }
 
     @Test
-    public void testLexDoubleLiteral() throws LexerException {
+    public void testLexDoubleLiteral() {
         testLex(TokenID.LITERAL_DOUBLE, "1.");
         testLex(TokenID.LITERAL_DOUBLE, "1.0");
         testLex(TokenID.LITERAL_DOUBLE, ".1");
@@ -175,7 +175,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexFloatLiteral() throws LexerException {
+    public void testLexFloatLiteral() {
         testLex(TokenID.LITERAL_FLOAT, "1", "1f");
         testLex(TokenID.LITERAL_FLOAT, "1.", "1.f");
         testLex(TokenID.LITERAL_FLOAT, "1.0", "1.0f");
@@ -204,7 +204,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexIntLiteral() throws LexerException {
+    public void testLexIntLiteral() {
         testLex(TokenID.LITERAL_INT, "1");
 
         testLex(TokenID.LITERAL_INT, "0x1");
@@ -220,7 +220,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexLongLiteral() throws LexerException {
+    public void testLexLongLiteral() {
         testLex(TokenID.LITERAL_LONG, "1", "1l");
 
         testLex(TokenID.LITERAL_LONG, "0x1", "0x1l");
@@ -241,7 +241,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testLexComments() throws LexerException {
+    public void testLexComments() {
         Assert.assertEquals(0, Lexer.lex("//abcd").size());
         Assert.assertEquals(0, Lexer.lex("//abcd\n").size());
         Assert.assertEquals(0, Lexer.lex("//abcd\r").size());
@@ -273,11 +273,11 @@ public class LexerTest {
         }
     }
 
-    private void testLex(TokenID expectedID, String source) throws LexerException {
+    private void testLex(TokenID expectedID, String source) {
         testLex(expectedID, source, source);
     }
 
-    private void testLex(TokenID expectedID, String expectedSource, String source) throws LexerException {
+    private void testLex(TokenID expectedID, String expectedSource, String source) {
         assertEquals(expectedID, expectedSource, Lexer.lex(source));
     }
 

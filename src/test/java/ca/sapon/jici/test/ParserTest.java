@@ -24,7 +24,6 @@
 package ca.sapon.jici.test;
 
 import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -33,7 +32,7 @@ import org.junit.Test;
 
 public class ParserTest {
     @Test
-    public void testParseAtom() throws LexerException {
+    public void testParseAtom() {
         testParseExpression("1", "1");
         testParseExpression("1L", "1L");
         testParseExpression("1f", "1f");
@@ -66,7 +65,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseAccess() throws LexerException {
+    public void testParseAccess() {
         testParseExpression("FieldAccess(\"f\".m)", "\"f\".m");
 
         testParseExpression("MethodCall(\"f\".m())", "\"f\".m()");
@@ -78,7 +77,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseUnary() throws LexerException {
+    public void testParseUnary() {
         testParseExpression("1", "+1");
         testParseExpression("-1", "-1");
         testParseExpression("-1", "+-1");
@@ -103,7 +102,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseMultiply() throws LexerException {
+    public void testParseMultiply() {
         testParseExpression("Multiply(l * r)", "l * r");
         testParseExpression("Multiply(l / r)", "l / r");
         testParseExpression("Multiply(l % r)", "l % r");
@@ -112,7 +111,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseAdd() throws LexerException {
+    public void testParseAdd() {
         testParseExpression("Add(l - r)", "l - r");
         testParseExpression("Add(l + r)", "l + r");
 
@@ -120,7 +119,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseShift() throws LexerException {
+    public void testParseShift() {
         testParseExpression("Shift(l << r)", "l << r");
         testParseExpression("Shift(l >> r)", "l >> r");
         testParseExpression("Shift(l >>> r)", "l >>> r");
@@ -129,7 +128,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseComparison() throws LexerException {
+    public void testParseComparison() {
         testParseExpression("Comparison(l < r)", "l < r");
         testParseExpression("Comparison(l > r)", "l > r");
         testParseExpression("Comparison(l <= r)", "l <= r");
@@ -141,7 +140,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseEqual() throws LexerException {
+    public void testParseEqual() {
         testParseExpression("Comparison(l == r)", "l == r");
         testParseExpression("Comparison(l != r)", "l != r");
 
@@ -149,49 +148,49 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseBitwiseAND() throws LexerException {
+    public void testParseBitwiseAND() {
         testParseExpression("BitwiseLogic(l & r)", "l & r");
 
         testParseExpression("BitwiseLogic(BitwiseLogic(a & b) & c)", "a & b & c");
     }
 
     @Test
-    public void testParseBitwiseXOR() throws LexerException {
+    public void testParseBitwiseXOR() {
         testParseExpression("BitwiseLogic(l ^ r)", "l ^ r");
 
         testParseExpression("BitwiseLogic(BitwiseLogic(a ^ b) ^ c)", "a ^ b ^ c");
     }
 
     @Test
-    public void testParseBitwiseOR() throws LexerException {
+    public void testParseBitwiseOR() {
         testParseExpression("BitwiseLogic(l | r)", "l | r");
 
         testParseExpression("BitwiseLogic(BitwiseLogic(a | b) | c)", "a | b | c");
     }
 
     @Test
-    public void testParseBooleanAND() throws LexerException {
+    public void testParseBooleanAND() {
         testParseExpression("BooleanLogic(l && r)", "l && r");
 
         testParseExpression("BooleanLogic(BooleanLogic(a && b) && c)", "a && b && c");
     }
 
     @Test
-    public void testParseBooleanOR() throws LexerException {
+    public void testParseBooleanOR() {
         testParseExpression("BooleanLogic(l || r)", "l || r");
 
         testParseExpression("BooleanLogic(BooleanLogic(a || b) || c)", "a || b || c");
     }
 
     @Test
-    public void testParseConditional() throws LexerException {
+    public void testParseConditional() {
         testParseExpression("Conditional(t ? l : r)", "t ? l : r");
 
         testParseExpression("Conditional(r ? Conditional(s ? u : v) : Conditional(t ? k : l))", "r ? s ? u : v : t ? k : l");
     }
 
     @Test
-    public void testParseAssignment() throws LexerException {
+    public void testParseAssignment() {
         testParseExpression("Assignment(l = r)", "l = r");
         testParseExpression("Assignment(l += r)", "l += r");
         testParseExpression("Assignment(l -= r)", "l -= r");
@@ -209,12 +208,12 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseEmpty() throws LexerException {
+    public void testParseEmpty() {
         testParseStatement("Empty()", ";");
     }
 
     @Test
-    public void testParsePriority() throws LexerException {
+    public void testParsePriority() {
         testParseExpression("Assignment(x = " +
                         "Conditional(v ? y : " +
                         "BooleanLogic(a || " +
@@ -234,7 +233,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseDeclaration() throws LexerException {
+    public void testParseDeclaration() {
         testParseStatement("Declaration(Object m)", "Object m;");
         testParseStatement("Declaration(Object m, k, j)", "Object m, k, j;");
 
@@ -243,25 +242,25 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseImport() throws LexerException {
+    public void testParseImport() {
         testParseStatement("Import(Object)", "import Object;");
         testParseStatement("Import(java.lang.Object)", "import java.lang.Object;");
         testParseStatement("Import(java.lang.*)", "import java.lang.*;");
     }
 
     @Test
-    public void testParseStatementExpression() throws LexerException {
+    public void testParseStatementExpression() {
         testParseStatement("Assignment(m = 2)", "m = 2;");
         testParseStatement("Increment(m++)", "m++;");
         testParseStatement("ConstructorCall(new Test())", "new Test();");
         testParseStatement("MethodCall(test())", "test();");
     }
 
-    private void testParseExpression(String expected, String source) throws LexerException {
+    private void testParseExpression(String expected, String source) {
         assertEqual(expected, Parser.parseExpression(Lexer.lex(source)));
     }
 
-    private void testParseStatement(String expected, String source) throws LexerException {
+    private void testParseStatement(String expected, String source) {
         assertEqual(expected, Parser.parseStatement(Lexer.lex(source)));
     }
 

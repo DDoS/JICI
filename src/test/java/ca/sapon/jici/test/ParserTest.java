@@ -99,7 +99,7 @@ public class ParserTest {
         testParseExpression("Cast((int) test)", "(int) test");
         testParseExpression("Cast((Object) test)", "(Object) test");
 
-        testParseExpression("Cast((Object) BooleanLogic(!Increment(--Increment(++Increment(Increment(test--)++)))))", "(Object) !--++test--++");
+        testParseExpression("Cast((Object) BooleanLogic(!Sign(-Sign(+Increment(test++)))))", "(Object) !-+test++");
     }
 
     @Test

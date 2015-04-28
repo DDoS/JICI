@@ -487,7 +487,10 @@ public class Parser {
                 case SYMBOL_DECREMENT: {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new Increment(inner, (Symbol) token, false);
+                    if (inner instanceof Reference) {
+                        return new Increment((Reference) inner, (Symbol) token, false);
+                    }
+                    throw new IllegalArgumentException("Expected reference");
                 }
                 case SYMBOL_PLUS:
                 case SYMBOL_MINUS: {
@@ -542,8 +545,11 @@ public class Parser {
                 case SYMBOL_INCREMENT:
                 case SYMBOL_DECREMENT: {
                     tokens.advance();
-                    final Expression outer = new Increment(inner, (Symbol) token, true);
-                    return parseUnary(tokens, outer);
+                    if (inner instanceof Reference) {
+                        final Expression outer = new Increment((Reference) inner, (Symbol) token, true);
+                        return parseUnary(tokens, outer);
+                    }
+                    throw new IllegalArgumentException("Expected reference");
                 }
             }
         }

@@ -26,14 +26,15 @@ package ca.sapon.jici.parser.expression.arithmetic;
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Increment implements Expression, Statement {
-    private final Expression inner;
+    private final Reference inner;
     private final Symbol operator;
     private final boolean post;
 
-    public Increment(Expression inner, Symbol operator, boolean post) {
+    public Increment(Reference inner, Symbol operator, boolean post) {
         this.inner = inner;
         this.operator = operator;
         this.post = post;

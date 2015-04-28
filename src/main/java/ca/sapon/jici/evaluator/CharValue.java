@@ -29,7 +29,7 @@ public class CharValue implements Value {
 
     static {
         for (int i = 0; i < 256; i++) {
-            COMMON_VALUES[i] = new CharValue((char) (i - 128));
+            COMMON_VALUES[i] = new CharValue((char) i);
         }
     }
 
@@ -99,9 +99,8 @@ public class CharValue implements Value {
     }
 
     public static CharValue of(char value) {
-        final int offsetValue = value + 128;
-        if ((offsetValue & ~0xFF) == 0) {
-            return COMMON_VALUES[offsetValue];
+        if ((value & ~0xFF) == 0) {
+            return COMMON_VALUES[value];
         }
         return new CharValue(value);
     }

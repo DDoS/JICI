@@ -89,8 +89,8 @@ public class ByteValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.BYTE;
+    public ValueKind getKind() {
+        return ValueKind.BYTE;
     }
 
     @Override

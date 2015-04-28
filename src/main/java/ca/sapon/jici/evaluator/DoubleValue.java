@@ -82,8 +82,8 @@ public class DoubleValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.DOUBLE;
+    public ValueKind getKind() {
+        return ValueKind.DOUBLE;
     }
 
     @Override

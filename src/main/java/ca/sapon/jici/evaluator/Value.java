@@ -44,7 +44,7 @@ public interface Value {
 
     <T> T getValue();
 
-    ValueType getType();
+    ValueKind getKind();
 
     boolean isPrimitive();
 }

@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator;
 
-public enum ValueType {
+public enum ValueKind {
     BOOLEAN,
     BYTE,
     SHORT,

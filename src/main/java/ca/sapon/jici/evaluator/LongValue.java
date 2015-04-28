@@ -89,8 +89,8 @@ public class LongValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.LONG;
+    public ValueKind getKind() {
+        return ValueKind.LONG;
     }
 
     @Override

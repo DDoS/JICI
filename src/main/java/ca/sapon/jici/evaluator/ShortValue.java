@@ -89,8 +89,8 @@ public class ShortValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.SHORT;
+    public ValueKind getKind() {
+        return ValueKind.SHORT;
     }
 
     @Override

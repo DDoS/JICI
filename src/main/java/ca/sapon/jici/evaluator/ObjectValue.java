@@ -104,8 +104,8 @@ public class ObjectValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.OBJECT;
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
     }
 
     @Override

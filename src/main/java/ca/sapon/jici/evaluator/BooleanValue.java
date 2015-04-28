@@ -84,8 +84,8 @@ public class BooleanValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.BOOLEAN;
+    public ValueKind getKind() {
+        return ValueKind.BOOLEAN;
     }
 
     @Override

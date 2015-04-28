@@ -89,8 +89,8 @@ public class IntValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.INT;
+    public ValueKind getKind() {
+        return ValueKind.INT;
     }
 
     @Override

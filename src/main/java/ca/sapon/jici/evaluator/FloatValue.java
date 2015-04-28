@@ -82,8 +82,8 @@ public class FloatValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.FLOAT;
+    public ValueKind getKind() {
+        return ValueKind.FLOAT;
     }
 
     @Override

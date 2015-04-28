@@ -89,8 +89,8 @@ public class CharValue implements Value {
     }
 
     @Override
-    public ValueType getType() {
-        return ValueType.CHAR;
+    public ValueKind getKind() {
+        return ValueKind.CHAR;
     }
 
     @Override

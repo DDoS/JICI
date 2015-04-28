@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -33,6 +34,11 @@ public class MemberReference implements Reference {
     public MemberReference(Expression object, Identifier member) {
         this.object = object;
         this.member = member;
+    }
+
+    @Override
+    public Value getValue() {
+        return null;
     }
 
     @Override

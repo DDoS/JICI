@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-public interface Reference {
+import ca.sapon.jici.parser.expression.Expression;
+
+public interface Reference extends Expression {
     String toString();
 }

@@ -23,8 +23,11 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
 public interface Reference extends Expression {
+    void setValue(Value value);
+
     String toString();
 }

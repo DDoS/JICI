@@ -42,12 +42,12 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
-    public String toString() {
-        return "MethodCall(" + (reference instanceof ContextReference ? "" : reference + ".") + method + "(" + StringUtil.toString(arguments, ", ") + "))";
+    public Value getValue() {
+        return null;
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "MethodCall(" + (reference instanceof ContextReference ? "" : reference + ".") + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

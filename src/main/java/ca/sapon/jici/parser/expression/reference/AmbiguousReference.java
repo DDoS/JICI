@@ -38,12 +38,16 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public String toString() {
-        return StringUtil.toString(name, ".");
+    public void setValue(Value value) {
     }
 
     @Override
     public Value getValue() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return StringUtil.toString(name, ".");
     }
 }

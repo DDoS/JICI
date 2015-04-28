@@ -24,14 +24,17 @@
 package ca.sapon.jici.parser.expression.reference;
 
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class MemberReference implements Reference {
-    private final Expression object;
+    private final Expression member;
 
-    public MemberReference(Expression object) {
-        this.object = object;
+    public MemberReference(Expression member) {
+        this.member = member;
+    }
+
+    @Override
+    public void setValue(Value value) {
     }
 
     @Override
@@ -41,6 +44,6 @@ public class MemberReference implements Reference {
 
     @Override
     public String toString() {
-        return object.toString();
+        return member.toString();
     }
 }

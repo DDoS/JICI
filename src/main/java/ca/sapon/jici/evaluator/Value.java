@@ -42,7 +42,7 @@ public interface Value {
 
     Object asObject();
 
-    <T> T getValue();
+    <T> T as();
 
     ValueKind getKind();
 

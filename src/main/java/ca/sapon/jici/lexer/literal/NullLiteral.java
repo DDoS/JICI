@@ -81,7 +81,7 @@ public class NullLiteral extends Literal implements Value {
     }
 
     @Override
-    public <T> T getValue() {
+    public <T> T as() {
         return null;
     }
 

@@ -84,7 +84,7 @@ public class IntValue implements Value {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getValue() {
+    public <T> T as() {
         return (T) asObject();
     }
 

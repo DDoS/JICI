@@ -26,14 +26,15 @@ package ca.sapon.jici.parser.expression.arithmetic;
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Assignment implements Expression, Statement {
-    private final Expression assignee;
+    private final Reference assignee;
     private final Expression value;
     private final Symbol operator;
 
-    public Assignment(Expression assignee, Expression value, Symbol operator) {
+    public Assignment(Reference assignee, Expression value, Symbol operator) {
         this.assignee = assignee;
         this.value = value;
         this.operator = operator;

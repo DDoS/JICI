@@ -281,7 +281,7 @@ public class Parser {
                 if (assignee instanceof Reference) {
                     tokens.advance();
                     final Expression value = parseAssignment(tokens);
-                    return new Assignment(assignee, value, (Symbol) token);
+                    return new Assignment((Reference) assignee, value, (Symbol) token);
                 }
                 throw new IllegalArgumentException("Expected reference");
             }

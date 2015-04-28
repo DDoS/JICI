@@ -72,7 +72,7 @@ public class DoubleValue implements Value {
 
     @Override
     public Double asObject() {
-        return Double.valueOf(value);
+        return value;
     }
 
     @Override

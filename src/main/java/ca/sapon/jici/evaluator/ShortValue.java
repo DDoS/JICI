@@ -79,7 +79,7 @@ public class ShortValue implements Value {
 
     @Override
     public Short asObject() {
-        return Short.valueOf(value);
+        return value;
     }
 
     @Override

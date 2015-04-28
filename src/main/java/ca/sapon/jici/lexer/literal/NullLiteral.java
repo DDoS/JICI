@@ -23,20 +23,76 @@
  */
 package ca.sapon.jici.lexer.literal;
 
-import ca.sapon.jici.evaluator.ObjectValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 
-public class NullLiteral extends Literal {
+public class NullLiteral extends Literal implements Value {
     public static final NullLiteral THE_NULL = new NullLiteral();
     private static final String nullSource = "null";
-    private final ObjectValue value;
 
     private NullLiteral() {
         super(TokenID.LITERAL_NULL, nullSource);
-        value = ObjectValue.of(null);
     }
 
-    public void evaluate() {
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast an object to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        throw new IllegalArgumentException("Cannot cast an object to a byte");
+    }
+
+    @Override
+    public short asShort() {
+        throw new IllegalArgumentException("Cannot cast an object to a short");
+    }
+
+    @Override
+    public char asChar() {
+        throw new IllegalArgumentException("Cannot cast an object to a char");
+    }
+
+    @Override
+    public int asInt() {
+        throw new IllegalArgumentException("Cannot cast an object to an int");
+    }
+
+    @Override
+    public long asLong() {
+        throw new IllegalArgumentException("Cannot cast an object to a long");
+    }
+
+    @Override
+    public float asFloat() {
+        throw new IllegalArgumentException("Cannot cast an object to a float");
+    }
+
+    @Override
+    public double asDouble() {
+        throw new IllegalArgumentException("Cannot cast an object to a double");
+    }
+
+    @Override
+    public Object asObject() {
+        return null;
+    }
+
+    @Override
+    public <T> T getValue() {
+        return null;
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return false;
     }
 
     public static boolean is(String source) {

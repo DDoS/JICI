@@ -79,7 +79,7 @@ public class LongValue implements Value {
 
     @Override
     public Long asObject() {
-        return Long.valueOf(value);
+        return value;
     }
 
     @Override

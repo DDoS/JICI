@@ -23,33 +23,99 @@
  */
 package ca.sapon.jici.lexer.literal;
 
-import ca.sapon.jici.evaluator.CharValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class CharacterLiteral extends Literal {
-    private CharValue value = null;
+public class CharacterLiteral extends Literal implements Value {
+    private char value = '\0';
+    private boolean evaluated = false;
 
     public CharacterLiteral(String source) {
         super(TokenID.LITERAL_CHARACTER, source.substring(1, source.length() - 1));
     }
 
-    public void evaluate() {
-        if (value == null) {
+    private void evaluate() {
+        if (!evaluated) {
             final String source = getSource();
             // format: X or \X where X is any character
             switch (source.length()) {
                 case 1:
-                    value = CharValue.of(source.charAt(0));
+                    value = source.charAt(0);
+                    evaluated = true;
                     return;
                 case 2:
                     if (source.charAt(0) == '\\') {
-                        value = CharValue.of(StringUtil.decodeJavaEscape(source.charAt(1)));
+                        value = StringUtil.decodeJavaEscape(source.charAt(1));
+                        evaluated = true;
                         return;
                     }
             }
             throw new IllegalArgumentException("Malformed character literal: '" + source + "'");
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast a char to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        return (byte) asChar();
+    }
+
+    @Override
+    public short asShort() {
+        return (short) asChar();
+    }
+
+    @Override
+    public char asChar() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    public int asInt() {
+        return asChar();
+    }
+
+    @Override
+    public long asLong() {
+        return asChar();
+    }
+
+    @Override
+    public float asFloat() {
+        return asChar();
+    }
+
+    @Override
+    public double asDouble() {
+        return asChar();
+    }
+
+    @Override
+    public Character asObject() {
+        return asChar();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.CHAR;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     @Override

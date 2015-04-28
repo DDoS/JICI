@@ -23,22 +23,81 @@
  */
 package ca.sapon.jici.lexer.literal;
 
-import ca.sapon.jici.evaluator.BooleanValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 
-public class BooleanLiteral extends Literal {
+public class BooleanLiteral extends Literal implements Value {
     private static final String trueSource = "true";
     private static final String falseSource = "false";
     private static final BooleanLiteral THE_TRUE = new BooleanLiteral(true);
     private static final BooleanLiteral THE_FALSE = new BooleanLiteral(false);
-    private final BooleanValue value;
+    private final boolean value;
 
     private BooleanLiteral(boolean value) {
         super(value ? TokenID.LITERAL_TRUE : TokenID.LITERAL_FALSE, value ? trueSource : falseSource);
-        this.value = BooleanValue.of(value);
+        this.value = value;
     }
 
-    public void evaluate() {
+    @Override
+    public boolean asBoolean() {
+        return value;
+    }
+
+    @Override
+    public byte asByte() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a byte");
+    }
+
+    @Override
+    public short asShort() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a short");
+    }
+
+    @Override
+    public char asChar() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a char");
+    }
+
+    @Override
+    public int asInt() {
+        throw new IllegalArgumentException("Cannot cast a boolean to an int");
+    }
+
+    @Override
+    public long asLong() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a long");
+    }
+
+    @Override
+    public float asFloat() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a float");
+    }
+
+    @Override
+    public double asDouble() {
+        throw new IllegalArgumentException("Cannot cast a boolean to a double");
+    }
+
+    @Override
+    public Boolean asObject() {
+        return value;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.BOOLEAN;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     public static boolean is(String source) {

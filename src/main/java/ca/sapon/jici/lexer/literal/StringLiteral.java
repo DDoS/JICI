@@ -23,18 +23,19 @@
  */
 package ca.sapon.jici.lexer.literal;
 
-import ca.sapon.jici.evaluator.ObjectValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class StringLiteral extends Literal {
-    private ObjectValue value = null;
+public class StringLiteral extends Literal implements Value {
+    private String value = null;
 
     public StringLiteral(String source) {
         super(TokenID.LITERAL_STRING, source.substring(1, source.length() - 1));
     }
 
-    public void evaluate() {
+    private void evaluate() {
         if (value == null) {
             final String source = getSource();
             final int length = source.length();
@@ -55,8 +56,70 @@ public class StringLiteral extends Literal {
                     }
                 }
             }
-            value = ObjectValue.of(String.valueOf(chars, 0, count));
+            value = String.valueOf(chars, 0, count);
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast an object to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        throw new IllegalArgumentException("Cannot cast an object to a byte");
+    }
+
+    @Override
+    public short asShort() {
+        throw new IllegalArgumentException("Cannot cast an object to a short");
+    }
+
+    @Override
+    public char asChar() {
+        throw new IllegalArgumentException("Cannot cast an object to a char");
+    }
+
+    @Override
+    public int asInt() {
+        throw new IllegalArgumentException("Cannot cast an object to an int");
+    }
+
+    @Override
+    public long asLong() {
+        throw new IllegalArgumentException("Cannot cast an object to a long");
+    }
+
+    @Override
+    public float asFloat() {
+        throw new IllegalArgumentException("Cannot cast an object to a float");
+    }
+
+    @Override
+    public double asDouble() {
+        throw new IllegalArgumentException("Cannot cast an object to a double");
+    }
+
+    @Override
+    public String asObject() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
     }
 
     @Override

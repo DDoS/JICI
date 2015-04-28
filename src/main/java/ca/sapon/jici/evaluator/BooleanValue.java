@@ -74,7 +74,7 @@ public class BooleanValue implements Value {
 
     @Override
     public Boolean asObject() {
-        return Boolean.valueOf(value);
+        return value;
     }
 
     @Override

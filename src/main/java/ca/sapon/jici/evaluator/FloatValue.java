@@ -72,7 +72,7 @@ public class FloatValue implements Value {
 
     @Override
     public Float asObject() {
-        return Float.valueOf(value);
+        return value;
     }
 
     @Override

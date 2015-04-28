@@ -23,24 +23,89 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.evaluator.LongValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class LongLiteral extends NumberLiteral {
-    private LongValue value = null;
+public class LongLiteral extends NumberLiteral implements Value {
+    private long value = 0;
+    private boolean evaluated = false;
 
     public LongLiteral(String source) {
         super(TokenID.LITERAL_LONG, source);
     }
 
-    public void evaluate() {
-        if (value == null) {
+    private void evaluate() {
+        if (!evaluated) {
             String source = getSource();
             final int radix = StringUtil.findRadix(source);
             source = StringUtil.removeRadixIdentifier(source, radix);
-            value = LongValue.of(Long.parseLong(source, radix));
+            value = Long.parseLong(source, radix);
+            evaluated = true;
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast a long to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        return (byte) asLong();
+    }
+
+    @Override
+    public short asShort() {
+        return (short) asLong();
+    }
+
+    @Override
+    public char asChar() {
+        return (char) asLong();
+    }
+
+    @Override
+    public int asInt() {
+        return (int) asLong();
+    }
+
+    @Override
+    public long asLong() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    public float asFloat() {
+        return asLong();
+    }
+
+    @Override
+    public double asDouble() {
+        return asLong();
+    }
+
+    @Override
+    public Long asObject() {
+        return asLong();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.LONG;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     @Override

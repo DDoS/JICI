@@ -79,7 +79,7 @@ public class CharValue implements Value {
 
     @Override
     public Character asObject() {
-        return Character.valueOf(value);
+        return value;
     }
 
     @Override

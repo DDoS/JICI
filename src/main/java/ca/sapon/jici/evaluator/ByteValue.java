@@ -79,7 +79,7 @@ public class ByteValue implements Value {
 
     @Override
     public Byte asObject() {
-        return Byte.valueOf(value);
+        return value;
     }
 
     @Override

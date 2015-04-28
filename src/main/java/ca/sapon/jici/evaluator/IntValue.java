@@ -79,7 +79,7 @@ public class IntValue implements Value {
 
     @Override
     public Integer asObject() {
-        return Integer.valueOf(value);
+        return value;
     }
 
     @Override

@@ -23,23 +23,88 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class IntLiteral extends NumberLiteral {
-    private IntValue value = null;
+public class IntLiteral extends NumberLiteral implements Value {
+    private int value = 0;
+    private boolean evaluated = false;
 
     public IntLiteral(String source) {
         super(TokenID.LITERAL_INT, source);
     }
 
-    public void evaluate() {
-        if (value == null) {
+    private void evaluate() {
+        if (!evaluated) {
             String source = getSource();
             final int radix = StringUtil.findRadix(source);
             source = StringUtil.removeRadixIdentifier(source, radix);
-            value = IntValue.of(Integer.parseInt(source, radix));
+            value = Integer.parseInt(source, radix);
+            evaluated = true;
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast an int to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        return (byte) asInt();
+    }
+
+    @Override
+    public short asShort() {
+        return (short) asInt();
+    }
+
+    @Override
+    public char asChar() {
+        return (char) asInt();
+    }
+
+    @Override
+    public int asInt() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    public long asLong() {
+        return asInt();
+    }
+
+    @Override
+    public float asFloat() {
+        return asInt();
+    }
+
+    @Override
+    public double asDouble() {
+        return asInt();
+    }
+
+    @Override
+    public Integer asObject() {
+        return asInt();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.INT;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 }

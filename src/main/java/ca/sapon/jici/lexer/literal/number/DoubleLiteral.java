@@ -23,20 +23,85 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.evaluator.DoubleValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 
-public class DoubleLiteral extends NumberLiteral {
-    private DoubleValue value = null;
+public class DoubleLiteral extends NumberLiteral implements Value {
+    private double value = 0;
+    private boolean evaluated = false;
 
     public DoubleLiteral(String source) {
         super(TokenID.LITERAL_DOUBLE, source);
     }
 
-    public void evaluate() {
-        if (value == null) {
-            value = DoubleValue.of(Double.parseDouble(getSource()));
+    private void evaluate() {
+        if (!evaluated) {
+            value = Double.parseDouble(getSource());
+            evaluated = true;
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast a double to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        return (byte) asDouble();
+    }
+
+    @Override
+    public short asShort() {
+        return (short) asDouble();
+    }
+
+    @Override
+    public char asChar() {
+        return (char) asDouble();
+    }
+
+    @Override
+    public int asInt() {
+        return (int) asDouble();
+    }
+
+    @Override
+    public long asLong() {
+        return (long) asDouble();
+    }
+
+    @Override
+    public float asFloat() {
+        return (float) asDouble();
+    }
+
+    @Override
+    public double asDouble() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    public Double asObject() {
+        return asDouble();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.DOUBLE;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     @Override

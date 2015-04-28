@@ -23,17 +23,15 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.evaluator.IntValue;
-
 public class ZeroLiteral extends IntLiteral {
     public static final ZeroLiteral THE_ZERO = new ZeroLiteral();
-    private final IntValue value;
 
     private ZeroLiteral() {
         super("0");
-        value = IntValue.of(0);
     }
 
-    public void evaluate() {
+    @Override
+    public int asInt() {
+        return 0;
     }
 }

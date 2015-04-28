@@ -23,20 +23,85 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
-import ca.sapon.jici.evaluator.FloatValue;
+import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 
-public class FloatLiteral extends NumberLiteral {
-    private FloatValue value = null;
+public class FloatLiteral extends NumberLiteral implements Value {
+    private float value = 0;
+    private boolean evaluated = false;
 
     public FloatLiteral(String source) {
         super(TokenID.LITERAL_FLOAT, source);
     }
 
-    public void evaluate() {
-        if (value == null) {
-            value = FloatValue.of(Float.parseFloat(getSource()));
+    private void evaluate() {
+        if (!evaluated) {
+            value = Float.parseFloat(getSource());
+            evaluated = true;
         }
+    }
+
+    @Override
+    public boolean asBoolean() {
+        throw new IllegalArgumentException("Cannot cast a float to a boolean");
+    }
+
+    @Override
+    public byte asByte() {
+        return (byte) asFloat();
+    }
+
+    @Override
+    public short asShort() {
+        return (short) asFloat();
+    }
+
+    @Override
+    public char asChar() {
+        return (char) asFloat();
+    }
+
+    @Override
+    public int asInt() {
+        return (int) asFloat();
+    }
+
+    @Override
+    public long asLong() {
+        return (long) asFloat();
+    }
+
+    @Override
+    public float asFloat() {
+        evaluate();
+        return value;
+    }
+
+    @Override
+    public double asDouble() {
+        return asFloat();
+    }
+
+    @Override
+    public Float asObject() {
+        return asFloat();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) asObject();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.FLOAT;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     @Override

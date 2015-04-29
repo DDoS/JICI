@@ -32,5 +32,18 @@ public enum ValueKind {
     LONG,
     FLOAT,
     DOUBLE,
-    OBJECT
+    OBJECT;
+
+    public static boolean canNarrowTo(ValueKind kind, int value) {
+        switch (kind) {
+            case BYTE:
+                return (value + 128 & ~0xFF) == 0;
+            case SHORT:
+                return (value + 32768 & ~0xFFFF) == 0;
+            case CHAR:
+                return (value & ~0xFFFF) == 0;
+            default:
+                throw new IllegalArgumentException("Not a narrowing conversion: " + kind + " to INT");
+        }
+    }
 }

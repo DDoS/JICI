@@ -70,6 +70,10 @@ public enum ValueKind {
         if ((mask & 0b100000) != 0) {
             return LONG;
         }
+        // both BOOLEAN to BOOLEAN
+        if (mask == 0b1) {
+            return BOOLEAN;
+        }
         // anything else to INT
         return INT;
     }

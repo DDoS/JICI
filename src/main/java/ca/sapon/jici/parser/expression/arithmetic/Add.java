@@ -23,7 +23,12 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.DoubleValue;
+import ca.sapon.jici.evaluator.FloatValue;
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -31,6 +36,7 @@ public class Add implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Value value = null;
 
     public Add(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -39,12 +45,57 @@ public class Add implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "Add(" + left + " " + operator + " " + right + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value leftValue = left.getValue();
+            final Value rightValue = right.getValue();
+            final ValueKind resultKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            switch (operator.getID()) {
+                case SYMBOL_PLUS:
+                    value = doAdd(leftValue, rightValue, resultKind);
+                    break;
+                case SYMBOL_MINUS:
+                    value = doSubtract(leftValue, rightValue, resultKind);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operator for add: " + operator);
+            }
+        }
+        return value;
+    }
+
+    private Value doAdd(Value leftValue, Value rightValue, ValueKind resultKind) {
+        switch (resultKind) {
+            case INT:
+                return IntValue.of(leftValue.asInt() + rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() + rightValue.asLong());
+            case FLOAT:
+                return FloatValue.of(leftValue.asFloat() + rightValue.asFloat());
+            case DOUBLE:
+                return DoubleValue.of(leftValue.asDouble() + rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid result type for add, got " + resultKind);
+        }
+    }
+
+    private Value doSubtract(Value leftValue, Value rightValue, ValueKind resultKind) {
+        switch (resultKind) {
+            case INT:
+                return IntValue.of(leftValue.asInt() - rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() - rightValue.asLong());
+            case FLOAT:
+                return FloatValue.of(leftValue.asFloat() - rightValue.asFloat());
+            case DOUBLE:
+                return DoubleValue.of(leftValue.asDouble() - rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid result type for subtract, got " + resultKind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "Add(" + left + " " + operator + " " + right + ")";
     }
 }

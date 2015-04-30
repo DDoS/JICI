@@ -25,18 +25,20 @@ package ca.sapon.jici;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.ParserException;
+import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "m = test()[m];";
+        final String source = "31d % 7 + 5f * 4 - -(2 - 1L) / 2f";
 
         System.out.println("Source:\n" + source);
 
@@ -48,10 +50,18 @@ public class Main {
             }
 
             System.out.println("\nParsing:");
-            final List<Statement> statements = Parser.parse(tokens);
+            /*final List<Statement> statements = Parser.parse(tokens);
             for (Statement statement : statements) {
                 System.out.println(statement);
-            }
+            }*/
+            final Expression expression = Parser.parseExpression(tokens);
+            System.out.println(expression);
+
+            System.out.println("\nEvaluating:");
+            final Value value = expression.getValue();
+            System.out.println("Type: " + value.getKind());
+            System.out.println("Value: " + value);
+
         } catch (LexerException | ParserException exception) {
             System.out.printf("Exception: %s\n", exception.getMessage());
             exception.printStackTrace();

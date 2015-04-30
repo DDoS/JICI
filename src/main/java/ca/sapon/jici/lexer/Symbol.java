@@ -75,7 +75,6 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_REMAINDER_ASSIGN, "%=");
         add(TokenID.SYMBOL_BITWISE_AND_ASSIGN, "&=");
         add(TokenID.SYMBOL_BITWISE_OR_ASSIGN, "|=");
-        add(TokenID.SYMBOL_BITWISE_NOT_ASSIGN, "~=");
         add(TokenID.SYMBOL_BITWISE_XOR_ASSIGN, "^=");
         add(TokenID.SYMBOL_LOGICAL_LEFT_SHIFT_ASSIGN, "<<=");
         add(TokenID.SYMBOL_ARITHMETIC_RIGHT_SHIFT_ASSIGN, ">>=");

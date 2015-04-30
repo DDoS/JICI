@@ -43,7 +43,7 @@ public enum ValueKind {
             case CHAR:
                 return (value & ~0xFFFF) == 0;
             default:
-                throw new IllegalArgumentException("Not a narrowing conversion: " + kind + " to INT");
+                return false;
         }
     }
 

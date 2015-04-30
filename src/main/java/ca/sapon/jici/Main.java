@@ -37,7 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "1 == 1 && 1 != 2 && 1 < 2 && 1 <= 1 && 2 > 1 && 1 >=1";
+        final String source = "true ? 1d : 0L";
 
         System.out.println("Source:\n" + source);
 

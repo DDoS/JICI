@@ -23,13 +23,24 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.BooleanValue;
+import ca.sapon.jici.evaluator.ByteValue;
+import ca.sapon.jici.evaluator.CharValue;
+import ca.sapon.jici.evaluator.DoubleValue;
+import ca.sapon.jici.evaluator.FloatValue;
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.LongValue;
+import ca.sapon.jici.evaluator.ObjectValue;
+import ca.sapon.jici.evaluator.ShortValue;
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.lexer.literal.number.IntLiteral;
 
 public class Conditional implements Expression {
     private final Expression test;
     private final Expression left;
     private final Expression right;
+    private Value value = null;
 
     public Conditional(Expression test, Expression left, Expression right) {
         this.test = test;
@@ -38,12 +49,66 @@ public class Conditional implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "Conditional(" + test + " ? " + left + " : " + right + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value tesValue = test.getValue();
+            final Value leftValue = left.getValue();
+            final Value rightValue = right.getValue();
+            final ValueKind leftKind = leftValue.getKind();
+            final ValueKind rightKind = rightValue.getKind();
+            final ValueKind widenKind;
+            if (leftValue instanceof IntLiteral && ValueKind.canNarrowTo(rightKind, leftValue.asInt())) {
+                // left constant numeric that narrows to right, use right
+                widenKind = rightKind;
+            } else if (rightValue instanceof IntLiteral && ValueKind.canNarrowTo(leftKind, rightValue.asInt())) {
+                // right constant numeric that narrows to left, use left
+                widenKind = leftKind;
+            } else if (leftKind == rightKind) {
+                // both same kind to kind
+                widenKind = leftKind;
+            } else if ((1 << leftKind.ordinal() | 1 << rightKind.ordinal()) == 0b110) {
+                // one BYTE and other SHORT to SHORT
+                widenKind = ValueKind.SHORT;
+            } else {
+                // else use binary widening
+                widenKind = ValueKind.binaryWidensTo(leftKind, rightKind);
+            }
+            value = doConditional(tesValue, leftValue, rightValue, widenKind);
+        }
+        return value;
+    }
+
+    private Value doConditional(Value testValue, Value leftValue, Value rightValue, ValueKind widenKind) {
+        final Value resultValue = testValue.asBoolean() ? leftValue : rightValue;
+        if (resultValue.getKind() == widenKind) {
+            return resultValue;
+        }
+        switch (widenKind) {
+            case BOOLEAN:
+                return BooleanValue.of(resultValue.asBoolean());
+            case BYTE:
+                return ByteValue.of(resultValue.asByte());
+            case SHORT:
+                return ShortValue.of(resultValue.asShort());
+            case CHAR:
+                return CharValue.of(resultValue.asChar());
+            case INT:
+                return IntValue.of(resultValue.asInt());
+            case LONG:
+                return LongValue.of(resultValue.asLong());
+            case FLOAT:
+                return FloatValue.of(resultValue.asFloat());
+            case DOUBLE:
+                return DoubleValue.of(resultValue.asDouble());
+            case OBJECT:
+                return ObjectValue.of(resultValue.asObject());
+            default:
+                throw new IllegalArgumentException("Invalid type for conditional: " + widenKind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "Conditional(" + test + " ? " + left + " : " + right + ")";
     }
 }

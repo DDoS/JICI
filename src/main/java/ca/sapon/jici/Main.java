@@ -37,7 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "31 % ((1 << 3) - 1) + 5 * 4 - -(2 + ~(2 >> 1L) + 1) / 1";
+        final String source = "!true";
 
         System.out.println("Source:\n" + source);
 

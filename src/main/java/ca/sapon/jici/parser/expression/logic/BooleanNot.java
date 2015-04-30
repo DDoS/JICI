@@ -23,23 +23,40 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.BooleanValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
+    private Value value = null;
 
     public BooleanNot(Expression inner) {
         this.inner = inner;
     }
 
     @Override
-    public String toString() {
-        return "BooleanNot(!" + inner + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value innerValue = inner.getValue();
+            final ValueKind kind = innerValue.getKind();
+            value = doBooleanNot(innerValue, kind);
+        }
+        return value;
+    }
+
+    private Value doBooleanNot(Value innerValue, ValueKind kind) {
+        switch (kind) {
+            case BOOLEAN:
+                return BooleanValue.of(!innerValue.asBoolean());
+            default:
+                throw new IllegalArgumentException("Invalid type for boolean not: " + kind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "BooleanNot(!" + inner + ")";
     }
 }

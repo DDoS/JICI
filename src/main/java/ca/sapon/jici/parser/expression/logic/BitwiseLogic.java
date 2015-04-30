@@ -23,7 +23,11 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.BooleanValue;
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -31,6 +35,7 @@ public class BitwiseLogic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Value value = null;
 
     public BitwiseLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -39,12 +44,69 @@ public class BitwiseLogic implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value leftValue = left.getValue();
+            final Value rightValue = right.getValue();
+            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            switch (operator.getID()) {
+                case SYMBOL_BITWISE_AND:
+                    value = doBitwiseAND(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_BITWISE_XOR:
+                    value = doBitwiseXOR(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_BITWISE_OR:
+                    value = doBitwiseOR(leftValue, rightValue, kind);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
+            }
+        }
+        return value;
+    }
+
+    private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case BOOLEAN:
+                return BooleanValue.of(leftValue.asBoolean() & rightValue.asBoolean());
+            case INT:
+                return IntValue.of(leftValue.asInt() & rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() & rightValue.asLong());
+            default:
+                throw new IllegalArgumentException("Invalid type for bitwise AND: " + kind);
+        }
+    }
+
+    private Value doBitwiseXOR(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case BOOLEAN:
+                return BooleanValue.of(leftValue.asBoolean() ^ rightValue.asBoolean());
+            case INT:
+                return IntValue.of(leftValue.asInt() ^ rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() ^ rightValue.asLong());
+            default:
+                throw new IllegalArgumentException("Invalid type for bitwise XOR: " + kind);
+        }
+    }
+
+    private Value doBitwiseOR(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case BOOLEAN:
+                return BooleanValue.of(leftValue.asBoolean() | rightValue.asBoolean());
+            case INT:
+                return IntValue.of(leftValue.asInt() | rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() | rightValue.asLong());
+            default:
+                throw new IllegalArgumentException("Invalid type for bitwise OR: " + kind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
     }
 }

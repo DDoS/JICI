@@ -98,6 +98,11 @@ public class CharValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Character.toString(value);
+    }
+
     public static CharValue of(char value) {
         if ((value & ~0xFF) == 0) {
             return COMMON_VALUES[value];

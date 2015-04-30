@@ -91,6 +91,11 @@ public class FloatValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Float.toString(value);
+    }
+
     public static FloatValue of(float value) {
         return new FloatValue(value);
     }

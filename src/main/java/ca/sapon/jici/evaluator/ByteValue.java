@@ -98,6 +98,11 @@ public class ByteValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Byte.toString(value);
+    }
+
     public static ByteValue of(byte value) {
         return ALL_VALUES[value + 128];
     }

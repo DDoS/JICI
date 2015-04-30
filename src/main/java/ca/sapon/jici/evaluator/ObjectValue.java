@@ -113,6 +113,11 @@ public class ObjectValue implements Value {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
     public static ObjectValue of(Object value) {
         if (value == null) {
             return THE_NULL;

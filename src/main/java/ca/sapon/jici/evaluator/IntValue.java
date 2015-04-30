@@ -98,6 +98,11 @@ public class IntValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
+
     public static IntValue of(int value) {
         final int offsetValue = value + 128;
         if ((offsetValue & ~0xFF) == 0) {

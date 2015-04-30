@@ -98,6 +98,11 @@ public class ShortValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Short.toString(value);
+    }
+
     public static ShortValue of(short value) {
         final int offsetValue = value + 128;
         if ((offsetValue & ~0xFF) == 0) {

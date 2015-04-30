@@ -98,6 +98,11 @@ public class LongValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Long.toString(value);
+    }
+
     public static LongValue of(long value) {
         final long offsetValue = value + 128;
         if ((offsetValue & ~0xFFL) == 0) {

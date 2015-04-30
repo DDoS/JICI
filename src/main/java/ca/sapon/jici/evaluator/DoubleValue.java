@@ -91,6 +91,11 @@ public class DoubleValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Double.toString(value);
+    }
+
     public static DoubleValue of(double value) {
         return new DoubleValue(value);
     }

@@ -47,4 +47,6 @@ public interface Value {
     ValueKind getKind();
 
     boolean isPrimitive();
+
+    String toString();
 }

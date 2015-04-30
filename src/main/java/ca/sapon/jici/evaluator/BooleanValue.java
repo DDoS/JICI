@@ -93,6 +93,11 @@ public class BooleanValue implements Value {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Boolean.toString(value);
+    }
+
     public static BooleanValue of(boolean value) {
         return value ? THE_TRUE : THE_FALSE;
     }

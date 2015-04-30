@@ -41,20 +41,20 @@ public class BitwiseNot implements Expression {
     public Value getValue() {
         if (value == null) {
             final Value innerValue = inner.getValue();
-            final ValueKind kind = ValueKind.unaryWidensTo(innerValue.getKind());
-            value = doBitwiseNot(innerValue, kind);
+            final ValueKind widenKind = ValueKind.unaryWidensTo(innerValue.getKind());
+            value = doBitwiseNot(innerValue, widenKind);
         }
         return value;
     }
 
-    private Value doBitwiseNot(Value innerValue, ValueKind kind) {
-        switch (kind) {
+    private Value doBitwiseNot(Value innerValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(~innerValue.asInt());
             case LONG:
                 return LongValue.of(~innerValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise not: " + kind);
+                throw new IllegalArgumentException("Invalid type for bitwise not: " + widenKind);
         }
     }
 

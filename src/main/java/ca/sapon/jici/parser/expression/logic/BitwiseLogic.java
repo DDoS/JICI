@@ -48,16 +48,16 @@ public class BitwiseLogic implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_BITWISE_AND:
-                    value = doBitwiseAND(leftValue, rightValue, kind);
+                    value = doBitwiseAND(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_BITWISE_XOR:
-                    value = doBitwiseXOR(leftValue, rightValue, kind);
+                    value = doBitwiseXOR(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_BITWISE_OR:
-                    value = doBitwiseOR(leftValue, rightValue, kind);
+                    value = doBitwiseOR(leftValue, rightValue, widenKind);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
@@ -66,8 +66,8 @@ public class BitwiseLogic implements Expression {
         return value;
     }
 
-    private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case BOOLEAN:
                 return BooleanValue.of(leftValue.asBoolean() & rightValue.asBoolean());
             case INT:
@@ -75,12 +75,12 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() & rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise AND: " + kind);
+                throw new IllegalArgumentException("Invalid type for bitwise AND: " + widenKind);
         }
     }
 
-    private Value doBitwiseXOR(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doBitwiseXOR(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case BOOLEAN:
                 return BooleanValue.of(leftValue.asBoolean() ^ rightValue.asBoolean());
             case INT:
@@ -88,12 +88,12 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() ^ rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise XOR: " + kind);
+                throw new IllegalArgumentException("Invalid type for bitwise XOR: " + widenKind);
         }
     }
 
-    private Value doBitwiseOR(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doBitwiseOR(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case BOOLEAN:
                 return BooleanValue.of(leftValue.asBoolean() | rightValue.asBoolean());
             case INT:
@@ -101,7 +101,7 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() | rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise OR: " + kind);
+                throw new IllegalArgumentException("Invalid type for bitwise OR: " + widenKind);
         }
     }
 

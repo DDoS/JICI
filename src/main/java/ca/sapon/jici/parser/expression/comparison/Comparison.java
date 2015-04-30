@@ -46,25 +46,25 @@ public class Comparison implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_EQUAL:
-                    value = doEqual(leftValue, rightValue, kind);
+                    value = doEqual(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_NOT_EQUAL:
-                    value = doNotEqual(leftValue, rightValue, kind);
+                    value = doNotEqual(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_LESSER:
-                    value = doLesserThan(leftValue, rightValue, kind);
+                    value = doLesserThan(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_LESSER_OR_EQUAL:
-                    value = doLesserOrEqualTo(leftValue, rightValue, kind);
+                    value = doLesserOrEqualTo(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_GREATER:
-                    value = doGreaterThan(leftValue, rightValue, kind);
+                    value = doGreaterThan(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_GREATER_OR_EQUAL:
-                    value = doGreaterOrEqualTo(leftValue, rightValue, kind);
+                    value = doGreaterOrEqualTo(leftValue, rightValue, widenKind);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for comparison: " + operator);
@@ -73,8 +73,8 @@ public class Comparison implements Expression {
         return value;
     }
 
-    private Value doEqual(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() == rightValue.asInt());
             case LONG:
@@ -84,12 +84,12 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() == rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for equal: " + kind);
+                throw new IllegalArgumentException("Invalid type for equal: " + widenKind);
         }
     }
 
-    private Value doNotEqual(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doNotEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() != rightValue.asInt());
             case LONG:
@@ -99,12 +99,12 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() != rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for not equal: " + kind);
+                throw new IllegalArgumentException("Invalid type for not equal: " + widenKind);
         }
     }
 
-    private Value doLesserThan(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doLesserThan(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() < rightValue.asInt());
             case LONG:
@@ -114,12 +114,12 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() < rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for less than: " + kind);
+                throw new IllegalArgumentException("Invalid type for less than: " + widenKind);
         }
     }
 
-    private Value doLesserOrEqualTo(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doLesserOrEqualTo(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() <= rightValue.asInt());
             case LONG:
@@ -129,12 +129,12 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() <= rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for lesser or equal to: " + kind);
+                throw new IllegalArgumentException("Invalid type for lesser or equal to: " + widenKind);
         }
     }
 
-    private Value doGreaterThan(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doGreaterThan(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() > rightValue.asInt());
             case LONG:
@@ -144,12 +144,12 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() > rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for greater than: " + kind);
+                throw new IllegalArgumentException("Invalid type for greater than: " + widenKind);
         }
     }
 
-    private Value doGreaterOrEqualTo(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doGreaterOrEqualTo(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return BooleanValue.of(leftValue.asInt() >= rightValue.asInt());
             case LONG:
@@ -159,7 +159,7 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() >= rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for greater or equal to: " + kind);
+                throw new IllegalArgumentException("Invalid type for greater or equal to: " + widenKind);
         }
     }
 

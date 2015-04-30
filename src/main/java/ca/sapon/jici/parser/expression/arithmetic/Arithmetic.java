@@ -49,22 +49,22 @@ public class Arithmetic implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_PLUS:
-                    value = doAdd(leftValue, rightValue, kind);
+                    value = doAdd(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_MINUS:
-                    value = doSubtract(leftValue, rightValue, kind);
+                    value = doSubtract(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_MULTIPLY:
-                    value = doMultiply(leftValue, rightValue, kind);
+                    value = doMultiply(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_DIVIDE:
-                    value = doDivide(leftValue, rightValue, kind);
+                    value = doDivide(leftValue, rightValue, widenKind);
                     break;
                 case SYMBOL_MODULO:
-                    value = doModulo(leftValue, rightValue, kind);
+                    value = doModulo(leftValue, rightValue, widenKind);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
@@ -73,8 +73,8 @@ public class Arithmetic implements Expression {
         return value;
     }
 
-    private Value doAdd(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doAdd(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(leftValue.asInt() + rightValue.asInt());
             case LONG:
@@ -84,12 +84,12 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() + rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for add: " + kind);
+                throw new IllegalArgumentException("Invalid type for add: " + widenKind);
         }
     }
 
-    private Value doSubtract(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doSubtract(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(leftValue.asInt() - rightValue.asInt());
             case LONG:
@@ -99,12 +99,12 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() - rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for subtract: " + kind);
+                throw new IllegalArgumentException("Invalid type for subtract: " + widenKind);
         }
     }
 
-    private Value doMultiply(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doMultiply(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(leftValue.asInt() * rightValue.asInt());
             case LONG:
@@ -114,12 +114,12 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() * rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for multiply: " + kind);
+                throw new IllegalArgumentException("Invalid type for multiply: " + widenKind);
         }
     }
 
-    private Value doDivide(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doDivide(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(leftValue.asInt() / rightValue.asInt());
             case LONG:
@@ -129,12 +129,12 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() / rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for divide: " + kind);
+                throw new IllegalArgumentException("Invalid type for divide: " + widenKind);
         }
     }
 
-    private Value doModulo(Value leftValue, Value rightValue, ValueKind kind) {
-        switch (kind) {
+    private Value doModulo(Value leftValue, Value rightValue, ValueKind widenKind) {
+        switch (widenKind) {
             case INT:
                 return IntValue.of(leftValue.asInt() % rightValue.asInt());
             case LONG:
@@ -144,7 +144,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() % rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for modulo: " + kind);
+                throw new IllegalArgumentException("Invalid type for modulo: " + widenKind);
         }
     }
 

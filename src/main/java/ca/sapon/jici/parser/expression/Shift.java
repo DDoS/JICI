@@ -46,17 +46,17 @@ public class Shift implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind leftKind = ValueKind.unaryWidensTo(leftValue.getKind());
-            final ValueKind rightKind = ValueKind.unaryWidensTo(rightValue.getKind());
+            final ValueKind leftWidenKind = ValueKind.unaryWidensTo(leftValue.getKind());
+            final ValueKind rightWidenKind = ValueKind.unaryWidensTo(rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_LOGICAL_LEFT_SHIFT:
-                    value = doLogicalLeftShift(leftValue, leftKind, rightValue, rightKind);
+                    value = doLogicalLeftShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
                     break;
                 case SYMBOL_LOGICAL_RIGHT_SHIFT:
-                    value = doLogicalRightShift(leftValue, leftKind, rightValue, rightKind);
+                    value = doLogicalRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
                     break;
                 case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
-                    value = doArithmeticRightShift(leftValue, leftKind, rightValue, rightKind);
+                    value = doArithmeticRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for shift: " + operator);
@@ -65,78 +65,78 @@ public class Shift implements Expression {
         return value;
     }
 
-    private Value doLogicalLeftShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
-        switch (leftKind) {
+    private Value doLogicalLeftShift(Value leftValue, ValueKind leftWidenKind, Value rightValue, ValueKind rightWidenKind) {
+        switch (leftWidenKind) {
             case INT:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return IntValue.of(leftValue.asInt() << rightValue.asInt());
                     case LONG:
                         return IntValue.of(leftValue.asInt() << rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightWidenKind);
                 }
             case LONG:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return LongValue.of(leftValue.asLong() << rightValue.asInt());
                     case LONG:
                         return LongValue.of(leftValue.asLong() << rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightWidenKind);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for logical-left-shift left operand: " + leftKind);
+                throw new IllegalArgumentException("Invalid type for logical-left-shift left operand: " + leftWidenKind);
         }
     }
 
-    private Value doLogicalRightShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
-        switch (leftKind) {
+    private Value doLogicalRightShift(Value leftValue, ValueKind leftWidenKind, Value rightValue, ValueKind rightWidenKind) {
+        switch (leftWidenKind) {
             case INT:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return IntValue.of(leftValue.asInt() >>> rightValue.asInt());
                     case LONG:
                         return IntValue.of(leftValue.asInt() >>> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightWidenKind);
                 }
             case LONG:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return LongValue.of(leftValue.asLong() >>> rightValue.asInt());
                     case LONG:
                         return LongValue.of(leftValue.asLong() >>> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightWidenKind);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for logical-right-shift left operand: " + leftKind);
+                throw new IllegalArgumentException("Invalid type for logical-right-shift left operand: " + leftWidenKind);
         }
     }
 
-    private Value doArithmeticRightShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
-        switch (leftKind) {
+    private Value doArithmeticRightShift(Value leftValue, ValueKind leftWidenKind, Value rightValue, ValueKind rightWidenKind) {
+        switch (leftWidenKind) {
             case INT:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return IntValue.of(leftValue.asInt() >> rightValue.asInt());
                     case LONG:
                         return IntValue.of(leftValue.asInt() >> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind);
                 }
             case LONG:
-                switch (rightKind) {
+                switch (rightWidenKind) {
                     case INT:
                         return LongValue.of(leftValue.asLong() >> rightValue.asInt());
                     case LONG:
                         return LongValue.of(leftValue.asLong() >> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightKind);
+                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for arithmetic-right-shift left operand: " + leftKind);
+                throw new IllegalArgumentException("Invalid type for arithmetic-right-shift left operand: " + leftWidenKind);
         }
     }
 

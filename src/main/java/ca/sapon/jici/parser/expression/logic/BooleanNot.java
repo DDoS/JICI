@@ -25,7 +25,6 @@ package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.BooleanValue;
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BooleanNot implements Expression {
@@ -40,19 +39,13 @@ public class BooleanNot implements Expression {
     public Value getValue() {
         if (value == null) {
             final Value innerValue = inner.getValue();
-            final ValueKind kind = innerValue.getKind();
-            value = doBooleanNot(innerValue, kind);
+            value = doBooleanNot(innerValue);
         }
         return value;
     }
 
-    private Value doBooleanNot(Value innerValue, ValueKind kind) {
-        switch (kind) {
-            case BOOLEAN:
-                return BooleanValue.of(!innerValue.asBoolean());
-            default:
-                throw new IllegalArgumentException("Invalid type for boolean not: " + kind);
-        }
+    private Value doBooleanNot(Value innerValue) {
+        return BooleanValue.of(!innerValue.asBoolean());
     }
 
     @Override

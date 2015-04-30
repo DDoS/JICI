@@ -25,7 +25,6 @@ package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.BooleanValue;
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -46,14 +45,12 @@ public class BooleanLogic implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind leftKind = leftValue.getKind();
-            final ValueKind rightKind = rightValue.getKind();
             switch (operator.getID()) {
                 case SYMBOL_BOOLEAN_AND:
-                    value = doBooleanAND(leftValue, leftKind, rightValue, rightKind);
+                    value = doBooleanAND(leftValue, rightValue);
                     break;
                 case SYMBOL_BOOLEAN_OR:
-                    value = doBooleanOR(leftValue, leftKind, rightValue, rightKind);
+                    value = doBooleanOR(leftValue, rightValue);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for boolean logic: " + operator);
@@ -62,32 +59,12 @@ public class BooleanLogic implements Expression {
         return value;
     }
 
-    private Value doBooleanAND(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
-        switch (leftKind) {
-            case BOOLEAN:
-                switch (rightKind) {
-                    case BOOLEAN:
-                        return BooleanValue.of(leftValue.asBoolean() && rightValue.asBoolean());
-                    default:
-                        throw new IllegalArgumentException("Invalid type for boolean AND right operand: " + rightKind);
-                }
-            default:
-                throw new IllegalArgumentException("Invalid type for boolean AND left operand: " + leftKind);
-        }
+    private Value doBooleanAND(Value leftValue, Value rightValue) {
+        return BooleanValue.of(leftValue.asBoolean() && rightValue.asBoolean());
     }
 
-    private Value doBooleanOR(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
-        switch (leftKind) {
-            case BOOLEAN:
-                switch (rightKind) {
-                    case BOOLEAN:
-                        return BooleanValue.of(leftValue.asBoolean() || rightValue.asBoolean());
-                    default:
-                        throw new IllegalArgumentException("Invalid type for boolean OR right operand: " + rightKind);
-                }
-            default:
-                throw new IllegalArgumentException("Invalid type for boolean OR left operand: " + leftKind);
-        }
+    private Value doBooleanOR(Value leftValue, Value rightValue) {
+        return BooleanValue.of(leftValue.asBoolean() || rightValue.asBoolean());
     }
 
     @Override

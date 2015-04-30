@@ -37,7 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "true & true ^ true | false";
+        final String source = "true && true || false";
 
         System.out.println("Source:\n" + source);
 

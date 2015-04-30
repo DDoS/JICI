@@ -23,7 +23,9 @@
  */
 package ca.sapon.jici.parser.expression.comparison;
 
+import ca.sapon.jici.evaluator.BooleanValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -31,6 +33,7 @@ public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Value value = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -39,12 +42,129 @@ public class Comparison implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "Comparison(" + left + " " + operator + " " + right + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value leftValue = left.getValue();
+            final Value rightValue = right.getValue();
+            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            switch (operator.getID()) {
+                case SYMBOL_EQUAL:
+                    value = doEqual(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_NOT_EQUAL:
+                    value = doNotEqual(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_LESSER:
+                    value = doLesserThan(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_LESSER_OR_EQUAL:
+                    value = doLesserOrEqualTo(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_GREATER:
+                    value = doGreaterThan(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_GREATER_OR_EQUAL:
+                    value = doGreaterOrEqualTo(leftValue, rightValue, kind);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operator for comparison: " + operator);
+            }
+        }
+        return value;
+    }
+
+    private Value doEqual(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() == rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() == rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() == rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() == rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for equal: " + kind);
+        }
+    }
+
+    private Value doNotEqual(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() != rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() != rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() != rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() != rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for not equal: " + kind);
+        }
+    }
+
+    private Value doLesserThan(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() < rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() < rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() < rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() < rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for less than: " + kind);
+        }
+    }
+
+    private Value doLesserOrEqualTo(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() <= rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() <= rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() <= rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() <= rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for lesser or equal to: " + kind);
+        }
+    }
+
+    private Value doGreaterThan(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() > rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() > rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() > rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() > rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for greater than: " + kind);
+        }
+    }
+
+    private Value doGreaterOrEqualTo(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return BooleanValue.of(leftValue.asInt() >= rightValue.asInt());
+            case LONG:
+                return BooleanValue.of(leftValue.asLong() >= rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() >= rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() >= rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for greater or equal to: " + kind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "Comparison(" + left + " " + operator + " " + right + ")";
     }
 }

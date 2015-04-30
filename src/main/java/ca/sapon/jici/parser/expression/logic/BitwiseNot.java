@@ -23,23 +23,43 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BitwiseNot implements Expression {
     private final Expression inner;
+    private Value value = null;
 
     public BitwiseNot(Expression inner) {
         this.inner = inner;
     }
 
     @Override
-    public String toString() {
-        return "BitwiseNot(~" + inner + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value innerValue = inner.getValue();
+            final ValueKind kind = ValueKind.unaryWidensTo(innerValue.getKind());
+            value = doBitwiseNot(innerValue, kind);
+        }
+        return value;
+    }
+
+    private Value doBitwiseNot(Value innerValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return IntValue.of(~innerValue.asInt());
+            case LONG:
+                return LongValue.of(~innerValue.asLong());
+            default:
+                throw new IllegalArgumentException("Invalid type for bitwise not: " + kind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "BitwiseNot(~" + inner + ")";
     }
 }

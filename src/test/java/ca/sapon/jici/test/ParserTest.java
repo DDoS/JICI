@@ -85,35 +85,35 @@ public class ParserTest {
         testParseExpression("Sign(+test)", "+test");
         testParseExpression("Sign(-test)", "-test");
 
-        testParseExpression("BooleanLogic(!test)", "!test");
-        testParseExpression("BitwiseLogic(~test)", "~test");
+        testParseExpression("BooleanNot(!test)", "!test");
+        testParseExpression("BitwiseNot(~test)", "~test");
 
-        testParseExpression("Increment(++test)", "++test");
-        testParseExpression("Increment(--test)", "--test");
-        testParseExpression("Increment(test++)", "test++");
-        testParseExpression("Increment(test--)", "test--");
+        testParseExpression("PreIncrement(++test)", "++test");
+        testParseExpression("PreIncrement(--test)", "--test");
+        testParseExpression("PostIncrement(test++)", "test++");
+        testParseExpression("PostIncrement(test--)", "test--");
 
         testParseExpression("Cast((int) test)", "(int) test");
         testParseExpression("Cast((Object) test)", "(Object) test");
 
-        testParseExpression("Cast((Object) BooleanLogic(!Sign(-Sign(+Increment(test++)))))", "(Object) !-+test++");
+        testParseExpression("Cast((Object) BooleanNot(!Sign(-Sign(+PostIncrement(test++)))))", "(Object) !-+test++");
     }
 
     @Test
     public void testParseMultiply() {
-        testParseExpression("Multiply(l * r)", "l * r");
-        testParseExpression("Multiply(l / r)", "l / r");
-        testParseExpression("Multiply(l % r)", "l % r");
+        testParseExpression("Arithmetic(l * r)", "l * r");
+        testParseExpression("Arithmetic(l / r)", "l / r");
+        testParseExpression("Arithmetic(l % r)", "l % r");
 
-        testParseExpression("Multiply(Multiply(Multiply(a * b) / c) % d)", "a * b / c % d");
+        testParseExpression("Arithmetic(Arithmetic(Arithmetic(a * b) / c) % d)", "a * b / c % d");
     }
 
     @Test
     public void testParseAdd() {
-        testParseExpression("Add(l - r)", "l - r");
-        testParseExpression("Add(l + r)", "l + r");
+        testParseExpression("Arithmetic(l - r)", "l - r");
+        testParseExpression("Arithmetic(l + r)", "l + r");
 
-        testParseExpression("Add(Add(a - b) + c)", "a - b + c");
+        testParseExpression("Arithmetic(Arithmetic(a - b) + c)", "a - b + c");
     }
 
     @Test
@@ -222,9 +222,9 @@ public class ParserTest {
                         "Comparison(t == " +
                         "Comparison(r >= " +
                         "Shift(p >> " +
-                        "Add(n + " +
-                        "Multiply(j * " +
-                        "BooleanLogic(!" +
+                        "Arithmetic(n + " +
+                        "Arithmetic(j * " +
+                        "BooleanNot(!" +
                         "MethodCall(m.k()" +
                         "))))))))))))))",
                 "x = v ? y : a || d && z | g ^ q & t == r >= p >> n + j * !m.k()");
@@ -249,7 +249,7 @@ public class ParserTest {
     @Test
     public void testParseStatementExpression() {
         testParseStatement("Assignment(m = 2)", "m = 2;");
-        testParseStatement("Increment(m++)", "m++;");
+        testParseStatement("PostIncrement(m++)", "m++;");
         testParseStatement("ConstructorCall(new Test())", "new Test();");
         testParseStatement("MethodCall(test())", "test();");
     }

@@ -21,24 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.parser.expression.reference.Reference;
+import ca.sapon.jici.parser.statement.Statement;
 
-public class TypeCheck implements Expression {
-    private final Expression object;
-    private final Type type;
+public class PostIncrement implements Expression, Statement {
+    private final Reference inner;
+    private final Symbol operator;
 
-    public TypeCheck(Expression object, Type type) {
-        this.object = object;
-        this.type = type;
+    public PostIncrement(Reference inner, Symbol operator) {
+        this.inner = inner;
+        this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "TypeCheck(" + object + " instanceof " + type + ")";
+        return "PostIncrement(" + inner.toString() + operator.toString() + ")";
     }
 
     @Override

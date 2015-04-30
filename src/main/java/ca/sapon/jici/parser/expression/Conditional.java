@@ -21,28 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.arithmetic;
+package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.expression.reference.Reference;
-import ca.sapon.jici.parser.statement.Statement;
 
-public class Increment implements Expression, Statement {
-    private final Reference inner;
-    private final Symbol operator;
-    private final boolean post;
+public class Conditional implements Expression {
+    private final Expression test;
+    private final Expression left;
+    private final Expression right;
 
-    public Increment(Reference inner, Symbol operator, boolean post) {
-        this.inner = inner;
-        this.operator = operator;
-        this.post = post;
+    public Conditional(Expression test, Expression left, Expression right) {
+        this.test = test;
+        this.left = left;
+        this.right = right;
     }
 
     @Override
     public String toString() {
-        return "Increment(" + (post ? inner.toString() + operator.toString() : operator.toString() + inner.toString()) + ")";
+        return "Conditional(" + test + " ? " + left + " : " + right + ")";
     }
 
     @Override

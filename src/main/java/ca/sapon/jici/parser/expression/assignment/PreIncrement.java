@@ -21,26 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.Reference;
+import ca.sapon.jici.parser.statement.Statement;
 
-public class Comparison implements Expression {
-    private final Expression left;
-    private final Expression right;
+public class PreIncrement implements Expression, Statement {
+    private final Reference inner;
     private final Symbol operator;
 
-    public Comparison(Expression left, Expression right, Symbol operator) {
-        this.left = left;
-        this.right = right;
+    public PreIncrement(Reference inner, Symbol operator) {
+        this.inner = inner;
         this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "Comparison(" + left + " " + operator + " " + right + ")";
+        return "PreIncrement(" + operator.toString() + inner.toString() + ")";
     }
 
     @Override

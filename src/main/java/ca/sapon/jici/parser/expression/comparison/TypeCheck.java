@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.type.Type;
 
-public class Conditional implements Expression {
-    private final Expression test;
-    private final Expression left;
-    private final Expression right;
+public class TypeCheck implements Expression {
+    private final Expression object;
+    private final Type type;
 
-    public Conditional(Expression test, Expression left, Expression right) {
-        this.test = test;
-        this.left = left;
-        this.right = right;
+    public TypeCheck(Expression object, Type type) {
+        this.object = object;
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "Conditional(" + test + " ? " + left + " : " + right + ")";
+        return "TypeCheck(" + object + " instanceof " + type + ")";
     }
 
     @Override

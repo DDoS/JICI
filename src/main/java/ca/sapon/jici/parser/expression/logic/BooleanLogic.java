@@ -32,10 +32,6 @@ public class BooleanLogic implements Expression {
     private final Expression right;
     private final Symbol operator;
 
-    public BooleanLogic(Expression inner, Symbol operator) {
-        this(null, inner, operator);
-    }
-
     public BooleanLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
@@ -44,7 +40,7 @@ public class BooleanLogic implements Expression {
 
     @Override
     public String toString() {
-        return "BooleanLogic(" + (left == null ? operator.toString() + right.toString() : left + " " + operator + " " + right) + ")";
+        return "BooleanLogic(" + left + " " + operator + " " + right + ")";
     }
 
     @Override

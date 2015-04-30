@@ -37,23 +37,25 @@ import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
+import ca.sapon.jici.parser.expression.Conditional;
 import ca.sapon.jici.parser.expression.ConstructorCall;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.expression.arithmetic.Add;
-import ca.sapon.jici.parser.expression.arithmetic.Assignment;
-import ca.sapon.jici.parser.expression.arithmetic.Increment;
-import ca.sapon.jici.parser.expression.arithmetic.Multiply;
-import ca.sapon.jici.parser.expression.arithmetic.Shift;
-import ca.sapon.jici.parser.expression.arithmetic.Sign;
-import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
-import ca.sapon.jici.parser.expression.logic.BooleanLogic;
-import ca.sapon.jici.parser.expression.logic.Comparison;
-import ca.sapon.jici.parser.expression.logic.Conditional;
-import ca.sapon.jici.parser.expression.logic.TypeCheck;
-import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
-import ca.sapon.jici.parser.expression.reference.FieldAccess;
 import ca.sapon.jici.parser.expression.IndexAccess;
+import ca.sapon.jici.parser.expression.Shift;
+import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
+import ca.sapon.jici.parser.expression.arithmetic.Sign;
+import ca.sapon.jici.parser.expression.assignment.Assignment;
+import ca.sapon.jici.parser.expression.assignment.PostIncrement;
+import ca.sapon.jici.parser.expression.assignment.PreIncrement;
+import ca.sapon.jici.parser.expression.comparison.Comparison;
+import ca.sapon.jici.parser.expression.comparison.TypeCheck;
+import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
+import ca.sapon.jici.parser.expression.logic.BitwiseNot;
+import ca.sapon.jici.parser.expression.logic.BooleanLogic;
+import ca.sapon.jici.parser.expression.logic.BooleanNot;
+import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.ContextReference;
+import ca.sapon.jici.parser.expression.reference.FieldAccess;
 import ca.sapon.jici.parser.expression.reference.MemberReference;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
 import ca.sapon.jici.parser.expression.reference.Reference;
@@ -456,8 +458,8 @@ public class Parser {
             if (token.getType() == TokenType.ADD_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseMultiply(tokens);
-                final Add add = new Add(left, right, (Symbol) token);
-                return parseAdd(tokens, add);
+                final Arithmetic arithmetic = new Arithmetic(left, right, (Symbol) token);
+                return parseAdd(tokens, arithmetic);
             }
         }
         return left;
@@ -473,8 +475,8 @@ public class Parser {
             if (token.getType() == TokenType.MULTIPLY_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseUnary(tokens);
-                final Multiply multiply = new Multiply(left, right, (Symbol) token);
-                return parseMultiply(tokens, multiply);
+                final Arithmetic arithmetic = new Arithmetic(left, right, (Symbol) token);
+                return parseMultiply(tokens, arithmetic);
             }
         }
         return left;
@@ -489,7 +491,7 @@ public class Parser {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
                     if (inner instanceof Reference) {
-                        return new Increment((Reference) inner, (Symbol) token, false);
+                        return new PreIncrement((Reference) inner, (Symbol) token);
                     }
                     throw new ParseError("Expected reference");
                 }
@@ -507,12 +509,12 @@ public class Parser {
                 case SYMBOL_BOOLEAN_NOT: {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new BooleanLogic(inner, (Symbol) token);
+                    return new BooleanNot(inner);
                 }
                 case SYMBOL_BITWISE_NOT: {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new BitwiseLogic(inner, (Symbol) token);
+                    return new BitwiseNot(inner);
                 }
                 case SYMBOL_OPEN_PARENTHESIS: {
                     if (tokens.has(2)) {
@@ -547,7 +549,7 @@ public class Parser {
                 case SYMBOL_DECREMENT: {
                     tokens.advance();
                     if (inner instanceof Reference) {
-                        final Expression outer = new Increment((Reference) inner, (Symbol) token, true);
+                        final PostIncrement outer = new PostIncrement((Reference) inner, (Symbol) token);
                         return parseUnary(tokens, outer);
                     }
                     throw new ParseError("Expected reference");

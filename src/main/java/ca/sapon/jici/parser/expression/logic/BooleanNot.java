@@ -21,26 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.arithmetic;
+package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
-public class Shift implements Expression {
-    private final Expression left;
-    private final Expression right;
-    private final Symbol operator;
+public class BooleanNot implements Expression {
+    private final Expression inner;
 
-    public Shift(Expression left, Expression right, Symbol operator) {
-        this.left = left;
-        this.right = right;
-        this.operator = operator;
+    public BooleanNot(Expression inner) {
+        this.inner = inner;
     }
 
     @Override
     public String toString() {
-        return "Shift(" + left + " " + operator + " " + right + ")";
+        return "BooleanNot(!" + inner + ")";
     }
 
     @Override

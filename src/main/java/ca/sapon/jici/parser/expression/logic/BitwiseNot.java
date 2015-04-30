@@ -24,23 +24,18 @@
 package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
-public class BitwiseLogic implements Expression {
-    private final Expression left;
-    private final Expression right;
-    private final Symbol operator;
+public class BitwiseNot implements Expression {
+    private final Expression inner;
 
-    public BitwiseLogic(Expression left, Expression right, Symbol operator) {
-        this.left = left;
-        this.right = right;
-        this.operator = operator;
+    public BitwiseNot(Expression inner) {
+        this.inner = inner;
     }
 
     @Override
     public String toString() {
-        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
+        return "BitwiseNot(~" + inner + ")";
     }
 
     @Override

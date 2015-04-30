@@ -21,26 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.Reference;
+import ca.sapon.jici.parser.statement.Statement;
 
-public class BitwiseLogic implements Expression {
-    private final Expression left;
-    private final Expression right;
+public class Assignment implements Expression, Statement {
+    private final Reference assignee;
+    private final Expression value;
     private final Symbol operator;
 
-    public BitwiseLogic(Expression left, Expression right, Symbol operator) {
-        this.left = left;
-        this.right = right;
+    public Assignment(Reference assignee, Expression value, Symbol operator) {
+        this.assignee = assignee;
+        this.value = value;
         this.operator = operator;
     }
 
     @Override
     public String toString() {
-        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
+        return "Assignment(" + assignee + " " + operator + " " + value + ")";
     }
 
     @Override

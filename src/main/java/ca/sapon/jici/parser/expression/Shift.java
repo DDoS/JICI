@@ -21,18 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Value;
 import ca.sapon.jici.lexer.Symbol;
-import ca.sapon.jici.parser.expression.Expression;
 
-public class BitwiseLogic implements Expression {
+public class Shift implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
 
-    public BitwiseLogic(Expression left, Expression right, Symbol operator) {
+    public Shift(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
@@ -40,7 +39,7 @@ public class BitwiseLogic implements Expression {
 
     @Override
     public String toString() {
-        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
+        return "Shift(" + left + " " + operator + " " + right + ")";
     }
 
     @Override

@@ -46,13 +46,13 @@ public class Sign implements Expression {
     public Value getValue() {
         if (value == null) {
             final Value innerValue = inner.getValue();
-            final ValueKind resultKind = ValueKind.unaryWidensTo(innerValue.getKind());
+            final ValueKind kind = ValueKind.unaryWidensTo(innerValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_PLUS:
-                    value = doReaffirm(innerValue, resultKind);
+                    value = doReaffirm(innerValue, kind);
                     break;
                 case SYMBOL_MINUS:
-                    value = doNegate(innerValue, resultKind);
+                    value = doNegate(innerValue, kind);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid operator for sign: " + operator);
@@ -61,8 +61,8 @@ public class Sign implements Expression {
         return value;
     }
 
-    private Value doNegate(Value innerValue, ValueKind resultKind) {
-        switch (resultKind) {
+    private Value doNegate(Value innerValue, ValueKind kind) {
+        switch (kind) {
             case INT:
                 return IntValue.of(-innerValue.asInt());
             case LONG:
@@ -72,15 +72,15 @@ public class Sign implements Expression {
             case DOUBLE:
                 return DoubleValue.of(-innerValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid result type for negate, got " + resultKind);
+                throw new IllegalArgumentException("Invalid type for negate, got " + kind);
         }
     }
 
-    private Value doReaffirm(Value innerValue, ValueKind resultKind) {
-        if (innerValue.getKind() == resultKind) {
+    private Value doReaffirm(Value innerValue, ValueKind kind) {
+        if (innerValue.getKind() == kind) {
             return innerValue;
         }
-        switch (resultKind) {
+        switch (kind) {
             case INT:
                 return IntValue.of(innerValue.asInt());
             case LONG:
@@ -90,7 +90,7 @@ public class Sign implements Expression {
             case DOUBLE:
                 return DoubleValue.of(innerValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid result type for reaffirm, got " + resultKind);
+                throw new IllegalArgumentException("Invalid type for reaffirm, got " + kind);
         }
     }
 

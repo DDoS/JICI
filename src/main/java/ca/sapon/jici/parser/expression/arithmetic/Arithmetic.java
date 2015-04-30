@@ -32,13 +32,13 @@ import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
-public class Multiply implements Expression {
+public class Arithmetic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
     private Value value = null;
 
-    public Multiply(Expression left, Expression right, Symbol operator) {
+    public Arithmetic(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
@@ -49,26 +49,62 @@ public class Multiply implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue();
             final Value rightValue = right.getValue();
-            final ValueKind resultKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind kind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
+                case SYMBOL_PLUS:
+                    value = doAdd(leftValue, rightValue, kind);
+                    break;
+                case SYMBOL_MINUS:
+                    value = doSubtract(leftValue, rightValue, kind);
+                    break;
                 case SYMBOL_MULTIPLY:
-                    value = doMultiply(leftValue, rightValue, resultKind);
+                    value = doMultiply(leftValue, rightValue, kind);
                     break;
                 case SYMBOL_DIVIDE:
-                    value = doDivide(leftValue, rightValue, resultKind);
+                    value = doDivide(leftValue, rightValue, kind);
                     break;
                 case SYMBOL_MODULO:
-                    value = doModulo(leftValue, rightValue, resultKind);
+                    value = doModulo(leftValue, rightValue, kind);
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid operator for multiply: " + operator);
+                    throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
             }
         }
         return value;
     }
 
-    private Value doMultiply(Value leftValue, Value rightValue, ValueKind resultKind) {
-        switch (resultKind) {
+    private Value doAdd(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return IntValue.of(leftValue.asInt() + rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() + rightValue.asLong());
+            case FLOAT:
+                return FloatValue.of(leftValue.asFloat() + rightValue.asFloat());
+            case DOUBLE:
+                return DoubleValue.of(leftValue.asDouble() + rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for add, got " + kind);
+        }
+    }
+
+    private Value doSubtract(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
+            case INT:
+                return IntValue.of(leftValue.asInt() - rightValue.asInt());
+            case LONG:
+                return LongValue.of(leftValue.asLong() - rightValue.asLong());
+            case FLOAT:
+                return FloatValue.of(leftValue.asFloat() - rightValue.asFloat());
+            case DOUBLE:
+                return DoubleValue.of(leftValue.asDouble() - rightValue.asDouble());
+            default:
+                throw new IllegalArgumentException("Invalid type for subtract, got " + kind);
+        }
+    }
+
+    private Value doMultiply(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
             case INT:
                 return IntValue.of(leftValue.asInt() * rightValue.asInt());
             case LONG:
@@ -78,12 +114,12 @@ public class Multiply implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() * rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid result type for multiply, got " + resultKind);
+                throw new IllegalArgumentException("Invalid type for multiply, got " + kind);
         }
     }
 
-    private Value doDivide(Value leftValue, Value rightValue, ValueKind resultKind) {
-        switch (resultKind) {
+    private Value doDivide(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
             case INT:
                 return IntValue.of(leftValue.asInt() / rightValue.asInt());
             case LONG:
@@ -93,12 +129,12 @@ public class Multiply implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() / rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid result type for divide, got " + resultKind);
+                throw new IllegalArgumentException("Invalid type for divide, got " + kind);
         }
     }
 
-    private Value doModulo(Value leftValue, Value rightValue, ValueKind resultKind) {
-        switch (resultKind) {
+    private Value doModulo(Value leftValue, Value rightValue, ValueKind kind) {
+        switch (kind) {
             case INT:
                 return IntValue.of(leftValue.asInt() % rightValue.asInt());
             case LONG:
@@ -108,12 +144,12 @@ public class Multiply implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() % rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid result type for modulo, got " + resultKind);
+                throw new IllegalArgumentException("Invalid type for modulo, got " + kind);
         }
     }
 
     @Override
     public String toString() {
-        return "Multiply(" + left + " " + operator + " " + right + ")";
+        return "Arithmetic(" + left + " " + operator + " " + right + ")";
     }
 }

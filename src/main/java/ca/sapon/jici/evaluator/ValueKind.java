@@ -46,4 +46,31 @@ public enum ValueKind {
                 throw new IllegalArgumentException("Not a narrowing conversion: " + kind + " to INT");
         }
     }
+
+    public static ValueKind unaryWidensTo(ValueKind inner) {
+        // BYTE, SHORT CHAR to INT
+        if ((1 << inner.ordinal() & 0b1110) != 0) {
+            return INT;
+        }
+        // anything else to itself
+        return inner;
+    }
+
+    public static ValueKind binaryWidensTo(ValueKind left, ValueKind right) {
+        final int mask = 1 << left.ordinal() | 1 << right.ordinal();
+        // either DOUBLE to DOUBLE
+        if ((mask & 0b10000000) != 0) {
+            return DOUBLE;
+        }
+        // either FLOAT to FLOAT
+        if ((mask & 0b1000000) != 0) {
+            return FLOAT;
+        }
+        // either LONG to LONG
+        if ((mask & 0b100000) != 0) {
+            return LONG;
+        }
+        // anything else to INT
+        return INT;
+    }
 }

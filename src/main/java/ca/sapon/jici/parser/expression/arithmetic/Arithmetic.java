@@ -84,7 +84,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() + rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for add, got " + kind);
+                throw new IllegalArgumentException("Invalid type for add: " + kind);
         }
     }
 
@@ -99,7 +99,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() - rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for subtract, got " + kind);
+                throw new IllegalArgumentException("Invalid type for subtract: " + kind);
         }
     }
 
@@ -114,7 +114,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() * rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for multiply, got " + kind);
+                throw new IllegalArgumentException("Invalid type for multiply: " + kind);
         }
     }
 
@@ -129,7 +129,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() / rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for divide, got " + kind);
+                throw new IllegalArgumentException("Invalid type for divide: " + kind);
         }
     }
 
@@ -144,7 +144,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() % rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for modulo, got " + kind);
+                throw new IllegalArgumentException("Invalid type for modulo: " + kind);
         }
     }
 

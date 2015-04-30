@@ -23,13 +23,17 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.IntValue;
+import ca.sapon.jici.evaluator.LongValue;
 import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 
 public class Shift implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Value value = null;
 
     public Shift(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -38,12 +42,106 @@ public class Shift implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "Shift(" + left + " " + operator + " " + right + ")";
+    public Value getValue() {
+        if (value == null) {
+            final Value leftValue = left.getValue();
+            final Value rightValue = right.getValue();
+            final ValueKind leftKind = ValueKind.unaryWidensTo(leftValue.getKind());
+            final ValueKind rightKind = ValueKind.unaryWidensTo(rightValue.getKind());
+            switch (operator.getID()) {
+                case SYMBOL_LOGICAL_LEFT_SHIFT:
+                    value = doLogicalLeftShift(leftValue, leftKind, rightValue, rightKind);
+                    break;
+                case SYMBOL_LOGICAL_RIGHT_SHIFT:
+                    value = doLogicalRightShift(leftValue, leftKind, rightValue, rightKind);
+                    break;
+                case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
+                    value = doArithmeticRightShift(leftValue, leftKind, rightValue, rightKind);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid operator for shift: " + operator);
+            }
+        }
+        return value;
+    }
+
+    private Value doLogicalLeftShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
+        switch (leftKind) {
+            case INT:
+                switch (rightKind) {
+                    case INT:
+                        return IntValue.of(leftValue.asInt() << rightValue.asInt());
+                    case LONG:
+                        return IntValue.of(leftValue.asInt() << rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightKind);
+                }
+            case LONG:
+                switch (rightKind) {
+                    case INT:
+                        return LongValue.of(leftValue.asLong() << rightValue.asInt());
+                    case LONG:
+                        return LongValue.of(leftValue.asLong() << rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightKind);
+                }
+            default:
+                throw new IllegalArgumentException("Invalid type for logical-left-shift left operand: " + leftKind);
+        }
+    }
+
+    private Value doLogicalRightShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
+        switch (leftKind) {
+            case INT:
+                switch (rightKind) {
+                    case INT:
+                        return IntValue.of(leftValue.asInt() >>> rightValue.asInt());
+                    case LONG:
+                        return IntValue.of(leftValue.asInt() >>> rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightKind);
+                }
+            case LONG:
+                switch (rightKind) {
+                    case INT:
+                        return LongValue.of(leftValue.asLong() >>> rightValue.asInt());
+                    case LONG:
+                        return LongValue.of(leftValue.asLong() >>> rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightKind);
+                }
+            default:
+                throw new IllegalArgumentException("Invalid type for logical-right-shift left operand: " + leftKind);
+        }
+    }
+
+    private Value doArithmeticRightShift(Value leftValue, ValueKind leftKind, Value rightValue, ValueKind rightKind) {
+        switch (leftKind) {
+            case INT:
+                switch (rightKind) {
+                    case INT:
+                        return IntValue.of(leftValue.asInt() >> rightValue.asInt());
+                    case LONG:
+                        return IntValue.of(leftValue.asInt() >> rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightKind);
+                }
+            case LONG:
+                switch (rightKind) {
+                    case INT:
+                        return LongValue.of(leftValue.asLong() >> rightValue.asInt());
+                    case LONG:
+                        return LongValue.of(leftValue.asLong() >> rightValue.asLong());
+                    default:
+                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightKind);
+                }
+            default:
+                throw new IllegalArgumentException("Invalid type for arithmetic-right-shift left operand: " + leftKind);
+        }
     }
 
     @Override
-    public Value getValue() {
-        return null;
+    public String toString() {
+        return "Shift(" + left + " " + operator + " " + right + ")";
     }
 }

@@ -32,13 +32,12 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.ParserException;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "31d % 7 + 5f * 4 - -(2 - 1L) / 2f";
+        final String source = "31 % ((1 << 3) - 1) + 5 * 4 - -(2 - (2 >> 1L)) / 1";
 
         System.out.println("Source:\n" + source);
 

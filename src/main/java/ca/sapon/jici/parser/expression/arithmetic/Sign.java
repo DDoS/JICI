@@ -82,13 +82,10 @@ public class Sign implements Expression {
         }
         switch (widenKind) {
             case INT:
-                return IntValue.of(innerValue.asInt());
             case LONG:
-                return LongValue.of(innerValue.asLong());
             case FLOAT:
-                return FloatValue.of(innerValue.asFloat());
             case DOUBLE:
-                return DoubleValue.of(innerValue.asDouble());
+                return widenKind.convert(innerValue);
             default:
                 throw new IllegalArgumentException("Invalid type for reaffirm, got " + widenKind);
         }

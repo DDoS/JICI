@@ -84,34 +84,14 @@ public class Conditional implements Expression {
     private Value doConditional(Value testValue, Value leftValue, Value rightValue, ValueKind widenKind) {
         final Value resultValue = testValue.asBoolean() ? leftValue : rightValue;
         if (resultValue.getKind() == widenKind) {
+            // prevent useless conversion
             return resultValue;
         }
-        switch (widenKind) {
-            case BOOLEAN:
-                return BooleanValue.of(resultValue.asBoolean());
-            case BYTE:
-                return ByteValue.of(resultValue.asByte());
-            case SHORT:
-                return ShortValue.of(resultValue.asShort());
-            case CHAR:
-                return CharValue.of(resultValue.asChar());
-            case INT:
-                return IntValue.of(resultValue.asInt());
-            case LONG:
-                return LongValue.of(resultValue.asLong());
-            case FLOAT:
-                return FloatValue.of(resultValue.asFloat());
-            case DOUBLE:
-                return DoubleValue.of(resultValue.asDouble());
-            case OBJECT:
-                if (resultValue instanceof ObjectValue) {
-                    // prevent useless reboxing
-                    return resultValue;
-                }
-                return ObjectValue.of(resultValue.asObject());
-            default:
-                throw new IllegalArgumentException("Invalid type for conditional: " + widenKind);
+        if (resultValue instanceof ObjectValue) {
+            // prevent useless reboxing
+            return resultValue;
         }
+        return widenKind.convert(resultValue);
     }
 
     @Override

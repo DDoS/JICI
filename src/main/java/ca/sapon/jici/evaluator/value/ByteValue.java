@@ -106,4 +106,8 @@ public class ByteValue implements Value {
     public static ByteValue of(byte value) {
         return ALL_VALUES[value + 128];
     }
+
+    public static ByteValue defaultValue() {
+        return ALL_VALUES[128];
+    }
 }

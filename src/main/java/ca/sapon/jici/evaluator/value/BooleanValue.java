@@ -101,4 +101,8 @@ public class BooleanValue implements Value {
     public static BooleanValue of(boolean value) {
         return value ? THE_TRUE : THE_FALSE;
     }
+
+    public static BooleanValue defaultValue() {
+        return THE_FALSE;
+    }
 }

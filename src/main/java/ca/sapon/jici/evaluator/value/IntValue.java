@@ -110,4 +110,8 @@ public class IntValue implements Value {
         }
         return new IntValue(value);
     }
+
+    public static IntValue defaultValue() {
+        return COMMON_VALUES[128];
+    }
 }

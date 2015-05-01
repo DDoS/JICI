@@ -109,4 +109,8 @@ public class CharValue implements Value {
         }
         return new CharValue(value);
     }
+
+    public static CharValue defaultValue() {
+        return COMMON_VALUES[0];
+    }
 }

@@ -110,4 +110,8 @@ public class ShortValue implements Value {
         }
         return new ShortValue(value);
     }
+
+    public static ShortValue defaultValue() {
+        return COMMON_VALUES[128];
+    }
 }

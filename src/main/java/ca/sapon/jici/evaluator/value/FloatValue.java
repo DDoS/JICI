@@ -99,4 +99,8 @@ public class FloatValue implements Value {
     public static FloatValue of(float value) {
         return new FloatValue(value);
     }
+
+    public static FloatValue defaultValue() {
+        return new FloatValue(0);
+    }
 }

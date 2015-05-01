@@ -110,4 +110,8 @@ public class LongValue implements Value {
         }
         return new LongValue(value);
     }
+
+    public static LongValue defaultValue() {
+        return COMMON_VALUES[128];
+    }
 }

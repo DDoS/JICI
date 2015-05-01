@@ -137,4 +137,8 @@ public class ObjectValue implements Value {
         }
         return new ObjectValue(value);
     }
+
+    public static ObjectValue defaultValue() {
+        return THE_NULL;
+    }
 }

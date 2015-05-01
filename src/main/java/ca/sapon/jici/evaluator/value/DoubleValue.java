@@ -99,4 +99,8 @@ public class DoubleValue implements Value {
     public static DoubleValue of(double value) {
         return new DoubleValue(value);
     }
+
+    public static DoubleValue defaultValue() {
+        return new DoubleValue(0);
+    }
 }

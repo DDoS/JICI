@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.statement.Statement;
@@ -45,7 +46,7 @@ public class ConstructorCall implements Statement, Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 }

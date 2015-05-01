@@ -23,15 +23,8 @@
  */
 package ca.sapon.jici.parser.expression;
 
-import ca.sapon.jici.evaluator.value.BooleanValue;
-import ca.sapon.jici.evaluator.value.ByteValue;
-import ca.sapon.jici.evaluator.value.CharValue;
-import ca.sapon.jici.evaluator.value.DoubleValue;
-import ca.sapon.jici.evaluator.value.FloatValue;
-import ca.sapon.jici.evaluator.value.IntValue;
-import ca.sapon.jici.evaluator.value.LongValue;
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
-import ca.sapon.jici.evaluator.value.ShortValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
@@ -49,11 +42,11 @@ public class Conditional implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value tesValue = test.getValue();
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value tesValue = test.getValue(environment);
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             final ValueKind leftKind = leftValue.getKind();
             final ValueKind rightKind = rightValue.getKind();
             final ValueKind widenKind;

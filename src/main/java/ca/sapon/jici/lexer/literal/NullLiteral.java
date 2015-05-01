@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
@@ -100,7 +101,7 @@ public class NullLiteral extends Literal implements Value {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return this;
     }
 }

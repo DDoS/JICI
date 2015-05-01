@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -45,10 +46,10 @@ public class Arithmetic implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_PLUS:

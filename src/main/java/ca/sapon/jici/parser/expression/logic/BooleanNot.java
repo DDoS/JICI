@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
@@ -36,9 +37,9 @@ public class BooleanNot implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value innerValue = inner.getValue();
+            final Value innerValue = inner.getValue(environment);
             value = doBooleanNot(innerValue);
         }
         return value;

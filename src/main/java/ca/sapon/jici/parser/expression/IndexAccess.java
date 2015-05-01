@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 
 public class IndexAccess implements Expression {
@@ -40,7 +41,7 @@ public class IndexAccess implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 }

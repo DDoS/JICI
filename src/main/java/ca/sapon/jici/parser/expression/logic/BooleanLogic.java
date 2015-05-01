@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Symbol;
@@ -41,10 +42,10 @@ public class BooleanLogic implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             switch (operator.getID()) {
                 case SYMBOL_BOOLEAN_AND:
                     value = doBooleanAND(leftValue, rightValue);

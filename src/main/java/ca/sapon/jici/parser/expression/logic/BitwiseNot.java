@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -38,9 +39,9 @@ public class BitwiseNot implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value innerValue = inner.getValue();
+            final Value innerValue = inner.getValue(environment);
             final ValueKind widenKind = ValueKind.unaryWidensTo(innerValue.getKind());
             value = doBitwiseNot(innerValue, widenKind);
         }

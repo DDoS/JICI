@@ -21,13 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression;
+package ca.sapon.jici.evaluator;
 
-import ca.sapon.jici.evaluator.Environment;
+import java.util.List;
+
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.type.Type;
 
-public interface Expression {
-    Value getValue(Environment environment);
+public class Environment {
+    public void importClass(Type name) {
+    }
 
-    String toString();
+    public void importClass(List<Identifier> name) {
+    }
+
+    public Class<?> findClass(Type name) {
+        return null;
+    }
+
+    public Class<?> findClass(List<Identifier> name) {
+        return null;
+    }
+
+    public void declareVariable(String name) {
+    }
+
+    public Value getVariable(String name) {
+        return null;
+    }
+
+    public void setVariable(String name, Value value) {
+    }
 }

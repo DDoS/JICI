@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
@@ -44,10 +45,10 @@ public class BitwiseLogic implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_BITWISE_AND:

@@ -57,7 +57,7 @@ public class Main {
             System.out.println(expression);
 
             System.out.println("\nEvaluating:");
-            final Value value = expression.getValue();
+            final Value value = expression.getValue(null);
             System.out.println("Type: " + value.getKind());
             System.out.println("Value: " + value);
 

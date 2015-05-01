@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.comparison;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -42,10 +43,10 @@ public class Comparison implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_EQUAL:

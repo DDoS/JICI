@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.lexer.literal.number;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
@@ -109,7 +110,7 @@ public class IntLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return this;
     }
 }

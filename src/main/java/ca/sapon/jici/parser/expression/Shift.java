@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -42,10 +43,10 @@ public class Shift implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value leftValue = left.getValue();
-            final Value rightValue = right.getValue();
+            final Value leftValue = left.getValue(environment);
+            final Value rightValue = right.getValue(environment);
             final ValueKind leftWidenKind = ValueKind.unaryWidensTo(leftValue.getKind());
             final ValueKind rightWidenKind = ValueKind.unaryWidensTo(rightValue.getKind());
             switch (operator.getID()) {

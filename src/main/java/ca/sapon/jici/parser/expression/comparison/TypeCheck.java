@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.comparison;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
@@ -42,7 +43,7 @@ public class TypeCheck implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 }

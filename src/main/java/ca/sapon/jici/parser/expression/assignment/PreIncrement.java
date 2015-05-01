@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.assignment;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
@@ -44,7 +45,7 @@ public class PreIncrement implements Expression, Statement {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 }

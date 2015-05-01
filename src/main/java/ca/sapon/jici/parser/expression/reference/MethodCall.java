@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression.reference;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
@@ -42,7 +43,7 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 

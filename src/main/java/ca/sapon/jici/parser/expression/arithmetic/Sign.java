@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -43,9 +44,9 @@ public class Sign implements Expression {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         if (value == null) {
-            final Value innerValue = inner.getValue();
+            final Value innerValue = inner.getValue(environment);
             final ValueKind widenKind = ValueKind.unaryWidensTo(innerValue.getKind());
             switch (operator.getID()) {
                 case SYMBOL_PLUS:

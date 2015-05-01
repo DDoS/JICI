@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression.reference;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
@@ -37,11 +38,11 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public void setValue(Value value) {
+    public void setValue(Environment environment, Value value) {
     }
 
     @Override
-    public Value getValue() {
+    public Value getValue(Environment environment) {
         return null;
     }
 

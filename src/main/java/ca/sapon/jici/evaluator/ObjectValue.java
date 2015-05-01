@@ -24,72 +24,85 @@
 package ca.sapon.jici.evaluator;
 
 public class ObjectValue implements Value {
-    private static final ObjectValue THE_NULL = new ObjectValue(null);
+    private static final ObjectValue THE_NULL = new ObjectValue();
     private final Object value;
+    private final ValueKind kind;
+    private final Value unboxed;
+
+    private ObjectValue() {
+        value = null;
+        kind = ValueKind.OBJECT;
+        unboxed = null;
+    }
 
     private ObjectValue(Object value) {
         this.value = value;
+        unboxed = ValueKind.boxToValue(value);
+        kind = unboxed == null ? ValueKind.OBJECT : unboxed.getKind();
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast an object to a boolean");
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a boolean");
+        }
+        return unboxed.asBoolean();
     }
 
     @Override
     public byte asByte() {
-        if (value instanceof Byte) {
-            return (Byte) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a byte");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a byte");
+        return unboxed.asByte();
     }
 
     @Override
     public short asShort() {
-        if (value instanceof Short) {
-            return (Short) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a short");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a short");
+        return unboxed.asShort();
     }
 
     @Override
     public char asChar() {
-        if (value instanceof Character) {
-            return (Character) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a char");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a char");
+        return unboxed.asChar();
     }
 
     @Override
     public int asInt() {
-        if (value instanceof Integer) {
-            return (Integer) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a int");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a int");
+        return unboxed.asInt();
     }
 
     @Override
     public long asLong() {
-        if (value instanceof Long) {
-            return (Long) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a long");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a long");
+        return unboxed.asLong();
     }
 
     @Override
     public float asFloat() {
-        if (value instanceof Float) {
-            return (Float) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a float");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a float");
+        return unboxed.asFloat();
     }
 
     @Override
     public double asDouble() {
-        if (value instanceof Double) {
-            return (Double) value;
+        if (kind == ValueKind.OBJECT) {
+            throw new IllegalArgumentException("Cannot cast an object to a double");
         }
-        throw new IllegalArgumentException("Cannot cast an object to a double");
+        return unboxed.asDouble();
     }
 
     @Override
@@ -105,7 +118,7 @@ public class ObjectValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.OBJECT;
+        return kind;
     }
 
     @Override

@@ -23,16 +23,62 @@
  */
 package ca.sapon.jici.evaluator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum ValueKind {
-    BOOLEAN,
-    BYTE,
-    SHORT,
-    CHAR,
-    INT,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    OBJECT;
+    BOOLEAN(Boolean.class),
+    BYTE(Byte.class),
+    SHORT(Short.class),
+    CHAR(Character.class),
+    INT(Integer.class),
+    LONG(Long.class),
+    FLOAT(Float.class),
+    DOUBLE(Double.class),
+    OBJECT(null);
+    private static final Map<Class<?>, ValueKind> BOX_TO_KIND = new HashMap<>();
+    private final Class<?> boxingClass;
+
+    static {
+        for (ValueKind kind : values()) {
+            BOX_TO_KIND.put(kind.getBoxingClass(), kind);
+        }
+    }
+
+    ValueKind(Class<?> boxingClass) {
+        this.boxingClass = boxingClass;
+    }
+
+    public Class<?> getBoxingClass() {
+        return boxingClass;
+    }
+
+    public static Value boxToValue(Object box) {
+        final ValueKind kind = BOX_TO_KIND.get(box.getClass());
+        if (kind == null) {
+            return null;
+        }
+        switch (kind) {
+            case BOOLEAN:
+                return BooleanValue.of((Boolean) box);
+            case BYTE:
+                return ByteValue.of((Byte) box);
+            case SHORT:
+                return ShortValue.of((Short) box);
+            case CHAR:
+                return CharValue.of((Character) box);
+            case INT:
+                return IntValue.of((Integer) box);
+            case LONG:
+                return LongValue.of((Long) box);
+            case FLOAT:
+                return FloatValue.of((Float) box);
+            case DOUBLE:
+                return DoubleValue.of((Double) box);
+            default:
+                throw new IllegalArgumentException("Not a box type: " + box.getClass().getSimpleName());
+        }
+    }
 
     public static boolean canNarrowTo(ValueKind kind, int value) {
         switch (kind) {

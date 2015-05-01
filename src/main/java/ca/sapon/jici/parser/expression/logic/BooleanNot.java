@@ -23,8 +23,8 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
-import ca.sapon.jici.evaluator.BooleanValue;
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.BooleanValue;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BooleanNot implements Expression {

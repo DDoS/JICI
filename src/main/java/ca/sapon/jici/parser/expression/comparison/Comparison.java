@@ -23,9 +23,9 @@
  */
 package ca.sapon.jici.parser.expression.comparison;
 
-import ca.sapon.jici.evaluator.BooleanValue;
-import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.evaluator.value.BooleanValue;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 

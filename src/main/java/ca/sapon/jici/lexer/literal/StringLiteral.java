@@ -23,8 +23,8 @@
  */
 package ca.sapon.jici.lexer.literal;
 
-import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 

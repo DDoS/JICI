@@ -23,17 +23,17 @@
  */
 package ca.sapon.jici.parser.expression;
 
-import ca.sapon.jici.evaluator.BooleanValue;
-import ca.sapon.jici.evaluator.ByteValue;
-import ca.sapon.jici.evaluator.CharValue;
-import ca.sapon.jici.evaluator.DoubleValue;
-import ca.sapon.jici.evaluator.FloatValue;
-import ca.sapon.jici.evaluator.IntValue;
-import ca.sapon.jici.evaluator.LongValue;
-import ca.sapon.jici.evaluator.ObjectValue;
-import ca.sapon.jici.evaluator.ShortValue;
-import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.evaluator.value.BooleanValue;
+import ca.sapon.jici.evaluator.value.ByteValue;
+import ca.sapon.jici.evaluator.value.CharValue;
+import ca.sapon.jici.evaluator.value.DoubleValue;
+import ca.sapon.jici.evaluator.value.FloatValue;
+import ca.sapon.jici.evaluator.value.IntValue;
+import ca.sapon.jici.evaluator.value.LongValue;
+import ca.sapon.jici.evaluator.value.ObjectValue;
+import ca.sapon.jici.evaluator.value.ShortValue;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 
 public class Conditional implements Expression {

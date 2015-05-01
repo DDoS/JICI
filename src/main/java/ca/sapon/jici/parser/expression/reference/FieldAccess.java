@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 
 public class FieldAccess extends Dereference implements Reference {

@@ -21,28 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class FloatValue implements Value {
-    private final float value;
+public class ByteValue implements Value {
+    private static final ByteValue[] ALL_VALUES = new ByteValue[256];
+    private final byte value;
 
-    private FloatValue(float value) {
+    static {
+        for (int i = 0; i < 256; i++) {
+            ALL_VALUES[i] = new ByteValue((byte) (i - 128));
+        }
+    }
+
+    private ByteValue(byte value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a float to a boolean");
+        throw new IllegalArgumentException("Cannot cast a byte to a boolean");
     }
 
     @Override
     public byte asByte() {
-        return (byte) value;
+        return value;
     }
 
     @Override
     public short asShort() {
-        return (short) value;
+        return value;
     }
 
     @Override
@@ -52,12 +59,12 @@ public class FloatValue implements Value {
 
     @Override
     public int asInt() {
-        return (int) value;
+        return value;
     }
 
     @Override
     public long asLong() {
-        return (long) value;
+        return value;
     }
 
     @Override
@@ -71,7 +78,7 @@ public class FloatValue implements Value {
     }
 
     @Override
-    public Float asObject() {
+    public Byte asObject() {
         return value;
     }
 
@@ -83,7 +90,7 @@ public class FloatValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.FLOAT;
+        return ValueKind.BYTE;
     }
 
     @Override
@@ -93,10 +100,10 @@ public class FloatValue implements Value {
 
     @Override
     public String toString() {
-        return Float.toString(value);
+        return Byte.toString(value);
     }
 
-    public static FloatValue of(float value) {
-        return new FloatValue(value);
+    public static ByteValue of(byte value) {
+        return ALL_VALUES[value + 128];
     }
 }

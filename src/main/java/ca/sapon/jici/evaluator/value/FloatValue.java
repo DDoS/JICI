@@ -21,59 +21,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class BooleanValue implements Value {
-    private static final BooleanValue THE_TRUE = new BooleanValue(true);
-    private static final BooleanValue THE_FALSE = new BooleanValue(false);
-    private final boolean value;
+public class FloatValue implements Value {
+    private final float value;
 
-    private BooleanValue(boolean value) {
+    private FloatValue(float value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a float to a boolean");
     }
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a byte");
+        return (byte) value;
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a short");
+        return (short) value;
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a char");
+        return (char) value;
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot cast a boolean to an int");
+        return (int) value;
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a long");
+        return (long) value;
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a float");
+        return value;
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a double");
+        return value;
     }
 
     @Override
-    public Boolean asObject() {
+    public Float asObject() {
         return value;
     }
 
@@ -85,7 +83,7 @@ public class BooleanValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.BOOLEAN;
+        return ValueKind.FLOAT;
     }
 
     @Override
@@ -95,10 +93,10 @@ public class BooleanValue implements Value {
 
     @Override
     public String toString() {
-        return Boolean.toString(value);
+        return Float.toString(value);
     }
 
-    public static BooleanValue of(boolean value) {
-        return value ? THE_TRUE : THE_FALSE;
+    public static FloatValue of(float value) {
+        return new FloatValue(value);
     }
 }

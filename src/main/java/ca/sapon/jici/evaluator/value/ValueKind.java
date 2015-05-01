@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
 import java.util.HashMap;
 import java.util.Map;

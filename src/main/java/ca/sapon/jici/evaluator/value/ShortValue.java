@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class LongValue implements Value {
-    private static final LongValue[] COMMON_VALUES = new LongValue[256];
-    private final long value;
+public class ShortValue implements Value {
+    private static final ShortValue[] COMMON_VALUES = new ShortValue[256];
+    private final short value;
 
     static {
         for (int i = 0; i < 256; i++) {
-            COMMON_VALUES[i] = new LongValue(i - 128);
+            COMMON_VALUES[i] = new ShortValue((short) (i - 128));
         }
     }
 
-    private LongValue(long value) {
+    private ShortValue(short value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a long to a boolean");
+        throw new IllegalArgumentException("Cannot cast a short to a boolean");
     }
 
     @Override
@@ -49,7 +49,7 @@ public class LongValue implements Value {
 
     @Override
     public short asShort() {
-        return (short) value;
+        return value;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class LongValue implements Value {
 
     @Override
     public int asInt() {
-        return (int) value;
+        return value;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class LongValue implements Value {
     }
 
     @Override
-    public Long asObject() {
+    public Short asObject() {
         return value;
     }
 
@@ -90,7 +90,7 @@ public class LongValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.LONG;
+        return ValueKind.SHORT;
     }
 
     @Override
@@ -100,14 +100,14 @@ public class LongValue implements Value {
 
     @Override
     public String toString() {
-        return Long.toString(value);
+        return Short.toString(value);
     }
 
-    public static LongValue of(long value) {
-        final long offsetValue = value + 128;
-        if ((offsetValue & ~0xFFL) == 0) {
-            return COMMON_VALUES[(int) offsetValue];
+    public static ShortValue of(short value) {
+        final int offsetValue = value + 128;
+        if ((offsetValue & ~0xFF) == 0) {
+            return COMMON_VALUES[offsetValue];
         }
-        return new LongValue(value);
+        return new ShortValue(value);
     }
 }

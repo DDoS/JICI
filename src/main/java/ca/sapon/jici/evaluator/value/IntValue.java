@@ -21,18 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class DoubleValue implements Value {
-    private final double value;
+public class IntValue implements Value {
+    private static final IntValue[] COMMON_VALUES = new IntValue[256];
+    private final int value;
 
-    private DoubleValue(double value) {
+    static {
+        for (int i = 0; i < 256; i++) {
+            COMMON_VALUES[i] = new IntValue(i - 128);
+        }
+    }
+
+    private IntValue(int value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a double to a boolean");
+        throw new IllegalArgumentException("Cannot cast an int to a boolean");
     }
 
     @Override
@@ -52,17 +59,17 @@ public class DoubleValue implements Value {
 
     @Override
     public int asInt() {
-        return (int) value;
+        return value;
     }
 
     @Override
     public long asLong() {
-        return (long) value;
+        return value;
     }
 
     @Override
     public float asFloat() {
-        return (float) value;
+        return value;
     }
 
     @Override
@@ -71,7 +78,7 @@ public class DoubleValue implements Value {
     }
 
     @Override
-    public Double asObject() {
+    public Integer asObject() {
         return value;
     }
 
@@ -83,7 +90,7 @@ public class DoubleValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.DOUBLE;
+        return ValueKind.INT;
     }
 
     @Override
@@ -93,10 +100,14 @@ public class DoubleValue implements Value {
 
     @Override
     public String toString() {
-        return Double.toString(value);
+        return Integer.toString(value);
     }
 
-    public static DoubleValue of(double value) {
-        return new DoubleValue(value);
+    public static IntValue of(int value) {
+        final int offsetValue = value + 128;
+        if ((offsetValue & ~0xFF) == 0) {
+            return COMMON_VALUES[offsetValue];
+        }
+        return new IntValue(value);
     }
 }

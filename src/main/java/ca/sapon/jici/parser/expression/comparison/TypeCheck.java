@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.comparison;
 
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
 

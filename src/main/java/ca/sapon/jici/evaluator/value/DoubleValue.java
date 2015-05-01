@@ -21,25 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class CharValue implements Value {
-    private static final CharValue[] COMMON_VALUES = new CharValue[256];
-    private final char value;
+public class DoubleValue implements Value {
+    private final double value;
 
-    static {
-        for (int i = 0; i < 256; i++) {
-            COMMON_VALUES[i] = new CharValue((char) i);
-        }
-    }
-
-    private CharValue(char value) {
+    private DoubleValue(double value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a char to a boolean");
+        throw new IllegalArgumentException("Cannot cast a double to a boolean");
     }
 
     @Override
@@ -54,22 +47,22 @@ public class CharValue implements Value {
 
     @Override
     public char asChar() {
-        return value;
+        return (char) value;
     }
 
     @Override
     public int asInt() {
-        return value;
+        return (int) value;
     }
 
     @Override
     public long asLong() {
-        return value;
+        return (long) value;
     }
 
     @Override
     public float asFloat() {
-        return value;
+        return (float) value;
     }
 
     @Override
@@ -78,7 +71,7 @@ public class CharValue implements Value {
     }
 
     @Override
-    public Character asObject() {
+    public Double asObject() {
         return value;
     }
 
@@ -90,7 +83,7 @@ public class CharValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.CHAR;
+        return ValueKind.DOUBLE;
     }
 
     @Override
@@ -100,13 +93,10 @@ public class CharValue implements Value {
 
     @Override
     public String toString() {
-        return Character.toString(value);
+        return Double.toString(value);
     }
 
-    public static CharValue of(char value) {
-        if ((value & ~0xFF) == 0) {
-            return COMMON_VALUES[value];
-        }
-        return new CharValue(value);
+    public static DoubleValue of(double value) {
+        return new DoubleValue(value);
     }
 }

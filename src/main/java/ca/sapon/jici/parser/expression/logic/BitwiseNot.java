@@ -23,10 +23,10 @@
  */
 package ca.sapon.jici.parser.expression.logic;
 
-import ca.sapon.jici.evaluator.IntValue;
-import ca.sapon.jici.evaluator.LongValue;
-import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.evaluator.value.IntValue;
+import ca.sapon.jici.evaluator.value.LongValue;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BitwiseNot implements Expression {

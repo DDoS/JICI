@@ -25,9 +25,8 @@ package ca.sapon.jici.parser.expression.reference;
 
 import java.util.List;
 
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.StringUtil;
 
 public class AmbiguousReference implements Reference {

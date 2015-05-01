@@ -21,64 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class ShortValue implements Value {
-    private static final ShortValue[] COMMON_VALUES = new ShortValue[256];
-    private final short value;
+public class BooleanValue implements Value {
+    private static final BooleanValue THE_TRUE = new BooleanValue(true);
+    private static final BooleanValue THE_FALSE = new BooleanValue(false);
+    private final boolean value;
 
-    static {
-        for (int i = 0; i < 256; i++) {
-            COMMON_VALUES[i] = new ShortValue((short) (i - 128));
-        }
-    }
-
-    private ShortValue(short value) {
+    private BooleanValue(boolean value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a short to a boolean");
+        return value;
     }
 
     @Override
     public byte asByte() {
-        return (byte) value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a byte");
     }
 
     @Override
     public short asShort() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a short");
     }
 
     @Override
     public char asChar() {
-        return (char) value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a char");
     }
 
     @Override
     public int asInt() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a boolean to an int");
     }
 
     @Override
     public long asLong() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a long");
     }
 
     @Override
     public float asFloat() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a float");
     }
 
     @Override
     public double asDouble() {
-        return value;
+        throw new IllegalArgumentException("Cannot cast a boolean to a double");
     }
 
     @Override
-    public Short asObject() {
+    public Boolean asObject() {
         return value;
     }
 
@@ -90,7 +85,7 @@ public class ShortValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.SHORT;
+        return ValueKind.BOOLEAN;
     }
 
     @Override
@@ -100,14 +95,10 @@ public class ShortValue implements Value {
 
     @Override
     public String toString() {
-        return Short.toString(value);
+        return Boolean.toString(value);
     }
 
-    public static ShortValue of(short value) {
-        final int offsetValue = value + 128;
-        if ((offsetValue & ~0xFF) == 0) {
-            return COMMON_VALUES[offsetValue];
-        }
-        return new ShortValue(value);
+    public static BooleanValue of(boolean value) {
+        return value ? THE_TRUE : THE_FALSE;
     }
 }

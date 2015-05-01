@@ -23,12 +23,12 @@
  */
 package ca.sapon.jici.parser.expression.arithmetic;
 
-import ca.sapon.jici.evaluator.DoubleValue;
-import ca.sapon.jici.evaluator.FloatValue;
-import ca.sapon.jici.evaluator.IntValue;
-import ca.sapon.jici.evaluator.LongValue;
-import ca.sapon.jici.evaluator.Value;
-import ca.sapon.jici.evaluator.ValueKind;
+import ca.sapon.jici.evaluator.value.DoubleValue;
+import ca.sapon.jici.evaluator.value.FloatValue;
+import ca.sapon.jici.evaluator.value.IntValue;
+import ca.sapon.jici.evaluator.value.LongValue;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 

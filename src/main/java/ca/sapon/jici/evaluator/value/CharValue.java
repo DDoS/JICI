@@ -21,40 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class ByteValue implements Value {
-    private static final ByteValue[] ALL_VALUES = new ByteValue[256];
-    private final byte value;
+public class CharValue implements Value {
+    private static final CharValue[] COMMON_VALUES = new CharValue[256];
+    private final char value;
 
     static {
         for (int i = 0; i < 256; i++) {
-            ALL_VALUES[i] = new ByteValue((byte) (i - 128));
+            COMMON_VALUES[i] = new CharValue((char) i);
         }
     }
 
-    private ByteValue(byte value) {
+    private CharValue(char value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a byte to a boolean");
+        throw new IllegalArgumentException("Cannot cast a char to a boolean");
     }
 
     @Override
     public byte asByte() {
-        return value;
+        return (byte) value;
     }
 
     @Override
     public short asShort() {
-        return value;
+        return (short) value;
     }
 
     @Override
     public char asChar() {
-        return (char) value;
+        return value;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class ByteValue implements Value {
     }
 
     @Override
-    public Byte asObject() {
+    public Character asObject() {
         return value;
     }
 
@@ -90,7 +90,7 @@ public class ByteValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.BYTE;
+        return ValueKind.CHAR;
     }
 
     @Override
@@ -100,10 +100,13 @@ public class ByteValue implements Value {
 
     @Override
     public String toString() {
-        return Byte.toString(value);
+        return Character.toString(value);
     }
 
-    public static ByteValue of(byte value) {
-        return ALL_VALUES[value + 128];
+    public static CharValue of(char value) {
+        if ((value & ~0xFF) == 0) {
+            return COMMON_VALUES[value];
+        }
+        return new CharValue(value);
     }
 }

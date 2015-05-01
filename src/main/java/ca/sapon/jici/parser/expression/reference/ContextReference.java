@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.Value;
 
 public class ContextReference implements Reference {
     @Override

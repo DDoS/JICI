@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.value;
 
-public class IntValue implements Value {
-    private static final IntValue[] COMMON_VALUES = new IntValue[256];
-    private final int value;
+public class LongValue implements Value {
+    private static final LongValue[] COMMON_VALUES = new LongValue[256];
+    private final long value;
 
     static {
         for (int i = 0; i < 256; i++) {
-            COMMON_VALUES[i] = new IntValue(i - 128);
+            COMMON_VALUES[i] = new LongValue(i - 128);
         }
     }
 
-    private IntValue(int value) {
+    private LongValue(long value) {
         this.value = value;
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast an int to a boolean");
+        throw new IllegalArgumentException("Cannot cast a long to a boolean");
     }
 
     @Override
@@ -59,7 +59,7 @@ public class IntValue implements Value {
 
     @Override
     public int asInt() {
-        return value;
+        return (int) value;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class IntValue implements Value {
     }
 
     @Override
-    public Integer asObject() {
+    public Long asObject() {
         return value;
     }
 
@@ -90,7 +90,7 @@ public class IntValue implements Value {
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.INT;
+        return ValueKind.LONG;
     }
 
     @Override
@@ -100,14 +100,14 @@ public class IntValue implements Value {
 
     @Override
     public String toString() {
-        return Integer.toString(value);
+        return Long.toString(value);
     }
 
-    public static IntValue of(int value) {
-        final int offsetValue = value + 128;
-        if ((offsetValue & ~0xFF) == 0) {
-            return COMMON_VALUES[offsetValue];
+    public static LongValue of(long value) {
+        final long offsetValue = value + 128;
+        if ((offsetValue & ~0xFFL) == 0) {
+            return COMMON_VALUES[(int) offsetValue];
         }
-        return new IntValue(value);
+        return new LongValue(value);
     }
 }

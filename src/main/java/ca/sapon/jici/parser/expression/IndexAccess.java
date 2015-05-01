@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression;
 
-import ca.sapon.jici.evaluator.Value;
+import ca.sapon.jici.evaluator.value.Value;
 
 public class IndexAccess implements Expression {
     private final Expression object;

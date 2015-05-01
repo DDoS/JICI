@@ -37,7 +37,7 @@ public class ObjectValue implements Value {
 
     private ObjectValue(Object value) {
         this.value = value;
-        unboxed = ValueKind.boxToValue(value);
+        unboxed = ValueKind.unbox(value);
         kind = unboxed == null ? ValueKind.OBJECT : unboxed.getKind();
     }
 

@@ -56,7 +56,7 @@ import ca.sapon.jici.parser.expression.logic.BooleanNot;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.ContextReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
-import ca.sapon.jici.parser.expression.reference.MemberReference;
+import ca.sapon.jici.parser.expression.reference.ObjectReference;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Declaration;
@@ -572,7 +572,7 @@ public class Parser {
                         final Token token = tokens.get();
                         if (token.getType() == TokenType.IDENTIFIER) {
                             tokens.advance();
-                            final Reference reference = new MemberReference(object);
+                            final Reference reference = new ObjectReference(object);
                             final Expression access;
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();

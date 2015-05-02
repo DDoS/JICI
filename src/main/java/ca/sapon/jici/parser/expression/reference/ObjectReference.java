@@ -27,24 +27,25 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
-public class MemberReference implements Reference {
-    private final Expression member;
+public class ObjectReference implements Reference {
+    private final Expression object;
 
-    public MemberReference(Expression member) {
-        this.member = member;
+    public ObjectReference(Expression object) {
+        this.object = object;
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
+        throw new IllegalArgumentException("Can't set the value of an object reference");
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        return object.getValue(environment);
     }
 
     @Override
     public String toString() {
-        return member.toString();
+        return object.toString();
     }
 }

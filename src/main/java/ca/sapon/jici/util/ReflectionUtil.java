@@ -61,6 +61,14 @@ public class ReflectionUtil {
         return true;
     }
 
+    public static Class<?> lookupClass(String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException exception) {
+            return null;
+        }
+    }
+
     private static Set<Class<?>> toSet(Class<?>... values) {
         final Set<Class<?>> set = new HashSet<>(values.length);
         Collections.addAll(set, values);

@@ -27,6 +27,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassType implements Type {
@@ -42,15 +43,11 @@ public class ClassType implements Type {
         if (_class == null) {
             _class = environment.findClass(type.get(0));
             if (_class == null) {
-                final StringBuilder name = new StringBuilder();
-                for (Identifier identifier : type) {
-                    name.append(identifier.getSource());
-                    if ((_class = lookupName(name.toString())) != null) {
-                        return _class;
-                    }
-                    name.append('.');
+                final String name = toString();
+                _class = ReflectionUtil.lookupClass(name);
+                if (_class == null) {
+                    throw new IllegalArgumentException("Class not found: " + name);
                 }
-                throw new IllegalArgumentException("Class not found: " + toString());
             }
         }
         return _class;
@@ -59,13 +56,5 @@ public class ClassType implements Type {
     @Override
     public String toString() {
         return StringUtil.toString(type, ".");
-    }
-
-    private static Class<?> lookupName(String name) {
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException exception) {
-            return null;
-        }
     }
 }

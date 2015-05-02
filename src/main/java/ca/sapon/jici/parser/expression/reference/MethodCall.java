@@ -23,18 +23,24 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall extends Dereference implements Statement {
     private final Identifier method;
     private final List<Expression> arguments;
+    private Method callable = null;
 
     public MethodCall(Reference reference, Identifier method, List<Expression> arguments) {
         super(reference);
@@ -43,12 +49,41 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
-    public void execute(Environment environemnt) {
+    public void execute(Environment environment) {
+        getValue(environment);
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        final Value value = reference.getValue(environment);
+        final int size = arguments.size();
+        final Object[] values = new Object[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = arguments.get(i).getValue(environment).asObject();
+        }
+        try {
+            return ObjectValue.of(getMethod(value.getTypeClass(), values).invoke(value.asObject(), values));
+        } catch (IllegalAccessException | InvocationTargetException exception) {
+            throw new IllegalArgumentException("Could not call method", exception);
+        }
+    }
+
+    private Method getMethod(Class<?> _class, Object[] values) {
+        if (callable == null) {
+            final Method[] methods = _class.getMethods();
+            for (Method candidate : methods) {
+                if (ReflectionUtil.validateArgumentTypes(candidate.getParameterTypes(), values)) {
+                    callable = candidate;
+                    return candidate;
+                }
+            }
+            final List<String> typeNames = new ArrayList<>(values.length);
+            for (Object value : values) {
+                typeNames.add(value.getClass().getCanonicalName());
+            }
+            throw new IllegalArgumentException("No constructor for types: " + StringUtil.toString(typeNames, ", "));
+        }
+        return callable;
     }
 
     @Override

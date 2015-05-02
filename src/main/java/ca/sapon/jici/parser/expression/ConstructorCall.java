@@ -61,8 +61,8 @@ public class ConstructorCall implements Statement, Expression {
         }
         try {
             return ObjectValue.of(getConstructor(_class, values).newInstance(values));
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalArgumentException("Could not call constructor", e);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
+            throw new IllegalArgumentException("Could not call constructor", exception);
         }
     }
 

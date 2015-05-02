@@ -39,7 +39,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "import java.lang.Double; new Double(1);";
+        final String source = "import java.lang.String; new String(\"121\").substring(1, 2);";
 
         System.out.println("Source:\n" + source);
 

@@ -129,13 +129,13 @@ public class StringLiteral extends Literal implements Value {
     }
 
     @Override
-    public String toString() {
-        return "\"" + getSource() + "\"";
+    public Class<?> getTypeClass(Environment environment) {
+        return getTypeClass();
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
-        return null;
+    public String toString() {
+        return "\"" + getSource() + "\"";
     }
 
     @Override

@@ -115,14 +115,15 @@ public class LongLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return getTypeClass();
+    }
+
+    @Override
     public String toString() {
         return getSource() + 'L';
     }
 
-    @Override
-    public Class<?> getTypeClass(Environment environment) {
-        return null;
-    }
 
     @Override
     public Value getValue(Environment environment) {

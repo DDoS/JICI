@@ -106,17 +106,17 @@ public class BooleanLiteral extends Literal implements Value {
         return boolean.class;
     }
 
+    @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return getTypeClass();
+    }
+
     public static boolean is(String source) {
         return trueSource.equals(source) || falseSource.equals(source);
     }
 
     public static BooleanLiteral from(String source) {
         return source.equals(trueSource) ? THE_TRUE : THE_FALSE;
-    }
-
-    @Override
-    public Class<?> getTypeClass(Environment environment) {
-        return null;
     }
 
     @Override

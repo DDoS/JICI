@@ -111,13 +111,13 @@ public class FloatLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public String toString() {
-        return getSource() + 'f';
+    public Class<?> getTypeClass(Environment environment) {
+        return getTypeClass();
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
-        return null;
+    public String toString() {
+        return getSource() + 'f';
     }
 
     @Override

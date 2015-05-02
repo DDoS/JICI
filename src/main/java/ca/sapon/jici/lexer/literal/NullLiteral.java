@@ -101,13 +101,13 @@ public class NullLiteral extends Literal implements Value {
         return null;
     }
 
-    public static boolean is(String source) {
-        return nullSource.equals(source);
-    }
-
     @Override
     public Class<?> getTypeClass(Environment environment) {
         return null;
+    }
+
+    public static boolean is(String source) {
+        return nullSource.equals(source);
     }
 
     @Override

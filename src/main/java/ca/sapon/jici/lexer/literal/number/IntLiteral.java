@@ -105,18 +105,18 @@ public class IntLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public boolean isPrimitive() {
-        return true;
-    }
-
-    @Override
     public Class<?> getTypeClass() {
         return int.class;
     }
 
     @Override
     public Class<?> getTypeClass(Environment environment) {
-        return null;
+        return getTypeClass();
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
     }
 
     @Override

@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.statement;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
 
@@ -35,6 +36,10 @@ public class Import implements Statement {
     public Import(List<Identifier> name, boolean _package) {
         this.name = name;
         this._package = _package;
+    }
+
+    @Override
+    public void execute(Environment environemnt) {
     }
 
     @Override

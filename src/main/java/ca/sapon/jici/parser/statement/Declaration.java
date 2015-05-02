@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.statement;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
@@ -37,6 +38,10 @@ public class Declaration implements Statement {
     public Declaration(Type type, List<Variable> variables) {
         this.type = type;
         this.variables = variables;
+    }
+
+    @Override
+    public void execute(Environment environemnt) {
     }
 
     @Override

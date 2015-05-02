@@ -43,6 +43,10 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
+    public void execute(Environment environemnt) {
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return null;
     }

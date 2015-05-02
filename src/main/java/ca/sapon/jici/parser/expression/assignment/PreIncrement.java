@@ -40,6 +40,10 @@ public class PreIncrement implements Expression, Statement {
     }
 
     @Override
+    public void execute(Environment environemnt) {
+    }
+
+    @Override
     public String toString() {
         return "PreIncrement(" + operator.toString() + inner.toString() + ")";
     }

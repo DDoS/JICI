@@ -23,7 +23,13 @@
  */
 package ca.sapon.jici.parser.statement;
 
+import ca.sapon.jici.evaluator.Environment;
+
 public class Empty implements Statement {
+    @Override
+    public void execute(Environment environemnt) {
+    }
+
     @Override
     public String toString() {
         return "Empty()";

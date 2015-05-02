@@ -40,6 +40,10 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
+    public void execute(Environment environemnt) {
+    }
+
+    @Override
     public String toString() {
         return "PostIncrement(" + inner.toString() + operator.toString() + ")";
     }

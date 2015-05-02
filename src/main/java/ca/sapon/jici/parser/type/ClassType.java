@@ -25,18 +25,47 @@ package ca.sapon.jici.parser.type;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassType implements Type {
     private final List<Identifier> type;
+    private Class<?> _class = null;
 
     public ClassType(List<Identifier> type) {
         this.type = type;
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        if (_class == null) {
+            _class = environment.findClass(type.get(0));
+            if (_class == null) {
+                final StringBuilder name = new StringBuilder();
+                for (Identifier identifier : type) {
+                    name.append(identifier.getSource());
+                    if ((_class = lookupName(name.toString())) != null) {
+                        return _class;
+                    }
+                    name.append('.');
+                }
+                throw new IllegalArgumentException("Class not found: " + toString());
+            }
+        }
+        return _class;
+    }
+
+    @Override
     public String toString() {
         return StringUtil.toString(type, ".");
+    }
+
+    private static Class<?> lookupName(String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException exception) {
+            return null;
+        }
     }
 }

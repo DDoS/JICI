@@ -23,13 +23,50 @@
  */
 package ca.sapon.jici.parser.type;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveType implements Type {
     private final Keyword type;
+    private Class<?> _class = null;
 
     public PrimitiveType(Keyword type) {
         this.type = type;
+    }
+
+    @Override
+    public Class<?> getTypeClass(Environment environment) {
+        if (_class == null) {
+            switch (type.getID()) {
+                case KEYWORD_BOOLEAN:
+                    _class = boolean.class;
+                    break;
+                case KEYWORD_BYTE:
+                    _class = byte.class;
+                    break;
+                case KEYWORD_SHORT:
+                    _class = short.class;
+                    break;
+                case KEYWORD_CHAR:
+                    _class = char.class;
+                    break;
+                case KEYWORD_INT:
+                    _class = int.class;
+                    break;
+                case KEYWORD_LONG:
+                    _class = long.class;
+                    break;
+                case KEYWORD_FLOAT:
+                    _class = float.class;
+                    break;
+                case KEYWORD_DOUBLE:
+                    _class = double.class;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not a primitive type: " + type);
+            }
+        }
+        return _class;
     }
 
     @Override

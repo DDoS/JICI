@@ -33,12 +33,13 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.ParserException;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "new java.lang.Double(new java.lang.Float(1))";
+        final String source = "import java.lang.Double; new Double(1);";
 
         System.out.println("Source:\n" + source);
 
@@ -50,10 +51,18 @@ public class Main {
             }
 
             System.out.println("\nParsing:");
-            /*final List<Statement> statements = Parser.parse(tokens);
+            final List<Statement> statements = Parser.parse(tokens);
             for (Statement statement : statements) {
                 System.out.println(statement);
-            }*/
+            }
+
+            System.out.println("\nEvaluating:");
+            final Environment environment = new Environment();
+            for (Statement statement : statements) {
+                statement.execute(environment);
+            }
+
+            /*System.out.println("\nParsing:");
             final Expression expression = Parser.parseExpression(tokens);
             System.out.println(expression);
 
@@ -62,7 +71,7 @@ public class Main {
             final Value value = expression.getValue(environment);
             System.out.println("Class: " + value.getClass().getSimpleName());
             System.out.println("Type: " + value.getKind());
-            System.out.println("Value: " + value);
+            System.out.println("Value: " + value);*/
 
         } catch (LexerException | ParserException exception) {
             System.out.printf("Exception: %s\n", exception.getMessage());

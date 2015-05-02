@@ -47,7 +47,8 @@ public class ConstructorCall implements Statement, Expression {
     }
 
     @Override
-    public void execute(Environment environemnt) {
+    public void execute(Environment environment) {
+        getValue(environment);
     }
 
     @Override

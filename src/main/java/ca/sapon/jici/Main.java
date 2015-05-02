@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
@@ -26,13 +26,11 @@ package ca.sapon.jici;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.ParserException;
-import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {

@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
@@ -56,8 +56,8 @@ import ca.sapon.jici.parser.expression.logic.BooleanNot;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.ContextReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
-import ca.sapon.jici.parser.expression.reference.ObjectReference;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
+import ca.sapon.jici.parser.expression.reference.ObjectReference;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;

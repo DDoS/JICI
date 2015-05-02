@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
@@ -42,7 +42,7 @@ public class Import implements Statement {
     @Override
     public void execute(Environment environment) {
         if (_package) {
-            throw new  IllegalArgumentException("Package imports are not supported");
+            throw new IllegalArgumentException("Package imports are not supported");
         }
         final String nameString = StringUtil.toString(name, ".");
         final Class<?> _class = ReflectionUtil.lookupClass(nameString);

@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>

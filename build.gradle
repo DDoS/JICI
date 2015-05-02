@@ -89,6 +89,9 @@ license {
     header rootProject.file('HEADER.txt')
     ignoreFailures true
     strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
 }
 
 // Source compiler configuration

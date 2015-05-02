@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
@@ -24,7 +24,6 @@
 package ca.sapon.jici.evaluator;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.Value;

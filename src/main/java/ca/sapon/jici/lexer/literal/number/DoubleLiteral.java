@@ -106,6 +106,11 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return double.class;
+    }
+
+    @Override
     public String toString() {
         return getSource() + 'd';
     }

@@ -110,6 +110,11 @@ public class LongLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return long.class;
+    }
+
+    @Override
     public String toString() {
         return getSource() + 'L';
     }

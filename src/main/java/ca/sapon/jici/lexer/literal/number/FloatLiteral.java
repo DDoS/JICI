@@ -106,6 +106,11 @@ public class FloatLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return float.class;
+    }
+
+    @Override
     public String toString() {
         return getSource() + 'f';
     }

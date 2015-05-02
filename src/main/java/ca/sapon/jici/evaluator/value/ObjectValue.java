@@ -127,6 +127,11 @@ public class ObjectValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return value == null ? null : value.getClass();
+    }
+
+    @Override
     public String toString() {
         return value.toString();
     }

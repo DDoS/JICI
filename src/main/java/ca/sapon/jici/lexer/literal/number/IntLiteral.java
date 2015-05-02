@@ -110,6 +110,11 @@ public class IntLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return int.class;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return this;
     }

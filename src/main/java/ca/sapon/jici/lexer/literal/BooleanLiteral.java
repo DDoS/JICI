@@ -101,6 +101,11 @@ public class BooleanLiteral extends Literal implements Value {
         return true;
     }
 
+    @Override
+    public Class<?> getTypeClass() {
+        return boolean.class;
+    }
+
     public static boolean is(String source) {
         return trueSource.equals(source) || falseSource.equals(source);
     }

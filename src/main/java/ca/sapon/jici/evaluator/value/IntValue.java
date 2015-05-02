@@ -99,6 +99,11 @@ public class IntValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return int.class;
+    }
+
+    @Override
     public String toString() {
         return Integer.toString(value);
     }

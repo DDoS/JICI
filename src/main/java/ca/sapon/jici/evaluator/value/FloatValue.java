@@ -92,6 +92,11 @@ public class FloatValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return float.class;
+    }
+
+    @Override
     public String toString() {
         return Float.toString(value);
     }

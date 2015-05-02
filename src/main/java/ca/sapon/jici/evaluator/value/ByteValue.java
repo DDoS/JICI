@@ -99,6 +99,11 @@ public class ByteValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return byte.class;
+    }
+
+    @Override
     public String toString() {
         return Byte.toString(value);
     }

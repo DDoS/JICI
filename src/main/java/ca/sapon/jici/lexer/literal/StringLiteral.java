@@ -114,13 +114,18 @@ public class StringLiteral extends Literal implements Value {
     }
 
     @Override
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
+    }
+
+    @Override
     public boolean isPrimitive() {
         return false;
     }
 
     @Override
-    public ValueKind getKind() {
-        return ValueKind.OBJECT;
+    public Class<?> getTypeClass() {
+        return String.class;
     }
 
     @Override

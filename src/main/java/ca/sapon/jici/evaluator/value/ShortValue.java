@@ -99,6 +99,11 @@ public class ShortValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return short.class;
+    }
+
+    @Override
     public String toString() {
         return Short.toString(value);
     }

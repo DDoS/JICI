@@ -120,6 +120,11 @@ public class CharacterLiteral extends Literal implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return char.class;
+    }
+
+    @Override
     public String toString() {
         return "'" + getSource() + "'";
     }

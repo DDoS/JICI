@@ -99,6 +99,11 @@ public class LongValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return long.class;
+    }
+
+    @Override
     public String toString() {
         return Long.toString(value);
     }

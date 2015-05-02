@@ -94,6 +94,11 @@ public class BooleanValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return boolean.class;
+    }
+
+    @Override
     public String toString() {
         return Boolean.toString(value);
     }

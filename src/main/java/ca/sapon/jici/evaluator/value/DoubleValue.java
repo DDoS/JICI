@@ -92,6 +92,11 @@ public class DoubleValue implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass() {
+        return double.class;
+    }
+
+    @Override
     public String toString() {
         return Double.toString(value);
     }

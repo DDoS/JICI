@@ -48,5 +48,7 @@ public interface Value {
 
     boolean isPrimitive();
 
+    Class<?> getTypeClass();
+
     String toString();
 }

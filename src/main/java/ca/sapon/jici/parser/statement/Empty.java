@@ -27,7 +27,7 @@ import ca.sapon.jici.evaluator.Environment;
 
 public class Empty implements Statement {
     @Override
-    public void execute(Environment environemnt) {
+    public void execute(Environment environment) {
     }
 
     @Override

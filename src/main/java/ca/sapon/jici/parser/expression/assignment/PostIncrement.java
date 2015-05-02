@@ -40,7 +40,7 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
-    public void execute(Environment environemnt) {
+    public void execute(Environment environment) {
     }
 
     @Override

@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.statement;
 import ca.sapon.jici.evaluator.Environment;
 
 public interface Statement {
-    void execute(Environment environemnt);
+    void execute(Environment environment);
 
     String toString();
 }

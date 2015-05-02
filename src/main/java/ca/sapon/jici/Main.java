@@ -38,7 +38,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "true ? 1d : 0L";
+        final String source = "new java.lang.Double(new java.lang.Float(1))";
 
         System.out.println("Source:\n" + source);
 
@@ -60,6 +60,7 @@ public class Main {
             System.out.println("\nEvaluating:");
             final Environment environment = new Environment();
             final Value value = expression.getValue(environment);
+            System.out.println("Class: " + value.getClass().getSimpleName());
             System.out.println("Type: " + value.getKind());
             System.out.println("Value: " + value);
 

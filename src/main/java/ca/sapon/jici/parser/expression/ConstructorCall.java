@@ -39,7 +39,7 @@ import ca.sapon.jici.util.StringUtil;
 public class ConstructorCall implements Statement, Expression {
     private final ClassType type;
     private final List<Expression> arguments;
-    private Value value = null;
+    private Constructor<?> constructor = null;
 
     public ConstructorCall(ClassType type, List<Expression> arguments) {
         this.arguments = arguments;
@@ -52,21 +52,26 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Class<?> _class = type.getTypeClass(environment);
-            final int size = arguments.size();
-            final Object[] values = new Object[size];
-            for (int i = 0; i < size; i++) {
-                values[i] = arguments.get(i).getValue(environment).asObject();
-            }
+        final Class<?> _class = type.getTypeClass(environment);
+        final int size = arguments.size();
+        final Object[] values = new Object[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = arguments.get(i).getValue(environment).asObject();
+        }
+        try {
+            return ObjectValue.of(getConstructor(_class, values).newInstance(values));
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalArgumentException("Could not call constructor", e);
+        }
+    }
+
+    private Constructor<?> getConstructor(Class<?> _class, Object[] values) {
+        if (constructor == null) {
             final Constructor<?>[] constructors = _class.getConstructors();
-            for (Constructor<?> constructor : constructors) {
-                if (ReflectionUtil.validateArgumentTypes(constructor.getParameterTypes(), values)) {
-                    try {
-                        return value = ObjectValue.of(constructor.newInstance(values));
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        throw new IllegalArgumentException("Could not call constructor", e);
-                    }
+            for (Constructor<?> candidate : constructors) {
+                if (ReflectionUtil.validateArgumentTypes(candidate.getParameterTypes(), values)) {
+                    constructor = candidate;
+                    return candidate;
                 }
             }
             final List<String> typeNames = new ArrayList<>(values.length);
@@ -75,7 +80,7 @@ public class ConstructorCall implements Statement, Expression {
             }
             throw new IllegalArgumentException("No constructor for types: " + StringUtil.toString(typeNames, ", "));
         }
-        return value;
+        return constructor;
     }
 
     @Override

@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.type.Type;
 
@@ -35,12 +36,12 @@ public class ClassAccess implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "ClassAccess(" + type + ".class" + ")";
+    public Value getValue(Environment environment) {
+        return ObjectValue.of(type.getTypeClass(environment));
     }
 
     @Override
-    public Value getValue(Environment environment) {
-        return null;
+    public String toString() {
+        return "ClassAccess(" + type + ".class" + ")";
     }
 }

@@ -423,7 +423,7 @@ public class Parser {
                 return parseComparison(tokens, add);
             } else if (token.getID() == TokenID.KEYWORD_INSTANCEOF) {
                 tokens.advance();
-                final Type type = parseType(tokens);
+                final ClassType type = new ClassType(parseName(tokens));
                 final TypeCheck typeCheck = new TypeCheck(left, type);
                 return parseComparison(tokens, typeCheck);
             }
@@ -667,7 +667,7 @@ public class Parser {
                         }
                         case KEYWORD_NEW: {
                             tokens.advance();
-                            final List<Identifier> name = parseName(tokens);
+                            final ClassType name = new ClassType(parseName(tokens));
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArguments(tokens);

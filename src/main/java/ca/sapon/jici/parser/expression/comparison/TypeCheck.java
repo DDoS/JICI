@@ -26,13 +26,13 @@ package ca.sapon.jici.parser.expression.comparison;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.parser.type.ClassType;
 
 public class TypeCheck implements Expression {
     private final Expression object;
-    private final Type type;
+    private final ClassType type;
 
-    public TypeCheck(Expression object, Type type) {
+    public TypeCheck(Expression object, ClassType type) {
         this.object = object;
         this.type = type;
     }

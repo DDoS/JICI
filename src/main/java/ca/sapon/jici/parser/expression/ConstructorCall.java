@@ -27,22 +27,22 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.parser.type.ClassType;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
-    private final List<Identifier> name;
+    private final ClassType name;
     private final List<Expression> arguments;
 
-    public ConstructorCall(List<Identifier> name, List<Expression> arguments) {
+    public ConstructorCall(ClassType name, List<Expression> arguments) {
         this.arguments = arguments;
         this.name = name;
     }
 
     @Override
     public String toString() {
-        return "ConstructorCall(new " + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "ConstructorCall(new " + name + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 
     @Override

@@ -27,6 +27,8 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 
 public interface Expression {
+    Class<?> getTypeClass(Environment environment);
+
     Value getValue(Environment environment);
 
     String toString();

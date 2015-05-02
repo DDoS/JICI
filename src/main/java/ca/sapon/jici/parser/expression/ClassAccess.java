@@ -36,6 +36,11 @@ public class ClassAccess implements Expression {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return ObjectValue.of(type.getTypeClass(environment));
     }

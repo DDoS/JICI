@@ -42,6 +42,11 @@ public class Conditional implements Expression {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         if (value == null) {
             final Value tesValue = test.getValue(environment);

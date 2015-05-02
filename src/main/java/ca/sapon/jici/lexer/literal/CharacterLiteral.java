@@ -130,6 +130,11 @@ public class CharacterLiteral extends Literal implements Value {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return this;
     }

@@ -45,6 +45,11 @@ public class BitwiseLogic implements Expression {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         if (value == null) {
             final Value leftValue = left.getValue(environment);

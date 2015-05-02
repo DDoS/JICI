@@ -52,6 +52,11 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         final Value value = reference.getValue(environment);
         final int size = arguments.size();

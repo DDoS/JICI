@@ -52,6 +52,11 @@ public class ConstructorCall implements Statement, Expression {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         final Class<?> _class = type.getTypeClass(environment);
         final int size = arguments.size();

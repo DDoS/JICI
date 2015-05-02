@@ -32,6 +32,11 @@ import ca.sapon.jici.lexer.Identifier;
 
 public class ContextReference implements Reference {
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return null;
     }

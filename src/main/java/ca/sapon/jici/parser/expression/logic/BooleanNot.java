@@ -37,6 +37,11 @@ public class BooleanNot implements Expression {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         if (value == null) {
             final Value innerValue = inner.getValue(environment);

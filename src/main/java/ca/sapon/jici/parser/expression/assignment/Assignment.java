@@ -51,6 +51,11 @@ public class Assignment implements Expression, Statement {
     }
 
     @Override
+    public Class<?> getTypeClass(Environment environment) {
+        return null;
+    }
+
+    @Override
     public Value getValue(Environment environment) {
         return null;
     }

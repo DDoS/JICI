@@ -27,6 +27,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class Import implements Statement {
@@ -39,7 +40,16 @@ public class Import implements Statement {
     }
 
     @Override
-    public void execute(Environment environemnt) {
+    public void execute(Environment environment) {
+        if (_package) {
+            throw new  IllegalArgumentException("Package imports are not supported");
+        }
+        final String nameString = StringUtil.toString(name, ".");
+        final Class<?> _class = ReflectionUtil.lookupClass(nameString);
+        if (_class == null) {
+            throw new IllegalArgumentException("Class not found: " + nameString);
+        }
+        environment.importClass(_class);
     }
 
     @Override

@@ -79,7 +79,7 @@ public class ConstructorCall implements Statement, Expression {
             for (Object value : values) {
                 typeNames.add(value.getClass().getCanonicalName());
             }
-            throw new IllegalArgumentException("No constructor for types: " + StringUtil.toString(typeNames, ", "));
+            throw new IllegalArgumentException("No constructor for signature: " + _class.getCanonicalName() + "(" + StringUtil.toString(typeNames, ", ") + ")");
         }
         return constructor;
     }

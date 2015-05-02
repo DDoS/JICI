@@ -23,9 +23,17 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.StringUtil;
 
 public class ObjectReference implements Reference {
     private final Expression object;
@@ -35,13 +43,36 @@ public class ObjectReference implements Reference {
     }
 
     @Override
+    public Value getValue(Environment environment) {
+        return object.getValue(environment);
+    }
+
+    @Override
     public void setValue(Environment environment, Value value) {
         throw new IllegalArgumentException("Can't set the value of an object reference");
     }
 
     @Override
-    public Value getValue(Environment environment) {
-        return object.getValue(environment);
+    public Field getField(Environment environment, Identifier name) {
+        return null;
+    }
+
+    @Override
+    public Method getMethod(Environment environment, Identifier name, Object[] arguments) {
+        // TODO: use type here
+        final Class<?> _class = getValue(environment).getTypeClass();
+        final Method[] methods = _class.getMethods();
+        final String nameString = name.getSource();
+        for (Method candidate : methods) {
+            if (candidate.getName().equals(nameString) && ReflectionUtil.validateArgumentTypes(candidate.getParameterTypes(), arguments)) {
+                return candidate;
+            }
+        }
+        final List<String> typeNames = new ArrayList<>(arguments.length);
+        for (Object value : arguments) {
+            typeNames.add(value.getClass().getCanonicalName());
+        }
+        throw new IllegalArgumentException("No method for signature: " + _class.getCanonicalName() + "." + nameString + "(" + StringUtil.toString(typeNames, ", ") + ")");
     }
 
     @Override

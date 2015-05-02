@@ -23,16 +23,30 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.lexer.Identifier;
 
 public class ContextReference implements Reference {
+    @Override
+    public Value getValue(Environment environment) {
+        return null;
+    }
+
     @Override
     public void setValue(Environment environment, Value value) {
     }
 
     @Override
-    public Value getValue(Environment environment) {
+    public Field getField(Environment environment, Identifier name) {
+        return null;
+    }
+
+    @Override
+    public Method getMethod(Environment environment, Identifier name, Object[] arguments) {
         return null;
     }
 

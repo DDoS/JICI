@@ -23,34 +23,76 @@
  */
 package ca.sapon.jici.evaluator;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.parser.type.Type;
 
 public class Environment {
-    public void importClass(Type name) {
+    private final Map<String, Class<?>> classes = new HashMap<>();
+    private final Map<String, Value> variables = new HashMap<>();
+
+    public void importClass(Class<?> _class) {
+        final String name = _class.getCanonicalName();
+        // Validate the type of class
+        if (_class.isPrimitive()) {
+            throw new IllegalArgumentException("Can't import a primitive type: " + name);
+        }
+        if (_class.isArray()) {
+            throw new IllegalArgumentException("Can't import an array class: " + name);
+        }
+        if (_class.isAnonymousClass()) {
+            throw new IllegalArgumentException("Can't import an anonymous class: " + name);
+        }
+        // Check for existing import under the same name
+        final String simpleName = _class.getSimpleName();
+        final Class<?> existing = classes.get(simpleName);
+        if (existing != null) {
+            throw new IllegalArgumentException("Class " + name + " clashes with existing import " + existing.getCanonicalName());
+        }
+        // Add the class to the imports
+        classes.put(simpleName, _class);
     }
 
-    public void importClass(List<Identifier> name) {
+    public Class<?> findClass(Identifier name) {
+        return classes.get(name.getSource());
     }
 
-    public Class<?> findClass(Type name) {
-        return null;
+    public Class<?> getClass(Identifier name) {
+        final Class<?> _class = findClass(name);
+        if (_class == null) {
+            throw new IllegalArgumentException("Class " + name.getSource() + " does not exist");
+        }
+        return _class;
     }
 
-    public Class<?> findClass(List<Identifier> name) {
-        return null;
+    public Value findVariable(Identifier name) {
+        return variables.get(name.getSource());
     }
 
-    public void declareVariable(String name) {
+    public void declareVariable(Identifier name, ValueKind kind) {
+        final Value existing = findVariable(name);
+        if (existing != null) {
+            throw new IllegalArgumentException("Variable " + name.getSource() + " is already declared");
+        }
+        variables.put(name.getSource(), kind.defaultValue());
     }
 
-    public Value getVariable(String name) {
-        return null;
+    public Value getVariable(Identifier name) {
+        final Value variable = findVariable(name);
+        if (variable == null) {
+            throw new IllegalArgumentException("Variable " + name.getSource() + " does not exist");
+        }
+        return variable;
     }
 
-    public void setVariable(String name, Value value) {
+    public void setVariable(Identifier name, Value value) {
+        if (findVariable(name) == null) {
+            throw new IllegalArgumentException("Variable " + name.getSource() + " does not exist");
+        }
+        variables.put(name.getSource(), value);
     }
 }

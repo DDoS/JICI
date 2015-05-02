@@ -25,6 +25,7 @@ package ca.sapon.jici;
 
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
@@ -57,7 +58,8 @@ public class Main {
             System.out.println(expression);
 
             System.out.println("\nEvaluating:");
-            final Value value = expression.getValue(null);
+            final Environment environment = new Environment();
+            final Value value = expression.getValue(environment);
             System.out.println("Type: " + value.getKind());
             System.out.println("Value: " + value);
 

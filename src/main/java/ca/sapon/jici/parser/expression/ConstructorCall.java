@@ -52,7 +52,7 @@ public class ConstructorCall implements Statement, Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
         return null;
     }
 

@@ -43,7 +43,7 @@ public class ObjectReference implements Reference {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
         return null;
     }
 

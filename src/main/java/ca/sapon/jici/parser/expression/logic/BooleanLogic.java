@@ -42,8 +42,8 @@ public class BooleanLogic implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
         return null;
+    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
     }
 
     @Override

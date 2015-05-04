@@ -37,7 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "import java.lang.String; new String(\"121\").substring(1, 2);";
+        final String source = "import java.lang.String; new String(\"121\");";
 
         System.out.println("Source:\n" + source);
 

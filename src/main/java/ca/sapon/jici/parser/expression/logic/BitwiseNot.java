@@ -29,9 +29,11 @@ import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class BitwiseNot implements Expression {
     private final Expression inner;
+    private Class<?> typeClass = null;
     private Value value = null;
 
     public BitwiseNot(Expression inner) {
@@ -39,8 +41,15 @@ public class BitwiseNot implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            final Class<?> innerClass = inner.getTypeClass(environment, null);
+            if (!ReflectionUtil.isIntegral(innerClass)) {
+                throw new IllegalArgumentException("Not a numeric type: " + innerClass.getCanonicalName());
+            }
+            typeClass = ReflectionUtil.unaryWiden(ReflectionUtil.unbox(innerClass));
+        }
+        return typeClass;
     }
 
     @Override

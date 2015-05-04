@@ -39,6 +39,8 @@ import ca.sapon.jici.util.StringUtil;
 public class ConstructorCall implements Statement, Expression {
     private final ClassType type;
     private final List<Expression> arguments;
+    private Class<?> typeClass = null;
+    private Class<?>[] argumentTypes = null;
     private Constructor<?> constructor = null;
 
     public ConstructorCall(ClassType type, List<Expression> arguments) {
@@ -48,45 +50,62 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public void execute(Environment environment) {
+        getTypeClass(environment, null);
         getValue(environment);
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
-        return null;
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            typeClass = type.getTypeClass(environment);
+            // try to find a matching constructor
+            argumentTypes = new Class<?>[arguments.size()];
+            final int size = arguments.size();
+            final Constructor<?>[] constructors = typeClass.getConstructors();
+            // look for matches in length
+            final List<Constructor<?>> lengthMatches = new ArrayList<>();
+            for (Constructor<?> candidate : constructors) {
+                if (candidate.getParameterTypes().length == size) {
+                    lengthMatches.add(candidate);
+                }
+            }
+            // try to find the lowest object upper bound acceptable
+            candidates:
+            for (Constructor<?> candidate : lengthMatches) {
+                final Class<?>[] upperObjectBounds = candidate.getParameterTypes();
+                // validate the upper object bounds
+                for (int i = 0; i < size; i++) {
+                    try {
+                        argumentTypes[i] = arguments.get(i).getTypeClass(environment, upperObjectBounds[i]);
+                    } catch (IllegalArgumentException exception) {
+                        continue candidates;
+                    }
+                }
+                // validate the primitive parameters
+                for (int i = 0; i < size; i++) {
+                    if (argumentTypes[i].isPrimitive() && !ReflectionUtil.convertibleTo(upperObjectBounds[i], argumentTypes[i])) {
+                        continue candidates;
+                    }
+                }
+                // TODO: only change if the match is closer
+                constructor = candidate;
+            }
+        }
+        return typeClass;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Class<?> _class = type.getTypeClass(environment);
         final int size = arguments.size();
         final Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
             values[i] = arguments.get(i).getValue(environment).asObject();
         }
         try {
-            return ObjectValue.of(getConstructor(_class, values).newInstance(values));
+            return ObjectValue.of(constructor.newInstance(values));
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
             throw new IllegalArgumentException("Could not call constructor", exception);
         }
-    }
-
-    private Constructor<?> getConstructor(Class<?> _class, Object[] values) {
-        if (constructor == null) {
-            final Constructor<?>[] constructors = _class.getConstructors();
-            for (Constructor<?> candidate : constructors) {
-                if (ReflectionUtil.validateArgumentTypes(candidate.getParameterTypes(), values)) {
-                    constructor = candidate;
-                    return candidate;
-                }
-            }
-            final List<String> typeNames = new ArrayList<>(values.length);
-            for (Object value : values) {
-                typeNames.add(value.getClass().getCanonicalName());
-            }
-            throw new IllegalArgumentException("No constructor for signature: " + _class.getCanonicalName() + "(" + StringUtil.toString(typeNames, ", ") + ")");
-        }
-        return constructor;
     }
 
     @Override

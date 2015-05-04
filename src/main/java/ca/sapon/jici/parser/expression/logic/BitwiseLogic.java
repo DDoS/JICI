@@ -31,11 +31,13 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class BitwiseLogic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Class<?> typeClass = null;
     private Value value = null;
 
     public BitwiseLogic(Expression left, Expression right, Symbol operator) {
@@ -45,8 +47,19 @@ public class BitwiseLogic implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            final Class<?> leftClass = left.getTypeClass(environment, null);
+            final Class<?> rightClass = right.getTypeClass(environment, null);
+            if (!ReflectionUtil.isLogical(leftClass)) {
+                throw new IllegalArgumentException("Not a boolean or numeric type: " + leftClass.getCanonicalName());
+            }
+            if (!ReflectionUtil.isLogical(rightClass)) {
+                throw new IllegalArgumentException("Not a boolean or numeric type: " + rightClass.getCanonicalName());
+            }
+            typeClass = ReflectionUtil.binaryWiden(ReflectionUtil.unbox(leftClass), ReflectionUtil.unbox(rightClass));
+        }
+        return typeClass;
     }
 
     @Override

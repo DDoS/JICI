@@ -43,7 +43,7 @@ public class TypeCheck implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return null;
     }
 

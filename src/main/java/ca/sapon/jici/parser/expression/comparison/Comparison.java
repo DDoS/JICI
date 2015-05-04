@@ -29,11 +29,13 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private Class<?> typeClass = null;
     private Value value = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
@@ -43,8 +45,19 @@ public class Comparison implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            final Class<?> leftClass = left.getTypeClass(environment, null);
+            final Class<?> rightClass = right.getTypeClass(environment, null);
+            if (!ReflectionUtil.isNumeric(leftClass)) {
+                throw new IllegalArgumentException("Not a numeric type: " + leftClass.getCanonicalName());
+            }
+            if (!ReflectionUtil.isNumeric(rightClass)) {
+                throw new IllegalArgumentException("Not a numeric type: " + rightClass.getCanonicalName());
+            }
+            typeClass = ReflectionUtil.binaryWiden(ReflectionUtil.unbox(leftClass), ReflectionUtil.unbox(rightClass));
+        }
+        return typeClass;
     }
 
     @Override

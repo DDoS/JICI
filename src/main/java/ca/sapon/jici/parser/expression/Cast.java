@@ -42,7 +42,7 @@ public class Cast implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return null;
     }
 

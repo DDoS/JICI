@@ -40,7 +40,7 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return null;
     }
 

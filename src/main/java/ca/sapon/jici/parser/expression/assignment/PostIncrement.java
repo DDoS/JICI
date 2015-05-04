@@ -49,7 +49,7 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return null;
     }
 

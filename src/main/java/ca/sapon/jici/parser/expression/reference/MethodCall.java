@@ -52,7 +52,7 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return null;
     }
 

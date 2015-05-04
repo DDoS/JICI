@@ -28,11 +28,13 @@ import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Conditional implements Expression {
     private final Expression test;
     private final Expression left;
     private final Expression right;
+    private Class<?> typeClass = null;
     private Value value = null;
 
     public Conditional(Expression test, Expression left, Expression right) {
@@ -42,8 +44,46 @@ public class Conditional implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        // TODO: invalidate cache if upper bound changes
+        if (typeClass == null) {
+            final Class<?> testClass = test.getTypeClass(environment, null);
+            final Class<?> leftClass = ReflectionUtil.unbox(left.getTypeClass(environment, null));
+            final Class<?> rightClass = ReflectionUtil.unbox(right.getTypeClass(environment, null));
+            if (!ReflectionUtil.isBoolean(testClass)) {
+                throw new IllegalArgumentException("Not a boolean: " + testClass.getCanonicalName());
+            }
+            if (leftClass == rightClass) {
+                // both same type to that type
+                typeClass = leftClass;
+            } else if (left instanceof IntLiteral && ReflectionUtil.canNarrowTo(rightClass, ((IntLiteral) left).asInt())) {
+                // left constant numeric that narrows to right, use right
+                typeClass = rightClass;
+            } else if (right instanceof IntLiteral && ReflectionUtil.canNarrowTo(leftClass, ((IntLiteral) right).asInt())) {
+                // right constant numeric that narrows to left, use left
+                typeClass = leftClass;
+            } else if (leftClass == byte.class && rightClass == short.class || leftClass == short.class && rightClass == byte.class) {
+                // one byte and other short to short
+                typeClass = short.class;
+            } else if (leftClass == null || !leftClass.isPrimitive() || rightClass == null || !rightClass.isPrimitive()) {
+                // for objects or null, use the upper bound
+                if (upperObjectBound == null) {
+                    typeClass = Object.class;
+                } else {
+                    if (leftClass != null && !upperObjectBound.isAssignableFrom(leftClass)) {
+                        throw new IllegalArgumentException(leftClass.getCanonicalName() + " cannot be cast to " + upperObjectBound.getCanonicalName());
+                    }
+                    if (rightClass != null && !upperObjectBound.isAssignableFrom(rightClass)) {
+                        throw new IllegalArgumentException(rightClass.getCanonicalName() + " cannot be cast to " + upperObjectBound.getCanonicalName());
+                    }
+                    typeClass = upperObjectBound;
+                }
+            } else {
+                // else use binary widening
+                typeClass = ReflectionUtil.binaryWiden(leftClass, rightClass);
+            }
+        }
+        return typeClass;
     }
 
     @Override

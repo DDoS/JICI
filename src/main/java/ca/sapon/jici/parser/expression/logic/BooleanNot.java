@@ -27,9 +27,11 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
+    private boolean typeChecked = false;
     private Value value = null;
 
     public BooleanNot(Expression inner) {
@@ -37,8 +39,15 @@ public class BooleanNot implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (!typeChecked) {
+            final Class<?> innerClass = inner.getTypeClass(environment, null);
+            if (!ReflectionUtil.isBoolean(innerClass)) {
+                throw new IllegalArgumentException("Not a boolean: " + innerClass.getCanonicalName());
+            }
+            typeChecked = true;
+        }
+        return boolean.class;
     }
 
     @Override

@@ -111,7 +111,7 @@ public class FloatLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
         return getTypeClass();
     }
 

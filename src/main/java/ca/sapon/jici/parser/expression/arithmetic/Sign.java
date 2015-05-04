@@ -32,10 +32,12 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Sign implements Expression {
     private final Expression inner;
     private final Symbol operator;
+    private Class<?> typeClass = null;
     private Value value = null;
 
     public Sign(Expression inner, Symbol operator) {
@@ -44,8 +46,15 @@ public class Sign implements Expression {
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            final Class<?> innerClass = inner.getTypeClass(environment, null);
+            if (!ReflectionUtil.isNumeric(innerClass)) {
+                throw new IllegalArgumentException("Not a numeric type: " + innerClass.getCanonicalName());
+            }
+            typeClass = ReflectionUtil.unaryWiden(ReflectionUtil.unbox(innerClass));
+        }
+        return typeClass;
     }
 
     @Override

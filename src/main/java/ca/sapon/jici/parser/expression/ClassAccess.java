@@ -30,19 +30,27 @@ import ca.sapon.jici.parser.type.Type;
 
 public class ClassAccess implements Expression {
     private final Type type;
+    private Class<?> typeClass = null;
+    private Value value = null;
 
     public ClassAccess(Type type) {
         this.type = type;
     }
 
     @Override
-        return null;
-    public Class<?> getTypeClass(Environment environment, Class<?> upperBound) {
+    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+        if (typeClass == null) {
+            typeClass = type.getTypeClass(environment);
+        }
+        return typeClass;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return ObjectValue.of(type.getTypeClass(environment));
+        if (value == null) {
+            value = ObjectValue.of(typeClass);
+        }
+        return value;
     }
 
     @Override

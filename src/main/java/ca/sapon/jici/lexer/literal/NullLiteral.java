@@ -26,6 +26,8 @@ package ca.sapon.jici.lexer.literal;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
 public class NullLiteral extends Literal implements Value {
@@ -102,8 +104,8 @@ public class NullLiteral extends Literal implements Value {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        return null;
+    public ValueType geValueType(Environment environment) {
+        return new ObjectValueType(getTypeClass());
     }
 
     public static boolean is(String source) {

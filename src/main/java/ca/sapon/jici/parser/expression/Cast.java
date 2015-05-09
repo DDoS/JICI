@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.type.Type;
 
 public class Cast implements Expression {
@@ -42,7 +43,7 @@ public class Cast implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

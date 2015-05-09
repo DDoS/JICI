@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -39,7 +40,7 @@ public class ObjectReference implements Reference {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

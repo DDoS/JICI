@@ -30,6 +30,7 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -52,7 +53,7 @@ public class MethodCall extends Dereference implements Statement {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

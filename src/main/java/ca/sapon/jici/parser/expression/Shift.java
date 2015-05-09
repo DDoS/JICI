@@ -28,12 +28,14 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 
 public class Shift implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private ValueType valueType = null;;
     private Value value = null;
 
     public Shift(Expression left, Expression right, Symbol operator) {
@@ -43,8 +45,19 @@ public class Shift implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        return null;
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType leftType = left.geValueType(environment).unbox();
+            final ValueType rightType = right.geValueType(environment).unbox();
+            if (!leftType.isIntegral()) {
+                throw new IllegalArgumentException("Not an integral type: " + leftType.getName());
+            }
+            if (!rightType.isIntegral()) {
+                throw new IllegalArgumentException("Not an integral type: " + rightType.getName());
+            }
+            valueType = leftType.unaryWiden();
+        }
+        return valueType;
     }
 
     @Override

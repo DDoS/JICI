@@ -27,14 +27,17 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ObjectUnionValueType;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class Conditional implements Expression {
     private final Expression test;
     private final Expression left;
     private final Expression right;
-    private Class<?> typeClass = null;
+    private ValueType valueType = null;
     private Value value = null;
 
     public Conditional(Expression test, Expression left, Expression right) {
@@ -44,46 +47,35 @@ public class Conditional implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        // TODO: invalidate cache if upper bound changes
-        if (typeClass == null) {
-            final Class<?> testClass = test.getTypeClass(environment, null);
-            final Class<?> leftClass = ReflectionUtil.unbox(left.getTypeClass(environment, null));
-            final Class<?> rightClass = ReflectionUtil.unbox(right.getTypeClass(environment, null));
-            if (!ReflectionUtil.isBoolean(testClass)) {
-                throw new IllegalArgumentException("Not a boolean: " + testClass.getCanonicalName());
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType testType = test.geValueType(environment).unbox();
+            final ValueType leftType = left.geValueType(environment).unbox();
+            final ValueType rightType = right.geValueType(environment).unbox();
+            if (!testType.isBoolean()) {
+                throw new IllegalArgumentException("Not a boolean: " + testType.getName());
             }
-            if (leftClass == rightClass) {
+            if (leftType.is(rightType.getClassType())) {
                 // both same type to that type
-                typeClass = leftClass;
-            } else if (left instanceof IntLiteral && ReflectionUtil.canNarrowTo(rightClass, ((IntLiteral) left).asInt())) {
+                valueType = leftType;
+            } else if (leftType.isObject() || rightType.isObject()) {
+                // for objects return a union
+                valueType = new ObjectUnionValueType((ObjectValueType) leftType, (ObjectValueType) rightType);
+            } else if (left instanceof IntLiteral && rightType.canNarrowTo(((IntLiteral) left).asInt())) {
                 // left constant numeric that narrows to right, use right
-                typeClass = rightClass;
-            } else if (right instanceof IntLiteral && ReflectionUtil.canNarrowTo(leftClass, ((IntLiteral) right).asInt())) {
+                valueType = rightType;
+            } else if (right instanceof IntLiteral && leftType.canNarrowTo(((IntLiteral) right).asInt())) {
                 // right constant numeric that narrows to left, use left
-                typeClass = leftClass;
-            } else if (leftClass == byte.class && rightClass == short.class || leftClass == short.class && rightClass == byte.class) {
+                valueType = leftType;
+            } else if (leftType.is(byte.class) && rightType.is(short.class) || leftType.is(short.class) && rightType.is(byte.class)) {
                 // one byte and other short to short
-                typeClass = short.class;
-            } else if (leftClass == null || !leftClass.isPrimitive() || rightClass == null || !rightClass.isPrimitive()) {
-                // for objects or null, use the upper bound
-                if (upperObjectBound == null) {
-                    typeClass = Object.class;
-                } else {
-                    if (leftClass != null && !upperObjectBound.isAssignableFrom(leftClass)) {
-                        throw new IllegalArgumentException(leftClass.getCanonicalName() + " cannot be cast to " + upperObjectBound.getCanonicalName());
-                    }
-                    if (rightClass != null && !upperObjectBound.isAssignableFrom(rightClass)) {
-                        throw new IllegalArgumentException(rightClass.getCanonicalName() + " cannot be cast to " + upperObjectBound.getCanonicalName());
-                    }
-                    typeClass = upperObjectBound;
-                }
+                valueType = PrimitiveValueType.of(short.class);
             } else {
                 // else use binary widening
-                typeClass = ReflectionUtil.binaryWiden(leftClass, rightClass);
+                valueType = leftType.binaryWiden(rightType.getClassType());
             }
         }
-        return typeClass;
+        return valueType;
     }
 
     @Override

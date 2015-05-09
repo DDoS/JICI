@@ -24,19 +24,22 @@
 package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveType implements Type {
     private final Keyword type;
-    private Class<?> _class = null;
+    private ValueType valueType = null;
 
     public PrimitiveType(Keyword type) {
         this.type = type;
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
-        if (_class == null) {
+    public ValueType getValueType(Environment environment) {
+        if (valueType == null) {
+            final Class<?> _class;
             switch (type.getID()) {
                 case KEYWORD_BOOLEAN:
                     _class = boolean.class;
@@ -65,8 +68,9 @@ public class PrimitiveType implements Type {
                 default:
                     throw new IllegalArgumentException("Not a primitive type: " + type);
             }
+            valueType = PrimitiveValueType.of(_class);
         }
-        return _class;
+        return valueType;
     }
 
     @Override

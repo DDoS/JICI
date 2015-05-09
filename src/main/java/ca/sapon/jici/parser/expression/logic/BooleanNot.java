@@ -26,12 +26,14 @@ package ca.sapon.jici.parser.expression.logic;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
-    private boolean typeChecked = false;
+    private ValueType valueType = null;
     private Value value = null;
 
     public BooleanNot(Expression inner) {
@@ -39,15 +41,15 @@ public class BooleanNot implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        if (!typeChecked) {
-            final Class<?> innerClass = inner.getTypeClass(environment, null);
-            if (!ReflectionUtil.isBoolean(innerClass)) {
-                throw new IllegalArgumentException("Not a boolean: " + innerClass.getCanonicalName());
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType innerClass = inner.geValueType(environment).unbox();
+            if (!innerClass.isBoolean()) {
+                throw new IllegalArgumentException("Not a boolean: " + innerClass.getName());
             }
-            typeChecked = true;
+            valueType = PrimitiveValueType.of(boolean.class);
         }
-        return boolean.class;
+        return valueType;
     }
 
     @Override

@@ -31,16 +31,15 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassType;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
     private final ClassType type;
     private final List<Expression> arguments;
-    private Class<?> typeClass = null;
-    private Class<?>[] argumentTypes = null;
+    private ValueType valueType = null;
     private Constructor<?> constructor = null;
 
     public ConstructorCall(ClassType type, List<Expression> arguments) {
@@ -50,18 +49,22 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public void execute(Environment environment) {
-        getTypeClass(environment, null);
+        geValueType(environment);
         getValue(environment);
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        if (typeClass == null) {
-            typeClass = type.getTypeClass(environment);
-            // try to find a matching constructor
-            argumentTypes = new Class<?>[arguments.size()];
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            // get types
+            valueType = type.getValueType(environment);
+            final ValueType[] argumentTypes = new ValueType[arguments.size()];
             final int size = arguments.size();
-            final Constructor<?>[] constructors = typeClass.getConstructors();
+            for (int i = 0; i < size; i++) {
+                argumentTypes[i] = arguments.get(i).geValueType(environment);
+            }
+            // try to find a matching constructor
+            final Constructor<?>[] constructors = valueType.getClassType().getConstructors();
             // look for matches in length
             final List<Constructor<?>> lengthMatches = new ArrayList<>();
             for (Constructor<?> candidate : constructors) {
@@ -70,28 +73,12 @@ public class ConstructorCall implements Statement, Expression {
                 }
             }
             // try to find the lowest object upper bound acceptable
-            candidates:
             for (Constructor<?> candidate : lengthMatches) {
-                final Class<?>[] upperObjectBounds = candidate.getParameterTypes();
-                // validate the upper object bounds
-                for (int i = 0; i < size; i++) {
-                    try {
-                        argumentTypes[i] = arguments.get(i).getTypeClass(environment, upperObjectBounds[i]);
-                    } catch (IllegalArgumentException exception) {
-                        continue candidates;
-                    }
-                }
-                // validate the primitive parameters
-                for (int i = 0; i < size; i++) {
-                    if (argumentTypes[i].isPrimitive() && !ReflectionUtil.convertibleTo(upperObjectBounds[i], argumentTypes[i])) {
-                        continue candidates;
-                    }
-                }
-                // TODO: only change if the match is closer
+                // TODO: resolve overloads
                 constructor = candidate;
             }
         }
-        return typeClass;
+        return valueType;
     }
 
     @Override

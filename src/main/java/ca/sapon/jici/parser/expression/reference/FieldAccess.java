@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 
 public class FieldAccess extends Dereference implements Reference {
@@ -39,7 +40,7 @@ public class FieldAccess extends Dereference implements Reference {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

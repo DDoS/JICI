@@ -29,6 +29,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.StringUtil;
 
@@ -40,7 +41,7 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

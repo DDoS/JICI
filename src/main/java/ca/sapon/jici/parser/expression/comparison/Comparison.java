@@ -27,15 +27,15 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private Class<?> typeClass = null;
+    private ValueType valueType = null;
     private Value value = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
@@ -45,19 +45,19 @@ public class Comparison implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        if (typeClass == null) {
-            final Class<?> leftClass = left.getTypeClass(environment, null);
-            final Class<?> rightClass = right.getTypeClass(environment, null);
-            if (!ReflectionUtil.isNumeric(leftClass)) {
-                throw new IllegalArgumentException("Not a numeric type: " + leftClass.getCanonicalName());
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType leftType = left.geValueType(environment).unbox();
+            final ValueType rightType = right.geValueType(environment).unbox();
+            if (!leftType.isNumeric()) {
+                throw new IllegalArgumentException("Not a numeric type: " + leftType.getName());
             }
-            if (!ReflectionUtil.isNumeric(rightClass)) {
-                throw new IllegalArgumentException("Not a numeric type: " + rightClass.getCanonicalName());
+            if (!rightType.isNumeric()) {
+                throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
             }
-            typeClass = ReflectionUtil.binaryWiden(ReflectionUtil.unbox(leftClass), ReflectionUtil.unbox(rightClass));
+            valueType = leftType.binaryWiden(rightType.getClassType());
         }
-        return typeClass;
+        return valueType;
     }
 
     @Override

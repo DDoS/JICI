@@ -25,9 +25,10 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 
 public interface Expression {
-    Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound);
+    ValueType geValueType(Environment environment);
 
     Value getValue(Environment environment);
 

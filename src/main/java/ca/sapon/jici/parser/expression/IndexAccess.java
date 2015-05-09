@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 
 public class IndexAccess implements Expression {
     private final Expression object;
@@ -41,7 +42,7 @@ public class IndexAccess implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

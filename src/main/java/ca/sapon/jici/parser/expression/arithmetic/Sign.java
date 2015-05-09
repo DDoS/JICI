@@ -30,14 +30,14 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class Sign implements Expression {
     private final Expression inner;
     private final Symbol operator;
-    private Class<?> typeClass = null;
+    private ValueType valueType = null;
     private Value value = null;
 
     public Sign(Expression inner, Symbol operator) {
@@ -46,15 +46,15 @@ public class Sign implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        if (typeClass == null) {
-            final Class<?> innerClass = inner.getTypeClass(environment, null);
-            if (!ReflectionUtil.isNumeric(innerClass)) {
-                throw new IllegalArgumentException("Not a numeric type: " + innerClass.getCanonicalName());
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType innerType = inner.geValueType(environment).unbox();
+            if (!innerType.isNumeric()) {
+                throw new IllegalArgumentException("Not a numeric type: " + innerType.getName());
             }
-            typeClass = ReflectionUtil.unaryWiden(ReflectionUtil.unbox(innerClass));
+            valueType = innerType.unaryWiden();
         }
-        return typeClass;
+        return valueType;
     }
 
     @Override

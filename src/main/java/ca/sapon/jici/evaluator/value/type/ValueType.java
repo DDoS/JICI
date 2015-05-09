@@ -21,35 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.comparison;
+package ca.sapon.jici.evaluator.value.type;
 
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.ClassType;
+/**
+ *
+ */
+public interface ValueType {
+    Class<?> getClassType();
 
-public class TypeCheck implements Expression {
-    private final Expression object;
-    private final ClassType type;
+    String getName();
 
-    public TypeCheck(Expression object, ClassType type) {
-        this.object = object;
-        this.type = type;
-    }
+    boolean is(Class<?> type);
 
-    @Override
-    public String toString() {
-        return "TypeCheck(" + object + " instanceof " + type + ")";
-    }
+    boolean isNull();
 
-    @Override
-    public ValueType geValueType(Environment environment) {
-        return null;
-    }
+    boolean isPrimitive();
 
-    @Override
-    public Value getValue(Environment environment) {
-        return null;
-    }
+    boolean isNumeric();
+
+    boolean isLogical();
+
+    boolean isIntegral();
+
+    boolean isBoolean();
+
+    boolean isObject();
+
+    ValueType unbox();
+
+    boolean canNarrowTo(int value);
+
+    PrimitiveValueType unaryWiden();
+
+    PrimitiveValueType binaryWiden(Class<?> with);
+
+    boolean convertibleTo(Class<?> to);
 }

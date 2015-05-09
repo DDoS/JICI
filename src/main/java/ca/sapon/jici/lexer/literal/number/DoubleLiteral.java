@@ -26,6 +26,8 @@ package ca.sapon.jici.lexer.literal.number;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
 public class DoubleLiteral extends NumberLiteral implements Value {
@@ -111,8 +113,8 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        return getTypeClass();
+    public ValueType geValueType(Environment environment) {
+        return PrimitiveValueType.of(getTypeClass());
     }
 
     @Override

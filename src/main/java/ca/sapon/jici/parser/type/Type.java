@@ -24,9 +24,10 @@
 package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 
 public interface Type {
-    Class<?> getTypeClass(Environment environment);
+    ValueType getValueType(Environment environment);
 
     String toString();
 }

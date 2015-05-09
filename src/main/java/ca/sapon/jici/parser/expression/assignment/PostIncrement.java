@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.reference.Reference;
@@ -49,7 +50,7 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
+    public ValueType geValueType(Environment environment) {
         return null;
     }
 

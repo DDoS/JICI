@@ -26,22 +26,24 @@ package ca.sapon.jici.parser.type;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassType implements Type {
     private final List<Identifier> type;
-    private Class<?> _class = null;
+    private ValueType valueType = null;
 
     public ClassType(List<Identifier> type) {
         this.type = type;
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment) {
-        if (_class == null) {
-            _class = environment.findClass(type.get(0));
+    public ValueType getValueType(Environment environment) {
+        if (valueType == null) {
+            Class<?> _class = environment.findClass(type.get(0));
             if (_class == null) {
                 final String name = toString();
                 _class = ReflectionUtil.lookupClass(name);
@@ -49,8 +51,9 @@ public class ClassType implements Type {
                     throw new IllegalArgumentException("Class not found: " + name);
                 }
             }
+            valueType = new ObjectValueType(_class);
         }
-        return _class;
+        return valueType;
     }
 
     @Override

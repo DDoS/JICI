@@ -26,15 +26,16 @@ package ca.sapon.jici.parser.expression.logic;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class BooleanLogic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private boolean typeChecked = false;
+    private ValueType valueType = null;
     private Value value = null;
 
     public BooleanLogic(Expression left, Expression right, Symbol operator) {
@@ -44,19 +45,19 @@ public class BooleanLogic implements Expression {
     }
 
     @Override
-    public Class<?> getTypeClass(Environment environment, Class<?> upperObjectBound) {
-        if (!typeChecked) {
-            final Class<?> leftClass = left.getTypeClass(environment, null);
-            final Class<?> rightClass = right.getTypeClass(environment, null);
-            if (!ReflectionUtil.isBoolean(leftClass)) {
-                throw new IllegalArgumentException("Not a boolean: " + leftClass.getCanonicalName());
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final ValueType leftClass = left.geValueType(environment).unbox();
+            final ValueType rightClass = right.geValueType(environment).unbox();
+            if (!leftClass.isBoolean()) {
+                throw new IllegalArgumentException("Not a boolean: " + leftClass.getName());
             }
-            if (!ReflectionUtil.isBoolean(rightClass)) {
-                throw new IllegalArgumentException("Not a boolean: " + rightClass.getCanonicalName());
+            if (!rightClass.isBoolean()) {
+                throw new IllegalArgumentException("Not a boolean: " + rightClass.getName());
             }
-            typeChecked = true;
+            valueType = PrimitiveValueType.of(boolean.class);
         }
-        return boolean.class;
+        return valueType;
     }
 
     @Override

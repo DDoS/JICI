@@ -30,6 +30,8 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
@@ -39,6 +41,7 @@ import ca.sapon.jici.util.StringUtil;
 public class MethodCall extends Dereference implements Statement {
     private final Identifier method;
     private final List<Expression> arguments;
+    private ValueType valueType = null;
     private Method callable = null;
 
     public MethodCall(Reference reference, Identifier method, List<Expression> arguments) {
@@ -49,27 +52,39 @@ public class MethodCall extends Dereference implements Statement {
 
     @Override
     public void execute(Environment environment) {
+        geValueType(environment);
         getValue(environment);
     }
 
     @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            final int size = arguments.size();
+            final ValueType[] argumentTypes = new ValueType[size];
+            for (int i = 0; i < size; i++) {
+                argumentTypes[i] = arguments.get(i).geValueType(environment);
+            }
+            callable = reference.getMethod(environment, method, argumentTypes);
+            final Class<?> returnType = callable.getReturnType();
+            if (returnType.isPrimitive()) {
+                valueType = PrimitiveValueType.of(returnType);
+            } else {
+                valueType = new ObjectValueType(returnType);
+            }
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Value value = reference.getValue(environment);
+        final Object value = reference.getValue(environment).asObject();
         final int size = arguments.size();
         final Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
             values[i] = arguments.get(i).getValue(environment).asObject();
         }
-        if (callable == null) {
-            callable = reference.getMethod(environment, method, values);
-        }
         try {
-            return ObjectValue.of(callable.invoke(value.asObject(), values));
+            return ObjectValue.of(callable.invoke(value, values));
         } catch (IllegalAccessException | InvocationTargetException exception) {
             throw new IllegalArgumentException("Could not call method", exception);
         }

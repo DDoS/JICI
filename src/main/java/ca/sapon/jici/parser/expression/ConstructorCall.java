@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -61,8 +62,8 @@ public class ConstructorCall implements Statement, Expression {
         if (valueType == null) {
             // get types
             valueType = type.getValueType(environment);
-            final ValueType[] argumentTypes = new ValueType[arguments.size()];
             final int size = arguments.size();
+            final ValueType[] argumentTypes = new ValueType[size];
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).geValueType(environment);
             }
@@ -106,9 +107,9 @@ public class ConstructorCall implements Statement, Expression {
                 // cache the candidate because getting a single element from a set is awkward
                 constructor = entry.getKey();
             }
-            if (candidates.size() != 1) {
+            if (candidates.size() != 1 || constructor == null) {
                 constructor = null;
-                throw new IllegalArgumentException("No constructor for argument types: ");
+                throw new IllegalArgumentException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")");
             }
         }
         return valueType;

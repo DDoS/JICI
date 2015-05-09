@@ -25,15 +25,22 @@ package ca.sapon.jici.parser.expression.reference;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.StringUtil;
 
 public class ObjectReference implements Reference {
     private final Expression object;
+    private ValueType valueType = null;
 
     public ObjectReference(Expression object) {
         this.object = object;
@@ -41,7 +48,10 @@ public class ObjectReference implements Reference {
 
     @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            valueType = object.geValueType(environment);
+        }
+        return valueType;
     }
 
     @Override
@@ -60,9 +70,55 @@ public class ObjectReference implements Reference {
     }
 
     @Override
-    public Method getMethod(Environment environment, Identifier name, Object[] arguments) {
-        return null;
-        //throw new IllegalArgumentException("No method for signature: " + _class.getCanonicalName() + "." + nameString + "(" + StringUtil.toString(typeNames, ", ") + ")");
+    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
+        final String nameString = name.getSource();
+        // try to find a matching method
+        final Method[] methods = geValueType(environment).getClassType().getMethods();
+        // look for matches in length and name
+        final Map<Method, Class<?>[]> candidates = new HashMap<>();
+        for (Method candidate : methods) {
+            if (candidate.getName().equals(nameString)) {
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length == arguments.length) {
+                    candidates.put(candidate, parameterTypes);
+                }
+            }
+        }
+        // remove methods with un-applicable parameters
+        candidates:
+        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Class<?>[] parameters = iterator.next().getValue();
+            for (int i = 0; i < parameters.length; i++) {
+                final ValueType argument = arguments[i];
+                final Class<?> parameter = parameters[i];
+                if (!argument.convertibleTo(parameter)) {
+                    iterator.remove();
+                    continue candidates;
+                }
+            }
+        }
+        // remove methods with the corresponding wider types
+        Method method = null;
+        candidates:
+        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Method, Class<?>[]> entry = iterator.next();
+            final Class<?>[] parameters = entry.getValue();
+            for (Class<?>[] challenges : candidates.values()) {
+                for (int i = 0; i < parameters.length; i++) {
+                    // remove when the challenge is a subclass of the parameter
+                    if (!challenges[i].isAssignableFrom(parameters[i])) {
+                        iterator.remove();
+                        continue candidates;
+                    }
+                }
+            }
+            // cache the candidate because getting a single element from a set is awkward
+            method = entry.getKey();
+        }
+        if (candidates.size() != 1 || method == null) {
+            throw new IllegalArgumentException("No method for signature: " + nameString + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+        }
+        return method;
     }
 
     @Override

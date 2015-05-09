@@ -58,4 +58,6 @@ public interface ValueType {
     PrimitiveValueType binaryWiden(Class<?> with);
 
     boolean convertibleTo(Class<?> to);
+
+    String toString();
 }

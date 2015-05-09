@@ -169,6 +169,11 @@ public class PrimitiveValueType implements ValueType {
         return convertibleTo(type, to);
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     public static Class<?> unaryWiden(Class<?> type) {
         return UNARY_WIDENS_INT.contains(type) ? int.class : type;
     }

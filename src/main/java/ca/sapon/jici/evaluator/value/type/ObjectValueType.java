@@ -137,6 +137,11 @@ public class ObjectValueType implements ValueType {
         return convertibleTo(type, to);
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     public static Class<?> unbox(Class<?> type) {
         final Class<?> unboxed = UNBOXED_TYPES.get(type);
         return unboxed == null ? type : unboxed;

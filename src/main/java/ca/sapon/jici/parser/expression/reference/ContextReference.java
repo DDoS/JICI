@@ -52,7 +52,7 @@ public class ContextReference implements Reference {
     }
 
     @Override
-    public Method getMethod(Environment environment, Identifier name, Object[] arguments) {
+    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
         return null;
     }
 

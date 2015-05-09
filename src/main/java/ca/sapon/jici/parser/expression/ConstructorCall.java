@@ -25,8 +25,11 @@ package ca.sapon.jici.parser.expression;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
@@ -66,16 +69,46 @@ public class ConstructorCall implements Statement, Expression {
             // try to find a matching constructor
             final Constructor<?>[] constructors = valueType.getClassType().getConstructors();
             // look for matches in length
-            final List<Constructor<?>> lengthMatches = new ArrayList<>();
+            final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
             for (Constructor<?> candidate : constructors) {
-                if (candidate.getParameterTypes().length == size) {
-                    lengthMatches.add(candidate);
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length == size) {
+                    candidates.put(candidate, parameterTypes);
                 }
             }
-            // try to find the lowest object upper bound acceptable
-            for (Constructor<?> candidate : lengthMatches) {
-                // TODO: resolve overloads
-                constructor = candidate;
+            // remove constructors with un-applicable parameters
+            candidates:
+            for (Iterator<Entry<Constructor<?>, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+                final Class<?>[] parameters = iterator.next().getValue();
+                for (int i = 0; i < parameters.length; i++) {
+                    final ValueType argument = argumentTypes[i];
+                    final Class<?> parameter = parameters[i];
+                    if (!argument.convertibleTo(parameter)) {
+                        iterator.remove();
+                        continue candidates;
+                    }
+                }
+            }
+            // remove constructors with the corresponding wider types
+            candidates:
+            for (Iterator<Entry<Constructor<?>, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+                final Entry<Constructor<?>, Class<?>[]> entry = iterator.next();
+                final Class<?>[] parameters = entry.getValue();
+                for (Class<?>[] challenges : candidates.values()) {
+                    for (int i = 0; i < parameters.length; i++) {
+                        // remove when the challenge is a subclass of the parameter
+                        if (!challenges[i].isAssignableFrom(parameters[i])) {
+                            iterator.remove();
+                            continue candidates;
+                        }
+                    }
+                }
+                // cache the candidate because getting a single element from a set is awkward
+                constructor = entry.getKey();
+            }
+            if (candidates.size() != 1) {
+                constructor = null;
+                throw new IllegalArgumentException("No constructor for argument types: ");
             }
         }
         return valueType;

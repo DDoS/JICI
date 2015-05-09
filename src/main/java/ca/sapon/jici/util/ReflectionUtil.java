@@ -23,33 +23,10 @@
  */
 package ca.sapon.jici.util;
 
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-
 /**
  *
  */
 public class ReflectionUtil {
-    public static boolean convertibleTo(Class<?>[] types, Class<?>[] arguments) {
-        final int length = types.length;
-        if (length != arguments.length) {
-            return false;
-        }
-        for (int i = 0; i < length; i++) {
-            if (!convertibleTo(arguments[i], types[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean convertibleTo(Class<?> argument, Class<?> type) {
-        if (argument.isPrimitive()) {
-            return PrimitiveValueType.convertibleTo(argument, type);
-        }
-        return ObjectValueType.convertibleTo(argument, type);
-    }
-
     public static Class<?> lookupClass(String name) {
         try {
             return Class.forName(name);

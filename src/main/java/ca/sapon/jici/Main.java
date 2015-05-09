@@ -75,9 +75,5 @@ public class Main {
             System.out.printf("Exception: %s\n", exception.getMessage());
             exception.printStackTrace();
         }
-
-        float f = new Integer(1) * 1f;
     }
-
-    private static void t(float f) {}
 }

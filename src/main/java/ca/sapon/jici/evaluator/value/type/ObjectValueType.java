@@ -31,8 +31,8 @@ import java.util.Map;
  */
 public class ObjectValueType implements ValueType {
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
-    private final Class<?> type;
-    private ValueType unbox = null;
+    protected Class<?> type;
+    protected ValueType unbox = null;
 
     static {
         UNBOXED_TYPES.put(Boolean.class, boolean.class);
@@ -56,7 +56,7 @@ public class ObjectValueType implements ValueType {
 
     @Override
     public String getName() {
-        return type.getCanonicalName();
+        return type == null ? "null" : type.getCanonicalName();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class ObjectValueType implements ValueType {
     public ValueType unbox() {
         if (unbox == null) {
             final Class<?> unboxClass = unbox(type);
-            if (unboxClass.isPrimitive()) {
+            if (unboxClass != null && unboxClass.isPrimitive()) {
                 unbox = PrimitiveValueType.of(unboxClass);
             } else {
                 unbox = this;
@@ -113,18 +113,23 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
+    public ObjectValueType box() {
+        return this;
+    }
+
+    @Override
     public boolean canNarrowTo(int value) {
         return false;
     }
 
     @Override
     public PrimitiveValueType unaryWiden() {
-        return PrimitiveValueType.of(unaryWiden(type));
+        throw new IllegalArgumentException("Cannot unary widen an object type");
     }
 
     @Override
     public PrimitiveValueType binaryWiden(Class<?> with) {
-        return PrimitiveValueType.of(binaryWiden(type, with));
+        throw new IllegalArgumentException("Cannot binary widen an object type");
     }
 
     @Override
@@ -135,22 +140,6 @@ public class ObjectValueType implements ValueType {
     public static Class<?> unbox(Class<?> type) {
         final Class<?> unboxed = UNBOXED_TYPES.get(type);
         return unboxed == null ? type : unboxed;
-    }
-
-    public static Class<?> unaryWiden(Class<?> type) {
-        final Class<?> unbox = unbox(type);
-        if (unbox.isPrimitive()) {
-            return PrimitiveValueType.unaryWiden(unbox);
-        }
-        throw new IllegalArgumentException("Cannot unary widen an object type");
-    }
-
-    public static Class<?> binaryWiden(Class<?> type, Class<?> with) {
-        final Class<?> unbox = unbox(type);
-        if (unbox.isPrimitive()) {
-            return PrimitiveValueType.binaryWiden(unbox, with);
-        }
-        throw new IllegalArgumentException("Cannot binary widen an object type");
     }
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {

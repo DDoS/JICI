@@ -38,6 +38,7 @@ public class PrimitiveValueType implements ValueType {
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
     private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, ObjectValueType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
 
     static {
@@ -72,6 +73,15 @@ public class PrimitiveValueType implements ValueType {
         VALID_CONVERSIONS.put(long.class, toSet(Long.class, long.class, float.class, double.class));
         VALID_CONVERSIONS.put(float.class, toSet(Float.class, float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(Double.class, double.class));
+
+        BOXING_CONVERSIONS.put(boolean.class, new ObjectValueType(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, new ObjectValueType(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, new ObjectValueType(Short.class));
+        BOXING_CONVERSIONS.put(char.class, new ObjectValueType(Character.class));
+        BOXING_CONVERSIONS.put(int.class, new ObjectValueType(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, new ObjectValueType(Long.class));
+        BOXING_CONVERSIONS.put(float.class, new ObjectValueType(Float.class));
+        BOXING_CONVERSIONS.put(double.class, new ObjectValueType(Double.class));
     }
 
     private PrimitiveValueType(Class<?> type) {
@@ -105,22 +115,22 @@ public class PrimitiveValueType implements ValueType {
 
     @Override
     public boolean isNumeric() {
-        return isNumeric(type);
+        return isIntegral() || type == float.class || type == double.class;
     }
 
     @Override
     public boolean isLogical() {
-        return isLogical(type);
+        return isIntegral() || isBoolean();
     }
 
     @Override
     public boolean isIntegral() {
-        return isIntegral(type);
+        return type == byte.class || type == short.class || type == char.class || type == int.class || type == long.class;
     }
 
     @Override
     public boolean isBoolean() {
-        return isBoolean(type);
+        return type == boolean.class;
     }
 
     @Override
@@ -131,6 +141,11 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public ValueType unbox() {
         return this;
+    }
+
+    @Override
+    public ObjectValueType box() {
+        return BOXING_CONVERSIONS.get(type);
     }
 
     @Override
@@ -152,26 +167,6 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return convertibleTo(type, to);
-    }
-
-    public static boolean isPrimitive(Class<?> type) {
-        return isBoolean(type) || isNumeric(type);
-    }
-
-    public static boolean isNumeric(Class<?> type) {
-        return isIntegral(type) || type == float.class || type == double.class;
-    }
-
-    public static boolean isLogical(Class<?> type) {
-        return isIntegral(type) || isBoolean(type);
-    }
-
-    public static boolean isIntegral(Class<?> type) {
-        return type == byte.class || type == short.class || type == char.class || type == int.class || type == long.class;
-    }
-
-    public static boolean isBoolean(Class<?> type) {
-        return type == boolean.class;
     }
 
     public static Class<?> unaryWiden(Class<?> type) {

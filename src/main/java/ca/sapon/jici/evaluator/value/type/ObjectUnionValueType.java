@@ -26,93 +26,18 @@ package ca.sapon.jici.evaluator.value.type;
 /**
  *
  */
-public class ObjectUnionValueType implements ValueType {
+public class ObjectUnionValueType extends ObjectValueType {
     private final ObjectValueType type1;
     private final ObjectValueType type2;
-    private Class<?> upperBound;
 
     public ObjectUnionValueType(ObjectValueType type1, ObjectValueType type2) {
+        super(type1.getClassType() == type2.getClassType() ? type1.getClassType() : Object.class);
         this.type1 = type1;
         this.type2 = type2;
-        upperBound = Object.class;
-    }
-
-    public void setUpperBound(Class<?> upperBound) {
-        this.upperBound = upperBound;
-    }
-
-    @Override
-    public Class<?> getClassType() {
-        return upperBound;
-    }
-
-    @Override
-    public String getName() {
-        return upperBound.getCanonicalName();
-    }
-
-    @Override
-    public boolean is(Class<?> type) {
-        return upperBound == type;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumeric() {
-        return false;
-    }
-
-    @Override
-    public boolean isLogical() {
-        return false;
-    }
-
-    @Override
-    public boolean isIntegral() {
-        return false;
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return false;
-    }
-
-    @Override
-    public boolean isObject() {
-        return false;
-    }
-
-    @Override
-    public ValueType unbox() {
-        return this;
-    }
-
-    @Override
-    public boolean canNarrowTo(int value) {
-        return false;
-    }
-
-    @Override
-    public PrimitiveValueType unaryWiden() {
-        return PrimitiveValueType.of(ObjectValueType.unaryWiden(upperBound));
-    }
-
-    @Override
-    public PrimitiveValueType binaryWiden(Class<?> with) {
-        return PrimitiveValueType.of(ObjectValueType.binaryWiden(upperBound, with));
     }
 
     @Override
     public boolean convertibleTo(Class<?> to) {
-        return ObjectValueType.convertibleTo(upperBound, to);
+        return type1.convertibleTo(to) && type2.convertibleTo(to);
     }
 }

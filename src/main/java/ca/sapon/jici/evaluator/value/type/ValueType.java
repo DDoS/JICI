@@ -49,6 +49,8 @@ public interface ValueType {
 
     ValueType unbox();
 
+    ObjectValueType box();
+
     boolean canNarrowTo(int value);
 
     PrimitiveValueType unaryWiden();

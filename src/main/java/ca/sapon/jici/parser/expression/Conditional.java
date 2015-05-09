@@ -28,7 +28,6 @@ import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.ObjectUnionValueType;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
@@ -60,7 +59,7 @@ public class Conditional implements Expression {
                 valueType = leftType;
             } else if (leftType.isObject() || rightType.isObject()) {
                 // for objects return a union
-                valueType = new ObjectUnionValueType((ObjectValueType) leftType, (ObjectValueType) rightType);
+                valueType = new ObjectUnionValueType(leftType.box(),  rightType.box());
             } else if (left instanceof IntLiteral && rightType.canNarrowTo(((IntLiteral) left).asInt())) {
                 // left constant numeric that narrows to right, use right
                 valueType = rightType;

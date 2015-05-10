@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import ca.sapon.jici.evaluator.value.ValueKind;
+
 /**
  *
  */
@@ -30,6 +32,8 @@ public interface ValueType {
     Class<?> getClassType();
 
     String getName();
+
+    ValueKind getKind();
 
     boolean is(Class<?> type);
 

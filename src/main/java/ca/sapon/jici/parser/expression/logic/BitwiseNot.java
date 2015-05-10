@@ -56,7 +56,7 @@ public class BitwiseNot implements Expression {
     public Value getValue(Environment environment) {
         if (value == null) {
             final Value innerValue = inner.getValue(environment);
-            final ValueKind widenKind = ValueKind.unaryWidensTo(innerValue.getKind());
+            final ValueKind widenKind = valueType.getKind();
             value = doBitwiseNot(innerValue, widenKind);
         }
         return value;

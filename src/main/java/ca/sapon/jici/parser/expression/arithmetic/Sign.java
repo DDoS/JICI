@@ -61,7 +61,7 @@ public class Sign implements Expression {
     public Value getValue(Environment environment) {
         if (value == null) {
             final Value innerValue = inner.getValue(environment);
-            final ValueKind widenKind = ValueKind.unaryWidensTo(innerValue.getKind());
+            final ValueKind widenKind = valueType.getKind();
             switch (operator.getID()) {
                 case SYMBOL_PLUS:
                     value = doReaffirm(innerValue, widenKind);

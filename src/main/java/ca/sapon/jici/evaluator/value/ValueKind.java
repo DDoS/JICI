@@ -228,48 +228,4 @@ public enum ValueKind {
         }
         return kind.wrap(box);
     }
-
-    public static boolean canNarrowTo(ValueKind kind, int value) {
-        switch (kind) {
-            case BYTE:
-                return (value + 128 & ~0xFF) == 0;
-            case SHORT:
-                return (value + 32768 & ~0xFFFF) == 0;
-            case CHAR:
-                return (value & ~0xFFFF) == 0;
-            default:
-                return false;
-        }
-    }
-
-    public static ValueKind unaryWidensTo(ValueKind inner) {
-        // BYTE, SHORT CHAR to INT
-        if ((1 << inner.ordinal() & 0b1110) != 0) {
-            return INT;
-        }
-        // anything else to itself
-        return inner;
-    }
-
-    public static ValueKind binaryWidensTo(ValueKind left, ValueKind right) {
-        final int mask = 1 << left.ordinal() | 1 << right.ordinal();
-        // either DOUBLE to DOUBLE
-        if ((mask & 0b10000000) != 0) {
-            return DOUBLE;
-        }
-        // either FLOAT to FLOAT
-        if ((mask & 0b1000000) != 0) {
-            return FLOAT;
-        }
-        // either LONG to LONG
-        if ((mask & 0b100000) != 0) {
-            return LONG;
-        }
-        // both BOOLEAN to BOOLEAN
-        if (mask == 0b1) {
-            return BOOLEAN;
-        }
-        // anything else to INT
-        return INT;
-    }
 }

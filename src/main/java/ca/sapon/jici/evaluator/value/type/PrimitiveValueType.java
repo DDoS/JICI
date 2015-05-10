@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.value.ValueKind;
+
 /**
  *
  */
@@ -40,16 +42,17 @@ public class PrimitiveValueType implements ValueType {
     private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
     private static final Map<Class<?>, ObjectValueType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
+    private final ValueKind kind;
 
     static {
-        ALL_TYPES.put(boolean.class, new PrimitiveValueType(boolean.class));
-        ALL_TYPES.put(byte.class, new PrimitiveValueType(byte.class));
-        ALL_TYPES.put(short.class, new PrimitiveValueType(short.class));
-        ALL_TYPES.put(char.class, new PrimitiveValueType(char.class));
-        ALL_TYPES.put(int.class, new PrimitiveValueType(int.class));
-        ALL_TYPES.put(long.class, new PrimitiveValueType(long.class));
-        ALL_TYPES.put(float.class, new PrimitiveValueType(float.class));
-        ALL_TYPES.put(double.class, new PrimitiveValueType(double.class));
+        ALL_TYPES.put(boolean.class, new PrimitiveValueType(boolean.class, ValueKind.BOOLEAN));
+        ALL_TYPES.put(byte.class, new PrimitiveValueType(byte.class, ValueKind.BYTE));
+        ALL_TYPES.put(short.class, new PrimitiveValueType(short.class, ValueKind.SHORT));
+        ALL_TYPES.put(char.class, new PrimitiveValueType(char.class, ValueKind.CHAR));
+        ALL_TYPES.put(int.class, new PrimitiveValueType(int.class, ValueKind.INT));
+        ALL_TYPES.put(long.class, new PrimitiveValueType(long.class, ValueKind.LONG));
+        ALL_TYPES.put(float.class, new PrimitiveValueType(float.class, ValueKind.FLOAT));
+        ALL_TYPES.put(double.class, new PrimitiveValueType(double.class, ValueKind.DOUBLE));
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -84,8 +87,9 @@ public class PrimitiveValueType implements ValueType {
         BOXING_CONVERSIONS.put(double.class, new ObjectValueType(Double.class));
     }
 
-    private PrimitiveValueType(Class<?> type) {
+    private PrimitiveValueType(Class<?> type, ValueKind kind) {
         this.type = type;
+        this.kind = kind;
     }
 
     @Override
@@ -96,6 +100,11 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public String getName() {
         return type.getCanonicalName();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return kind;
     }
 
     @Override

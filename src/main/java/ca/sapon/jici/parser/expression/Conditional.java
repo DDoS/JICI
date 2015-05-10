@@ -83,28 +83,7 @@ public class Conditional implements Expression {
             final Value tesValue = test.getValue(environment);
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind leftKind = leftValue.getKind();
-            final ValueKind rightKind = rightValue.getKind();
-            final ValueKind widenKind;
-            if (leftKind == rightKind) {
-                // both same kind to that kind
-                widenKind = leftKind;
-            } else if (leftValue instanceof IntLiteral && ValueKind.canNarrowTo(rightKind, leftValue.asInt())) {
-                // left constant numeric that narrows to right, use right
-                widenKind = rightKind;
-            } else if (rightValue instanceof IntLiteral && ValueKind.canNarrowTo(leftKind, rightValue.asInt())) {
-                // right constant numeric that narrows to left, use left
-                widenKind = leftKind;
-            } else if ((1 << leftKind.ordinal() | 1 << rightKind.ordinal()) == 0b110) {
-                // one BYTE and other SHORT to SHORT
-                widenKind = ValueKind.SHORT;
-            } else if (leftKind == ValueKind.OBJECT || rightKind == ValueKind.OBJECT) {
-                // one OBJECT and a boxed type to OBJECT
-                widenKind = ValueKind.OBJECT;
-            } else {
-                // else use binary widening
-                widenKind = ValueKind.binaryWidensTo(leftKind, rightKind);
-            }
+            final ValueKind widenKind = valueType.getKind();
             value = doConditional(tesValue, leftValue, rightValue, widenKind);
         }
         return value;

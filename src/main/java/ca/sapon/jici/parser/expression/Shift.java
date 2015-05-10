@@ -35,7 +35,8 @@ public class Shift implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private ValueType valueType = null;;
+    private ValueType valueType = null;
+    private ValueType shiftType = null;
     private Value value = null;
 
     public Shift(Expression left, Expression right, Symbol operator) {
@@ -56,6 +57,7 @@ public class Shift implements Expression {
                 throw new IllegalArgumentException("Not an integral type: " + rightType.getName());
             }
             valueType = leftType.unaryWiden();
+            shiftType = rightType.unaryWiden();
         }
         return valueType;
     }
@@ -65,8 +67,8 @@ public class Shift implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind leftWidenKind = ValueKind.unaryWidensTo(leftValue.getKind());
-            final ValueKind rightWidenKind = ValueKind.unaryWidensTo(rightValue.getKind());
+            final ValueKind leftWidenKind = valueType.getKind();
+            final ValueKind rightWidenKind = shiftType.getKind();
             switch (operator.getID()) {
                 case SYMBOL_LOGICAL_LEFT_SHIFT:
                     value = doLogicalLeftShift(leftValue, leftWidenKind, rightValue, rightWidenKind);

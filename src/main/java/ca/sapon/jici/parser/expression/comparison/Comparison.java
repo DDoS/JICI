@@ -65,7 +65,7 @@ public class Comparison implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind widenKind = valueType.getKind();
             switch (operator.getID()) {
                 case SYMBOL_EQUAL:
                     value = doEqual(leftValue, rightValue, widenKind);

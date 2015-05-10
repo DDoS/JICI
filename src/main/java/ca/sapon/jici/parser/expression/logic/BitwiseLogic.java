@@ -32,7 +32,6 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class BitwiseLogic implements Expression {
     private final Expression left;
@@ -68,7 +67,7 @@ public class BitwiseLogic implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = ValueKind.binaryWidensTo(leftValue.getKind(), rightValue.getKind());
+            final ValueKind widenKind = valueType.getKind();
             switch (operator.getID()) {
                 case SYMBOL_BITWISE_AND:
                     value = doBitwiseAND(leftValue, rightValue, widenKind);

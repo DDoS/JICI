@@ -26,6 +26,8 @@ package ca.sapon.jici.evaluator.value.type;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sapon.jici.evaluator.value.ValueKind;
+
 /**
  *
  */
@@ -57,6 +59,11 @@ public class ObjectValueType implements ValueType {
     @Override
     public String getName() {
         return type == null ? "null" : type.getCanonicalName();
+    }
+
+    @Override
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
     }
 
     @Override

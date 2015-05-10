@@ -23,8 +23,13 @@
  */
 package ca.sapon.jici.util;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 
 /**
  *
@@ -38,12 +43,53 @@ public class ReflectionUtil {
         }
     }
 
+    public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, ValueType[] arguments) {
+        // remove methods with un-applicable parameters and look for perfect matches
+        candidates:
+        for (Iterator<Entry<C, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<C, Class<?>[]> entry = iterator.next();
+            final Class<?>[] parameters = entry.getValue();
+            for (int i = 0; i < parameters.length; i++) {
+                final ValueType argument = arguments[i];
+                final Class<?> parameter = parameters[i];
+                if (!argument.convertibleTo(parameter)) {
+                    iterator.remove();
+                    continue candidates;
+                }
+                if (argument.getClassType() != parameter) {
+                    continue candidates;
+                }
+            }
+            return entry.getKey();
+        }
+        // remove methods with the corresponding wider types
+        C callable = null;
+        int candidateCount = candidates.size();
+        candidates:
+        for (final Entry<C, Class<?>[]> entry : candidates.entrySet()) {
+            final Class<?>[] parameters = entry.getValue();
+            for (Class<?>[] challenges : candidates.values()) {
+                for (int i = 0; i < parameters.length; i++) {
+                    // remove when the challenge is narrower than the parameter
+                    if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
+                        candidateCount--;
+                        continue candidates;
+                    }
+                }
+            }
+            // cache the candidate because getting a single element from a set is awkward
+            callable = entry.getKey();
+        }
+        // we need exactly one match
+        return candidateCount != 1 || callable == null ? null : callable;
+    }
+
     public static boolean isNarrower(Class<?> a, Class<?> b) {
         if (a.isPrimitive()) {
             // a !=b and a <= b
             return a != b && PrimitiveValueType.convertibleTo(a, b);
         }
-        // a < and !a.boxOf(b)
+        // a < b and !a.boxOf(b)
         return !a.isAssignableFrom(b) && ObjectValueType.unbox(a) != b;
     }
 }

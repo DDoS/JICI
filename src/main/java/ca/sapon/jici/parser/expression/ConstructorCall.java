@@ -27,10 +27,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
@@ -78,46 +76,12 @@ public class ConstructorCall implements Statement, Expression {
                     candidates.put(candidate, parameterTypes);
                 }
             }
-            // remove constructors with un-applicable parameters and look for perfect matches
-            candidates:
-            for (Iterator<Entry<Constructor<?>, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-                final Entry<Constructor<?>, Class<?>[]> entry = iterator.next();
-                final Class<?>[] parameters = entry.getValue();
-                for (int i = 0; i < parameters.length; i++) {
-                    final ValueType argument = argumentTypes[i];
-                    final Class<?> parameter = parameters[i];
-                    if (!argument.convertibleTo(parameter)) {
-                        iterator.remove();
-                        continue candidates;
-                    }
-                    if (argument.getClassType() != parameter) {
-                        continue candidates;
-                    }
-                }
-                constructor = entry.getKey();
-                return valueType;
-            }
-            // remove constructors with the corresponding wider types
-            int candidateCount = candidates.size();
-            candidates:
-            for (final Entry<Constructor<?>, Class<?>[]> entry : candidates.entrySet()) {
-                final Class<?>[] parameters = entry.getValue();
-                for (Class<?>[] challenges : candidates.values()) {
-                    for (int i = 0; i < parameters.length; i++) {
-                        // remove when the challenge is narrow than the parameter
-                        if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
-                            candidateCount--;
-                            continue candidates;
-                        }
-                    }
-                }
-                // cache the candidate because getting a single element from a set is awkward
-                constructor = entry.getKey();
-            }
-            if (candidateCount != 1 || constructor == null) {
-                constructor = null;
+            // try to resolve the overloads
+            final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, argumentTypes);
+            if (constructor == null) {
                 throw new IllegalArgumentException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")");
             }
+            this.constructor = constructor;
         }
         return valueType;
     }

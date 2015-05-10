@@ -27,9 +27,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
@@ -85,43 +83,9 @@ public class ObjectReference implements Reference {
                 }
             }
         }
-        // remove methods with un-applicable parameters and look for perfect matches
-        candidates:
-        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Method, Class<?>[]> entry = iterator.next();
-            final Class<?>[] parameters = entry.getValue();
-            for (int i = 0; i < parameters.length; i++) {
-                final ValueType argument = arguments[i];
-                final Class<?> parameter = parameters[i];
-                if (!argument.convertibleTo(parameter)) {
-                    iterator.remove();
-                    continue candidates;
-                }
-                if (argument.getClassType() != parameter) {
-                    continue candidates;
-                }
-            }
-            return entry.getKey();
-        }
-        // remove methods with the corresponding wider types
-        Method method = null;
-        int candidateCount = candidates.size();
-        candidates:
-        for (final Entry<Method, Class<?>[]> entry : candidates.entrySet()) {
-            final Class<?>[] parameters = entry.getValue();
-            for (Class<?>[] challenges : candidates.values()) {
-                for (int i = 0; i < parameters.length; i++) {
-                    // remove when the challenge is narrower than the parameter
-                    if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
-                        candidateCount--;
-                        continue candidates;
-                    }
-                }
-            }
-            // cache the candidate because getting a single element from a set is awkward
-            method = entry.getKey();
-        }
-        if (candidateCount != 1 || method == null) {
+        // try to resolve the overloads
+        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (method == null) {
             throw new IllegalArgumentException("No method for signature: " + nameString + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
         }
         return method;

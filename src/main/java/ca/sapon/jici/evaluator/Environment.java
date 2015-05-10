@@ -27,12 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 
 public class Environment {
     private final Map<String, Class<?>> classes = new HashMap<>();
-    private final Map<String, Value> variables = new HashMap<>();
+    private final Map<String, Variable> variables = new HashMap<>();
 
     public void importClass(Class<?> _class) {
         final String name = _class.getCanonicalName();
@@ -68,30 +68,64 @@ public class Environment {
         return _class;
     }
 
-    public Value findVariable(Identifier name) {
-        return variables.get(name.getSource());
+    public void declareVariable(Identifier name, ValueType type) {
+        declareVariable(name, type, type.getKind().defaultValue());
     }
 
-    public void declareVariable(Identifier name, ValueKind kind) {
-        final Value existing = findVariable(name);
-        if (existing != null) {
-            throw new IllegalArgumentException("Variable " + name.getSource() + " is already declared");
+    public void declareVariable(Identifier name, ValueType type, Value value) {
+        final String nameString = name.getSource();
+        if (variables.containsKey(nameString)) {
+            throw new IllegalArgumentException("Variable " + nameString + " is already declared");
         }
-        variables.put(name.getSource(), kind.defaultValue());
+        variables.put(name.getSource(), new Variable(nameString, type, value));
+    }
+
+    public ValueType getVariableType(Identifier name) {
+        return findVariable(name).getType();
     }
 
     public Value getVariable(Identifier name) {
-        final Value variable = findVariable(name);
+        return findVariable(name).getValue();
+    }
+
+    public void setVariable(Identifier name, Value value) {
+        findVariable(name).setValue(value);
+    }
+
+    private Variable findVariable(Identifier name) {
+        final String nameString = name.getSource();
+        final Variable variable = variables.get(nameString);
         if (variable == null) {
-            throw new IllegalArgumentException("Variable " + name.getSource() + " does not exist");
+            throw new IllegalArgumentException("Variable " + nameString + " does not exist");
         }
         return variable;
     }
 
-    public void setVariable(Identifier name, Value value) {
-        if (findVariable(name) == null) {
-            throw new IllegalArgumentException("Variable " + name.getSource() + " does not exist");
+    private static class Variable {
+        private final String name;
+        private final ValueType type;
+        private Value value;
+
+        private Variable(String name, ValueType type, Value value) {
+            this.name = name;
+            this.type = type;
+            this.value = value;
         }
-        variables.put(name.getSource(), value);
+
+        private String getName() {
+            return name;
+        }
+
+        private ValueType getType() {
+            return type;
+        }
+
+        private Value getValue() {
+            return value;
+        }
+
+        private void setValue(Value value) {
+            this.value = value;
+        }
     }
 }

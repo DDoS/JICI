@@ -33,6 +33,7 @@ import ca.sapon.jici.lexer.Identifier;
  */
 public class VariableAccess implements Reference {
     private final Identifier name;
+    private ValueType valueType = null;
 
     public VariableAccess(Identifier name) {
         this.name = name;
@@ -40,17 +41,20 @@ public class VariableAccess implements Reference {
 
     @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            valueType = environment.getVariableType(name);
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        return environment.getVariable(name);
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
-
+        environment.setVariable(name, value);
     }
 
     @Override

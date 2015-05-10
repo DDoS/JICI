@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -172,6 +174,16 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return convertibleTo(type, to);
+    }
+
+    @Override
+    public Field getField(String name) {
+        throw new IllegalArgumentException("Cannot dereference a primitive type");
+    }
+
+    @Override
+    public Method getMethod(String name, ValueType[] arguments) {
+        throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 
     @Override

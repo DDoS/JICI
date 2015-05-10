@@ -23,10 +23,13 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.util.ReflectionUtil;
 
 /**
  *
@@ -137,6 +140,33 @@ public class ObjectValueType implements ValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return convertibleTo(type, to);
+    }
+
+    @Override
+    public Field getField(String name) {
+        try {
+            return type.getField(name);
+        } catch (NoSuchFieldException exception) {
+            return null;
+        }
+    }
+
+    @Override
+    public Method getMethod(String name, ValueType[] arguments) {
+        // try to find a matching method
+        final Method[] methods = type.getMethods();
+        // look for matches in length and name
+        final Map<Method, Class<?>[]> candidates = new HashMap<>();
+        for (Method candidate : methods) {
+            if (candidate.getName().equals(name)) {
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length == arguments.length) {
+                    candidates.put(candidate, parameterTypes);
+                }
+            }
+        }
+        // try to resolve the overloads
+        return ReflectionUtil.resolveOverloads(candidates, arguments);
     }
 
     @Override

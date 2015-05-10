@@ -23,6 +23,9 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 /**
  *
  */
@@ -31,7 +34,7 @@ public class ObjectUnionValueType extends ObjectValueType {
     private final ObjectValueType type2;
 
     public ObjectUnionValueType(ObjectValueType type1, ObjectValueType type2) {
-        super(type1.getTypeClass() == type2.getTypeClass() ? type1.getTypeClass() : Object.class);
+        super(type1.is(type2.getTypeClass()) ? type1.getTypeClass() : Object.class);
         this.type1 = type1;
         this.type2 = type2;
     }
@@ -39,5 +42,19 @@ public class ObjectUnionValueType extends ObjectValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return type1.convertibleTo(to) && type2.convertibleTo(to);
+    }
+
+    @Override
+    public Field getField(String name) {
+        final Field field1 = type1.getField(name);
+        final Field field2 = type2.getField(name);
+        return !field1.equals(field2) ? null : field1;
+    }
+
+    @Override
+    public Method getMethod(String name, ValueType[] arguments) {
+        final Method method1 = type1.getMethod(name, arguments);
+        final Method method2 = type1.getMethod(name, arguments);
+        return !method1.equals(method2) ? null : method1;
     }
 }

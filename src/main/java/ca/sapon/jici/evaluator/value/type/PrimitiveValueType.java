@@ -64,6 +64,7 @@ public class PrimitiveValueType implements ValueType {
         BINARY_WIDENERS.put(byte.class, intWidener);
         BINARY_WIDENERS.put(short.class, intWidener);
         BINARY_WIDENERS.put(char.class, intWidener);
+        BINARY_WIDENERS.put(int.class, intWidener);
         BINARY_WIDENERS.put(long.class, new Widener(long.class, byte.class, short.class, char.class, int.class));
         BINARY_WIDENERS.put(float.class, new Widener(float.class, byte.class, short.class, char.class, int.class, long.class));
         BINARY_WIDENERS.put(double.class, new Widener(double.class, byte.class, short.class, char.class, int.class, long.class, float.class));
@@ -125,11 +126,6 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public boolean isNumeric() {
         return isIntegral() || type == float.class || type == double.class;
-    }
-
-    @Override
-    public boolean isLogical() {
-        return isIntegral() || isBoolean();
     }
 
     @Override

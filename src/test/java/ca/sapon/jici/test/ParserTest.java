@@ -139,10 +139,10 @@ public class ParserTest {
 
     @Test
     public void testParseEqual() {
-        testParseExpression("Comparison(l == r)", "l == r");
-        testParseExpression("Comparison(l != r)", "l != r");
+        testParseExpression("Equal(l == r)", "l == r");
+        testParseExpression("Equal(l != r)", "l != r");
 
-        testParseExpression("Comparison(Comparison(a == b) != c)", "a == b != c");
+        testParseExpression("Equal(Equal(a == b) != c)", "a == b != c");
     }
 
     @Test
@@ -219,7 +219,7 @@ public class ParserTest {
                         "BitwiseLogic(z | " +
                         "BitwiseLogic(g ^ " +
                         "BitwiseLogic(q & " +
-                        "Comparison(t == " +
+                        "Equal(t == " +
                         "Comparison(r >= " +
                         "Shift(p >> " +
                         "Arithmetic(n + " +

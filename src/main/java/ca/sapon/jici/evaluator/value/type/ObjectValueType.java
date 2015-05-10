@@ -87,11 +87,6 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public boolean isLogical() {
-        return false;
-    }
-
-    @Override
     public boolean isIntegral() {
         return false;
     }

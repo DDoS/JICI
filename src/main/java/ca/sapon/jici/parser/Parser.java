@@ -48,6 +48,7 @@ import ca.sapon.jici.parser.expression.assignment.Assignment;
 import ca.sapon.jici.parser.expression.assignment.PostIncrement;
 import ca.sapon.jici.parser.expression.assignment.PreIncrement;
 import ca.sapon.jici.parser.expression.comparison.Comparison;
+import ca.sapon.jici.parser.expression.comparison.Equal;
 import ca.sapon.jici.parser.expression.comparison.TypeCheck;
 import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
 import ca.sapon.jici.parser.expression.logic.BitwiseNot;
@@ -402,7 +403,7 @@ public class Parser {
             if (token.getType() == TokenType.EQUAL_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseComparison(tokens);
-                final Comparison add = new Comparison(left, right, (Symbol) token);
+                final Equal add = new Equal(left, right, (Symbol) token);
                 return parseEqual(tokens, add);
             }
         }

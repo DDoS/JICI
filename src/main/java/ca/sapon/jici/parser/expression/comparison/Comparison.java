@@ -27,6 +27,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
@@ -36,6 +37,7 @@ public class Comparison implements Expression {
     private final Expression right;
     private final Symbol operator;
     private ValueType valueType = null;
+    private ValueType widenType = null;
     private Value value = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
@@ -55,7 +57,8 @@ public class Comparison implements Expression {
             if (!rightType.isNumeric()) {
                 throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
             }
-            valueType = leftType.binaryWiden(rightType.getClassType());
+            valueType = PrimitiveValueType.of(boolean.class);
+            widenType = leftType.binaryWiden(rightType.getClassType());
         }
         return valueType;
     }
@@ -65,14 +68,8 @@ public class Comparison implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
+            final ValueKind widenKind = widenType.getKind();
             switch (operator.getID()) {
-                case SYMBOL_EQUAL:
-                    value = doEqual(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_NOT_EQUAL:
-                    value = doNotEqual(leftValue, rightValue, widenKind);
-                    break;
                 case SYMBOL_LESSER:
                     value = doLesserThan(leftValue, rightValue, widenKind);
                     break;
@@ -90,36 +87,6 @@ public class Comparison implements Expression {
             }
         }
         return value;
-    }
-
-    private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
-        switch (widenKind) {
-            case INT:
-                return BooleanValue.of(leftValue.asInt() == rightValue.asInt());
-            case LONG:
-                return BooleanValue.of(leftValue.asLong() == rightValue.asLong());
-            case FLOAT:
-                return BooleanValue.of(leftValue.asFloat() == rightValue.asFloat());
-            case DOUBLE:
-                return BooleanValue.of(leftValue.asDouble() == rightValue.asDouble());
-            default:
-                throw new IllegalArgumentException("Invalid type for equal: " + widenKind);
-        }
-    }
-
-    private Value doNotEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
-        switch (widenKind) {
-            case INT:
-                return BooleanValue.of(leftValue.asInt() != rightValue.asInt());
-            case LONG:
-                return BooleanValue.of(leftValue.asLong() != rightValue.asLong());
-            case FLOAT:
-                return BooleanValue.of(leftValue.asFloat() != rightValue.asFloat());
-            case DOUBLE:
-                return BooleanValue.of(leftValue.asDouble() != rightValue.asDouble());
-            default:
-                throw new IllegalArgumentException("Invalid type for not equal: " + widenKind);
-        }
     }
 
     private Value doLesserThan(Value leftValue, Value rightValue, ValueKind widenKind) {

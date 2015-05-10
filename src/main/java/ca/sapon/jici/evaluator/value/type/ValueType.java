@@ -43,8 +43,6 @@ public interface ValueType {
 
     boolean isNumeric();
 
-    boolean isLogical();
-
     boolean isIntegral();
 
     boolean isBoolean();

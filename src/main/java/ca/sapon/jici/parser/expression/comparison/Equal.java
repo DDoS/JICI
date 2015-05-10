@@ -21,12 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.logic;
+package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.BooleanValue;
-import ca.sapon.jici.evaluator.value.IntValue;
-import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -34,14 +32,15 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
-public class BitwiseLogic implements Expression {
+public class Equal implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
     private ValueType valueType = null;
+    private ValueKind widenKind = null;
     private Value value = null;
 
-    public BitwiseLogic(Expression left, Expression right, Symbol operator) {
+    public Equal(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
@@ -52,21 +51,22 @@ public class BitwiseLogic implements Expression {
         if (valueType == null) {
             final ValueType leftType = left.geValueType(environment).unbox();
             final ValueType rightType = right.geValueType(environment).unbox();
-            if (leftType.isBoolean()) {
+            if (leftType.isObject()) {
+                if (rightType.isObject()) {
+                    widenKind = ValueKind.OBJECT;
+                } else {
+                    throw new IllegalArgumentException("Not an object type: " + rightType.getName());
+                }
+            } else if (leftType.isBoolean()) {
                 if (rightType.isBoolean()) {
-                    valueType = PrimitiveValueType.of(boolean.class);
+                    widenKind = ValueKind.BOOLEAN;
                 } else {
                     throw new IllegalArgumentException("Not a boolean type: " + rightType.getName());
                 }
-            } else if (leftType.isIntegral()) {
-                if (rightType.isIntegral()) {
-                    valueType = leftType.binaryWiden(rightType.getClassType());
-                } else {
-                    throw new IllegalArgumentException("Not an integral type: " + rightType.getName());
-                }
             } else {
-                throw new IllegalArgumentException("Not a boolean or integral type: " + leftType.getName());
+                widenKind = leftType.binaryWiden(rightType.getClassType()).getKind();
             }
+            valueType = PrimitiveValueType.of(boolean.class);
         }
         return valueType;
     }
@@ -76,65 +76,60 @@ public class BitwiseLogic implements Expression {
         if (value == null) {
             final Value leftValue = left.getValue(environment);
             final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
             switch (operator.getID()) {
-                case SYMBOL_BITWISE_AND:
-                    value = doBitwiseAND(leftValue, rightValue, widenKind);
+                case SYMBOL_EQUAL:
+                    value = doEqual(leftValue, rightValue, widenKind);
                     break;
-                case SYMBOL_BITWISE_XOR:
-                    value = doBitwiseXOR(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_BITWISE_OR:
-                    value = doBitwiseOR(leftValue, rightValue, widenKind);
+                case SYMBOL_NOT_EQUAL:
+                    value = doNotEqual(leftValue, rightValue, widenKind);
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
+                    throw new IllegalArgumentException("Invalid operator for equal: " + operator);
             }
         }
         return value;
     }
 
-    private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind widenKind) {
+    private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
         switch (widenKind) {
             case BOOLEAN:
-                return BooleanValue.of(leftValue.asBoolean() & rightValue.asBoolean());
+                return BooleanValue.of(leftValue.asBoolean() == rightValue.asBoolean());
             case INT:
-                return IntValue.of(leftValue.asInt() & rightValue.asInt());
+                return BooleanValue.of(leftValue.asInt() == rightValue.asInt());
             case LONG:
-                return LongValue.of(leftValue.asLong() & rightValue.asLong());
+                return BooleanValue.of(leftValue.asLong() == rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() == rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() == rightValue.asDouble());
+            case OBJECT:
+                return BooleanValue.of(leftValue.asObject() == rightValue.asObject());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise AND: " + widenKind);
+                throw new IllegalArgumentException("Invalid type for equal: " + widenKind);
         }
     }
 
-    private Value doBitwiseXOR(Value leftValue, Value rightValue, ValueKind widenKind) {
+    private Value doNotEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
         switch (widenKind) {
             case BOOLEAN:
-                return BooleanValue.of(leftValue.asBoolean() ^ rightValue.asBoolean());
+                return BooleanValue.of(leftValue.asBoolean() != rightValue.asBoolean());
             case INT:
-                return IntValue.of(leftValue.asInt() ^ rightValue.asInt());
+                return BooleanValue.of(leftValue.asInt() != rightValue.asInt());
             case LONG:
-                return LongValue.of(leftValue.asLong() ^ rightValue.asLong());
+                return BooleanValue.of(leftValue.asLong() != rightValue.asLong());
+            case FLOAT:
+                return BooleanValue.of(leftValue.asFloat() != rightValue.asFloat());
+            case DOUBLE:
+                return BooleanValue.of(leftValue.asDouble() != rightValue.asDouble());
+            case OBJECT:
+                return BooleanValue.of(leftValue.asObject() != rightValue.asObject());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise XOR: " + widenKind);
-        }
-    }
-
-    private Value doBitwiseOR(Value leftValue, Value rightValue, ValueKind widenKind) {
-        switch (widenKind) {
-            case BOOLEAN:
-                return BooleanValue.of(leftValue.asBoolean() | rightValue.asBoolean());
-            case INT:
-                return IntValue.of(leftValue.asInt() | rightValue.asInt());
-            case LONG:
-                return LongValue.of(leftValue.asLong() | rightValue.asLong());
-            default:
-                throw new IllegalArgumentException("Invalid type for bitwise OR: " + widenKind);
+                throw new IllegalArgumentException("Invalid type for not equal: " + widenKind);
         }
     }
 
     @Override
     public String toString() {
-        return "BitwiseLogic(" + left + " " + operator + " " + right + ")";
+        return "Equal(" + left + " " + operator + " " + right + ")";
     }
 }

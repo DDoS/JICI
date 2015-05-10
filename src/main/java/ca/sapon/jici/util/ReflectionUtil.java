@@ -56,7 +56,7 @@ public class ReflectionUtil {
                     iterator.remove();
                     continue candidates;
                 }
-                if (argument.getClassType() != parameter) {
+                if (argument.getTypeClass() != parameter) {
                     continue candidates;
                 }
             }

@@ -58,7 +58,7 @@ public class Arithmetic implements Expression {
             if (!rightType.isNumeric()) {
                 throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
             }
-            valueType = leftType.binaryWiden(rightType.getClassType());
+            valueType = leftType.binaryWiden(rightType.getTypeClass());
         }
         return valueType;
     }

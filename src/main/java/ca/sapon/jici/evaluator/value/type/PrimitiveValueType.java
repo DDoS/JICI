@@ -94,7 +94,7 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public Class<?> getClassType() {
+    public Class<?> getTypeClass() {
         return type;
     }
 

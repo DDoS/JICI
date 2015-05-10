@@ -64,7 +64,7 @@ public class Equal implements Expression {
                     throw new IllegalArgumentException("Not a boolean type: " + rightType.getName());
                 }
             } else {
-                widenKind = leftType.binaryWiden(rightType.getClassType()).getKind();
+                widenKind = leftType.binaryWiden(rightType.getTypeClass()).getKind();
             }
             valueType = PrimitiveValueType.of(boolean.class);
         }

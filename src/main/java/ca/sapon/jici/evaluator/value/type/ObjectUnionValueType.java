@@ -31,7 +31,7 @@ public class ObjectUnionValueType extends ObjectValueType {
     private final ObjectValueType type2;
 
     public ObjectUnionValueType(ObjectValueType type1, ObjectValueType type2) {
-        super(type1.getClassType() == type2.getClassType() ? type1.getClassType() : Object.class);
+        super(type1.getTypeClass() == type2.getTypeClass() ? type1.getTypeClass() : Object.class);
         this.type1 = type1;
         this.type2 = type2;
     }

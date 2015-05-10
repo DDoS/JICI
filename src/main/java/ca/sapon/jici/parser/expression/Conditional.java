@@ -54,7 +54,7 @@ public class Conditional implements Expression {
             if (!testType.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + testType.getName());
             }
-            if (leftType.is(rightType.getClassType())) {
+            if (leftType.is(rightType.getTypeClass())) {
                 // both same type to that type
                 valueType = leftType;
             } else if (leftType.isObject() || rightType.isObject()) {
@@ -71,7 +71,7 @@ public class Conditional implements Expression {
                 valueType = PrimitiveValueType.of(short.class);
             } else {
                 // else use binary widening
-                valueType = leftType.binaryWiden(rightType.getClassType());
+                valueType = leftType.binaryWiden(rightType.getTypeClass());
             }
         }
         return valueType;

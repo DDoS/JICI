@@ -72,7 +72,7 @@ public class ObjectReference implements Reference {
     public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
         final String nameString = name.getSource();
         // try to find a matching method
-        final Method[] methods = geValueType(environment).getClassType().getMethods();
+        final Method[] methods = geValueType(environment).getTypeClass().getMethods();
         // look for matches in length and name
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
         for (Method candidate : methods) {

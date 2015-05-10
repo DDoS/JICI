@@ -52,7 +52,7 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public Class<?> getClassType() {
+    public Class<?> getTypeClass() {
         return type;
     }
 

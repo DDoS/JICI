@@ -67,7 +67,7 @@ public class ConstructorCall implements Statement, Expression {
                 argumentTypes[i] = arguments.get(i).geValueType(environment);
             }
             // try to find a matching constructor
-            final Constructor<?>[] constructors = valueType.getClassType().getConstructors();
+            final Constructor<?>[] constructors = valueType.getTypeClass().getConstructors();
             // look for matches in length
             final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
             for (Constructor<?> candidate : constructors) {

@@ -29,7 +29,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
  *
  */
 public interface ValueType {
-    Class<?> getClassType();
+    Class<?> getTypeClass();
 
     String getName();
 

@@ -55,11 +55,10 @@ import ca.sapon.jici.parser.expression.logic.BitwiseNot;
 import ca.sapon.jici.parser.expression.logic.BooleanLogic;
 import ca.sapon.jici.parser.expression.logic.BooleanNot;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
-import ca.sapon.jici.parser.expression.reference.ContextReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
 import ca.sapon.jici.parser.expression.reference.MethodCall;
-import ca.sapon.jici.parser.expression.reference.ObjectReference;
 import ca.sapon.jici.parser.expression.reference.Reference;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;
 import ca.sapon.jici.parser.statement.Empty;
@@ -573,14 +572,13 @@ public class Parser {
                         final Token token = tokens.get();
                         if (token.getType() == TokenType.IDENTIFIER) {
                             tokens.advance();
-                            final Reference reference = new ObjectReference(object);
                             final Expression access;
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArguments(tokens);
-                                access = new MethodCall(reference, (Identifier) token, arguments);
+                                access = new MethodCall(object, (Identifier) token, arguments);
                             } else {
-                                access = new FieldAccess(reference, (Identifier) token);
+                                access = new FieldAccess(object, (Identifier) token);
                             }
                             return parseAccess(tokens, access);
                         }
@@ -634,26 +632,22 @@ public class Parser {
                             }
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
-                                final Identifier method = name.remove(name.size() - 1);
-                                final Reference reference;
-                                if (name.isEmpty()) {
-                                    reference = new ContextReference();
+                                if (name.size() == 1) {
+                                    throw new ParseError("Contextual method calls are not supported");
                                 } else {
-                                    reference = new AmbiguousReference(name);
+                                    final List<Expression> arguments = parseArguments(tokens);
+                                    final Identifier method = name.remove(name.size() - 1);
+                                    final AmbiguousReference reference = new AmbiguousReference(name);
+                                    return new MethodCall(reference, method, arguments);
                                 }
-                                final List<Expression> arguments = parseArguments(tokens);
-                                return new MethodCall(reference, method, arguments);
                             }
                         }
                     }
-                    final Identifier field = name.remove(name.size() - 1);
-                    final Reference reference;
-                    if (name.isEmpty()) {
-                        reference = new ContextReference();
+                    if (name.size() == 1) {
+                        return new VariableAccess(name.get(0));
                     } else {
-                        reference = new AmbiguousReference(name);
+                        return new AmbiguousReference(name);
                     }
-                    return new FieldAccess(reference, field);
                 }
                 default: {
                     switch (token.getID()) {

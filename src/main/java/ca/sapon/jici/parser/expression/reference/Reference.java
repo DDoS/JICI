@@ -23,21 +23,12 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
 public interface Reference extends Expression {
     void setValue(Environment environment, Value value);
-
-    Field getField(Environment environment, Identifier name);
-
-    Method getMethod(Environment environment, Identifier name, ValueType[] arguments);
 
     String toString();
 }

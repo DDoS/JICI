@@ -25,6 +25,9 @@ package ca.sapon.jici.evaluator.value.type;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+
+import ca.sapon.jici.util.StringUtil;
 
 /**
  *
@@ -48,13 +51,20 @@ public class ObjectUnionValueType extends ObjectValueType {
     public Field getField(String name) {
         final Field field1 = type1.getField(name);
         final Field field2 = type2.getField(name);
-        return !field1.equals(field2) ? null : field1;
+        if (!field1.equals(field2)) {
+            throw new IllegalArgumentException("No field named " + name);
+        }
+        return field1;
     }
 
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
         final Method method1 = type1.getMethod(name, arguments);
         final Method method2 = type1.getMethod(name, arguments);
-        return !method1.equals(method2) ? null : method1;
+        if (!method1.equals(method2)) {
+            throw new IllegalArgumentException("No method for signature: "
+                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+        }
+        return method1;
     }
 }

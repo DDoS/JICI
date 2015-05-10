@@ -48,10 +48,7 @@ public class ParserTest {
         testParseExpression("\"a\"", "\"a\"");
 
         testParseExpression("test", "test");
-        testParseExpression("FieldAccess(test.stuff)", "test.stuff");
-
-        testParseExpression("MethodCall(test())", "test()");
-        testParseExpression("MethodCall(test(0, 1, 2))", "test(0, 1, 2)");
+        testParseExpression("test.stuff", "test.stuff");
 
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
@@ -251,7 +248,7 @@ public class ParserTest {
         testParseStatement("Assignment(m = 2)", "m = 2;");
         testParseStatement("PostIncrement(m++)", "m++;");
         testParseStatement("ConstructorCall(new Test())", "new Test();");
-        testParseStatement("MethodCall(test())", "test();");
+        testParseStatement("MethodCall(m.test())", "m.test();");
     }
 
     private void testParseExpression(String expected, String source) {

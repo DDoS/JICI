@@ -25,11 +25,13 @@ package ca.sapon.jici.evaluator.value.type;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.StringUtil;
 
 /**
  *
@@ -147,7 +149,7 @@ public class ObjectValueType implements ValueType {
         try {
             return type.getField(name);
         } catch (NoSuchFieldException exception) {
-            return null;
+            throw new IllegalArgumentException("No field named " + name + " in " + getName());
         }
     }
 
@@ -166,7 +168,12 @@ public class ObjectValueType implements ValueType {
             }
         }
         // try to resolve the overloads
-        return ReflectionUtil.resolveOverloads(candidates, arguments);
+        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (method == null) {
+            throw new IllegalArgumentException("No method for signature: "
+                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        }
+        return method;
     }
 
     @Override

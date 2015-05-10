@@ -23,13 +23,9 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.lexer.Identifier;
 
 public class ContextReference implements Reference {
     @Override
@@ -44,16 +40,6 @@ public class ContextReference implements Reference {
 
     @Override
     public void setValue(Environment environment, Value value) {
-    }
-
-    @Override
-    public Field getField(Environment environment, Identifier name) {
-        return null;
-    }
-
-    @Override
-    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
-        return null;
     }
 
     @Override

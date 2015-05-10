@@ -23,66 +23,38 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.StringUtil;
 
-public class ObjectReference implements Reference {
-    private final Expression object;
-    private ValueType valueType = null;
+/**
+ *
+ */
+public class VariableAccess implements Reference {
+    private final Identifier name;
 
-    public ObjectReference(Expression object) {
-        this.object = object;
+    public VariableAccess(Identifier name) {
+        this.name = name;
     }
 
     @Override
     public ValueType geValueType(Environment environment) {
-        if (valueType == null) {
-            valueType = object.geValueType(environment);
-        }
-        return valueType;
+        return null;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return object.getValue(environment);
+        return null;
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
-        throw new IllegalArgumentException("Can't set the value of an object reference");
-    }
 
-    @Override
-    public Field getField(Environment environment, Identifier name) {
-        final ValueType valueType = geValueType(environment);
-        final Field field = valueType.getField(name.getSource());
-        if (field == null) {
-            throw new IllegalArgumentException("No field named " + name);
-        }
-        return field;
-    }
-
-    @Override
-    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
-        final ValueType valueType = geValueType(environment);
-        final Method method = valueType.getMethod(name.getSource(), arguments);
-        if (method == null) {
-            throw new IllegalArgumentException("No method for signature: "
-                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
-        }
-        return method;
     }
 
     @Override
     public String toString() {
-        return object.toString();
+        return name.toString();
     }
 }

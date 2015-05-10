@@ -38,14 +38,15 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
-public class MethodCall extends Dereference implements Statement {
+public class MethodCall implements Expression, Statement {
+    private final Expression object;
     private final Identifier method;
     private final List<Expression> arguments;
     private ValueType valueType = null;
     private Method callable = null;
 
-    public MethodCall(Reference reference, Identifier method, List<Expression> arguments) {
-        super(reference);
+    public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
+        this.object = object;
         this.method = method;
         this.arguments = arguments;
     }
@@ -64,20 +65,16 @@ public class MethodCall extends Dereference implements Statement {
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).geValueType(environment);
             }
-            callable = reference.getMethod(environment, method, argumentTypes);
+            callable = object.geValueType(environment).getMethod(method.getSource(), argumentTypes);
             final Class<?> returnType = callable.getReturnType();
-            if (returnType.isPrimitive()) {
-                valueType = PrimitiveValueType.of(returnType);
-            } else {
-                valueType = new ObjectValueType(returnType);
-            }
+            valueType = returnType.isPrimitive() ? PrimitiveValueType.of(returnType) : new ObjectValueType(returnType);
         }
         return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Object value = reference.getValue(environment).asObject();
+        final Object value = object.getValue(environment).asObject();
         final int size = arguments.size();
         final Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
@@ -92,6 +89,6 @@ public class MethodCall extends Dereference implements Statement {
 
     @Override
     public String toString() {
-        return "MethodCall(" + (reference instanceof ContextReference ? "" : reference + ".") + method + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "MethodCall(" + object + "." + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

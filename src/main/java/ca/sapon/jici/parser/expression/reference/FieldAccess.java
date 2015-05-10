@@ -24,47 +24,56 @@
 package ca.sapon.jici.parser.expression.reference;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.expression.Expression;
 
-public class FieldAccess extends Dereference implements Reference {
+public class FieldAccess implements Reference {
+    private final Expression object;
     private final Identifier field;
+    private ValueType valueType = null;
+    private Field member = null;
 
-    public FieldAccess(Reference reference, Identifier field) {
-        super(reference);
+    public FieldAccess(Expression object, Identifier field) {
+        this.object = object;
         this.field = field;
     }
 
     @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            member = object.geValueType(environment).getField(field.getSource());
+            final Class<?> type = member.getType();
+            valueType = type.isPrimitive() ? PrimitiveValueType.of(type) : new ObjectValueType(type);
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        try {
+            return valueType.getKind().wrap(member.get(object.getValue(environment)));
+        } catch (IllegalAccessException exception) {
+            throw new IllegalArgumentException("Could not access field: " + field.getSource());
+        }
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
-    }
-
-    @Override
-    public Field getField(Environment environment, Identifier name) {
-        return null;
-    }
-
-    @Override
-    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
-        return null;
+        try {
+            member.set(object.getValue(environment), value.asObject());
+        } catch (IllegalAccessException exception) {
+            throw new IllegalArgumentException("Could not access field: " + field.getSource());
+        }
     }
 
     @Override
     public String toString() {
-        return reference instanceof ContextReference ? field.toString() : "FieldAccess(" + reference + "." + field + ")";
+        return "FieldAccess(" + object + "." + field + ")";
     }
 }

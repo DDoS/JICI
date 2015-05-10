@@ -23,8 +23,6 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
@@ -52,16 +50,6 @@ public class AmbiguousReference implements Reference {
 
     @Override
     public void setValue(Environment environment, Value value) {
-    }
-
-    @Override
-    public Field getField(Environment environment, Identifier name) {
-        return null;
-    }
-
-    @Override
-    public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
-        return null;
     }
 
     @Override

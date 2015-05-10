@@ -38,6 +38,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassType;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
@@ -77,10 +78,11 @@ public class ConstructorCall implements Statement, Expression {
                     candidates.put(candidate, parameterTypes);
                 }
             }
-            // remove constructors with un-applicable parameters
+            // remove constructors with un-applicable parameters and look for perfect matches
             candidates:
             for (Iterator<Entry<Constructor<?>, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-                final Class<?>[] parameters = iterator.next().getValue();
+                final Entry<Constructor<?>, Class<?>[]> entry = iterator.next();
+                final Class<?>[] parameters = entry.getValue();
                 for (int i = 0; i < parameters.length; i++) {
                     final ValueType argument = argumentTypes[i];
                     final Class<?> parameter = parameters[i];
@@ -88,18 +90,23 @@ public class ConstructorCall implements Statement, Expression {
                         iterator.remove();
                         continue candidates;
                     }
+                    if (argument.getClassType() != parameter) {
+                        continue candidates;
+                    }
                 }
+                constructor = entry.getKey();
+                return valueType;
             }
             // remove constructors with the corresponding wider types
+            int candidateCount = candidates.size();
             candidates:
-            for (Iterator<Entry<Constructor<?>, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-                final Entry<Constructor<?>, Class<?>[]> entry = iterator.next();
+            for (final Entry<Constructor<?>, Class<?>[]> entry : candidates.entrySet()) {
                 final Class<?>[] parameters = entry.getValue();
                 for (Class<?>[] challenges : candidates.values()) {
                     for (int i = 0; i < parameters.length; i++) {
-                        // remove when the challenge is a subclass of the parameter
-                        if (!challenges[i].isAssignableFrom(parameters[i])) {
-                            iterator.remove();
+                        // remove when the challenge is narrow than the parameter
+                        if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
+                            candidateCount--;
                             continue candidates;
                         }
                     }
@@ -107,7 +114,7 @@ public class ConstructorCall implements Statement, Expression {
                 // cache the candidate because getting a single element from a set is awkward
                 constructor = entry.getKey();
             }
-            if (candidates.size() != 1 || constructor == null) {
+            if (candidateCount != 1 || constructor == null) {
                 constructor = null;
                 throw new IllegalArgumentException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")");
             }

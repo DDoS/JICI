@@ -36,6 +36,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ObjectReference implements Reference {
@@ -84,10 +85,11 @@ public class ObjectReference implements Reference {
                 }
             }
         }
-        // remove methods with un-applicable parameters
+        // remove methods with un-applicable parameters and look for perfect matches
         candidates:
         for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Class<?>[] parameters = iterator.next().getValue();
+            final Entry<Method, Class<?>[]> entry = iterator.next();
+            final Class<?>[] parameters = entry.getValue();
             for (int i = 0; i < parameters.length; i++) {
                 final ValueType argument = arguments[i];
                 final Class<?> parameter = parameters[i];
@@ -95,19 +97,23 @@ public class ObjectReference implements Reference {
                     iterator.remove();
                     continue candidates;
                 }
+                if (argument.getClassType() != parameter) {
+                    continue candidates;
+                }
             }
+            return entry.getKey();
         }
         // remove methods with the corresponding wider types
         Method method = null;
+        int candidateCount = candidates.size();
         candidates:
-        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Method, Class<?>[]> entry = iterator.next();
+        for (final Entry<Method, Class<?>[]> entry : candidates.entrySet()) {
             final Class<?>[] parameters = entry.getValue();
             for (Class<?>[] challenges : candidates.values()) {
                 for (int i = 0; i < parameters.length; i++) {
-                    // remove when the challenge is a subclass of the parameter
-                    if (!challenges[i].isAssignableFrom(parameters[i])) {
-                        iterator.remove();
+                    // remove when the challenge is narrower than the parameter
+                    if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
+                        candidateCount--;
                         continue candidates;
                     }
                 }
@@ -115,7 +121,7 @@ public class ObjectReference implements Reference {
             // cache the candidate because getting a single element from a set is awkward
             method = entry.getKey();
         }
-        if (candidates.size() != 1 || method == null) {
+        if (candidateCount != 1 || method == null) {
             throw new IllegalArgumentException("No method for signature: " + nameString + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
         }
         return method;

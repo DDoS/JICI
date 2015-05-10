@@ -23,6 +23,9 @@
  */
 package ca.sapon.jici.util;
 
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
+
 /**
  *
  */
@@ -33,5 +36,14 @@ public class ReflectionUtil {
         } catch (ClassNotFoundException exception) {
             return null;
         }
+    }
+
+    public static boolean isNarrower(Class<?> a, Class<?> b) {
+        if (a.isPrimitive()) {
+            // a !=b and a <= b
+            return a != b && PrimitiveValueType.convertibleTo(a, b);
+        }
+        // a < and !a.boxOf(b)
+        return !a.isAssignableFrom(b) && ObjectValueType.unbox(a) != b;
     }
 }

@@ -39,7 +39,6 @@ public class BitwiseLogic implements Expression {
     private final Expression right;
     private final Symbol operator;
     private ValueType valueType = null;
-    private Value value = null;
 
     public BitwiseLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -73,25 +72,19 @@ public class BitwiseLogic implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
-            switch (operator.getID()) {
-                case SYMBOL_BITWISE_AND:
-                    value = doBitwiseAND(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_BITWISE_XOR:
-                    value = doBitwiseXOR(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_BITWISE_OR:
-                    value = doBitwiseOR(leftValue, rightValue, widenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        final ValueKind widenKind = valueType.getKind();
+        switch (operator.getID()) {
+            case SYMBOL_BITWISE_AND:
+                return doBitwiseAND(leftValue, rightValue, widenKind);
+            case SYMBOL_BITWISE_XOR:
+                return doBitwiseXOR(leftValue, rightValue, widenKind);
+            case SYMBOL_BITWISE_OR:
+                return doBitwiseOR(leftValue, rightValue, widenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
         }
-        return value;
     }
 
     private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind widenKind) {

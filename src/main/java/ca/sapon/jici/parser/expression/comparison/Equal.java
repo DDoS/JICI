@@ -38,7 +38,6 @@ public class Equal implements Expression {
     private final Symbol operator;
     private ValueType valueType = null;
     private ValueKind widenKind = null;
-    private Value value = null;
 
     public Equal(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -73,21 +72,16 @@ public class Equal implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            switch (operator.getID()) {
-                case SYMBOL_EQUAL:
-                    value = doEqual(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_NOT_EQUAL:
-                    value = doNotEqual(leftValue, rightValue, widenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for equal: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        switch (operator.getID()) {
+            case SYMBOL_EQUAL:
+                return doEqual(leftValue, rightValue, widenKind);
+            case SYMBOL_NOT_EQUAL:
+                return doNotEqual(leftValue, rightValue, widenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for equal: " + operator);
         }
-        return value;
     }
 
     private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {

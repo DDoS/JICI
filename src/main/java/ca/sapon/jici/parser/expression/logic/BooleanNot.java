@@ -33,7 +33,6 @@ import ca.sapon.jici.parser.expression.Expression;
 public class BooleanNot implements Expression {
     private final Expression inner;
     private ValueType valueType = null;
-    private Value value = null;
 
     public BooleanNot(Expression inner) {
         this.inner = inner;
@@ -53,14 +52,7 @@ public class BooleanNot implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value innerValue = inner.getValue(environment);
-            value = doBooleanNot(innerValue);
-        }
-        return value;
-    }
-
-    private Value doBooleanNot(Value innerValue) {
+        final Value innerValue = inner.getValue(environment);
         return BooleanValue.of(!innerValue.asBoolean());
     }
 

@@ -32,7 +32,6 @@ import ca.sapon.jici.parser.type.Type;
 public class ClassAccess implements Expression {
     private final Type type;
     private ValueType valueType = null;
-    private Value value = null;
 
     public ClassAccess(Type type) {
         this.type = type;
@@ -48,10 +47,7 @@ public class ClassAccess implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            value = ObjectValue.of(valueType);
-        }
-        return value;
+        return ObjectValue.of(valueType.getTypeClass());
     }
 
     @Override

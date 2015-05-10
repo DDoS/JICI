@@ -36,7 +36,6 @@ public class BooleanLogic implements Expression {
     private final Expression right;
     private final Symbol operator;
     private ValueType valueType = null;
-    private Value value = null;
 
     public BooleanLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -62,21 +61,16 @@ public class BooleanLogic implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            switch (operator.getID()) {
-                case SYMBOL_BOOLEAN_AND:
-                    value = doBooleanAND(leftValue, rightValue);
-                    break;
-                case SYMBOL_BOOLEAN_OR:
-                    value = doBooleanOR(leftValue, rightValue);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for boolean logic: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        switch (operator.getID()) {
+            case SYMBOL_BOOLEAN_AND:
+                return doBooleanAND(leftValue, rightValue);
+            case SYMBOL_BOOLEAN_OR:
+                return doBooleanOR(leftValue, rightValue);
+            default:
+                throw new IllegalArgumentException("Invalid operator for boolean logic: " + operator);
         }
-        return value;
     }
 
     private Value doBooleanAND(Value leftValue, Value rightValue) {

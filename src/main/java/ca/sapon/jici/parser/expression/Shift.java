@@ -37,7 +37,6 @@ public class Shift implements Expression {
     private final Symbol operator;
     private ValueType valueType = null;
     private ValueType shiftType = null;
-    private Value value = null;
 
     public Shift(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -64,26 +63,20 @@ public class Shift implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            final ValueKind leftWidenKind = valueType.getKind();
-            final ValueKind rightWidenKind = shiftType.getKind();
-            switch (operator.getID()) {
-                case SYMBOL_LOGICAL_LEFT_SHIFT:
-                    value = doLogicalLeftShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
-                    break;
-                case SYMBOL_LOGICAL_RIGHT_SHIFT:
-                    value = doLogicalRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
-                    break;
-                case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
-                    value = doArithmeticRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for shift: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        final ValueKind leftWidenKind = valueType.getKind();
+        final ValueKind rightWidenKind = shiftType.getKind();
+        switch (operator.getID()) {
+            case SYMBOL_LOGICAL_LEFT_SHIFT:
+                return doLogicalLeftShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
+            case SYMBOL_LOGICAL_RIGHT_SHIFT:
+                return doLogicalRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
+            case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
+                return doArithmeticRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for shift: " + operator);
         }
-        return value;
     }
 
     private Value doLogicalLeftShift(Value leftValue, ValueKind leftWidenKind, Value rightValue, ValueKind rightWidenKind) {

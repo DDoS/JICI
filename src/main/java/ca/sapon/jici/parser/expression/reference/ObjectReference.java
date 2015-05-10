@@ -26,15 +26,12 @@ package ca.sapon.jici.parser.expression.reference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ObjectReference implements Reference {
@@ -65,28 +62,21 @@ public class ObjectReference implements Reference {
 
     @Override
     public Field getField(Environment environment, Identifier name) {
-        return null;
+        final ValueType valueType = geValueType(environment);
+        final Field field = valueType.getField(name.getSource());
+        if (field == null) {
+            throw new IllegalArgumentException("No field named " + name);
+        }
+        return field;
     }
 
     @Override
     public Method getMethod(Environment environment, Identifier name, ValueType[] arguments) {
-        final String nameString = name.getSource();
-        // try to find a matching method
-        final Method[] methods = geValueType(environment).getTypeClass().getMethods();
-        // look for matches in length and name
-        final Map<Method, Class<?>[]> candidates = new HashMap<>();
-        for (Method candidate : methods) {
-            if (candidate.getName().equals(nameString)) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                if (parameterTypes.length == arguments.length) {
-                    candidates.put(candidate, parameterTypes);
-                }
-            }
-        }
-        // try to resolve the overloads
-        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
+        final ValueType valueType = geValueType(environment);
+        final Method method = valueType.getMethod(name.getSource(), arguments);
         if (method == null) {
-            throw new IllegalArgumentException("No method for signature: " + nameString + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+            throw new IllegalArgumentException("No method for signature: "
+                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
         }
         return method;
     }

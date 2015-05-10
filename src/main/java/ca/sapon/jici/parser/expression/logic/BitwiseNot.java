@@ -34,7 +34,6 @@ import ca.sapon.jici.parser.expression.Expression;
 public class BitwiseNot implements Expression {
     private final Expression inner;
     private ValueType valueType = null;
-    private Value value = null;
 
     public BitwiseNot(Expression inner) {
         this.inner = inner;
@@ -54,15 +53,8 @@ public class BitwiseNot implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value innerValue = inner.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
-            value = doBitwiseNot(innerValue, widenKind);
-        }
-        return value;
-    }
-
-    private Value doBitwiseNot(Value innerValue, ValueKind widenKind) {
+        final Value innerValue = inner.getValue(environment);
+        final ValueKind widenKind = valueType.getKind();
         switch (widenKind) {
             case INT:
                 return IntValue.of(~innerValue.asInt());

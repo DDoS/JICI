@@ -38,7 +38,6 @@ public class Comparison implements Expression {
     private final Symbol operator;
     private ValueType valueType = null;
     private ValueType widenType = null;
-    private Value value = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -65,28 +64,21 @@ public class Comparison implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = widenType.getKind();
-            switch (operator.getID()) {
-                case SYMBOL_LESSER:
-                    value = doLesserThan(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_LESSER_OR_EQUAL:
-                    value = doLesserOrEqualTo(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_GREATER:
-                    value = doGreaterThan(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_GREATER_OR_EQUAL:
-                    value = doGreaterOrEqualTo(leftValue, rightValue, widenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for comparison: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        final ValueKind widenKind = widenType.getKind();
+        switch (operator.getID()) {
+            case SYMBOL_LESSER:
+                return doLesserThan(leftValue, rightValue, widenKind);
+            case SYMBOL_LESSER_OR_EQUAL:
+                return doLesserOrEqualTo(leftValue, rightValue, widenKind);
+            case SYMBOL_GREATER:
+                return doGreaterThan(leftValue, rightValue, widenKind);
+            case SYMBOL_GREATER_OR_EQUAL:
+                return doGreaterOrEqualTo(leftValue, rightValue, widenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for comparison: " + operator);
         }
-        return value;
     }
 
     private Value doLesserThan(Value leftValue, Value rightValue, ValueKind widenKind) {

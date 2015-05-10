@@ -39,7 +39,6 @@ public class Arithmetic implements Expression {
     private final Expression right;
     private final Symbol operator;
     private ValueType valueType = null;
-    private Value value = null;
 
     public Arithmetic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -65,31 +64,23 @@ public class Arithmetic implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
-            switch (operator.getID()) {
-                case SYMBOL_PLUS:
-                    value = doAdd(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_MINUS:
-                    value = doSubtract(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_MULTIPLY:
-                    value = doMultiply(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_DIVIDE:
-                    value = doDivide(leftValue, rightValue, widenKind);
-                    break;
-                case SYMBOL_MODULO:
-                    value = doModulo(leftValue, rightValue, widenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
-            }
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        final ValueKind widenKind = valueType.getKind();
+        switch (operator.getID()) {
+            case SYMBOL_PLUS:
+                return doAdd(leftValue, rightValue, widenKind);
+            case SYMBOL_MINUS:
+                return doSubtract(leftValue, rightValue, widenKind);
+            case SYMBOL_MULTIPLY:
+                return doMultiply(leftValue, rightValue, widenKind);
+            case SYMBOL_DIVIDE:
+                return doDivide(leftValue, rightValue, widenKind);
+            case SYMBOL_MODULO:
+                return doModulo(leftValue, rightValue, widenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
         }
-        return value;
     }
 
     private Value doAdd(Value leftValue, Value rightValue, ValueKind widenKind) {

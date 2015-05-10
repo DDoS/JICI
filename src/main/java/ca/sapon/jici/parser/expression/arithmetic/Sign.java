@@ -38,7 +38,6 @@ public class Sign implements Expression {
     private final Expression inner;
     private final Symbol operator;
     private ValueType valueType = null;
-    private Value value = null;
 
     public Sign(Expression inner, Symbol operator) {
         this.inner = inner;
@@ -59,21 +58,16 @@ public class Sign implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value innerValue = inner.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
-            switch (operator.getID()) {
-                case SYMBOL_PLUS:
-                    value = doReaffirm(innerValue, widenKind);
-                    break;
-                case SYMBOL_MINUS:
-                    value = doNegate(innerValue, widenKind);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid operator for sign: " + operator);
-            }
+        final Value innerValue = inner.getValue(environment);
+        final ValueKind widenKind = valueType.getKind();
+        switch (operator.getID()) {
+            case SYMBOL_PLUS:
+                return doReaffirm(innerValue, widenKind);
+            case SYMBOL_MINUS:
+                return doNegate(innerValue, widenKind);
+            default:
+                throw new IllegalArgumentException("Invalid operator for sign: " + operator);
         }
-        return value;
     }
 
     private Value doNegate(Value innerValue, ValueKind widenKind) {

@@ -37,7 +37,6 @@ public class Conditional implements Expression {
     private final Expression left;
     private final Expression right;
     private ValueType valueType = null;
-    private Value value = null;
 
     public Conditional(Expression test, Expression left, Expression right) {
         this.test = test;
@@ -49,47 +48,45 @@ public class Conditional implements Expression {
     public ValueType geValueType(Environment environment) {
         if (valueType == null) {
             final ValueType testType = test.geValueType(environment).unbox();
-            final ValueType leftType = left.geValueType(environment).unbox();
-            final ValueType rightType = right.geValueType(environment).unbox();
+            ValueType leftType = left.geValueType(environment);
+            ValueType rightType = right.geValueType(environment);
             if (!testType.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + testType.getName());
             }
             if (leftType.is(rightType.getTypeClass())) {
                 // both same type to that type
-                valueType = leftType;
-            } else if (leftType.isObject() || rightType.isObject()) {
-                // for objects return a union
-                valueType = new ObjectUnionValueType(leftType.box(),  rightType.box());
-            } else if (left instanceof IntLiteral && rightType.canNarrowTo(((IntLiteral) left).asInt())) {
-                // left constant numeric that narrows to right, use right
-                valueType = rightType;
-            } else if (right instanceof IntLiteral && leftType.canNarrowTo(((IntLiteral) right).asInt())) {
-                // right constant numeric that narrows to left, use left
-                valueType = leftType;
-            } else if (leftType.is(byte.class) && rightType.is(short.class) || leftType.is(short.class) && rightType.is(byte.class)) {
-                // one byte and other short to short
-                valueType = PrimitiveValueType.of(short.class);
-            } else {
-                // else use binary widening
-                valueType = leftType.binaryWiden(rightType.getTypeClass());
+                return valueType = leftType;
             }
+            leftType = leftType.unbox();
+            rightType = rightType.unbox();
+            if (leftType.isObject() || rightType.isObject()) {
+                // for objects return a union
+                return valueType = new ObjectUnionValueType(leftType.box(), rightType.box());
+            }
+            if (left instanceof IntLiteral && rightType.canNarrowTo(((IntLiteral) left).asInt())) {
+                // left constant numeric that narrows to right, use right
+                return valueType = rightType;
+            }
+            if (right instanceof IntLiteral && leftType.canNarrowTo(((IntLiteral) right).asInt())) {
+                // right constant numeric that narrows to left, use left
+                return valueType = leftType;
+            }
+            if (leftType.is(byte.class) && rightType.is(short.class) || leftType.is(short.class) && rightType.is(byte.class)) {
+                // one byte and other short to short
+                return valueType = PrimitiveValueType.of(short.class);
+            }
+            // else use binary widening
+            return valueType = leftType.binaryWiden(rightType.getTypeClass());
         }
         return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        if (value == null) {
-            final Value tesValue = test.getValue(environment);
-            final Value leftValue = left.getValue(environment);
-            final Value rightValue = right.getValue(environment);
-            final ValueKind widenKind = valueType.getKind();
-            value = doConditional(tesValue, leftValue, rightValue, widenKind);
-        }
-        return value;
-    }
-
-    private Value doConditional(Value testValue, Value leftValue, Value rightValue, ValueKind widenKind) {
+        final Value testValue = test.getValue(environment);
+        final Value leftValue = left.getValue(environment);
+        final Value rightValue = right.getValue(environment);
+        final ValueKind widenKind = valueType.getKind();
         final Value resultValue = testValue.asBoolean() ? leftValue : rightValue;
         if (resultValue.getKind() == widenKind) {
             // prevent useless conversion

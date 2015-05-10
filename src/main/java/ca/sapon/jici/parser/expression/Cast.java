@@ -60,10 +60,12 @@ public class Cast implements Expression {
                 }
             } else {
                 // down or up casts
-                final Class<?> cast = castType.getTypeClass();
                 final Class<?> object = objectType.getTypeClass();
-                if (!cast.isAssignableFrom(object) && !object.isAssignableFrom(cast)) {
-                    failCast(castType, objectType);
+                if (object != null) {
+                    final Class<?> cast = castType.getTypeClass();
+                    if (!cast.isAssignableFrom(object) && !object.isAssignableFrom(cast)) {
+                        failCast(castType, objectType);
+                    }
                 }
             }
             valueType = castType;

@@ -24,7 +24,9 @@
 package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.ClassType;
@@ -32,6 +34,8 @@ import ca.sapon.jici.parser.type.ClassType;
 public class TypeCheck implements Expression {
     private final Expression object;
     private final ClassType type;
+    private ValueType valueType = null;
+    private ValueType checkType = null;
 
     public TypeCheck(Expression object, ClassType type) {
         this.object = object;
@@ -39,17 +43,26 @@ public class TypeCheck implements Expression {
     }
 
     @Override
-    public String toString() {
-        return "TypeCheck(" + object + " instanceof " + type + ")";
-    }
-
-    @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            final ValueType objectType = object.geValueType(environment);
+            if (objectType.isPrimitive()) {
+                throw new IllegalArgumentException("Cannot type check a primitive: " + objectType.getName());
+            }
+            checkType = type.getValueType(environment);
+            valueType = PrimitiveValueType.of(boolean.class);
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        final Value value = object.getValue(environment);
+        return BooleanValue.of(checkType.getTypeClass().isInstance(value.asObject()));
+    }
+
+    @Override
+    public String toString() {
+        return "TypeCheck(" + object + " instanceof " + type + ")";
     }
 }

@@ -37,8 +37,8 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "import java.lang.Float; import java.lang.Object;"
-                + "((Object) new Float(0)).toString();";
+        final String source = "import java.lang.Float; import java.lang.Boolean;"
+                + "new Boolean(new Float(0) instanceof Boolean);";
 
         System.out.println("Source:\n" + source);
 

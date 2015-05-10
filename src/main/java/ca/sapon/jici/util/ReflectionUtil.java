@@ -69,6 +69,9 @@ public class ReflectionUtil {
         for (final Entry<C, Class<?>[]> entry : candidates.entrySet()) {
             final Class<?>[] parameters = entry.getValue();
             for (Class<?>[] challenges : candidates.values()) {
+                if (challenges == parameters) {
+                    continue;
+                }
                 for (int i = 0; i < parameters.length; i++) {
                     // remove when the challenge is narrower than the parameter
                     if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {

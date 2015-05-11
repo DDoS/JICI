@@ -44,10 +44,9 @@ public class Import implements Statement {
         if (_package) {
             throw new IllegalArgumentException("Package imports are not supported");
         }
-        final String nameString = StringUtil.toString(name, ".");
-        final Class<?> _class = ReflectionUtil.lookupClass(nameString);
+        final Class<?> _class = ReflectionUtil.disambiguateClass(name);
         if (_class == null) {
-            throw new IllegalArgumentException("Class not found: " + nameString);
+            throw new IllegalArgumentException("Class not found: " + StringUtil.toString(name, "."));
         }
         environment.importClass(_class);
     }

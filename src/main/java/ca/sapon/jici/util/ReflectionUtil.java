@@ -23,7 +23,9 @@
  */
 package ca.sapon.jici.util;
 
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -35,12 +37,44 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
  *
  */
 public class ReflectionUtil {
+    public static Class<?> disambiguateClass(List<?> name) {
+        final int size = name.size();
+        String nameString = "";
+        Class<?> _class = null;
+        int i = 0;
+        while (i < size) {
+            nameString += name.get(i++).toString();
+            if ((_class = lookupClass(nameString)) != null) {
+                break;
+            }
+            nameString += ".";
+        }
+        while (i < size) {
+            if ((_class = lookupNestedClass(_class, name.get(i++).toString())) != null) {
+                break;
+            }
+        }
+        return _class;
+    }
+
     public static Class<?> lookupClass(String name) {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException exception) {
             return null;
         }
+    }
+
+    public static Class<?> lookupNestedClass(Class<?> enclosing, String name) {
+        for (Class<?> nested : enclosing.getDeclaredClasses()) {
+            if (nested.getSimpleName().equals(name)) {
+                final int modifiers = nested.getModifiers();
+                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)) {
+                    return nested;
+                }
+            }
+        }
+        return null;
     }
 
     public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, ValueType[] arguments) {

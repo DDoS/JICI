@@ -49,7 +49,11 @@ public class AmbiguousReference implements Reference {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            reference = (Reference) disambiguate(environment, name);
+            final Expression resolved = disambiguate(environment, name);
+            if (!(resolved instanceof Reference)) {
+                throw new IllegalArgumentException("Not a reference");
+            }
+            reference = (Reference) resolved;
             valueType = reference.getValueType(environment);
         }
         return valueType;

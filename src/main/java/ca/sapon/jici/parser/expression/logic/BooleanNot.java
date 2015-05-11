@@ -39,9 +39,9 @@ public class BooleanNot implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType innerClass = inner.geValueType(environment).unbox();
+            final ValueType innerClass = inner.getValueType(environment).unbox();
             if (!innerClass.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + innerClass.getName());
             }

@@ -42,7 +42,7 @@ public class IndexAccess implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         return null;
     }
 

@@ -47,17 +47,17 @@ public class AmbiguousCall implements Expression, Statement {
 
     @Override
     public void execute(Environment environment) {
-        geValueType(environment);
+        getValueType(environment);
         getValue(environment);
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             final int lastIndex = name.size() - 1;
             final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
             call = new MethodCall(resolved, name.get(lastIndex), arguments);
-            valueType = call.geValueType(environment);
+            valueType = call.getValueType(environment);
         }
         return valueType;
     }

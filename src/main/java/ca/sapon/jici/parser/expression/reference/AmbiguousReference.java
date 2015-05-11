@@ -47,10 +47,10 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             reference = (Reference) disambiguate(environment, name);
-            valueType = reference.geValueType(environment);
+            valueType = reference.getValueType(environment);
         }
         return valueType;
     }
@@ -108,7 +108,7 @@ public class AmbiguousReference implements Reference {
         }
 
         @Override
-        public ValueType geValueType(Environment environment) {
+        public ValueType getValueType(Environment environment) {
             if (valueType == null) {
                 valueType = _class.isPrimitive() ? PrimitiveValueType.of(_class) : new ObjectValueType(_class);
             }

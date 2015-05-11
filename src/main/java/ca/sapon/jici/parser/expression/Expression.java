@@ -28,7 +28,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 
 public interface Expression {
-    ValueType geValueType(Environment environment);
+    ValueType getValueType(Environment environment);
 
     Value getValue(Environment environment);
 

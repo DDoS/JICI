@@ -39,10 +39,10 @@ public class Cast implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             final ValueType castType = type.getValueType(environment);
-            final ValueType objectType = object.geValueType(environment);
+            final ValueType objectType = object.getValueType(environment);
             // cast primitive to primitive
             // cast boolean to boolean
             // cannot cast to void

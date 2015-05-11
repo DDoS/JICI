@@ -45,10 +45,10 @@ public class Shift implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType leftType = left.geValueType(environment).unbox();
-            final ValueType rightType = right.geValueType(environment).unbox();
+            final ValueType leftType = left.getValueType(environment).unbox();
+            final ValueType rightType = right.getValueType(environment).unbox();
             if (!leftType.isIntegral()) {
                 throw new IllegalArgumentException("Not an integral type: " + leftType.getName());
             }

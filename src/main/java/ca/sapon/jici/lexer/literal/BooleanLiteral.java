@@ -109,7 +109,7 @@ public class BooleanLiteral extends Literal implements Value {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
     }
 

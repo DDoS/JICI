@@ -40,7 +40,7 @@ public class ClassAccess implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             typeClass = type.getValueType(environment).getTypeClass();
             valueType = new ObjectValueType(Class.class);

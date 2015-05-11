@@ -50,7 +50,7 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         return null;
     }
 

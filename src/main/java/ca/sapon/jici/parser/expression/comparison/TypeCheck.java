@@ -43,9 +43,9 @@ public class TypeCheck implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType objectType = object.geValueType(environment);
+            final ValueType objectType = object.getValueType(environment);
             if (objectType.isPrimitive()) {
                 throw new IllegalArgumentException("Cannot type check a primitive: " + objectType.getName());
             }

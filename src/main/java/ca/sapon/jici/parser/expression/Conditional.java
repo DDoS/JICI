@@ -45,11 +45,11 @@ public class Conditional implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType testType = test.geValueType(environment).unbox();
-            ValueType leftType = left.geValueType(environment);
-            ValueType rightType = right.geValueType(environment);
+            final ValueType testType = test.getValueType(environment).unbox();
+            ValueType leftType = left.getValueType(environment);
+            ValueType rightType = right.getValueType(environment);
             if (!testType.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + testType.getName());
             }

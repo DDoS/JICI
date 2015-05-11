@@ -113,7 +113,7 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
     }
 

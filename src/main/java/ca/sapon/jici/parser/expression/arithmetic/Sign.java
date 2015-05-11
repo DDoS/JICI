@@ -45,9 +45,9 @@ public class Sign implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType innerType = inner.geValueType(environment).unbox();
+            final ValueType innerType = inner.getValueType(environment).unbox();
             if (!innerType.isNumeric()) {
                 throw new IllegalArgumentException("Not a numeric type: " + innerType.getName());
             }

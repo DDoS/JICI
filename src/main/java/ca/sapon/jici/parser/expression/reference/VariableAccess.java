@@ -40,7 +40,7 @@ public class VariableAccess implements Reference {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             valueType = environment.getVariableType(name);
         }

@@ -52,19 +52,19 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public void execute(Environment environment) {
-        geValueType(environment);
+        getValueType(environment);
         getValue(environment);
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             // get types
             valueType = type.getValueType(environment);
             final int size = arguments.size();
             final ValueType[] argumentTypes = new ValueType[size];
             for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).geValueType(environment);
+                argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
             // try to find a matching constructor
             final Constructor<?>[] constructors = valueType.getTypeClass().getConstructors();

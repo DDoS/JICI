@@ -53,19 +53,19 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public void execute(Environment environment) {
-        geValueType(environment);
+        getValueType(environment);
         getValue(environment);
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
             final int size = arguments.size();
             final ValueType[] argumentTypes = new ValueType[size];
             for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).geValueType(environment);
+                argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
-            callable = object.geValueType(environment).getMethod(method.getSource(), argumentTypes);
+            callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
             final Class<?> returnType = callable.getReturnType();
             valueType = returnType.isPrimitive() ? PrimitiveValueType.of(returnType) : new ObjectValueType(returnType);
         }

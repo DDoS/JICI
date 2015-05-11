@@ -40,9 +40,9 @@ public class BitwiseNot implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType innerType = inner.geValueType(environment).unbox();
+            final ValueType innerType = inner.getValueType(environment).unbox();
             if (!innerType.isIntegral()) {
                 throw new IllegalArgumentException("Not an integral type: " + innerType.getName());
             }

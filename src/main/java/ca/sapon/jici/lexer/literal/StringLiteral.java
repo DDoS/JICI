@@ -131,7 +131,7 @@ public class StringLiteral extends Literal implements Value {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         return new ObjectValueType(getTypeClass());
     }
 

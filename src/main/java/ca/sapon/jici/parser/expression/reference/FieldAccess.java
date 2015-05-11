@@ -45,9 +45,9 @@ public class FieldAccess implements Reference {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            member = object.geValueType(environment).getField(field.getSource());
+            member = object.getValueType(environment).getField(field.getSource());
             final Class<?> type = member.getType();
             valueType = type.isPrimitive() ? PrimitiveValueType.of(type) : new ObjectValueType(type);
         }

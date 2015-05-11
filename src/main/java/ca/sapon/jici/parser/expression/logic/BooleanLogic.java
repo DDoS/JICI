@@ -44,10 +44,10 @@ public class BooleanLogic implements Expression {
     }
 
     @Override
-    public ValueType geValueType(Environment environment) {
+    public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final ValueType leftClass = left.geValueType(environment).unbox();
-            final ValueType rightClass = right.geValueType(environment).unbox();
+            final ValueType leftClass = left.getValueType(environment).unbox();
+            final ValueType rightClass = right.getValueType(environment).unbox();
             if (!leftClass.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + leftClass.getName());
             }

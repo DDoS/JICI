@@ -55,6 +55,7 @@ public class PrimitiveValueType implements ValueType {
         ALL_TYPES.put(long.class, new PrimitiveValueType(long.class, ValueKind.LONG));
         ALL_TYPES.put(float.class, new PrimitiveValueType(float.class, ValueKind.FLOAT));
         ALL_TYPES.put(double.class, new PrimitiveValueType(double.class, ValueKind.DOUBLE));
+        ALL_TYPES.put(void.class, new PrimitiveValueType(void.class, ValueKind.VOID));
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -178,11 +179,17 @@ public class PrimitiveValueType implements ValueType {
 
     @Override
     public Field getField(String name) {
+        if (type == void.class) {
+            throw new IllegalArgumentException("Cannot dereference void");
+        }
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
+        if (type == void.class) {
+            throw new IllegalArgumentException("Cannot dereference void");
+        }
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 

@@ -179,6 +179,23 @@ public enum ValueKind {
             return DoubleValue.of(value.asDouble());
         }
     },
+    VOID(Void.class) {
+        @Override
+        public Value defaultValue() {
+            throw new IllegalArgumentException("Void has no value");
+        }
+
+        @Override
+        public Value wrap(Object object) {
+            throw new IllegalArgumentException("Cannot cast an object to void");
+
+        }
+
+        @Override
+        public Value convert(Value value) {
+            throw new IllegalArgumentException("Cannot convert anything to void");
+        }
+    },
     OBJECT(null) {
         @Override
         public ObjectValue defaultValue() {

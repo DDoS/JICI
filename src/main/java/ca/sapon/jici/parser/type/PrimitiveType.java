@@ -65,6 +65,9 @@ public class PrimitiveType implements Type {
                 case KEYWORD_DOUBLE:
                     _class = double.class;
                     break;
+                case KEYWORD_VOID:
+                    _class = void.class;
+                    break;
                 default:
                     throw new IllegalArgumentException("Not a primitive type: " + type);
             }

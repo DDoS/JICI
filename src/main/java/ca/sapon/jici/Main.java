@@ -37,8 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "import ca.sapon.jici.Main;"
-                + "new Main.A().t();";
+        final String source = "void.class.getName();";
 
         System.out.println("Source:\n" + source);
 
@@ -75,12 +74,6 @@ public class Main {
         } catch (LexerException | ParserException exception) {
             System.out.printf("Exception: %s\n", exception.getMessage());
             exception.printStackTrace();
-        }
-    }
-
-    public static class A {
-        public void t() {
-            System.out.println("Hello");
         }
     }
 }

@@ -45,6 +45,7 @@ public class Cast implements Expression {
             final ValueType objectType = object.geValueType(environment);
             // cast primitive to primitive
             // cast boolean to boolean
+            // cannot cast to void
             // cast object to object
             // box to unbox or unbox to box
             if (castType.isPrimitive()) {
@@ -52,6 +53,9 @@ public class Cast implements Expression {
                     failCast(castType, objectType);
                 }
                 if (castType.isBoolean() ^ objectType.isBoolean()) {
+                    failCast(castType, objectType);
+                }
+                if (castType.is(void.class)) {
                     failCast(castType, objectType);
                 }
             } else if (objectType.isPrimitive()) {

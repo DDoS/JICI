@@ -37,7 +37,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "java.lang.System.out.println(\"I'm alive\");";
+        final String source = "System.out.println(\"I'm alive\");";
 
         System.out.println("Source:\n" + source);
 

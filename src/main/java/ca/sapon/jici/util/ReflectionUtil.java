@@ -24,10 +24,14 @@
 package ca.sapon.jici.util;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -37,6 +41,27 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
  *
  */
 public class ReflectionUtil {
+    public static final Set<String> JAVA_LANG_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+                    "Appendable", "AutoCloseable", "CharSequence", "Cloneable", "Comparable", "Iterable", "Readable",
+                    "Runnable", "Boolean", "Byte", "Character", "Class", "ClassLoader", "ClassValue", "Compiler", "Double",
+                    "Enum", "Float", "InheritableThreadLocal", "Integer", "Long", "Math", "Number", "Object", "Package",
+                    "Process", "ProcessBuilder", "Runtime", "RuntimePermission", "SecurityManager", "Short", "StackTraceElement",
+                    "StrictMath", "String", "StringBuffer", "StringBuilder", "System", "Thread", "ThreadGroup", "ThreadLocal",
+                    "Throwable", "Void", "ArithmeticException", "ArrayIndexOutOfBoundsException", "ArrayStoreException",
+                    "ClassCastException", "ClassNotFoundException", "CloneNotSupportedException", "EnumConstantNotPresentException",
+                    "Exception", "IllegalAccessException", "IllegalArgumentException", "IllegalMonitorStateException",
+                    "IllegalStateException", "IllegalThreadStateException", "IndexOutOfBoundsException", "InstantiationException",
+                    "InterruptedException", "NegativeArraySizeException", "NoSuchFieldException", "NoSuchMethodException",
+                    "NullPointerException", "NumberFormatException", "ReflectiveOperationException", "RuntimeException",
+                    "SecurityException", "StringIndexOutOfBoundsException", "TypeNotPresentException", "UnsupportedOperationException",
+                    "AbstractMethodError", "AssertionError", "BootstrapMethodError", "ClassCircularityError", "ClassFormatError",
+                    "Error", "ExceptionInInitializerError", "IllegalAccessError", "IncompatibleClassChangeError", "InstantiationError",
+                    "InternalError", "LinkageError", "NoClassDefFoundError", "NoSuchFieldError", "NoSuchMethodError", "OutOfMemoryError",
+                    "StackOverflowError", "ThreadDeath", "UnknownError", "UnsatisfiedLinkError", "UnsupportedClassVersionError",
+                    "VerifyError", "VirtualMachineError", "Deprecated", "Override", "SafeVarargs", "SuppressWarnings"
+            ))
+    );
+
     public static Class<?> findClass(List<?> name) {
         return decodeClassName(name, false);
     }

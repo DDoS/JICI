@@ -29,10 +29,22 @@ import java.util.Map;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Environment {
-    private final Map<String, Class<?>> classes = new HashMap<>();
+    private static final Map<String, Class<?>> DEFAULT_CLASSES = new HashMap<>();
+    private final Map<String, Class<?>> classes = new HashMap<>(DEFAULT_CLASSES);
     private final Map<String, Variable> variables = new HashMap<>();
+
+    static {
+        for (String name : ReflectionUtil.JAVA_LANG_CLASSES) {
+            try {
+                DEFAULT_CLASSES.put(name, Class.forName("java.lang." + name));
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("class java.lang." + name + " not found");
+            }
+        }
+    }
 
     public void importClass(Class<?> _class) {
         final String name = _class.getCanonicalName();

@@ -35,6 +35,7 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+import ca.sapon.jici.parser.expression.AmbiguousCall;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
 import ca.sapon.jici.parser.expression.Conditional;
@@ -632,13 +633,11 @@ public class Parser {
                             }
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
+                                final List<Expression> arguments = parseArguments(tokens);
                                 if (name.size() == 1) {
-                                    throw new ParseError("Contextual method calls are not supported");
+                                    throw new ParseError("Local methods are not supported");
                                 } else {
-                                    final List<Expression> arguments = parseArguments(tokens);
-                                    final Identifier method = name.remove(name.size() - 1);
-                                    final AmbiguousReference reference = new AmbiguousReference(name);
-                                    return new MethodCall(reference, method, arguments);
+                                    return new AmbiguousCall(name, arguments);
                                 }
                             }
                         }

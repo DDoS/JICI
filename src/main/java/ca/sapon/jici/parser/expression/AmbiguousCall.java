@@ -21,38 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.statement;
+package ca.sapon.jici.parser.expression;
 
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
+import ca.sapon.jici.parser.expression.reference.MethodCall;
+import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
-public class Import implements Statement {
+public class AmbiguousCall implements Expression, Statement {
     private final List<Identifier> name;
-    private final boolean _package;
+    private final List<Expression> arguments;
+    private ValueType valueType = null;
+    private MethodCall call = null;
 
-    public Import(List<Identifier> name, boolean _package) {
+    public AmbiguousCall(List<Identifier> name, List<Expression> arguments) {
         this.name = name;
-        this._package = _package;
+        this.arguments = arguments;
     }
 
     @Override
     public void execute(Environment environment) {
-        if (_package) {
-            throw new IllegalArgumentException("Package imports are not supported");
+        geValueType(environment);
+        getValue(environment);
+    }
+
+    @Override
+    public ValueType geValueType(Environment environment) {
+        if (valueType == null) {
+            final int lastIndex = name.size() - 1;
+            final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
+            call = new MethodCall(resolved, name.get(lastIndex), arguments);
+            valueType = call.geValueType(environment);
         }
-        final Class<?> _class = ReflectionUtil.findClass(name);
-        if (_class == null) {
-            throw new IllegalArgumentException("Class not found: " + StringUtil.toString(name, "."));
-        }
-        environment.importClass(_class);
+        return valueType;
+    }
+
+    @Override
+    public Value getValue(Environment environment) {
+        return call.getValue(environment);
     }
 
     @Override
     public String toString() {
-        return "Import(" + StringUtil.toString(name, ".") + (_package ? ".*" : "") + ")";
+        return "MethodCall(" + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

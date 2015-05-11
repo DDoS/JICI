@@ -45,11 +45,14 @@ public class ClassType implements Type {
         if (valueType == null) {
             Class<?> _class = environment.findClass(type.get(0));
             if (_class == null) {
-                _class = ReflectionUtil.disambiguateClass(type);
+                _class = ReflectionUtil.findClass(type);
             } else {
                 final int size = type.size();
                 for (int i = 1; i < size; i++) {
                     _class = ReflectionUtil.lookupNestedClass(_class, type.get(i).getSource());
+                    if (_class == null) {
+                        break;
+                    }
                 }
             }
             if (_class == null) {

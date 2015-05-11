@@ -23,16 +23,24 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
+    private ValueType valueType = null;
+    private Reference reference = null;
 
     public AmbiguousReference(List<Identifier> name) {
         this.name = name;
@@ -40,20 +48,81 @@ public class AmbiguousReference implements Reference {
 
     @Override
     public ValueType geValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            reference = (Reference) disambiguate(environment, name);
+            valueType = reference.geValueType(environment);
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        return reference.getValue(environment);
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
+        reference.setValue(environment, value);
     }
 
     @Override
     public String toString() {
         return StringUtil.toString(name, ".");
+    }
+
+    public static Expression disambiguate(Environment environment, List<Identifier> name) {
+        Expression resolved;
+        final List<Identifier> accesses;
+        final Identifier identifier = name.get(0);
+        // variable followed by one or more field accesses
+        // class followed by one or more field accesses
+        if (environment.hasVariable(identifier)) {
+            resolved = new VariableAccess(identifier);
+            accesses = name.subList(1, name.size());
+        } else {
+            Class<?> _class = environment.findClass(identifier);
+            if (_class != null) {
+                resolved = new StaticAccess(_class);
+                accesses = name.subList(1, name.size());
+            } else {
+                accesses = new ArrayList<>(name);
+                _class = ReflectionUtil.disambiguateClass(accesses);
+                if (_class == null) {
+                    throw new IllegalArgumentException("Unknown identifier " + StringUtil.toString(name, "."));
+                }
+                resolved = new StaticAccess(_class);
+            }
+        }
+        for (Identifier access : accesses) {
+            resolved = new FieldAccess(resolved, access);
+        }
+        return resolved;
+    }
+
+    private static class StaticAccess implements Expression {
+        private final Class<?> _class;
+        private ValueType valueType = null;
+
+        private StaticAccess(Class<?> _class) {
+            this._class = _class;
+        }
+
+        @Override
+        public ValueType geValueType(Environment environment) {
+            if (valueType == null) {
+                valueType = _class.isPrimitive() ? PrimitiveValueType.of(_class) : new ObjectValueType(_class);
+            }
+            return valueType;
+        }
+
+        @Override
+        public Value getValue(Environment environment) {
+            return ObjectValue.of(null);
+        }
+
+        @Override
+        public String toString() {
+            return _class.getCanonicalName();
+        }
     }
 }

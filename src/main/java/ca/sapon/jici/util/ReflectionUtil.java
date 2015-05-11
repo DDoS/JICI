@@ -37,7 +37,15 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
  *
  */
 public class ReflectionUtil {
+    public static Class<?> findClass(List<?> name) {
+        return decodeClassName(name, false);
+    }
+
     public static Class<?> disambiguateClass(List<?> name) {
+        return decodeClassName(name, true);
+    }
+
+    private static Class<?> decodeClassName(List<?> name, boolean trim) {
         final int size = name.size();
         String nameString = "";
         Class<?> _class = null;
@@ -57,7 +65,11 @@ public class ReflectionUtil {
             _class = nested;
             i++;
         }
-        name.subList(0, i).clear();
+        if (trim) {
+            name.subList(0, i).clear();
+        } else if (i < size) {
+            _class = null;
+        }
         return _class;
     }
 

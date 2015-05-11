@@ -26,6 +26,8 @@ package ca.sapon.jici.parser.statement;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
@@ -34,6 +36,7 @@ import ca.sapon.jici.util.StringUtil;
 public class Declaration implements Statement {
     private final Type type;
     private final List<Variable> variables;
+    private ValueType valueType = null;
 
     public Declaration(Type type, List<Variable> variables) {
         this.type = type;
@@ -42,6 +45,24 @@ public class Declaration implements Statement {
 
     @Override
     public void execute(Environment environment) {
+        if (valueType == null) {
+            final ValueType declarationType = type.getValueType(environment);
+            for (Variable variable : variables) {
+                final ValueType variableType = variable.getValueType(environment);
+                if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {
+                    throw new IllegalArgumentException("Cannot cast " + variableType.getName() + " to " + declarationType.getName());
+                }
+            }
+            valueType = declarationType;
+        }
+        for (Variable variable : variables) {
+            final Identifier name = variable.getName();
+            if (variable.hasValue()) {
+                environment.declareVariable(name, valueType, variable.getValue(environment));
+            } else {
+                environment.declareVariable(name, valueType);
+            }
+        }
     }
 
     @Override
@@ -52,6 +73,7 @@ public class Declaration implements Statement {
     public static class Variable {
         private final Identifier name;
         private final Expression value;
+        private ValueType valueType = null;
 
         public Variable(Identifier name) {
             this(name, null);
@@ -60,6 +82,28 @@ public class Declaration implements Statement {
         public Variable(Identifier name, Expression value) {
             this.name = name;
             this.value = value;
+        }
+
+        public Identifier getName() {
+            return name;
+        }
+
+        public boolean hasValue() {
+            return value != null;
+        }
+
+        public Value getValue(Environment environment) {
+            return value == null ? null : value.getValue(environment);
+        }
+
+        private ValueType getValueType(Environment environment) {
+            if (value == null) {
+                return null;
+            }
+            if (valueType == null) {
+                valueType = value.getValueType(environment);
+            }
+            return valueType;
         }
 
         @Override

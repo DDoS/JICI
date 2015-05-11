@@ -33,6 +33,7 @@ import ca.sapon.jici.util.StringUtil;
 public class Import implements Statement {
     private final List<Identifier> name;
     private final boolean _package;
+    private Class<?> _class = null;
 
     public Import(List<Identifier> name, boolean _package) {
         this.name = name;
@@ -44,9 +45,11 @@ public class Import implements Statement {
         if (_package) {
             throw new IllegalArgumentException("Package imports are not supported");
         }
-        final Class<?> _class = ReflectionUtil.findClass(name);
         if (_class == null) {
-            throw new IllegalArgumentException("Class not found: " + StringUtil.toString(name, "."));
+            _class = ReflectionUtil.findClass(name);
+            if (_class == null) {
+                throw new IllegalArgumentException("Class not found: " + StringUtil.toString(name, "."));
+            }
         }
         environment.importClass(_class);
     }

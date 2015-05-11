@@ -50,10 +50,14 @@ public class ReflectionUtil {
             nameString += ".";
         }
         while (i < size) {
-            if ((_class = lookupNestedClass(_class, name.get(i++).toString())) != null) {
+            final Class<?> nested = lookupNestedClass(_class, name.get(i).toString());
+            if (nested == null) {
                 break;
             }
+            _class = nested;
+            i++;
         }
+        name.subList(0, i).clear();
         return _class;
     }
 

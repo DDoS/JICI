@@ -68,6 +68,10 @@ public class Environment {
         return _class;
     }
 
+    public boolean hasClass(Identifier name) {
+        return classes.containsKey(name.getSource());
+    }
+
     public void declareVariable(Identifier name, ValueType type) {
         declareVariable(name, type, type.getKind().defaultValue());
     }
@@ -90,6 +94,10 @@ public class Environment {
 
     public void setVariable(Identifier name, Value value) {
         findVariable(name).setValue(value);
+    }
+
+    public boolean hasVariable(Identifier name) {
+        return variables.containsKey(name.getSource());
     }
 
     private Variable findVariable(Identifier name) {

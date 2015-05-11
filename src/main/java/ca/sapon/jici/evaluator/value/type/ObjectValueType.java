@@ -188,7 +188,8 @@ public class ObjectValueType implements ValueType {
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
         if (to.isPrimitive()) {
-            return PrimitiveValueType.convertibleTo(unbox(from), to);
+            final Class<?> unbox = unbox(from);
+            return unbox.isPrimitive() && PrimitiveValueType.convertibleTo(unbox, to);
         }
         return from == null || to.isAssignableFrom(from);
     }

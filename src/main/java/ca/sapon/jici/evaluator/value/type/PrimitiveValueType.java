@@ -72,14 +72,14 @@ public class PrimitiveValueType implements ValueType {
         BINARY_WIDENERS.put(float.class, new Widener(float.class, byte.class, short.class, char.class, int.class, long.class));
         BINARY_WIDENERS.put(double.class, new Widener(double.class, byte.class, short.class, char.class, int.class, long.class, float.class));
 
-        VALID_CONVERSIONS.put(boolean.class, toSet(Boolean.class, boolean.class));
-        VALID_CONVERSIONS.put(byte.class, toSet(Byte.class, byte.class, short.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(short.class, toSet(Short.class, short.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(char.class, toSet(Character.class, char.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(int.class, toSet(Integer.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(long.class, toSet(Long.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(float.class, toSet(Float.class, float.class, double.class));
-        VALID_CONVERSIONS.put(double.class, toSet(Double.class, double.class));
+        VALID_CONVERSIONS.put(boolean.class, toSet(boolean.class));
+        VALID_CONVERSIONS.put(byte.class, toSet(byte.class, short.class, int.class, long.class, float.class, double.class));
+        VALID_CONVERSIONS.put(short.class, toSet(short.class, int.class, long.class, float.class, double.class));
+        VALID_CONVERSIONS.put(char.class, toSet(char.class, int.class, long.class, float.class, double.class));
+        VALID_CONVERSIONS.put(int.class, toSet(int.class, long.class, float.class, double.class));
+        VALID_CONVERSIONS.put(long.class, toSet(long.class, float.class, double.class));
+        VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
+        VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
         BOXING_CONVERSIONS.put(boolean.class, new ObjectValueType(Boolean.class));
         BOXING_CONVERSIONS.put(byte.class, new ObjectValueType(Byte.class));
@@ -153,7 +153,7 @@ public class PrimitiveValueType implements ValueType {
 
     @Override
     public ObjectValueType box() {
-        return BOXING_CONVERSIONS.get(type);
+        return box(type);
     }
 
     @Override
@@ -198,6 +198,10 @@ public class PrimitiveValueType implements ValueType {
         return getName();
     }
 
+    public static ObjectValueType box(Class<?> type) {
+        return BOXING_CONVERSIONS.get(type);
+    }
+
     public static Class<?> unaryWiden(Class<?> type) {
         return UNARY_WIDENS_INT.contains(type) ? int.class : type;
     }
@@ -207,8 +211,7 @@ public class PrimitiveValueType implements ValueType {
     }
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
-        final Set<Class<?>> conversions = VALID_CONVERSIONS.get(from);
-        return conversions != null && conversions.contains(to);
+        return to.isPrimitive() ? VALID_CONVERSIONS.get(from).contains(to) : box(from).convertibleTo(to);
     }
 
     public static PrimitiveValueType of(Class<?> type) {

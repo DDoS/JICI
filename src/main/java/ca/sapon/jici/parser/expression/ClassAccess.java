@@ -26,12 +26,14 @@ package ca.sapon.jici.parser.expression;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.type.Type;
 
 public class ClassAccess implements Expression {
     private final Type type;
     private ValueType valueType = null;
+    private Class<?> typeClass = null;
 
     public ClassAccess(Type type) {
         this.type = type;
@@ -40,14 +42,15 @@ public class ClassAccess implements Expression {
     @Override
     public ValueType geValueType(Environment environment) {
         if (valueType == null) {
-            valueType = type.getValueType(environment);
+            typeClass = type.getValueType(environment).getTypeClass();
+            valueType = new ObjectValueType(Class.class);
         }
         return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return ObjectValue.of(valueType.getTypeClass());
+        return ObjectValue.of(typeClass);
     }
 
     @Override

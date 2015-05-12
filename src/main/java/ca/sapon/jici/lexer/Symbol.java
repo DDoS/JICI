@@ -45,8 +45,8 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_MULTIPLY, "*");
         add(TokenID.SYMBOL_DIVIDE, "/");
         add(TokenID.SYMBOL_MODULO, "%");
-        add(TokenID.SYMBOL_INCREMENT, "++");
-        add(TokenID.SYMBOL_DECREMENT, "--");
+        add(TokenID.SYMBOL_INCREMENT, "++", "+");
+        add(TokenID.SYMBOL_DECREMENT, "--", "-");
         // bitwise
         add(TokenID.SYMBOL_BITWISE_AND, "&");
         add(TokenID.SYMBOL_BITWISE_OR, "|");

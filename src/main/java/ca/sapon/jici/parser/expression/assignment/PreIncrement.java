@@ -25,37 +25,24 @@ package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
-import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.reference.Reference;
-import ca.sapon.jici.parser.statement.Statement;
 
-public class PreIncrement implements Expression, Statement {
-    private final Reference inner;
-    private final Symbol operator;
-
+public class PreIncrement extends PostIncrement {
     public PreIncrement(Reference inner, Symbol operator) {
-        this.inner = inner;
-        this.operator = operator;
+        super(inner, operator);
     }
 
     @Override
-    public void execute(Environment environment) {
+    public Value getValue(Environment environment) {
+        final Value result = increment.getValue(environment);
+        final Value value = valueType.getKind().convert(result);
+        inner.setValue(environment, value);
+        return value;
     }
 
     @Override
     public String toString() {
         return "PreIncrement(" + operator.toString() + inner.toString() + ")";
-    }
-
-    @Override
-    public ValueType getValueType(Environment environment) {
-        return null;
-    }
-
-    @Override
-    public Value getValue(Environment environment) {
-        return null;
     }
 }

@@ -27,35 +27,59 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class PostIncrement implements Expression, Statement {
-    private final Reference inner;
-    private final Symbol operator;
+    private static final IntLiteral ONE = new IntLiteral("1") {
+        @Override
+        public int asInt() {
+            return 1;
+        }
+    };
+    protected final Reference inner;
+    protected final Expression increment;
+    protected final Symbol operator;
+    protected ValueType valueType = null;
 
     public PostIncrement(Reference inner, Symbol operator) {
         this.inner = inner;
         this.operator = operator;
+        increment = new Arithmetic(inner, ONE, operator.getCompoundAssignOperator());
     }
 
     @Override
     public void execute(Environment environment) {
+        getValueType(environment);
+        getValue(environment);
+    }
+
+    @Override
+    public ValueType getValueType(Environment environment) {
+        if (valueType == null) {
+            increment.getValueType(environment);
+            final ValueType innerType = inner.getValueType(environment).unbox();
+            if (!innerType.isNumeric()) {
+                throw new IllegalArgumentException("Not a numeric type: " + innerType.getName());
+            }
+            valueType = innerType;
+        }
+        return valueType;
+    }
+
+    @Override
+    public Value getValue(Environment environment) {
+        final Value value = inner.getValue(environment);
+        final Value result = increment.getValue(environment);
+        inner.setValue(environment, valueType.getKind().convert(result));
+        return value;
     }
 
     @Override
     public String toString() {
         return "PostIncrement(" + inner.toString() + operator.toString() + ")";
-    }
-
-    @Override
-    public ValueType getValueType(Environment environment) {
-        return null;
-    }
-
-    @Override
-    public Value getValue(Environment environment) {
-        return null;
     }
 }

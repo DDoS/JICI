@@ -50,7 +50,7 @@ public class TypeCheck implements Expression {
                 throw new IllegalArgumentException("Cannot type check a primitive: " + objectType.getName());
             }
             checkType = type.getValueType(environment);
-            valueType = PrimitiveValueType.of(boolean.class);
+            valueType = PrimitiveValueType.THE_BOOLEAN;
         }
         return valueType;
     }

@@ -37,9 +37,10 @@ import ca.sapon.jici.util.StringUtil;
  *
  */
 public class ObjectValueType implements ValueType {
+    public static final ObjectValueType THE_STRING = ObjectValueType.of(String.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
-    protected Class<?> type;
-    protected ValueType unbox = null;
+    private Class<?> type;
+    private ValueType unbox = null;
 
     static {
         UNBOXED_TYPES.put(Boolean.class, boolean.class);
@@ -50,9 +51,10 @@ public class ObjectValueType implements ValueType {
         UNBOXED_TYPES.put(Long.class, long.class);
         UNBOXED_TYPES.put(Float.class, float.class);
         UNBOXED_TYPES.put(Double.class, double.class);
+        UNBOXED_TYPES.put(Void.class, void.class);
     }
 
-    public ObjectValueType(Class<?> type) {
+    protected ObjectValueType(Class<?> type) {
         this.type = type;
     }
 
@@ -63,7 +65,7 @@ public class ObjectValueType implements ValueType {
 
     @Override
     public String getName() {
-        return type == null ? "null" : type.getCanonicalName();
+        return type.getCanonicalName();
     }
 
     @Override
@@ -83,7 +85,7 @@ public class ObjectValueType implements ValueType {
 
     @Override
     public boolean isNull() {
-        return type == null;
+        return false;
     }
 
     @Override
@@ -120,7 +122,9 @@ public class ObjectValueType implements ValueType {
     public ValueType unbox() {
         if (unbox == null) {
             final Class<?> unboxClass = unbox(type);
-            if (unboxClass != null && unboxClass.isPrimitive()) {
+            if (unboxClass == void.class) {
+                unbox = VoidValueType.THE_VOID;
+            } else if (unboxClass != null && unboxClass.isPrimitive()) {
                 unbox = PrimitiveValueType.of(unboxClass);
             } else {
                 unbox = this;
@@ -201,6 +205,10 @@ public class ObjectValueType implements ValueType {
             final Class<?> unbox = unbox(from);
             return unbox.isPrimitive() && PrimitiveValueType.convertibleTo(unbox, to);
         }
-        return from == null || to.isAssignableFrom(from);
+        return to.isAssignableFrom(from);
+    }
+
+    public static ObjectValueType of(Class<?> type) {
+        return new ObjectValueType(type);
     }
 }

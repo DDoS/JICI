@@ -58,7 +58,7 @@ public class ClassType implements Type {
             if (_class == null) {
                 throw new IllegalArgumentException("Class not found: " + toString());
             }
-            valueType = new ObjectValueType(_class);
+            valueType = ObjectValueType.of(_class);
         }
         return valueType;
     }

@@ -56,7 +56,7 @@ public class Arithmetic implements Expression {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
             if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(String.class) || rightType.is(String.class))) {
-                valueType = new ObjectValueType(String.class);
+                valueType = ObjectValueType.THE_STRING;
                 stringConcatenation = true;
             } else {
                 if (!leftType.isNumeric()) {

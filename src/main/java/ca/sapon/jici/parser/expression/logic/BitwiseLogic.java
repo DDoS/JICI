@@ -53,7 +53,7 @@ public class BitwiseLogic implements Expression {
             final ValueType rightType = right.getValueType(environment).unbox();
             if (leftType.isBoolean()) {
                 if (rightType.isBoolean()) {
-                    valueType = PrimitiveValueType.of(boolean.class);
+                    valueType = PrimitiveValueType.THE_BOOLEAN;
                 } else {
                     throw new IllegalArgumentException("Not a boolean type: " + rightType.getName());
                 }

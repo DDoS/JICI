@@ -115,7 +115,7 @@ public class BooleanLiteral extends Literal implements Value {
 
     @Override
     public ValueType getValueType(Environment environment) {
-        return PrimitiveValueType.of(getTypeClass());
+        return PrimitiveValueType.THE_BOOLEAN;
     }
 
     public static boolean is(String source) {

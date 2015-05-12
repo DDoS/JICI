@@ -45,7 +45,7 @@ public class BooleanNot implements Expression {
             if (!innerClass.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + innerClass.getName());
             }
-            valueType = PrimitiveValueType.of(boolean.class);
+            valueType = PrimitiveValueType.THE_BOOLEAN;
         }
         return valueType;
     }

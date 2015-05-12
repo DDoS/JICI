@@ -37,6 +37,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
  *
  */
 public class PrimitiveValueType implements ValueType {
+    public static final PrimitiveValueType THE_BOOLEAN;
     private static final Map<Class<?>, PrimitiveValueType> ALL_TYPES = new HashMap<>();
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
@@ -47,7 +48,9 @@ public class PrimitiveValueType implements ValueType {
     private final ValueKind kind;
 
     static {
-        ALL_TYPES.put(boolean.class, new PrimitiveValueType(boolean.class, ValueKind.BOOLEAN));
+        THE_BOOLEAN = new PrimitiveValueType(boolean.class, ValueKind.BOOLEAN);
+
+        ALL_TYPES.put(boolean.class, THE_BOOLEAN);
         ALL_TYPES.put(byte.class, new PrimitiveValueType(byte.class, ValueKind.BYTE));
         ALL_TYPES.put(short.class, new PrimitiveValueType(short.class, ValueKind.SHORT));
         ALL_TYPES.put(char.class, new PrimitiveValueType(char.class, ValueKind.CHAR));
@@ -55,7 +58,6 @@ public class PrimitiveValueType implements ValueType {
         ALL_TYPES.put(long.class, new PrimitiveValueType(long.class, ValueKind.LONG));
         ALL_TYPES.put(float.class, new PrimitiveValueType(float.class, ValueKind.FLOAT));
         ALL_TYPES.put(double.class, new PrimitiveValueType(double.class, ValueKind.DOUBLE));
-        ALL_TYPES.put(void.class, new PrimitiveValueType(void.class, ValueKind.VOID));
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -80,17 +82,15 @@ public class PrimitiveValueType implements ValueType {
         VALID_CONVERSIONS.put(long.class, toSet(long.class, float.class, double.class));
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
-        VALID_CONVERSIONS.put(void.class, toSet());
 
-        BOXING_CONVERSIONS.put(boolean.class, new ObjectValueType(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, new ObjectValueType(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, new ObjectValueType(Short.class));
-        BOXING_CONVERSIONS.put(char.class, new ObjectValueType(Character.class));
-        BOXING_CONVERSIONS.put(int.class, new ObjectValueType(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, new ObjectValueType(Long.class));
-        BOXING_CONVERSIONS.put(float.class, new ObjectValueType(Float.class));
-        BOXING_CONVERSIONS.put(double.class, new ObjectValueType(Double.class));
-        BOXING_CONVERSIONS.put(void.class, new ObjectValueType(Void.class));
+        BOXING_CONVERSIONS.put(boolean.class, ObjectValueType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, ObjectValueType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, ObjectValueType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, ObjectValueType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, ObjectValueType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, ObjectValueType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, ObjectValueType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, ObjectValueType.of(Double.class));
     }
 
     private PrimitiveValueType(Class<?> type, ValueKind kind) {
@@ -120,7 +120,7 @@ public class PrimitiveValueType implements ValueType {
 
     @Override
     public boolean isVoid() {
-        return type == void.class;
+        return false;
     }
 
     @Override
@@ -191,17 +191,11 @@ public class PrimitiveValueType implements ValueType {
 
     @Override
     public Field getField(String name) {
-        if (type == void.class) {
-            throw new IllegalArgumentException("Cannot dereference void");
-        }
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
-        if (type == void.class) {
-            throw new IllegalArgumentException("Cannot dereference void");
-        }
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 

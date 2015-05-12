@@ -56,7 +56,7 @@ public class Comparison implements Expression {
             if (!rightType.isNumeric()) {
                 throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
             }
-            valueType = PrimitiveValueType.of(boolean.class);
+            valueType = PrimitiveValueType.THE_BOOLEAN;
             widenType = leftType.binaryWiden(rightType.getTypeClass());
         }
         return valueType;

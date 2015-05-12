@@ -30,12 +30,11 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall implements Expression, Statement {
@@ -67,7 +66,7 @@ public class MethodCall implements Expression, Statement {
             }
             callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
             final Class<?> returnType = callable.getReturnType();
-            valueType = returnType.isPrimitive() ? PrimitiveValueType.of(returnType) : new ObjectValueType(returnType);
+            valueType = ReflectionUtil.wrap(returnType);
         }
         return valueType;
     }

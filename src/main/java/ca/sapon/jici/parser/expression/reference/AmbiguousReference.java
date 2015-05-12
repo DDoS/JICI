@@ -29,8 +29,6 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
@@ -114,7 +112,7 @@ public class AmbiguousReference implements Reference {
         @Override
         public ValueType getValueType(Environment environment) {
             if (valueType == null) {
-                valueType = _class.isPrimitive() ? PrimitiveValueType.of(_class) : new ObjectValueType(_class);
+                valueType = ReflectionUtil.wrap(_class);
             }
             return valueType;
         }

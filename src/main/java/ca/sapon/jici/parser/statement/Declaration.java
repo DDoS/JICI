@@ -47,6 +47,9 @@ public class Declaration implements Statement {
     public void execute(Environment environment) {
         if (valueType == null) {
             final ValueType declarationType = type.getValueType(environment);
+            if (declarationType.isVoid()) {
+                throw new IllegalArgumentException("Illegal type: void");
+            }
             for (Variable variable : variables) {
                 final ValueType variableType = variable.getValueType(environment);
                 if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {

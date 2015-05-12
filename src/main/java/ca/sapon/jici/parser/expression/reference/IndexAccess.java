@@ -27,10 +27,9 @@ import java.lang.reflect.Array;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class IndexAccess implements Reference {
     private final Expression object;
@@ -54,7 +53,7 @@ public class IndexAccess implements Reference {
                 throw new IllegalArgumentException("Cannot cast " + indexType.getName() + " to int");
             }
             final Class<?> componentType = objectType.getTypeClass().getComponentType();
-            valueType = componentType.isPrimitive() ? PrimitiveValueType.of(componentType) : new ObjectValueType(componentType);
+            valueType = ReflectionUtil.wrap(componentType);
         }
         return valueType;
     }

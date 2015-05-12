@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.type;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.VoidValueType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveType implements Type {
@@ -71,7 +72,7 @@ public class PrimitiveType implements Type {
                 default:
                     throw new IllegalArgumentException("Not a primitive type: " + type);
             }
-            valueType = PrimitiveValueType.of(_class);
+            valueType = _class == void.class ? VoidValueType.THE_VOID : PrimitiveValueType.of(_class);
         }
         return valueType;
     }

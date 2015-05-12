@@ -33,8 +33,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.value.type.NullValueType;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.VoidValueType;
 
 /**
  *
@@ -161,12 +164,25 @@ public class ReflectionUtil {
         return candidateCount != 1 || callable == null ? null : callable;
     }
 
-    public static boolean isNarrower(Class<?> a, Class<?> b) {
+    private static boolean isNarrower(Class<?> a, Class<?> b) {
         if (a.isPrimitive()) {
             // a != b and a <= b
             return a != b && PrimitiveValueType.convertibleTo(a, b);
         }
         // b !< a and a < b
         return !b.isPrimitive() && !a.isAssignableFrom(b);
+    }
+
+    public static ValueType wrap(Class<?> type) {
+        if (type == null) {
+            return NullValueType.THE_NULL;
+        }
+        if (type == void.class) {
+            return VoidValueType.THE_VOID;
+        }
+        if (type.isPrimitive()) {
+            return PrimitiveValueType.of(type);
+        }
+        return ObjectValueType.of(type);
     }
 }

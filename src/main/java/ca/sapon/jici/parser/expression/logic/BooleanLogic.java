@@ -54,7 +54,7 @@ public class BooleanLogic implements Expression {
             if (!rightClass.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + rightClass.getName());
             }
-            valueType = PrimitiveValueType.of(boolean.class);
+            valueType = PrimitiveValueType.THE_BOOLEAN;
         }
         return valueType;
     }

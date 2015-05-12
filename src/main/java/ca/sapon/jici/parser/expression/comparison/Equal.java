@@ -65,7 +65,7 @@ public class Equal implements Expression {
             } else {
                 widenKind = leftType.binaryWiden(rightType.getTypeClass()).getKind();
             }
-            valueType = PrimitiveValueType.of(boolean.class);
+            valueType = PrimitiveValueType.THE_BOOLEAN;
         }
         return valueType;
     }

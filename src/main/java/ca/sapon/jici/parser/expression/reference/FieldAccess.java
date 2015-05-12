@@ -27,11 +27,10 @@ import java.lang.reflect.Field;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class FieldAccess implements Reference {
     private final Expression object;
@@ -49,7 +48,7 @@ public class FieldAccess implements Reference {
         if (valueType == null) {
             member = object.getValueType(environment).getField(field.getSource());
             final Class<?> type = member.getType();
-            valueType = type.isPrimitive() ? PrimitiveValueType.of(type) : new ObjectValueType(type);
+            valueType = ReflectionUtil.wrap(type);
         }
         return valueType;
     }

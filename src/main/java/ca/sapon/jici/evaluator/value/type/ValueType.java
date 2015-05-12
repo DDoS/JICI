@@ -50,6 +50,8 @@ public interface ValueType {
 
     boolean isBoolean();
 
+    boolean isArray();
+
     boolean isObject();
 
     ValueType unbox();

@@ -102,6 +102,11 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
+    public boolean isArray() {
+        return type.isArray();
+    }
+
+    @Override
     public boolean isObject() {
         return true;
     }

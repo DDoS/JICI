@@ -41,7 +41,7 @@ import ca.sapon.jici.parser.expression.ClassAccess;
 import ca.sapon.jici.parser.expression.Conditional;
 import ca.sapon.jici.parser.expression.ConstructorCall;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.expression.IndexAccess;
+import ca.sapon.jici.parser.expression.reference.IndexAccess;
 import ca.sapon.jici.parser.expression.Shift;
 import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.arithmetic.Sign;

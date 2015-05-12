@@ -143,6 +143,11 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
+    public boolean isArray() {
+        return false;
+    }
+
+    @Override
     public boolean isObject() {
         return false;
     }

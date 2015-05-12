@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 
@@ -164,10 +163,10 @@ public class ReflectionUtil {
 
     public static boolean isNarrower(Class<?> a, Class<?> b) {
         if (a.isPrimitive()) {
-            // a !=b and a <= b
+            // a != b and a <= b
             return a != b && PrimitiveValueType.convertibleTo(a, b);
         }
-        // a < b and !a.boxOf(b)
-        return !a.isAssignableFrom(b) && ObjectValueType.unbox(a) != b;
+        // b !< a and a < b
+        return !b.isPrimitive() && !a.isAssignableFrom(b);
     }
 }

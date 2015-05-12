@@ -182,13 +182,15 @@ public enum ValueKind {
     VOID(Void.class) {
         @Override
         public Value defaultValue() {
-            throw new IllegalArgumentException("Void has no value");
+            return VoidValue.defaultValue();
         }
 
         @Override
         public Value wrap(Object object) {
+            if (object instanceof Void) {
+                return VoidValue.THE_VOID;
+            }
             throw new IllegalArgumentException("Cannot cast an object to void");
-
         }
 
         @Override

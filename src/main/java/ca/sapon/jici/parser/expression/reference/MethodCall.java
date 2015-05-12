@@ -28,8 +28,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
@@ -81,7 +81,12 @@ public class MethodCall implements Expression, Statement {
             values[i] = arguments.get(i).getValue(environment).asObject();
         }
         try {
-            return ObjectValue.of(callable.invoke(value, values));
+            if (valueType.isVoid()) {
+                callable.invoke(value, values);
+                return VoidValue.THE_VOID;
+            } else {
+                return valueType.getKind().wrap(callable.invoke(value, values));
+            }
         } catch (IllegalAccessException | InvocationTargetException exception) {
             throw new IllegalArgumentException("Could not call method", exception);
         }

@@ -90,6 +90,7 @@ public class PrimitiveValueType implements ValueType {
         BOXING_CONVERSIONS.put(long.class, new ObjectValueType(Long.class));
         BOXING_CONVERSIONS.put(float.class, new ObjectValueType(Float.class));
         BOXING_CONVERSIONS.put(double.class, new ObjectValueType(Double.class));
+        BOXING_CONVERSIONS.put(void.class, new ObjectValueType(Void.class));
     }
 
     private PrimitiveValueType(Class<?> type, ValueKind kind) {
@@ -115,6 +116,11 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public boolean is(Class<?> type) {
         return this.type == type;
+    }
+
+    @Override
+    public boolean isVoid() {
+        return type == void.class;
     }
 
     @Override

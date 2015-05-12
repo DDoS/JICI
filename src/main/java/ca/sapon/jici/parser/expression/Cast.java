@@ -55,7 +55,7 @@ public class Cast implements Expression {
                 if (castType.isBoolean() ^ objectType.isBoolean()) {
                     failCast(castType, objectType);
                 }
-                if (castType.is(void.class)) {
+                if (castType.isVoid()) {
                     failCast(castType, objectType);
                 }
             } else if (objectType.isPrimitive()) {

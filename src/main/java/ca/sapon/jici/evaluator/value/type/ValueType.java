@@ -40,6 +40,8 @@ public interface ValueType {
 
     boolean is(Class<?> type);
 
+    boolean isVoid();
+
     boolean isNull();
 
     boolean isPrimitive();

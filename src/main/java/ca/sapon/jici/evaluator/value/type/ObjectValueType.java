@@ -77,6 +77,11 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
+    public boolean isVoid() {
+        return false;
+    }
+
+    @Override
     public boolean isNull() {
         return type == null;
     }

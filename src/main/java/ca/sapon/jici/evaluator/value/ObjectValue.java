@@ -111,6 +111,11 @@ public class ObjectValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return value == null ? "null" : value.toString();
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

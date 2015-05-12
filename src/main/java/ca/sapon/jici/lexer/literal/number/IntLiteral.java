@@ -96,6 +96,11 @@ public class IntLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public String asString() {
+        return Integer.toString(asInt());
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

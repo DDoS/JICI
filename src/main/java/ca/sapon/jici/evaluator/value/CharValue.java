@@ -83,6 +83,11 @@ public class CharValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Character.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

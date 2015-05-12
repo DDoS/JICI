@@ -106,6 +106,11 @@ public class CharacterLiteral extends Literal implements Value {
     }
 
     @Override
+    public String asString() {
+        return Character.toString(asChar());
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

@@ -83,6 +83,11 @@ public class IntValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Integer.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

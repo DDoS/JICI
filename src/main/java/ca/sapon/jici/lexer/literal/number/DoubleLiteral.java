@@ -92,6 +92,11 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public String asString() {
+        return Double.toString(asDouble());
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

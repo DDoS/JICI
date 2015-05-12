@@ -92,6 +92,11 @@ public class FloatLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public String asString() {
+        return Float.toString(asFloat());
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

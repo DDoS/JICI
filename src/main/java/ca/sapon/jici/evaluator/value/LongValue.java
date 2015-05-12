@@ -83,6 +83,11 @@ public class LongValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Long.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

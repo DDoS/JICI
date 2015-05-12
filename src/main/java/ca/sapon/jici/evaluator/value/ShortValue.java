@@ -83,6 +83,11 @@ public class ShortValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Short.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

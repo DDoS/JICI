@@ -105,6 +105,11 @@ public class StringLiteral extends Literal implements Value {
 
     @Override
     public String asObject() {
+        return asString();
+    }
+
+    @Override
+    public String asString() {
         evaluate();
         return value;
     }

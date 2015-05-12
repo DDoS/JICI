@@ -96,6 +96,11 @@ public class LongLiteral extends NumberLiteral implements Value {
     }
 
     @Override
+    public String asString() {
+        return Long.toString(asLong());
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

@@ -76,6 +76,11 @@ public class DoubleValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Double.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

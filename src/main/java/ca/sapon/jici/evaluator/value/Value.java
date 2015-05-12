@@ -42,6 +42,8 @@ public interface Value {
 
     Object asObject();
 
+    String asString();
+
     <T> T as();
 
     ValueKind getKind();

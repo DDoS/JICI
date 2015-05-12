@@ -28,16 +28,20 @@ import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
+import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class Arithmetic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private boolean stringConcatenation = false;
     private ValueType valueType = null;
 
     public Arithmetic(Expression left, Expression right, Symbol operator) {
@@ -51,13 +55,18 @@ public class Arithmetic implements Expression {
         if (valueType == null) {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
-            if (!leftType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + leftType.getName());
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(String.class) || rightType.is(String.class))) {
+                valueType = new ObjectValueType(String.class);
+                stringConcatenation = true;
+            } else {
+                if (!leftType.isNumeric()) {
+                    throw new IllegalArgumentException("Not a numeric type: " + leftType.getName());
+                }
+                if (!rightType.isNumeric()) {
+                    throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
+                }
+                valueType = leftType.binaryWiden(rightType.getTypeClass());
             }
-            if (!rightType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
-            }
-            valueType = leftType.binaryWiden(rightType.getTypeClass());
         }
         return valueType;
     }
@@ -66,6 +75,9 @@ public class Arithmetic implements Expression {
     public Value getValue(Environment environment) {
         final Value leftValue = left.getValue(environment);
         final Value rightValue = right.getValue(environment);
+        if (stringConcatenation) {
+            return doStringConcatenation(leftValue, rightValue);
+        }
         final ValueKind widenKind = valueType.getKind();
         switch (operator.getID()) {
             case SYMBOL_PLUS:
@@ -81,6 +93,10 @@ public class Arithmetic implements Expression {
             default:
                 throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
         }
+    }
+
+    private Value doStringConcatenation(Value leftValue, Value rightValue) {
+        return ObjectValue.of(leftValue.asString() + rightValue.asString());
     }
 
     private Value doAdd(Value leftValue, Value rightValue, ValueKind widenKind) {

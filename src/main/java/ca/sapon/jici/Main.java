@@ -37,8 +37,8 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "Object i = 0, f, k = 2 + (int) (4 * Math.random());" +
-                "System.out.println(k);";
+        final String source = "int i = 0xF, j, k = 2 + (int) (4 * Math.random());" +
+                "System.out.println(i + \" \" + j + \" \" + k);";
 
         System.out.println("Source:\n" + source);
 

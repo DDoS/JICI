@@ -88,6 +88,11 @@ public class BooleanLiteral extends Literal implements Value {
     }
 
     @Override
+    public String asString() {
+        return Boolean.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

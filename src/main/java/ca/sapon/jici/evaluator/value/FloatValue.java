@@ -76,6 +76,11 @@ public class FloatValue implements Value {
     }
 
     @Override
+    public String asString() {
+        return Float.toString(value);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T as() {
         return (T) asObject();

@@ -21,10 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression;
+package ca.sapon.jici.parser.expression.call;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +33,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassType;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -95,7 +95,7 @@ public class ConstructorCall implements Statement, Expression {
         }
         try {
             return ObjectValue.of(constructor.newInstance(values));
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
+        } catch (Exception exception) {
             throw new IllegalArgumentException("Could not call constructor", exception);
         }
     }

@@ -21,32 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.expression.reference;
+package ca.sapon.jici.parser.expression.call;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
-public class MethodCall implements Expression, Statement {
-    private final Expression object;
-    private final Identifier method;
+public class AmbiguousCall implements Expression, Statement {
+    private final List<Identifier> name;
     private final List<Expression> arguments;
     private ValueType valueType = null;
-    private Method callable = null;
+    private MethodCall call = null;
 
-    public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
-        this.object = object;
-        this.method = method;
+    public AmbiguousCall(List<Identifier> name, List<Expression> arguments) {
+        this.name = name;
         this.arguments = arguments;
     }
 
@@ -59,40 +54,21 @@ public class MethodCall implements Expression, Statement {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            final int size = arguments.size();
-            final ValueType[] argumentTypes = new ValueType[size];
-            for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).getValueType(environment);
-            }
-            callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
-            final Class<?> returnType = callable.getReturnType();
-            valueType = ReflectionUtil.wrap(returnType);
+            final int lastIndex = name.size() - 1;
+            final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
+            call = new MethodCall(resolved, name.get(lastIndex), arguments);
+            valueType = call.getValueType(environment);
         }
         return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Object value = object.getValue(environment).asObject();
-        final int size = arguments.size();
-        final Object[] values = new Object[size];
-        for (int i = 0; i < size; i++) {
-            values[i] = arguments.get(i).getValue(environment).asObject();
-        }
-        try {
-            if (valueType.isVoid()) {
-                callable.invoke(value, values);
-                return VoidValue.THE_VOID;
-            } else {
-                return valueType.getKind().wrap(callable.invoke(value, values));
-            }
-        } catch (IllegalAccessException | InvocationTargetException exception) {
-            throw new IllegalArgumentException("Could not call method", exception);
-        }
+        return call.getValue(environment);
     }
 
     @Override
     public String toString() {
-        return "MethodCall(" + object + "." + method + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "MethodCall(" + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

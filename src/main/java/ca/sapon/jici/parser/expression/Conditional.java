@@ -53,9 +53,20 @@ public class Conditional implements Expression {
             if (!testType.isBoolean()) {
                 throw new IllegalArgumentException("Not a boolean: " + testType.getName());
             }
+            if (leftType.isVoid() || rightType.isVoid()) {
+                throw new IllegalArgumentException("Illegal type: void");
+            }
             if (leftType.is(rightType.getTypeClass())) {
                 // both same type to that type
                 return valueType = leftType;
+            }
+            if (leftType.isNull()) {
+                // left null to right type boxed
+                return valueType = rightType.box();
+            }
+            if (rightType.isNull()) {
+                // right null to left type boxed
+                return valueType = leftType.box();
             }
             leftType = leftType.unbox();
             rightType = rightType.unbox();

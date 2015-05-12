@@ -57,7 +57,7 @@ public class FieldAccess implements Reference {
     public Value getValue(Environment environment) {
         try {
             return valueType.getKind().wrap(member.get(object.getValue(environment)));
-        } catch (IllegalAccessException exception) {
+        } catch (Exception exception) {
             throw new IllegalArgumentException("Could not access field: " + field.getSource());
         }
     }
@@ -66,7 +66,7 @@ public class FieldAccess implements Reference {
     public void setValue(Environment environment, Value value) {
         try {
             member.set(object.getValue(environment), value.asObject());
-        } catch (IllegalAccessException exception) {
+        } catch (Exception exception) {
             throw new IllegalArgumentException("Could not access field: " + field.getSource());
         }
     }

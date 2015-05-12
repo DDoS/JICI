@@ -31,11 +31,10 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  *
  */
-public class NullValueType extends ObjectValueType {
+public class NullValueType implements ValueType {
     public static final NullValueType THE_NULL = new NullValueType();
 
     private NullValueType() {
-        super(null);
     }
 
     @Override
@@ -100,12 +99,12 @@ public class NullValueType extends ObjectValueType {
 
     @Override
     public ValueType unbox() {
-        return this;
+        throw new IllegalArgumentException("Cannot unbox the null type");
     }
 
     @Override
     public ObjectValueType box() {
-        return this;
+        throw new IllegalArgumentException("Cannot box the null type");
     }
 
     @Override

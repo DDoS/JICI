@@ -28,10 +28,8 @@ import java.util.Scanner;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.ParserException;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
@@ -52,8 +50,7 @@ public class Main {
             for (Statement statement : statements) {
                 statement.execute(environment);
             }
-        } catch (LexerException | ParserException | IllegalArgumentException exception) {
-            System.out.printf("Eval error: %s\n", exception.getMessage());
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
     }

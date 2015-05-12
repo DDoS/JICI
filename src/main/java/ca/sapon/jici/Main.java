@@ -24,6 +24,7 @@
 package ca.sapon.jici;
 
 import java.util.List;
+import java.util.Scanner;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.lexer.Lexer;
@@ -35,34 +36,24 @@ import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("JICI\n");
+        System.out.println("JICI\n\n");
+        final Environment environment = new Environment();
+        final Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNextLine()) {
+            eval(environment, scanner.nextLine());
+        }
+        scanner.close();
+    }
 
-        final String source = "int i; i = 0;\n" +
-                "i += 1d;\n" +
-                "System.out.println(i);";
-
-        System.out.println("Source:\n" + source);
-
+    private static void eval(Environment environment, String source) {
         try {
-            System.out.println("\nLexing:");
             final List<Token> tokens = Lexer.lex(source);
-            for (Token token : tokens) {
-                System.out.println(token.getClass().getSimpleName() + ": " + token.getSource());
-            }
-
-            System.out.println("\nParsing:");
             final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                System.out.println(statement);
-            }
-
-            System.out.println("\nEvaluating:");
-            final Environment environment = new Environment();
             for (Statement statement : statements) {
                 statement.execute(environment);
             }
-        } catch (LexerException | ParserException exception) {
-            System.out.printf("Exception: %s\n", exception.getMessage());
+        } catch (LexerException | ParserException | IllegalArgumentException exception) {
+            System.out.printf("Eval error: %s\n", exception.getMessage());
             exception.printStackTrace();
         }
     }

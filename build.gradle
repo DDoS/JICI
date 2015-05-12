@@ -112,3 +112,7 @@ jar {
             "Implementation-Vendor": url
     }
 }
+
+run {
+    standardInput = System.in
+}

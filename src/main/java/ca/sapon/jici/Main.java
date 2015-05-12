@@ -37,11 +37,9 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("JICI\n");
 
-        final String source = "int i = 0xF, j, k = 2 + (int) (4 * Math.random());\n" +
-                "String m = \"m\";\n" +
-                "i -= 5; j = 12; m += \"k\";\n" +
-                "System.out.println(i++ + \" \" + j + \" \" + k + \" \" + m);\n" +
-                "System.out.println(++i);";
+        final String source = "int i; i = 0;\n" +
+                "i += 1d;\n" +
+                "System.out.println(i);";
 
         System.out.println("Source:\n" + source);
 
@@ -63,18 +61,6 @@ public class Main {
             for (Statement statement : statements) {
                 statement.execute(environment);
             }
-
-            /*System.out.println("\nParsing:");
-            final Expression expression = Parser.parseExpression(tokens);
-            System.out.println(expression);
-
-            System.out.println("\nEvaluating:");
-            final Environment environment = new Environment();
-            final Value value = expression.getValue(environment);
-            System.out.println("Class: " + value.getClass().getSimpleName());
-            System.out.println("Type: " + value.getKind());
-            System.out.println("Value: " + value);*/
-
         } catch (LexerException | ParserException exception) {
             System.out.printf("Exception: %s\n", exception.getMessage());
             exception.printStackTrace();

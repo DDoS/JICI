@@ -37,12 +37,14 @@ import ca.sapon.jici.parser.statement.Statement;
 public class Assignment implements Expression, Statement {
     private final Reference assignee;
     private final Expression value;
+    private boolean simpleAssign = false;
     private ValueType valueType = null;
 
     public Assignment(Reference assignee, Expression value, Symbol operator) {
         this.assignee = assignee;
         switch (operator.getID()) {
             case SYMBOL_ASSIGN:
+                simpleAssign = true;
                 this.value = value;
                 break;
             case SYMBOL_ADD_ASSIGN:
@@ -78,7 +80,7 @@ public class Assignment implements Expression, Statement {
         if (valueType == null) {
             final ValueType type = value.getValueType(environment);
             final ValueType assigneeType = assignee.getValueType(environment);
-            if (!type.convertibleTo(assigneeType.getTypeClass())) {
+            if ((simpleAssign || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType.getTypeClass())) {
                 throw new IllegalArgumentException("Cannot cast " + type.getName() + " to " + assigneeType.getName());
             }
             valueType = assigneeType;
@@ -89,7 +91,7 @@ public class Assignment implements Expression, Statement {
     @Override
     public Value getValue(Environment environment) {
         final Value result = value.getValue(environment);
-        assignee.setValue(environment, result);
+        assignee.setValue(environment, simpleAssign ? result : valueType.getKind().convert(result));
         return result;
     }
 

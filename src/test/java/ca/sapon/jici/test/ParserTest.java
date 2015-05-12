@@ -187,17 +187,17 @@ public class ParserTest {
     @Test
     public void testParseAssignment() {
         testParseExpression("Assignment(l = r)", "l = r");
-        testParseExpression("Assignment(l += r)", "l += r");
-        testParseExpression("Assignment(l -= r)", "l -= r");
-        testParseExpression("Assignment(l *= r)", "l *= r");
-        testParseExpression("Assignment(l /= r)", "l /= r");
-        testParseExpression("Assignment(l %= r)", "l %= r");
-        testParseExpression("Assignment(l <<= r)", "l <<= r");
-        testParseExpression("Assignment(l >>= r)", "l >>= r");
-        testParseExpression("Assignment(l >>>= r)", "l >>>= r");
-        testParseExpression("Assignment(l &= r)", "l &= r");
-        testParseExpression("Assignment(l ^= r)", "l ^= r");
-        testParseExpression("Assignment(l |= r)", "l |= r");
+        testParseExpression("Assignment(l = Arithmetic(l + r))", "l += r");
+        testParseExpression("Assignment(l = Arithmetic(l - r))", "l -= r");
+        testParseExpression("Assignment(l = Arithmetic(l * r))", "l *= r");
+        testParseExpression("Assignment(l = Arithmetic(l / r))", "l /= r");
+        testParseExpression("Assignment(l = Arithmetic(l % r))", "l %= r");
+        testParseExpression("Assignment(l = Shift(l << r))", "l <<= r");
+        testParseExpression("Assignment(l = Shift(l >> r))", "l >>= r");
+        testParseExpression("Assignment(l = Shift(l >>> r))", "l >>>= r");
+        testParseExpression("Assignment(l = BitwiseLogic(l & r))", "l &= r");
+        testParseExpression("Assignment(l = BitwiseLogic(l ^ r))", "l ^= r");
+        testParseExpression("Assignment(l = BitwiseLogic(l | r))", "l |= r");
 
         testParseExpression("Assignment(a = Assignment(b = c))", "a = b = c");
     }

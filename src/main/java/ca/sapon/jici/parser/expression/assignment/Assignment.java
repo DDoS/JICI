@@ -28,36 +28,73 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.Shift;
+import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
+import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Assignment implements Expression, Statement {
     private final Reference assignee;
     private final Expression value;
-    private final Symbol operator;
+    private ValueType valueType = null;
 
     public Assignment(Reference assignee, Expression value, Symbol operator) {
         this.assignee = assignee;
-        this.value = value;
-        this.operator = operator;
+        switch (operator.getID()) {
+            case SYMBOL_ASSIGN:
+                this.value = value;
+                break;
+            case SYMBOL_ADD_ASSIGN:
+            case SYMBOL_SUBTRACT_ASSIGN:
+            case SYMBOL_MULTIPLY_ASSIGN:
+            case SYMBOL_DIVIDE_ASSIGN:
+            case SYMBOL_REMAINDER_ASSIGN:
+                this.value = new Arithmetic(assignee, value, operator.getCompoundAssignOperator());
+                break;
+            case SYMBOL_BITWISE_AND_ASSIGN:
+            case SYMBOL_BITWISE_OR_ASSIGN:
+            case SYMBOL_BITWISE_XOR_ASSIGN:
+                this.value = new BitwiseLogic(assignee, value, operator.getCompoundAssignOperator());
+                break;
+            case SYMBOL_LOGICAL_LEFT_SHIFT_ASSIGN:
+            case SYMBOL_ARITHMETIC_RIGHT_SHIFT_ASSIGN:
+            case SYMBOL_LOGICAL_RIGHT_SHIFT_ASSIGN:
+                this.value = new Shift(assignee, value, operator.getCompoundAssignOperator());
+                break;
+            default:
+                throw new IllegalArgumentException("Not a valid operator for assign: " + operator);
+        }
     }
 
     @Override
     public void execute(Environment environment) {
-    }
-
-    @Override
-    public String toString() {
-        return "Assignment(" + assignee + " " + operator + " " + value + ")";
+        getValueType(environment);
+        getValue(environment);
     }
 
     @Override
     public ValueType getValueType(Environment environment) {
-        return null;
+        if (valueType == null) {
+            final ValueType type = value.getValueType(environment);
+            final ValueType assigneeType = assignee.getValueType(environment);
+            if (!type.convertibleTo(assigneeType.getTypeClass())) {
+                throw new IllegalArgumentException("Cannot cast " + type.getName() + " to " + assigneeType.getName());
+            }
+            valueType = assigneeType;
+        }
+        return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return null;
+        final Value result = value.getValue(environment);
+        assignee.setValue(environment, result);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment(" + assignee + " = " + value + ")";
     }
 }

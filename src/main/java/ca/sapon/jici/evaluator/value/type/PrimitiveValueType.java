@@ -80,6 +80,7 @@ public class PrimitiveValueType implements ValueType {
         VALID_CONVERSIONS.put(long.class, toSet(long.class, float.class, double.class));
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
+        VALID_CONVERSIONS.put(void.class, toSet());
 
         BOXING_CONVERSIONS.put(boolean.class, new ObjectValueType(Boolean.class));
         BOXING_CONVERSIONS.put(byte.class, new ObjectValueType(Byte.class));

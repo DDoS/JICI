@@ -31,6 +31,7 @@ import java.util.Map;
 public class Symbol extends Token {
     private static final Map<String, Symbol> SYMBOLS = new HashMap<>();
     private static final Symbol[] CHAR_SYMBOLS = new Symbol[256];
+    private final Symbol compoundAssignOperator;
 
     static {
         // punctuation
@@ -68,17 +69,17 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_NOT_EQUAL, "!=");
         // assignment
         add(TokenID.SYMBOL_ASSIGN, "=");
-        add(TokenID.SYMBOL_ADD_ASSIGN, "+=");
-        add(TokenID.SYMBOL_SUBTRACT_ASSIGN, "-=");
-        add(TokenID.SYMBOL_MULTIPLY_ASSIGN, "*=");
-        add(TokenID.SYMBOL_DIVIDE_ASSIGN, "/=");
-        add(TokenID.SYMBOL_REMAINDER_ASSIGN, "%=");
-        add(TokenID.SYMBOL_BITWISE_AND_ASSIGN, "&=");
-        add(TokenID.SYMBOL_BITWISE_OR_ASSIGN, "|=");
-        add(TokenID.SYMBOL_BITWISE_XOR_ASSIGN, "^=");
-        add(TokenID.SYMBOL_LOGICAL_LEFT_SHIFT_ASSIGN, "<<=");
-        add(TokenID.SYMBOL_ARITHMETIC_RIGHT_SHIFT_ASSIGN, ">>=");
-        add(TokenID.SYMBOL_LOGICAL_RIGHT_SHIFT_ASSIGN, ">>>=");
+        add(TokenID.SYMBOL_ADD_ASSIGN, "+=", "+");
+        add(TokenID.SYMBOL_SUBTRACT_ASSIGN, "-=", "-");
+        add(TokenID.SYMBOL_MULTIPLY_ASSIGN, "*=", "*");
+        add(TokenID.SYMBOL_DIVIDE_ASSIGN, "/=", "/");
+        add(TokenID.SYMBOL_REMAINDER_ASSIGN, "%=", "%");
+        add(TokenID.SYMBOL_BITWISE_AND_ASSIGN, "&=", "&");
+        add(TokenID.SYMBOL_BITWISE_OR_ASSIGN, "|=", "|");
+        add(TokenID.SYMBOL_BITWISE_XOR_ASSIGN, "^=", "^");
+        add(TokenID.SYMBOL_LOGICAL_LEFT_SHIFT_ASSIGN, "<<=", "<<");
+        add(TokenID.SYMBOL_ARITHMETIC_RIGHT_SHIFT_ASSIGN, ">>=", ">>");
+        add(TokenID.SYMBOL_LOGICAL_RIGHT_SHIFT_ASSIGN, ">>>=", ">>>");
         // enclosing
         add(TokenID.SYMBOL_OPEN_PARENTHESIS, "(");
         add(TokenID.SYMBOL_CLOSE_PARENTHESIS, ")");
@@ -99,8 +100,13 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_AT, "@");
     }
 
-    private Symbol(TokenID id, String source) {
+    private Symbol(TokenID id, String source, Symbol compoundAssignOperator) {
         super(id, source);
+        this.compoundAssignOperator = compoundAssignOperator;
+    }
+
+    public Symbol getCompoundAssignOperator() {
+        return compoundAssignOperator;
     }
 
     public static boolean is(char source) {
@@ -130,7 +136,11 @@ public class Symbol extends Token {
     }
 
     private static void add(TokenID id, String source) {
-        final Symbol symbol = new Symbol(id, source);
+        add(id, source, null);
+    }
+
+    private static void add(TokenID id, String source, String compoundAssignOperator) {
+        final Symbol symbol = new Symbol(id, source, compoundAssignOperator == null ? null : from(compoundAssignOperator));
         SYMBOLS.put(source, symbol);
         if (source.length() == 1) {
             CHAR_SYMBOLS[source.charAt(0)] = symbol;

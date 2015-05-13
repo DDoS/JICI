@@ -23,7 +23,9 @@
  */
 package ca.sapon.jici.evaluator;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.value.Value;
@@ -33,8 +35,8 @@ import ca.sapon.jici.util.ReflectionUtil;
 
 public class Environment {
     private static final Map<String, Class<?>> DEFAULT_CLASSES = new HashMap<>();
-    private final Map<String, Class<?>> classes = new HashMap<>(DEFAULT_CLASSES);
-    private final Map<String, Variable> variables = new HashMap<>();
+    private final Map<String, Class<?>> classes = new LinkedHashMap<>(DEFAULT_CLASSES);
+    private final Map<String, Variable> variables = new LinkedHashMap<>();
 
     static {
         for (String name : ReflectionUtil.JAVA_LANG_CLASSES) {
@@ -80,6 +82,10 @@ public class Environment {
         return _class;
     }
 
+    public Collection<Class<?>> getClasses() {
+        return classes.values();
+    }
+
     public boolean hasClass(Identifier name) {
         return classes.containsKey(name.getSource());
     }
@@ -104,6 +110,10 @@ public class Environment {
         return findVariable(name).getValue();
     }
 
+    public Collection<Variable> getVariables() {
+        return variables.values();
+    }
+
     public void setVariable(Identifier name, Value value) {
         findVariable(name).setValue(value);
     }
@@ -121,7 +131,7 @@ public class Environment {
         return variable;
     }
 
-    private static class Variable {
+    public static class Variable {
         private final String name;
         private final ValueType type;
         private Value value;
@@ -132,15 +142,15 @@ public class Environment {
             this.value = value;
         }
 
-        private String getName() {
+        public String getName() {
             return name;
         }
 
-        private ValueType getType() {
+        public ValueType getType() {
             return type;
         }
 
-        private Value getValue() {
+        public Value getValue() {
             return value;
         }
 

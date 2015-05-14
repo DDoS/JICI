@@ -43,10 +43,11 @@ public final class Decoder {
                 escapes++;
             } else {
                 if ((escapes & 1) == 1 && c == 'u') {
+                    final int end = Math.min(i + 5, length);
                     try {
-                        c = StringUtil.decodeUnicodeEscape(source.substring(i + 1, Math.min(i + 5, length)));
+                        c = StringUtil.decodeUnicodeEscape(source.substring(i + 1, end));
                     } catch (IllegalArgumentException exception) {
-                        throw new DecoderException(exception.getMessage());
+                        throw new DecoderException("Malformed unicode escape", source, source.substring(i - 1, end), i - 1);
                     }
                     i += 4;
                     j--;

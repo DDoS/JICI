@@ -23,13 +23,15 @@
  */
 package ca.sapon.jici.decoder;
 
+import ca.sapon.jici.SourceException;
+
 /**
  *
  */
-public class DecoderException extends RuntimeException {
+public class DecoderException extends SourceException {
     private static final long serialVersionUID = 1;
 
-    public DecoderException(String message) {
-        super(message);
+    public DecoderException(String error, String source, String offender, int index) {
+        super(error, source, '\'' + offender + '\'', index);
     }
 }

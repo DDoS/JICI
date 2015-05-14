@@ -177,6 +177,6 @@ public final class StringUtil {
                 }
             }
         }
-        throw new IllegalArgumentException("Expected 4 hexadecimal digits: " + escape);
+        throw new IllegalArgumentException("Expected 4 hexadecimal digits, got: " + escape);
     }
 }

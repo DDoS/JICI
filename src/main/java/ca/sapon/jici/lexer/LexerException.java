@@ -23,37 +23,13 @@
  */
 package ca.sapon.jici.lexer;
 
-public class LexerException extends RuntimeException {
+import ca.sapon.jici.SourceException;
+
+public class LexerException extends SourceException {
     private static final long serialVersionUID = 1;
 
     public LexerException(String error, String source, int index) {
-        super(generateMessage(error, source, index));
-    }
-
-    private static String generateMessage(String error, String source, int index) {
-        final String offender = escapeOffender(source.charAt(index));
-        // find start and end of line containing the offender
-        int start = index, end = index - 1;
-        while (--start >= 0 && source.charAt(start) != '\n') {
-        }
-        while (++end < source.length() && source.charAt(end) != '\n') {
-        }
-        source = source.substring(start + 1, end);
-        index -= start;
-        // build the error message with source and cursor lines
-        final StringBuilder builder = new StringBuilder(error)
-                .append(" caused by ")
-                .append(offender)
-                .append(" at position ")
-                .append(index)
-                .append(" in \n")
-                .append(source)
-                .append('\n');
-        for (int i = 0; i < index - 1; i++) {
-            builder.append(' ');
-        }
-        builder.append('^');
-        return builder.toString();
+        super(error, source, escapeOffender(source.charAt(index)), index);
     }
 
     private static String escapeOffender(char offender) {

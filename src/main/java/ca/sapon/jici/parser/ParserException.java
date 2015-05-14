@@ -23,13 +23,22 @@
  */
 package ca.sapon.jici.parser;
 
+import ca.sapon.jici.SourceException;
+import ca.sapon.jici.lexer.Token;
+
 /**
  *
  */
-public class ParserException extends RuntimeException {
+public class ParserException extends SourceException {
     private static final long serialVersionUID = 1;
+    private final Token token;
 
-    public ParserException(String message) {
-        super(message);
+    public ParserException(String error, Token offender) {
+        super(error, null, offender == null ? 0 : offender.getIndex());
+        token = offender;
+    }
+
+    public Token getToken() {
+        return token;
     }
 }

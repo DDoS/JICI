@@ -27,9 +27,15 @@ import ca.sapon.jici.SourceException;
 
 public class LexerException extends SourceException {
     private static final long serialVersionUID = 1;
+    private final char _char;
 
-    public LexerException(String error, String source, int index) {
-        super(error, source, escapeOffender(source.charAt(index)), index);
+    public LexerException(String error, char offender, int index) {
+        super(error, escapeOffender(offender), index);
+        _char = offender;
+    }
+
+    public char getChar() {
+        return _char;
     }
 
     private static String escapeOffender(char offender) {

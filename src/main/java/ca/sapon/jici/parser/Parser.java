@@ -122,9 +122,9 @@ public final class Parser {
                 tokens.advance();
                 return (Statement) expression;
             }
-            throw new ParseError("Expected ';'");
+            throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseFailure("Expected statement");
+        throw new ParseFailure("Expected a statement", token);
     }
 
     /*
@@ -158,7 +158,7 @@ public final class Parser {
                 return name;
             }
         }
-        throw new ParseFailure("Expected identifier");
+        throw new ParseFailure("Expected an identifier", tokens);
     }
 
     private static Type parseType(ListNavigator<Token> tokens) {
@@ -170,7 +170,7 @@ public final class Parser {
             }
             return new ClassType(parseName(tokens));
         }
-        throw new ParseFailure("Expected primitive type or identifier");
+        throw new ParseFailure("Expected an identifier or a primitive type", tokens);
     }
 
     private static Variable parseVariable(ListNavigator<Token> tokens) {
@@ -186,7 +186,7 @@ public final class Parser {
                 return new Variable((Identifier) token);
             }
         }
-        throw new ParseFailure("Expected identifier");
+        throw new ParseFailure("Expected an identifier", tokens);
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
@@ -209,9 +209,9 @@ public final class Parser {
                 tokens.advance();
                 return declaration;
             }
-            throw new ParseError("Expected ';'");
+            throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseFailure("Expected identifier or primitive type");
+        throw new ParseFailure("Expected an identifier or a primitive type", tokens);
     }
 
     /*
@@ -234,11 +234,11 @@ public final class Parser {
                     tokens.advance();
                     return new Import(name, false);
                 }
-                throw new ParseError("Expected ';'");
+                throw new ParseError("Expected ';'", token);
             }
-            throw new ParseError("Expected '*' or ';'");
+            throw new ParseError("Expected '*' or ';'", tokens);
         }
-        throw new ParseFailure("Expected \"import\"");
+        throw new ParseFailure("Expected \"import\"", tokens);
     }
 
     /*
@@ -290,7 +290,8 @@ public final class Parser {
                     final Expression value = parseAssignment(tokens);
                     return new Assignment((Reference) assignee, value, (Symbol) token);
                 }
-                throw new ParseError("Expected reference");
+                tokens.retreat();
+                throw new ParseError("Expected a reference", tokens);
             }
         }
         return assignee;
@@ -306,7 +307,7 @@ public final class Parser {
                 final Expression right = parseConditional(tokens);
                 return new Conditional(test, left, right);
             }
-            throw new ParseError("Expected ':'");
+            throw new ParseError("Expected ':'", tokens);
         }
         return test;
     }
@@ -497,7 +498,7 @@ public final class Parser {
                     if (inner instanceof Reference) {
                         return new PreIncrement((Reference) inner, (Symbol) token);
                     }
-                    throw new ParseError("Expected reference");
+                    throw new ParseError("Expected a reference", tokens);
                 }
                 case SYMBOL_PLUS:
                 case SYMBOL_MINUS: {
@@ -542,7 +543,7 @@ public final class Parser {
             final Expression inner = parseAccess(tokens);
             return parseUnary(tokens, inner);
         }
-        throw new ParseFailure("Expected a token");
+        throw new ParseFailure("Expected a token", tokens);
     }
 
     private static Expression parseUnary(ListNavigator<Token> tokens, Expression inner) {
@@ -556,7 +557,8 @@ public final class Parser {
                         final PostIncrement outer = new PostIncrement((Reference) inner, (Symbol) token);
                         return parseUnary(tokens, outer);
                     }
-                    throw new ParseError("Expected reference");
+                    tokens.retreat(2);
+                    throw new ParseError("Expected a reference", tokens);
                 }
             }
         }
@@ -587,7 +589,7 @@ public final class Parser {
                             return parseAccess(tokens, access);
                         }
                     }
-                    throw new ParseError("Expected identifier");
+                    throw new ParseError("Expected an identifier", tokens);
                 }
                 case SYMBOL_OPEN_BRACKET: {
                     tokens.advance();
@@ -597,7 +599,7 @@ public final class Parser {
                         final IndexAccess access = new IndexAccess(object, index);
                         return parseAccess(tokens, access);
                     }
-                    throw new ParseError("Expected ']'");
+                    throw new ParseError("Expected ']'", tokens);
                 }
             }
         }
@@ -636,10 +638,10 @@ public final class Parser {
                             }
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
-                                final List<Expression> arguments = parseArguments(tokens);
                                 if (name.size() == 1) {
-                                    throw new ParseError("Local methods are not supported");
+                                    throw new ParseError("Local methods are not supported", tokens);
                                 } else {
+                                    final List<Expression> arguments = parseArguments(tokens);
                                     return new AmbiguousCall(name, arguments);
                                 }
                             }
@@ -660,7 +662,7 @@ public final class Parser {
                                 tokens.advance();
                                 return expression;
                             }
-                            throw new ParseError("Expected ')'");
+                            throw new ParseError("Expected ')'", tokens);
                         }
                         case KEYWORD_NEW: {
                             tokens.advance();
@@ -670,13 +672,13 @@ public final class Parser {
                                 final List<Expression> arguments = parseArguments(tokens);
                                 return new ConstructorCall(name, arguments);
                             }
-                            throw new ParseError("Expected '('");
+                            throw new ParseError("Expected '('", tokens);
                         }
                     }
                 }
             }
         }
-        throw new ParseFailure("Expected literal, identifier, \"new\" or '('");
+        throw new ParseFailure("Expected a literal, an identifier, \"new\" or '('", tokens);
     }
 
     private static List<Expression> parseArguments(ListNavigator<Token> tokens) {
@@ -687,7 +689,7 @@ public final class Parser {
         } else {
             arguments = parseExpressionList(tokens);
             if (!tokens.has() || tokens.get().getID() != TokenID.SYMBOL_CLOSE_PARENTHESIS) {
-                throw new ParseError("Expected ')'");
+                throw new ParseError("Expected ')'", tokens);
             }
             tokens.advance();
         }
@@ -697,16 +699,24 @@ public final class Parser {
     private static class ParseFailure extends ParserException {
         private static final long serialVersionUID = 1;
 
-        private ParseFailure(String message) {
-            super(message);
+        private ParseFailure(String error, ListNavigator<Token> tokens) {
+            super(error, tokens.has() ? tokens.get() : tokens.position() > 0 ? tokens.get(-1) : null);
+        }
+
+        private ParseFailure(String error, Token offender) {
+            super(error, offender);
         }
     }
 
     private static class ParseError extends ParserException {
         private static final long serialVersionUID = 1;
 
-        private ParseError(String message) {
-            super(message);
+        private ParseError(String error, ListNavigator<Token> tokens) {
+            super(error, tokens.has() ? tokens.get() : tokens.position() > 0 ? tokens.get(-1) : null);
+        }
+
+        private ParseError(String error, Token offender) {
+            super(error, offender);
         }
     }
 }

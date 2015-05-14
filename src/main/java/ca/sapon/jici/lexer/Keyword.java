@@ -97,16 +97,21 @@ public class Keyword extends Token {
         add(TokenID.KEYWORD_CONST, "const");
     }
 
-    private Keyword(TokenID id, String source) {
-        super(id, source);
+    private Keyword(Keyword token, int index) {
+        this(token.getID(), token.getSource(), index);
+    }
+
+    private Keyword(TokenID id, String source, int index) {
+        super(id, source, index);
     }
 
     public static boolean is(String source) {
         return KEYWORDS.containsKey(source);
     }
 
-    public static Keyword from(String source) {
-        return KEYWORDS.get(source);
+    public static Keyword from(String source, int index) {
+        final Keyword keyword = KEYWORDS.get(source);
+        return keyword == null ? null : new Keyword(keyword, index);
     }
 
     public static Collection<Keyword> all() {
@@ -114,6 +119,6 @@ public class Keyword extends Token {
     }
 
     private static void add(TokenID id, String source) {
-        KEYWORDS.put(source, new Keyword(id, source));
+        KEYWORDS.put(source, new Keyword(id, source, 0));
     }
 }

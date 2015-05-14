@@ -30,8 +30,8 @@ import ca.sapon.jici.util.StringUtil;
 public abstract class NumberLiteral extends Literal {
     private boolean negative = false;
 
-    protected NumberLiteral(TokenID id, String source) {
-        super(id, source);
+    protected NumberLiteral(TokenID id, String source, int index) {
+        super(id, source, index);
     }
 
     public void applySign(boolean negative) {
@@ -43,11 +43,11 @@ public abstract class NumberLiteral extends Literal {
         return negative ? '-' + super.getSource() : super.getSource();
     }
 
-    public static NumberLiteral from(String source) {
+    public static NumberLiteral from(String source, int index) {
         final int length = source.length();
         // fast track 0 integers since they are very common
         if (length == 1 && source.charAt(0) == '0') {
-            return ZeroLiteral.THE_ZERO;
+            return new ZeroLiteral(index);
         }
         // remove number separators
         source = StringUtil.removeAll(source, '_');
@@ -73,31 +73,31 @@ public abstract class NumberLiteral extends Literal {
             }
         }
         if (hasDecimalSeparator || hasP) {
-            return getFloatingPoint(source);
+            return getFloatingPoint(source, index);
         }
         if (length > 1 && source.charAt(0) == '0' && StringUtil.equalsNoCaseASCII(source.charAt(1), 'x')) {
-            return getInteger(source);
+            return getInteger(source, index);
         }
         final char end = source.charAt(length - 1);
         if (StringUtil.equalsNoCaseASCII(end, 'f')) {
-            return new FloatLiteral(source.substring(0, length - 1));
+            return new FloatLiteral(source.substring(0, length - 1), index);
         } else if (StringUtil.equalsNoCaseASCII(end, 'd')) {
-            return new DoubleLiteral(source.substring(0, length - 1));
+            return new DoubleLiteral(source.substring(0, length - 1), index);
         } else if (hasE) {
-            return new DoubleLiteral(source);
+            return new DoubleLiteral(source, index);
         }
-        return getInteger(source);
+        return getInteger(source, index);
     }
 
-    private static NumberLiteral getInteger(String source) {
-        return endsWithNoCase(source, 'l') ? new LongLiteral(source.substring(0, source.length() - 1)) : new IntLiteral(source);
+    private static NumberLiteral getInteger(String source, int index) {
+        return endsWithNoCase(source, 'l') ? new LongLiteral(source.substring(0, source.length() - 1), index) : new IntLiteral(source, index);
     }
 
-    private static NumberLiteral getFloatingPoint(String source) {
+    private static NumberLiteral getFloatingPoint(String source, int index) {
         if (endsWithNoCase(source, 'f')) {
-            return new FloatLiteral(source.substring(0, source.length() - 1));
+            return new FloatLiteral(source.substring(0, source.length() - 1), index);
         }
-        return endsWithNoCase(source, 'd') ? new DoubleLiteral(source.substring(0, source.length() - 1)) : new DoubleLiteral(source);
+        return endsWithNoCase(source, 'd') ? new DoubleLiteral(source.substring(0, source.length() - 1), index) : new DoubleLiteral(source, index);
     }
 
     private static boolean endsWithNoCase(String source, char end) {

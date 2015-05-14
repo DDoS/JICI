@@ -34,7 +34,7 @@ import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class PostIncrement implements Expression, Statement {
-    private static final IntLiteral ONE = new IntLiteral("1") {
+    private static final IntLiteral ONE = new IntLiteral("1", 0) {
         @Override
         public int asInt() {
             return 1;

@@ -35,8 +35,8 @@ public class LongLiteral extends NumberLiteral implements Value {
     private long value = 0;
     private boolean evaluated = false;
 
-    public LongLiteral(String source) {
-        super(TokenID.LITERAL_LONG, source);
+    public LongLiteral(String source, int index) {
+        super(TokenID.LITERAL_LONG, source, index);
     }
 
     private void evaluate() {

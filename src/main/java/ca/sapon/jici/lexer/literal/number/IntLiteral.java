@@ -35,8 +35,8 @@ public class IntLiteral extends NumberLiteral implements Value {
     private int value = 0;
     private boolean evaluated = false;
 
-    public IntLiteral(String source) {
-        super(TokenID.LITERAL_INT, source);
+    public IntLiteral(String source, int index) {
+        super(TokenID.LITERAL_INT, source, index);
     }
 
     private void evaluate() {

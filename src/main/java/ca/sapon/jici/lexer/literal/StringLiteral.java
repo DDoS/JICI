@@ -34,8 +34,8 @@ import ca.sapon.jici.util.StringUtil;
 public class StringLiteral extends Literal implements Value {
     private String value = null;
 
-    public StringLiteral(String source) {
-        super(TokenID.LITERAL_STRING, source.substring(1, source.length() - 1));
+    private StringLiteral(String source, int index) {
+        super(TokenID.LITERAL_STRING, source.substring(1, source.length() - 1), index);
     }
 
     private void evaluate() {
@@ -148,5 +148,9 @@ public class StringLiteral extends Literal implements Value {
     @Override
     public Value getValue(Environment environment) {
         return this;
+    }
+
+    public static StringLiteral from(String source, int index) {
+        return new StringLiteral(source, index);
     }
 }

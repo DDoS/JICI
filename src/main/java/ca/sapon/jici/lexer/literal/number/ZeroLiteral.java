@@ -24,10 +24,8 @@
 package ca.sapon.jici.lexer.literal.number;
 
 public class ZeroLiteral extends IntLiteral {
-    public static final ZeroLiteral THE_ZERO = new ZeroLiteral();
-
-    private ZeroLiteral() {
-        super("0");
+    public ZeroLiteral(int index) {
+        super("0", index);
     }
 
     @Override

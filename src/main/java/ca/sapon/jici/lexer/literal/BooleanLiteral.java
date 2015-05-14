@@ -33,12 +33,10 @@ import ca.sapon.jici.lexer.TokenID;
 public class BooleanLiteral extends Literal implements Value {
     private static final String trueSource = "true";
     private static final String falseSource = "false";
-    private static final BooleanLiteral THE_TRUE = new BooleanLiteral(true);
-    private static final BooleanLiteral THE_FALSE = new BooleanLiteral(false);
     private final boolean value;
 
-    private BooleanLiteral(boolean value) {
-        super(value ? TokenID.LITERAL_TRUE : TokenID.LITERAL_FALSE, value ? trueSource : falseSource);
+    private BooleanLiteral(boolean value, int index) {
+        super(value ? TokenID.LITERAL_TRUE : TokenID.LITERAL_FALSE, value ? trueSource : falseSource, index);
         this.value = value;
     }
 
@@ -122,8 +120,8 @@ public class BooleanLiteral extends Literal implements Value {
         return trueSource.equals(source) || falseSource.equals(source);
     }
 
-    public static BooleanLiteral from(String source) {
-        return source.equals(trueSource) ? THE_TRUE : THE_FALSE;
+    public static BooleanLiteral from(String source, int index) {
+        return new BooleanLiteral(source.equals(trueSource), index);
     }
 
     @Override

@@ -28,7 +28,7 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
 
 public abstract class Literal extends Token implements Expression {
-    protected Literal(TokenID id, String source) {
-        super(id, source);
+    protected Literal(TokenID id, String source, int index) {
+        super(id, source, index);
     }
 }

@@ -100,8 +100,12 @@ public class Symbol extends Token {
         add(TokenID.SYMBOL_AT, "@");
     }
 
-    private Symbol(TokenID id, String source, Symbol compoundAssignOperator) {
-        super(id, source);
+    private Symbol(Symbol token, int index) {
+        this(token.getID(), token.getSource(), index, token.getCompoundAssignOperator());
+    }
+
+    private Symbol(TokenID id, String source, int index, Symbol compoundAssignOperator) {
+        super(id, source, index);
         this.compoundAssignOperator = compoundAssignOperator;
     }
 
@@ -120,15 +124,17 @@ public class Symbol extends Token {
         return SYMBOLS.containsKey(source);
     }
 
-    public static Symbol from(char source) {
-        return CHAR_SYMBOLS[source];
+    public static Symbol from(char source, int index) {
+        final Symbol symbol = CHAR_SYMBOLS[source];
+        return symbol == null ? null : new Symbol(symbol, index);
     }
 
-    public static Symbol from(String source) {
+    public static Symbol from(String source, int index) {
         if (source.length() == 1) {
-            return from(source.charAt(0));
+            return from(source.charAt(0), index);
         }
-        return SYMBOLS.get(source);
+        final Symbol symbol = SYMBOLS.get(source);
+        return symbol == null ? null : new Symbol(symbol, index);
     }
 
     public static Collection<Symbol> all() {
@@ -140,7 +146,7 @@ public class Symbol extends Token {
     }
 
     private static void add(TokenID id, String source, String compoundAssignOperator) {
-        final Symbol symbol = new Symbol(id, source, compoundAssignOperator == null ? null : from(compoundAssignOperator));
+        final Symbol symbol = new Symbol(id, source, 0, SYMBOLS.get(compoundAssignOperator));
         SYMBOLS.put(source, symbol);
         if (source.length() == 1) {
             CHAR_SYMBOLS[source.charAt(0)] = symbol;

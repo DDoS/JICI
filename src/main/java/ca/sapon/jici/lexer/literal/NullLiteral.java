@@ -31,11 +31,10 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
 public class NullLiteral extends Literal implements Value {
-    public static final NullLiteral THE_NULL = new NullLiteral();
     private static final String nullSource = "null";
 
-    private NullLiteral() {
-        super(TokenID.LITERAL_NULL, nullSource);
+    private NullLiteral(int index) {
+        super(TokenID.LITERAL_NULL, nullSource, index);
     }
 
     @Override
@@ -120,5 +119,9 @@ public class NullLiteral extends Literal implements Value {
     @Override
     public Value getValue(Environment environment) {
         return this;
+    }
+
+    public static NullLiteral from(int index) {
+        return new NullLiteral(index);
     }
 }

@@ -35,8 +35,8 @@ public class CharacterLiteral extends Literal implements Value {
     private char value = '\0';
     private boolean evaluated = false;
 
-    public CharacterLiteral(String source) {
-        super(TokenID.LITERAL_CHARACTER, source.substring(1, source.length() - 1));
+    private CharacterLiteral(String source, int index) {
+        super(TokenID.LITERAL_CHARACTER, source.substring(1, source.length() - 1), index);
     }
 
     private void evaluate() {
@@ -144,5 +144,9 @@ public class CharacterLiteral extends Literal implements Value {
     @Override
     public Value getValue(Environment environment) {
         return this;
+    }
+
+    public static CharacterLiteral from(String source, int index) {
+        return new CharacterLiteral(source, index);
     }
 }

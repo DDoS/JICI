@@ -26,10 +26,12 @@ package ca.sapon.jici.lexer;
 public abstract class Token {
     private final TokenID id;
     private final String source;
+    private final int index;
 
-    protected Token(TokenID id, String source) {
+    protected Token(TokenID id, String source, int index) {
         this.id = id;
         this.source = source;
+        this.index = index;
     }
 
     public TokenID getID() {
@@ -42,6 +44,10 @@ public abstract class Token {
 
     public String getSource() {
         return source;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     @Override

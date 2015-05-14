@@ -34,8 +34,8 @@ public class DoubleLiteral extends NumberLiteral implements Value {
     private double value = 0;
     private boolean evaluated = false;
 
-    public DoubleLiteral(String source) {
-        super(TokenID.LITERAL_DOUBLE, source);
+    public DoubleLiteral(String source, int index) {
+        super(TokenID.LITERAL_DOUBLE, source, index);
     }
 
     private void evaluate() {

@@ -34,8 +34,8 @@ public class FloatLiteral extends NumberLiteral implements Value {
     private float value = 0;
     private boolean evaluated = false;
 
-    public FloatLiteral(String source) {
-        super(TokenID.LITERAL_FLOAT, source);
+    public FloatLiteral(String source, int index) {
+        super(TokenID.LITERAL_FLOAT, source, index);
     }
 
     private void evaluate() {

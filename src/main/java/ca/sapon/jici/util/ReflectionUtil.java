@@ -42,7 +42,7 @@ import ca.sapon.jici.evaluator.value.type.VoidValueType;
 /**
  *
  */
-public class ReflectionUtil {
+public final class ReflectionUtil {
     public static final Set<String> JAVA_LANG_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                     "Appendable", "AutoCloseable", "CharSequence", "Cloneable", "Comparable", "Iterable", "Readable",
                     "Runnable", "Boolean", "Byte", "Character", "Class", "ClassLoader", "ClassValue", "Compiler", "Double",
@@ -63,6 +63,9 @@ public class ReflectionUtil {
                     "VerifyError", "VirtualMachineError", "Deprecated", "Override", "SafeVarargs", "SuppressWarnings"
             ))
     );
+
+    private ReflectionUtil() {
+    }
 
     public static Class<?> findClass(List<?> name) {
         return decodeClassName(name, false);

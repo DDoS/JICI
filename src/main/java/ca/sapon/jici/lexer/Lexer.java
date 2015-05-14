@@ -36,7 +36,10 @@ import ca.sapon.jici.util.StringConsumer;
 /**
  * A Java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
  */
-public class Lexer {
+public final class Lexer {
+    private Lexer() {
+    }
+
     /**
      * Returns a list of {@link ca.sapon.jici.lexer.Token} lexed from the given source string. This list is composed of identifier, literals (null, integer, long, float, double, char and String),
      * keywords and symbols.

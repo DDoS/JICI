@@ -21,39 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
+package ca.sapon.jici.decoder;
 
-import java.util.List;
-import java.util.Scanner;
+import ca.sapon.jici.util.StringUtil;
 
-import ca.sapon.jici.decoder.Decoder;
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.statement.Statement;
-
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n\n");
-        final Environment environment = new Environment();
-        final Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            eval(environment, scanner.nextLine());
-        }
-        scanner.close();
+/**
+ *
+ */
+public final class Decoder {
+    private Decoder() {
     }
 
-    private static void eval(Environment environment, String source) {
-        try {
-            source = Decoder.decode(source);
-            final List<Token> tokens = Lexer.lex(source);
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                statement.execute(environment);
+    public static String decode(String source) {
+        final int length = source.length();
+        final char[] chars = new char[length];
+        int escapes = 0;
+        int i = 0, j = 0;
+        while (i < length) {
+            char c = source.charAt(i);
+            if (c == '\\') {
+                escapes++;
+            } else {
+                if ((escapes & 1) == 1 && c == 'u') {
+                    try {
+                        c = StringUtil.decodeUnicodeEscape(source.substring(i + 1, Math.min(i + 5, length)));
+                    } catch (IllegalArgumentException exception) {
+                        throw new DecoderException(exception.getMessage());
+                    }
+                    i += 4;
+                    j--;
+                }
+                escapes = 0;
             }
-        } catch (Exception exception) {
-            exception.printStackTrace();
+            chars[j++] = c;
+            i++;
         }
+        return String.valueOf(chars, 0, j);
     }
 }

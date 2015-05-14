@@ -35,19 +35,19 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenType;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
-import ca.sapon.jici.parser.expression.call.AmbiguousCall;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
 import ca.sapon.jici.parser.expression.Conditional;
-import ca.sapon.jici.parser.expression.call.ConstructorCall;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.expression.reference.IndexAccess;
 import ca.sapon.jici.parser.expression.Shift;
 import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.arithmetic.Sign;
 import ca.sapon.jici.parser.expression.assignment.Assignment;
 import ca.sapon.jici.parser.expression.assignment.PostIncrement;
 import ca.sapon.jici.parser.expression.assignment.PreIncrement;
+import ca.sapon.jici.parser.expression.call.AmbiguousCall;
+import ca.sapon.jici.parser.expression.call.ConstructorCall;
+import ca.sapon.jici.parser.expression.call.MethodCall;
 import ca.sapon.jici.parser.expression.comparison.Comparison;
 import ca.sapon.jici.parser.expression.comparison.Equal;
 import ca.sapon.jici.parser.expression.comparison.TypeCheck;
@@ -57,7 +57,7 @@ import ca.sapon.jici.parser.expression.logic.BooleanLogic;
 import ca.sapon.jici.parser.expression.logic.BooleanNot;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.expression.reference.FieldAccess;
-import ca.sapon.jici.parser.expression.call.MethodCall;
+import ca.sapon.jici.parser.expression.reference.IndexAccess;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.statement.Declaration;
@@ -70,7 +70,10 @@ import ca.sapon.jici.parser.type.PrimitiveType;
 import ca.sapon.jici.parser.type.Type;
 import ca.sapon.jici.util.ListNavigator;
 
-public class Parser {
+public final class Parser {
+    private Parser() {
+    }
+
     public static List<Statement> parse(List<Token> tokens) {
         final List<Statement> statements = new ArrayList<>();
         final ListNavigator<Token> navigableTokens = new ListNavigator<>(tokens);

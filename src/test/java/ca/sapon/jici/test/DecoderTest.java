@@ -21,39 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici;
-
-import java.util.List;
-import java.util.Scanner;
+package ca.sapon.jici.test;
 
 import ca.sapon.jici.decoder.Decoder;
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.decoder.DecoderException;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n\n");
-        final Environment environment = new Environment();
-        final Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            eval(environment, scanner.nextLine());
+/**
+ *
+ */
+public class DecoderTest {
+    @Test
+    public void test() {
+        testDecode("abcd efgh", "abcd efgh");
+        testDecode("abcd\\efgh", "abcd\\efgh");
+        testDecode("\\u0041", "A");
+        testDecode("\\u005C", "\\");
+        testDecode("\\\\u005C", "\\\\u005C");
+        testDecode("abcd\\u0020efgh", "abcd efgh");
+
+        try {
+            Decoder.decode("\\u05G");
+            Assert.fail();
+        } catch (DecoderException ignored) {
         }
-        scanner.close();
+
+        try {
+            Decoder.decode("\\u05C");
+            Assert.fail();
+        } catch (DecoderException ignored) {
+        }
+
+        try {
+            Decoder.decode("\\u");
+            Assert.fail();
+        } catch (DecoderException ignored) {
+        }
     }
 
-    private static void eval(Environment environment, String source) {
-        try {
-            source = Decoder.decode(source);
-            final List<Token> tokens = Lexer.lex(source);
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                statement.execute(environment);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
+    private void testDecode(String source, String expected) {
+        Assert.assertEquals(expected, Decoder.decode(source));
     }
 }

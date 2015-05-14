@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.decoder;
 
+import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.util.StringUtil;
 
 /**
@@ -33,14 +34,20 @@ public final class Decoder {
     }
 
     public static String decode(String source) {
+        return decode(source, SourceMetadata.NONE);
+    }
+
+    public static String decode(String source, SourceMetadata metadata) {
         final int length = source.length();
         final char[] chars = new char[length];
         int escapes = 0;
         int i = 0, j = 0;
         while (i < length) {
             char c = source.charAt(i);
+            final int advance;
             if (c == '\\') {
                 escapes++;
+                advance = 1;
             } else {
                 if ((escapes & 1) == 1 && c == 'u') {
                     final int end = Math.min(i + 5, length);
@@ -49,13 +56,17 @@ public final class Decoder {
                     } catch (IllegalArgumentException exception) {
                         throw new DecoderException("Malformed unicode escape", source.substring(i - 1, end), i - 1);
                     }
-                    i += 4;
                     j--;
+                    advance = 5;
+                } else {
+                    advance = 1;
                 }
                 escapes = 0;
             }
-            chars[j++] = c;
-            i++;
+            chars[j] = c;
+            metadata.mapDecodedChar(i, j);
+            i += advance;
+            j++;
         }
         return String.valueOf(chars, 0, j);
     }

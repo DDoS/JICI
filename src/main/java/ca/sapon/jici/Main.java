@@ -45,13 +45,16 @@ public class Main {
     }
 
     private static void eval(Environment environment, String source) {
+        final SourceMetadata metadata = new SourceMetadata(source);
         try {
-            source = Decoder.decode(source);
+            source = Decoder.decode(source, metadata);
             final List<Token> tokens = Lexer.lex(source);
             final List<Statement> statements = Parser.parse(tokens);
             for (Statement statement : statements) {
                 statement.execute(environment);
             }
+        } catch (SourceException exception) {
+            System.out.println(metadata.generateErrorMessage(exception));
         } catch (Exception exception) {
             exception.printStackTrace();
         }

@@ -33,8 +33,8 @@ public class ParserException extends SourceException {
     private static final long serialVersionUID = 1;
     private final Token token;
 
-    public ParserException(String error, Token offender) {
-        super(error, null, offender == null ? 0 : offender.getIndex());
+    public ParserException(String error, Token offender, int index) {
+        super(error, null, offender == null ? index : offender.getIndex());
         token = offender;
     }
 

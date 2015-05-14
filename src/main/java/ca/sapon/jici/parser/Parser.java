@@ -124,7 +124,7 @@ public final class Parser {
             }
             throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseFailure("Expected a statement", token);
+        throw new ParseFailure("Expected a statement", tokens);
     }
 
     /*
@@ -234,7 +234,7 @@ public final class Parser {
                     tokens.advance();
                     return new Import(name, false);
                 }
-                throw new ParseError("Expected ';'", token);
+                throw new ParseError("Expected ';'", tokens);
             }
             throw new ParseError("Expected '*' or ';'", tokens);
         }
@@ -533,7 +533,7 @@ public final class Parser {
                                 tokens.discardPosition();
                                 return new Cast(type, inner);
                             }
-                        } catch (ParseFailure exception) {
+                        } catch (ParseError exception) {
                             // this is not a cast, but an access
                         }
                         tokens.popPosition();
@@ -543,7 +543,7 @@ public final class Parser {
             final Expression inner = parseAccess(tokens);
             return parseUnary(tokens, inner);
         }
-        throw new ParseFailure("Expected a token", tokens);
+        throw new ParseError("Expected a token", tokens);
     }
 
     private static Expression parseUnary(ListNavigator<Token> tokens, Expression inner) {
@@ -678,7 +678,7 @@ public final class Parser {
                 }
             }
         }
-        throw new ParseFailure("Expected a literal, an identifier, \"new\" or '('", tokens);
+        throw new ParseError("Expected a literal, an identifier, \"new\" or '('", tokens);
     }
 
     private static List<Expression> parseArguments(ListNavigator<Token> tokens) {
@@ -700,11 +700,7 @@ public final class Parser {
         private static final long serialVersionUID = 1;
 
         private ParseFailure(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : tokens.position() > 0 ? tokens.get(-1) : null);
-        }
-
-        private ParseFailure(String error, Token offender) {
-            super(error, offender);
+            super(error, tokens.has() ? tokens.get() : null, getErrorIndex(tokens));
         }
     }
 
@@ -712,11 +708,18 @@ public final class Parser {
         private static final long serialVersionUID = 1;
 
         private ParseError(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : tokens.position() > 0 ? tokens.get(-1) : null);
+            super(error, tokens.has() ? tokens.get() : null, getErrorIndex(tokens));
         }
+    }
 
-        private ParseError(String error, Token offender) {
-            super(error, offender);
+    private static int getErrorIndex(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            return tokens.get().getIndex();
         }
+        if (tokens.position() > 0) {
+            final Token token = tokens.get(-1);
+            return token.getIndex() + token.getSource().length();
+        }
+        return 0;
     }
 }

@@ -32,6 +32,7 @@ import ca.sapon.jici.lexer.literal.NullLiteral;
 import ca.sapon.jici.lexer.literal.StringLiteral;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.util.StringConsumer;
+import ca.sapon.jici.util.StringUtil;
 
 /**
  * A Java lexer. Transforms a source string to a list of {@link ca.sapon.jici.lexer.Token}s.
@@ -161,20 +162,27 @@ public final class Lexer {
     }
 
     private static int consumeNumberLiteral(StringConsumer consumer) {
-        // a string of alphanumeric characters starting with a digit or a decimal point,
+        // a string of digits starting with a digit or a decimal point,
         // with the following exceptions
-        //   - underscores are allowed between non identifier alphanumerics or underscores
+        //   - second character can be a radix identifier
+        //     - the radix identifier is b, B, x or X
+        //   - underscores are allowed between digits or underscores
         //   - one decimal separator allowed in the mantissa
         //     - if it begins the number it must be followed by a digit
         //   - a negative or positive sign after an exponent identifier
         //     - the exponent identifier is e or E for decimal
         //     - the exponent identifier is p or P for hexadecimal
+        //   - one exponent separator
+        //   - a type identifier as a suffix
+        //     - the type identifier is l or L for decimal and hexadecimal
+        //     - the type identifier is f, F, d or D for decimal
         // notes
         //   - prefix signs are handled as operators
-        //   - no validation is done on the radix
-        char pc = '\0', c;
+        char pc = '\0', c = '\0';
         boolean inMantissa = true;
-        boolean decimalSeparatorFound;
+        boolean decimalSeparatorFound = false;
+        boolean exponentSeparatorFound = false;
+        int radix = 10;
         boolean hexadecimal = false;
         // if the first char is a decimal separator, we need a following digit and we found a decimal separator
         if (isDecimalSeparator(consumer.get())) {
@@ -183,39 +191,50 @@ public final class Lexer {
                 return consumer.position();
             }
             decimalSeparatorFound = true;
-        } else {
-            decimalSeparatorFound = false;
         }
         // the main consumer loop, implements the description above
         while (consumer.consume()
-                && (Character.isLetterOrDigit(c = consumer.get())
-                || isDigitSeparator(c) && canPrecedeDigitSeparator(pc, hexadecimal, inMantissa) && canFollowDigitSeparator(consumer, hexadecimal, inMantissa)
-                || isDecimalSeparator(c) && !decimalSeparatorFound && inMantissa
-                || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))) {
-            // check if we found a decimal separator
-            if (!decimalSeparatorFound) {
-                decimalSeparatorFound = isDecimalSeparator(c);
-            }
+                && (isDigit(c = consumer.get(), radix)
+                || pc == '\0' && isRadixIdentifier(c)
+                || isDigitSeparator(c) && canPrecedeDigitSeparator(pc, hexadecimal) && canFollowDigitSeparator(consumer, hexadecimal)
+                || !decimalSeparatorFound && inMantissa && (decimalSeparatorFound = isDecimalSeparator(c))
+                || isSignIdentifier(c) && isExponentSeparator(pc, hexadecimal))
+                || inMantissa && (exponentSeparatorFound = isExponentSeparator(c, hexadecimal))) {
             // the second char consumed will always be where the hexadecimal identifier is
             if (pc == '\0') {
-                hexadecimal = isHexadecimalIdentifier(c);
+                if (isHexadecimalIdentifier(c)) {
+                    radix = 16;
+                    hexadecimal = true;
+                } else if (isBinaryIdentifier(c)) {
+                    radix = 2;
+                }
             }
             // check if we have found an exponent separator and move out of the mantissa
-            if (inMantissa && isExponentSeparator(c, hexadecimal)) {
+            if (exponentSeparatorFound && inMantissa) {
                 inMantissa = false;
+                // in hexadecimal floating points the exponent is in base 10
+                radix = 10;
+                hexadecimal = false;
             }
             pc = c;
         }
         // ignore trailing signs
         if (isSignIdentifier(pc)) {
             consumer.expel();
+        } else if (isTypeIdentifier(c, hexadecimal)) {
+            // include the type suffix
+            consumer.consume();
         }
         return consumer.position();
     }
 
-    private static boolean isSpecialIdentifier(char c, boolean hexadecimal, boolean inMantissa) {
+    private static boolean isDigit(char c, int radix) {
+        return StringUtil.getDigitValue(c, radix) >= 0;
+    }
+
+    private static boolean isSpecialIdentifier(char c, boolean hexadecimal) {
         return isSignIdentifier(c) || isDecimalSeparator(c) || isExponentSeparator(c, hexadecimal)
-                || isRadixIdentifier(c) || isTypeIdentifier(c, inMantissa);
+                || isRadixIdentifier(c) || isTypeIdentifier(c, hexadecimal);
     }
 
     private static boolean isSignIdentifier(char c) {
@@ -246,16 +265,16 @@ public final class Lexer {
         return c == 'b' || c == 'B';
     }
 
-    private static boolean isTypeIdentifier(char c, boolean inMantissa) {
-        return c == 'l' || c == 'L' || !inMantissa && (c == 'f' || c == 'F' || c == 'd' || c == 'D');
+    private static boolean isTypeIdentifier(char c, boolean hexadecimal) {
+        return c == 'l' || c == 'L' || !hexadecimal && (c == 'f' || c == 'F' || c == 'd' || c == 'D');
     }
 
-    private static boolean canPrecedeDigitSeparator(char c, boolean hexadecimal, boolean inMantissa) {
-        return isDigitSeparator(c) || !isSpecialIdentifier(c, hexadecimal, inMantissa);
+    private static boolean canPrecedeDigitSeparator(char c, boolean hexadecimal) {
+        return isDigitSeparator(c) || !isSpecialIdentifier(c, hexadecimal);
     }
 
-    private static boolean canFollowDigitSeparator(StringConsumer consumer, boolean hexadecimal, boolean inMantissa) {
-        return consumer.has(1) && canPrecedeDigitSeparator(consumer.get(1), hexadecimal, inMantissa);
+    private static boolean canFollowDigitSeparator(StringConsumer consumer, boolean hexadecimal) {
+        return consumer.has(1) && canPrecedeDigitSeparator(consumer.get(1), hexadecimal);
     }
 
     private static void consumeCharacterLiteral(StringConsumer consumer) {

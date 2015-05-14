@@ -1,11 +1,10 @@
 // Default tasks
-defaultTasks 'licenseFormatMain', 'licenseFormatTest', 'clean', 'build', 'shadowJar'
+defaultTasks 'licenseFormatMain', 'licenseFormatTest', 'clean', 'build'
 
 // Apply plugins
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'license'
-apply plugin: 'shadow'
 apply plugin: 'maven'
 
 // Basic project information
@@ -32,11 +31,6 @@ ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
 ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
 ext.commit = project.hasProperty("commit") ? commit : 'unknown'
 
-// Configuration settings
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds' // Always check for new snapshots
-}
-
 // Plugin repositories and dependencies
 buildscript {
     repositories {
@@ -45,7 +39,6 @@ buildscript {
     }
     dependencies {
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
     }
 }
 
@@ -63,13 +56,6 @@ processResources {
     from(rootProject.rootDir) {
         include 'LICENSE.txt'
     }
-}
-
-// Include dependencies in final JAR
-shadow {
-    artifactAttached = false
-    include '**'
-    exclude 'junit/**'
 }
 
 // License header formatting

@@ -27,6 +27,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
+import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.Shift;
 import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
@@ -81,7 +82,14 @@ public class Assignment implements Expression, Statement {
             final ValueType type = value.getValueType(environment);
             final ValueType assigneeType = assignee.getValueType(environment);
             if ((simpleAssign || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType.getTypeClass())) {
-                throw new IllegalArgumentException("Cannot convert " + type.getName() + " to " + assigneeType.getName());
+                if (value instanceof IntLiteral) {
+                    final IntLiteral intLiteral = (IntLiteral) value;
+                    if (!assigneeType.unbox().canNarrowFrom(intLiteral.asInt())) {
+                        throw new IllegalArgumentException("Cannot narrow " + intLiteral + " to " + assigneeType.getName());
+                    }
+                } else {
+                    throw new IllegalArgumentException("Cannot convert " + type.getName() + " to " + assigneeType.getName());
+                }
             }
             valueType = assigneeType;
         }

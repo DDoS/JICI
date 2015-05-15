@@ -217,7 +217,13 @@ public class PrimitiveValueType implements ValueType {
     }
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
-        return to.isPrimitive() ? VALID_CONVERSIONS.get(from).contains(to) : box(from).convertibleTo(to);
+        if (!to.isPrimitive()) {
+            to = ObjectValueType.unbox(to);
+            if (!to.isPrimitive()) {
+                return box(from).convertibleTo(to);
+            }
+        }
+        return VALID_CONVERSIONS.get(from).contains(to);
     }
 
     public static PrimitiveValueType of(Class<?> type) {

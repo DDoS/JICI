@@ -62,14 +62,22 @@ public class IndexAccess implements Reference {
     public Value getValue(Environment environment) {
         final Value objectValue = object.getValue(environment);
         final Value indexValue = index.getValue(environment);
-        return valueType.getKind().wrap(Array.get(objectValue.asObject(), indexValue.asInt()));
+        try {
+            return valueType.getKind().wrap(Array.get(objectValue.asObject(), indexValue.asInt()));
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Could not get array item", exception);
+        }
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
         final Value objectValue = object.getValue(environment);
         final Value indexValue = index.getValue(environment);
-        Array.set(objectValue.asObject(), indexValue.asInt(), value.asObject());
+        try {
+            Array.set(objectValue.asObject(), indexValue.asInt(), value.asObject());
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Could not set array item", exception);
+        }
     }
 
     @Override

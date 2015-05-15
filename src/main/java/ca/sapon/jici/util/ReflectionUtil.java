@@ -154,7 +154,7 @@ public final class ReflectionUtil {
                 }
                 for (int i = 0; i < parameters.length; i++) {
                     // remove when the challenge is narrower than the parameter
-                    if (ReflectionUtil.isNarrower(challenges[i], parameters[i])) {
+                    if (ReflectionUtil.isNarrowerParameter(arguments[i].getTypeClass(), challenges[i], parameters[i])) {
                         candidateCount--;
                         continue candidates;
                     }
@@ -167,13 +167,21 @@ public final class ReflectionUtil {
         return candidateCount != 1 || callable == null ? null : callable;
     }
 
-    private static boolean isNarrower(Class<?> a, Class<?> b) {
-        if (a.isPrimitive()) {
-            // a != b and a <= b
-            return a != b && PrimitiveValueType.convertibleTo(a, b);
+    private static boolean isNarrowerParameter(Class<?> argument, Class<?> parameterA, Class<?> parameterB) {
+        // if A is primitive
+        //   if B is primitive
+        //     A < B
+        //   else
+        //     argument is primitive
+        // else
+        //   if B is primitive
+        //     argument is not primitive
+        //   else
+        //     A < B
+        if (parameterA.isPrimitive()) {
+            return parameterB.isPrimitive() ? PrimitiveValueType.convertibleTo(parameterA, parameterB) : argument.isPrimitive();
         }
-        // b !< a and a < b
-        return !b.isPrimitive() && !a.isAssignableFrom(b);
+        return parameterB.isPrimitive() ? !argument.isPrimitive() : ObjectValueType.convertibleTo(parameterA, parameterB);
     }
 
     public static ValueType wrap(Class<?> type) {

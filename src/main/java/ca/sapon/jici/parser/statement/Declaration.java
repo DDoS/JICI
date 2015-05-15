@@ -68,11 +68,7 @@ public class Declaration implements Statement {
         }
         for (Variable variable : variables) {
             final Identifier name = variable.getName();
-            if (variable.hasValue()) {
-                environment.declareVariable(name, valueType, variable.getValue(environment));
-            } else {
-                environment.declareVariable(name, valueType);
-            }
+            environment.declareVariable(name, valueType, variable.getValue(environment));
         }
     }
 
@@ -101,10 +97,6 @@ public class Declaration implements Statement {
 
         public Expression getValueExpression() {
             return value;
-        }
-
-        public boolean hasValue() {
-            return value != null;
         }
 
         public Value getValue(Environment environment) {

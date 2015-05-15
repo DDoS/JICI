@@ -90,10 +90,6 @@ public class Environment {
         return classes.containsKey(name.getSource());
     }
 
-    public void declareVariable(Identifier name, ValueType type) {
-        declareVariable(name, type, type.getKind().defaultValue());
-    }
-
     public void declareVariable(Identifier name, ValueType type, Value value) {
         final String nameString = name.getSource();
         if (variables.containsKey(nameString)) {
@@ -150,7 +146,14 @@ public class Environment {
             return type;
         }
 
+        public boolean initialized() {
+            return value != null;
+        }
+
         public Value getValue() {
+            if (!initialized()) {
+                throw new IllegalArgumentException("Variable " + name + " has not been initialized");
+            }
             return value;
         }
 

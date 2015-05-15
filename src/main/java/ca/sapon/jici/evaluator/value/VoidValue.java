@@ -31,52 +31,52 @@ public class VoidValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a void to a byte");
+        throw new IllegalArgumentException("Cannot convert void to a byte");
     }
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot cast a void to a byte");
+        throw new IllegalArgumentException("Cannot convert void to a byte");
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot cast a void to a short");
+        throw new IllegalArgumentException("Cannot convert void to a short");
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot cast a void to a char");
+        throw new IllegalArgumentException("Cannot convert void to a char");
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot cast a void to an int");
+        throw new IllegalArgumentException("Cannot convert void to an int");
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot cast a void to a long");
+        throw new IllegalArgumentException("Cannot convert void to a long");
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot cast a void to a float");
+        throw new IllegalArgumentException("Cannot convert void to a float");
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot cast a void to a double");
+        throw new IllegalArgumentException("Cannot convert void to a double");
     }
 
     @Override
     public Boolean asObject() {
-        throw new IllegalArgumentException("Cannot cast a void to an object");
+        throw new IllegalArgumentException("Cannot convert void to an object");
     }
 
     @Override
     public String asString() {
-        throw new IllegalArgumentException("Cannot cast a void to a string");
+        throw new IllegalArgumentException("Cannot convert void to a string");
     }
 
     @Override

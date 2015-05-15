@@ -50,7 +50,7 @@ public class IndexAccess implements Reference {
                 throw new IllegalArgumentException("Not an array: " + objectType.getName());
             }
             if (!indexType.convertibleTo(int.class)) {
-                throw new IllegalArgumentException("Cannot cast " + indexType.getName() + " to int");
+                throw new IllegalArgumentException("Cannot convert " + indexType.getName() + " to int");
             }
             final Class<?> componentType = objectType.getTypeClass().getComponentType();
             valueType = ReflectionUtil.wrap(componentType);

@@ -32,7 +32,7 @@ public class FloatValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a float to a boolean");
+        throw new IllegalArgumentException("Cannot convert a float to a boolean");
     }
 
     @Override

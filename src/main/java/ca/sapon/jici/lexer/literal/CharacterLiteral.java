@@ -61,7 +61,7 @@ public class CharacterLiteral extends Literal implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a char to a boolean");
+        throw new IllegalArgumentException("Cannot convert a char to a boolean");
     }
 
     @Override

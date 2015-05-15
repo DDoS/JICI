@@ -32,7 +32,7 @@ public class DoubleValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a double to a boolean");
+        throw new IllegalArgumentException("Cannot convert a double to a boolean");
     }
 
     @Override

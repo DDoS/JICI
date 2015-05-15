@@ -39,7 +39,7 @@ public class ShortValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a short to a boolean");
+        throw new IllegalArgumentException("Cannot convert a short to a boolean");
     }
 
     @Override

@@ -81,7 +81,7 @@ public class Assignment implements Expression, Statement {
             final ValueType type = value.getValueType(environment);
             final ValueType assigneeType = assignee.getValueType(environment);
             if ((simpleAssign || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType.getTypeClass())) {
-                throw new IllegalArgumentException("Cannot cast " + type.getName() + " to " + assigneeType.getName());
+                throw new IllegalArgumentException("Cannot convert " + type.getName() + " to " + assigneeType.getName());
             }
             valueType = assigneeType;
         }

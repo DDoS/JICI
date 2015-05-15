@@ -51,7 +51,7 @@ public class IntLiteral extends NumberLiteral implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast an int to a boolean");
+        throw new IllegalArgumentException("Cannot convert an int to a boolean");
     }
 
     @Override

@@ -60,7 +60,7 @@ public class Declaration implements Statement {
                             throw new IllegalArgumentException("Cannot narrow " + intLiteral + " to " + declarationType.getName());
                         }
                     } else {
-                        throw new IllegalArgumentException("Cannot cast " + variableType.getName() + " to " + declarationType.getName());
+                        throw new IllegalArgumentException("Cannot convert " + variableType.getName() + " to " + declarationType.getName());
                     }
                 }
             }

@@ -39,37 +39,37 @@ public class BooleanValue implements Value {
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a byte");
+        throw new IllegalArgumentException("Cannot convert a boolean to a byte");
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a short");
+        throw new IllegalArgumentException("Cannot convert a boolean to a short");
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a char");
+        throw new IllegalArgumentException("Cannot convert a boolean to a char");
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot cast a boolean to an int");
+        throw new IllegalArgumentException("Cannot convert a boolean to an int");
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a long");
+        throw new IllegalArgumentException("Cannot convert a boolean to a long");
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a float");
+        throw new IllegalArgumentException("Cannot convert a boolean to a float");
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot cast a boolean to a double");
+        throw new IllegalArgumentException("Cannot convert a boolean to a double");
     }
 
     @Override

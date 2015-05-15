@@ -39,7 +39,7 @@ public class LongValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast a long to a boolean");
+        throw new IllegalArgumentException("Cannot convert a long to a boolean");
     }
 
     @Override

@@ -65,42 +65,42 @@ public class StringLiteral extends Literal implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot cast an object to a boolean");
+        throw new IllegalArgumentException("Cannot convert an object to a boolean");
     }
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot cast an object to a byte");
+        throw new IllegalArgumentException("Cannot convert an object to a byte");
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot cast an object to a short");
+        throw new IllegalArgumentException("Cannot convert an object to a short");
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot cast an object to a char");
+        throw new IllegalArgumentException("Cannot convert an object to a char");
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot cast an object to an int");
+        throw new IllegalArgumentException("Cannot convert an object to an int");
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot cast an object to a long");
+        throw new IllegalArgumentException("Cannot convert an object to a long");
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot cast an object to a float");
+        throw new IllegalArgumentException("Cannot convert an object to a float");
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot cast an object to a double");
+        throw new IllegalArgumentException("Cannot convert an object to a double");
     }
 
     @Override

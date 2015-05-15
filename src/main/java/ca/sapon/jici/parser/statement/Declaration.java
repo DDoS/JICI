@@ -29,6 +29,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
+import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.Type;
 import ca.sapon.jici.util.StringUtil;
@@ -53,7 +54,14 @@ public class Declaration implements Statement {
             for (Variable variable : variables) {
                 final ValueType variableType = variable.getValueType(environment);
                 if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {
-                    throw new IllegalArgumentException("Cannot cast " + variableType.getName() + " to " + declarationType.getName());
+                    if (variable.getValueExpression() instanceof IntLiteral) {
+                        final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
+                        if (!declarationType.unbox().canNarrowFrom(intLiteral.asInt())) {
+                            throw new IllegalArgumentException("Cannot narrow " + intLiteral + " to " + declarationType.getName());
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Cannot cast " + variableType.getName() + " to " + declarationType.getName());
+                    }
                 }
             }
             valueType = declarationType;
@@ -89,6 +97,10 @@ public class Declaration implements Statement {
 
         public Identifier getName() {
             return name;
+        }
+
+        public Expression getValueExpression() {
+            return value;
         }
 
         public boolean hasValue() {

@@ -108,7 +108,7 @@ public class NullValueType implements ValueType {
     }
 
     @Override
-    public boolean canNarrowTo(int value) {
+    public boolean canNarrowFrom(int value) {
         return false;
     }
 

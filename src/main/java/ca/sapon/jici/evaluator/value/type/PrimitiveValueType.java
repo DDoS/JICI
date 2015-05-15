@@ -169,7 +169,7 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public boolean canNarrowTo(int value) {
+    public boolean canNarrowFrom(int value) {
         final RangeChecker checker = NARROW_CHECKERS.get(type);
         return checker != null && checker.contains(value);
     }

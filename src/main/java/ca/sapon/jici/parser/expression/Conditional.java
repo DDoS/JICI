@@ -74,11 +74,11 @@ public class Conditional implements Expression {
                 // for objects return a union
                 return valueType = new ObjectUnionValueType(leftType.box(), rightType.box());
             }
-            if (left instanceof IntLiteral && rightType.canNarrowTo(((IntLiteral) left).asInt())) {
+            if (left instanceof IntLiteral && rightType.canNarrowFrom(((IntLiteral) left).asInt())) {
                 // left constant numeric that narrows to right, use right
                 return valueType = rightType;
             }
-            if (right instanceof IntLiteral && leftType.canNarrowTo(((IntLiteral) right).asInt())) {
+            if (right instanceof IntLiteral && leftType.canNarrowFrom(((IntLiteral) right).asInt())) {
                 // right constant numeric that narrows to left, use left
                 return valueType = leftType;
             }

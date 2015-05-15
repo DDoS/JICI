@@ -108,7 +108,7 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public boolean canNarrowTo(int value) {
+    public boolean canNarrowFrom(int value) {
         return false;
     }
 

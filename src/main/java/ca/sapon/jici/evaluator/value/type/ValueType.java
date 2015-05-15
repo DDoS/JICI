@@ -60,7 +60,7 @@ public interface ValueType {
 
     ObjectValueType box();
 
-    boolean canNarrowTo(int value);
+    boolean canNarrowFrom(int value);
 
     PrimitiveValueType unaryWiden();
 

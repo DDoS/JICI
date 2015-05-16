@@ -55,8 +55,6 @@ public class Main {
             }
         } catch (SourceException exception) {
             System.out.println(metadata.generateErrorMessage(exception));
-            exception.printStackTrace();
-
         } catch (Exception exception) {
             exception.printStackTrace();
         }

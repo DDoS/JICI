@@ -49,6 +49,9 @@ public class EvaluatorException extends SourceException {
     }
 
     private static String getMessage(String error, Throwable cause) {
+        if (cause == null) {
+            return error;
+        }
         String causeMessage = cause.getMessage();
         if (causeMessage != null) {
             causeMessage = causeMessage.trim();
@@ -56,10 +59,10 @@ public class EvaluatorException extends SourceException {
                 causeMessage = null;
             }
         }
-        String message = error + ": " + cause.getClass().getSimpleName();
+        error += " (" + cause.getClass().getSimpleName();
         if (causeMessage != null) {
-            message += " " + causeMessage;
+            error += ": " + causeMessage;
         }
-        return message;
+        return getMessage(error, cause.getCause()) + ")";
     }
 }

@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -51,10 +52,12 @@ public class Conditional implements Expression {
             ValueType leftType = left.getValueType(environment);
             ValueType rightType = right.getValueType(environment);
             if (!testType.isBoolean()) {
-                throw new IllegalArgumentException("Not a boolean: " + testType.getName());
+                throw new EvaluatorException("Not a boolean: " + testType.getName(), test);
             }
-            if (leftType.isVoid() || rightType.isVoid()) {
-                throw new IllegalArgumentException("Illegal type: void");
+            if (leftType.isVoid()) {
+                throw new EvaluatorException("Illegal type: void", left);
+            } else if (rightType.isVoid()) {
+                throw new EvaluatorException("Illegal type: void", right);
             }
             if (leftType.is(rightType.getTypeClass())) {
                 // both same type to that type
@@ -108,6 +111,16 @@ public class Conditional implements Expression {
             return resultValue;
         }
         return widenKind.convert(resultValue);
+    }
+
+    @Override
+    public int getStart() {
+        return test.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     @Override

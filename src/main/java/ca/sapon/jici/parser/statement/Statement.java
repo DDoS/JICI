@@ -23,10 +23,17 @@
  */
 package ca.sapon.jici.parser.statement;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 
-public interface Statement {
+public interface Statement extends SourceIndexed {
     void execute(Environment environment);
+
+    @Override
+    int getStart();
+
+    @Override
+    int getEnd();
 
     String toString();
 }

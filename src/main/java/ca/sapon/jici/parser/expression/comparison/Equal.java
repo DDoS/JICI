@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -54,13 +55,13 @@ public class Equal implements Expression {
                 if (rightType.isObject()) {
                     widenKind = ValueKind.OBJECT;
                 } else {
-                    throw new IllegalArgumentException("Not an object type: " + rightType.getName());
+                    throw new EvaluatorException("Not an object type: " + rightType.getName(), right);
                 }
             } else if (leftType.isBoolean()) {
                 if (rightType.isBoolean()) {
                     widenKind = ValueKind.BOOLEAN;
                 } else {
-                    throw new IllegalArgumentException("Not a boolean type: " + rightType.getName());
+                    throw new EvaluatorException("Not a boolean type: " + rightType.getName(), right);
                 }
             } else {
                 widenKind = leftType.binaryWiden(rightType.getTypeClass()).getKind();
@@ -80,8 +81,18 @@ public class Equal implements Expression {
             case SYMBOL_NOT_EQUAL:
                 return doNotEqual(leftValue, rightValue, widenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for equal: " + operator);
+                throw new EvaluatorException("Invalid operator for equal: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {
@@ -99,7 +110,7 @@ public class Equal implements Expression {
             case OBJECT:
                 return BooleanValue.of(leftValue.asObject() == rightValue.asObject());
             default:
-                throw new IllegalArgumentException("Invalid type for equal: " + widenKind);
+                throw new EvaluatorException("Invalid type for equal: " + widenKind, this);
         }
     }
 
@@ -118,7 +129,7 @@ public class Equal implements Expression {
             case OBJECT:
                 return BooleanValue.of(leftValue.asObject() != rightValue.asObject());
             default:
-                throw new IllegalArgumentException("Invalid type for not equal: " + widenKind);
+                throw new EvaluatorException("Invalid type for not equal: " + widenKind, this);
         }
     }
 

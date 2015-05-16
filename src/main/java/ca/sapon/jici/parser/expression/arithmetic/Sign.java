@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -49,7 +50,7 @@ public class Sign implements Expression {
         if (valueType == null) {
             final ValueType innerType = inner.getValueType(environment).unbox();
             if (!innerType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + innerType.getName());
+                throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }
             valueType = innerType.unaryWiden();
         }
@@ -66,8 +67,18 @@ public class Sign implements Expression {
             case SYMBOL_MINUS:
                 return doNegate(innerValue, widenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for sign: " + operator);
+                throw new EvaluatorException("Invalid operator for sign: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return operator.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return inner.getEnd();
     }
 
     private Value doNegate(Value innerValue, ValueKind widenKind) {
@@ -81,7 +92,7 @@ public class Sign implements Expression {
             case DOUBLE:
                 return DoubleValue.of(-innerValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for negate, got " + widenKind);
+                throw new EvaluatorException("Invalid type for negate, got " + widenKind, this);
         }
     }
 
@@ -96,7 +107,7 @@ public class Sign implements Expression {
             case DOUBLE:
                 return widenKind.convert(innerValue);
             default:
-                throw new IllegalArgumentException("Invalid type for reaffirm, got " + widenKind);
+                throw new EvaluatorException("Invalid type for reaffirm, got " + widenKind, this);
         }
     }
 

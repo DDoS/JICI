@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -51,10 +52,10 @@ public class Comparison implements Expression {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
             if (!leftType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + leftType.getName());
+                throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
             }
             if (!rightType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
+                throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
             }
             valueType = PrimitiveValueType.THE_BOOLEAN;
             widenType = leftType.binaryWiden(rightType.getTypeClass());
@@ -77,8 +78,18 @@ public class Comparison implements Expression {
             case SYMBOL_GREATER_OR_EQUAL:
                 return doGreaterOrEqualTo(leftValue, rightValue, widenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for comparison: " + operator);
+                throw new EvaluatorException("Invalid operator for comparison: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doLesserThan(Value leftValue, Value rightValue, ValueKind widenKind) {
@@ -92,7 +103,7 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() < rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for less than: " + widenKind);
+                throw new EvaluatorException("Invalid type for less than: " + widenKind, this);
         }
     }
 
@@ -107,7 +118,7 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() <= rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for lesser or equal to: " + widenKind);
+                throw new EvaluatorException("Invalid type for lesser or equal to: " + widenKind, this);
         }
     }
 
@@ -122,7 +133,7 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() > rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for greater than: " + widenKind);
+                throw new EvaluatorException("Invalid type for greater than: " + widenKind, this);
         }
     }
 
@@ -137,7 +148,7 @@ public class Comparison implements Expression {
             case DOUBLE:
                 return BooleanValue.of(leftValue.asDouble() >= rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for greater or equal to: " + widenKind);
+                throw new EvaluatorException("Invalid type for greater or equal to: " + widenKind, this);
         }
     }
 

@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.evaluator.value.type.VoidValueType;
@@ -70,11 +71,21 @@ public class PrimitiveType implements Type {
                     _class = void.class;
                     break;
                 default:
-                    throw new IllegalArgumentException("Not a primitive type: " + type);
+                    throw new EvaluatorException("Not a primitive type: " + type, getStart(), getEnd());
             }
             valueType = _class == void.class ? VoidValueType.THE_VOID : PrimitiveValueType.of(_class);
         }
         return valueType;
+    }
+
+    @Override
+    public int getStart() {
+        return type.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return type.getEnd();
     }
 
     @Override

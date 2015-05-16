@@ -58,6 +58,16 @@ public class VariableAccess implements Reference {
     }
 
     @Override
+    public int getStart() {
+        return name.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return name.getEnd();
+    }
+
+    @Override
     public String toString() {
         return name.toString();
     }

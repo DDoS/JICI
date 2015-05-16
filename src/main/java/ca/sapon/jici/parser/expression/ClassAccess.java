@@ -55,6 +55,16 @@ public class ClassAccess implements Expression {
     }
 
     @Override
+    public int getStart() {
+        return type.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return type.getEnd();
+    }
+
+    @Override
     public String toString() {
         return "ClassAccess(" + type + ".class" + ")";
     }

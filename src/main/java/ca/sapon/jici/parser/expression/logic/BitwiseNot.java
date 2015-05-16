@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -44,7 +45,7 @@ public class BitwiseNot implements Expression {
         if (valueType == null) {
             final ValueType innerType = inner.getValueType(environment).unbox();
             if (!innerType.isIntegral()) {
-                throw new IllegalArgumentException("Not an integral type: " + innerType.getName());
+                throw new EvaluatorException("Not an integral type: " + innerType.getName(), inner);
             }
             valueType = innerType.unaryWiden();
         }
@@ -61,8 +62,18 @@ public class BitwiseNot implements Expression {
             case LONG:
                 return LongValue.of(~innerValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise not: " + widenKind);
+                throw new EvaluatorException("Invalid type for bitwise not: " + widenKind, this);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return inner.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return inner.getEnd();
     }
 
     @Override

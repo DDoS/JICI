@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.expression.reference;
 import java.lang.reflect.Array;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
@@ -47,10 +48,10 @@ public class IndexAccess implements Reference {
             final ValueType objectType = object.getValueType(environment);
             final ValueType indexType = index.getValueType(environment);
             if (!objectType.isArray()) {
-                throw new IllegalArgumentException("Not an array: " + objectType.getName());
+                throw new EvaluatorException("Not an array: " + objectType.getName(), object);
             }
             if (!indexType.convertibleTo(int.class)) {
-                throw new IllegalArgumentException("Cannot convert " + indexType.getName() + " to int");
+                throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
             }
             final Class<?> componentType = objectType.getTypeClass().getComponentType();
             valueType = ReflectionUtil.wrap(componentType);
@@ -65,7 +66,7 @@ public class IndexAccess implements Reference {
         try {
             return valueType.getKind().wrap(Array.get(objectValue.asObject(), indexValue.asInt()));
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not get array item", exception);
+            throw new EvaluatorException("Could not get array item", exception, this);
         }
     }
 
@@ -76,8 +77,18 @@ public class IndexAccess implements Reference {
         try {
             Array.set(objectValue.asObject(), indexValue.asInt(), value.asObject());
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not set array item", exception);
+            throw new EvaluatorException("Could not set array item", exception, this);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return object.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return index.getEnd();
     }
 
     @Override

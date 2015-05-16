@@ -21,17 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.decoder;
-
-import ca.sapon.jici.SourceException;
+package ca.sapon.jici;
 
 /**
  *
  */
-public class DecoderException extends SourceException {
-    private static final long serialVersionUID = 1;
+public interface SourceIndexed {
+    int getStart();
 
-    public DecoderException(String error, String offender, int start, int end) {
-        super(error, offender, start, end);
-    }
+    int getEnd();
 }

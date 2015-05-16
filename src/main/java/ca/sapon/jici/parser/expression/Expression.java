@@ -23,14 +23,21 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 
-public interface Expression {
+public interface Expression extends SourceIndexed {
     ValueType getValueType(Environment environment);
 
     Value getValue(Environment environment);
+
+    @Override
+    int getStart();
+
+    @Override
+    int getEnd();
 
     String toString();
 }

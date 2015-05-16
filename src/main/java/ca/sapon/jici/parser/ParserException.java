@@ -31,14 +31,8 @@ import ca.sapon.jici.lexer.Token;
  */
 public class ParserException extends SourceException {
     private static final long serialVersionUID = 1;
-    private final Token token;
 
-    public ParserException(String error, Token offender, int index) {
-        super(error, null, offender == null ? index : offender.getIndex());
-        token = offender;
-    }
-
-    public Token getToken() {
-        return token;
+    public ParserException(String error, Token offender, int start, int end) {
+        super(error, null, offender == null ? start : offender.getIndex(), end);
     }
 }

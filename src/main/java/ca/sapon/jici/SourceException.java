@@ -30,13 +30,19 @@ public class SourceException extends RuntimeException {
     private static final long serialVersionUID = 1;
     private final String error;
     private final String offender;
-    private final int index;
+    private final int start;
+    private final int end;
 
-    public SourceException(String error, String offender, int index) {
-        super(generateMessage(error, offender, index));
+    public SourceException(String error, String offender, int start, int end) {
+        this(error, null, offender, start, end);
+    }
+
+    public SourceException(String error, Throwable cause, String offender, int start, int end) {
+        super(error, cause);
         this.error = error;
         this.offender = offender;
-        this.index = index;
+        this.start = start;
+        this.end = end;
     }
 
     public String getError() {
@@ -47,16 +53,11 @@ public class SourceException extends RuntimeException {
         return offender;
     }
 
-    public int getIndex() {
-        return index;
+    public int getStart() {
+        return start;
     }
 
-    private static String generateMessage(String error, String offender, int index) {
-        final StringBuilder builder = new StringBuilder().append('"').append(error).append('"');
-        if (offender != null) {
-            builder.append(" caused by \"").append(offender).append('"');
-        }
-        builder.append(" at index: ").append(index);
-        return builder.toString();
+    public int getEnd() {
+        return end;
     }
 }

@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
@@ -55,16 +56,16 @@ public class BitwiseLogic implements Expression {
                 if (rightType.isBoolean()) {
                     valueType = PrimitiveValueType.THE_BOOLEAN;
                 } else {
-                    throw new IllegalArgumentException("Not a boolean type: " + rightType.getName());
+                    throw new EvaluatorException("Not a boolean type: " + rightType.getName(), right);
                 }
             } else if (leftType.isIntegral()) {
                 if (rightType.isIntegral()) {
                     valueType = leftType.binaryWiden(rightType.getTypeClass());
                 } else {
-                    throw new IllegalArgumentException("Not an integral type: " + rightType.getName());
+                    throw new EvaluatorException("Not an integral type: " + rightType.getName(), right);
                 }
             } else {
-                throw new IllegalArgumentException("Not a boolean or integral type: " + leftType.getName());
+                throw new EvaluatorException("Not a boolean or integral type: " + leftType.getName(), left);
             }
         }
         return valueType;
@@ -83,8 +84,18 @@ public class BitwiseLogic implements Expression {
             case SYMBOL_BITWISE_OR:
                 return doBitwiseOR(leftValue, rightValue, widenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for bitwise logic: " + operator);
+                throw new EvaluatorException("Invalid operator for bitwise logic: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind widenKind) {
@@ -96,7 +107,7 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() & rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise AND: " + widenKind);
+                throw new EvaluatorException("Invalid type for bitwise AND: " + widenKind, this);
         }
     }
 
@@ -109,7 +120,7 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() ^ rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise XOR: " + widenKind);
+                throw new EvaluatorException("Invalid type for bitwise XOR: " + widenKind, this);
         }
     }
 
@@ -122,7 +133,7 @@ public class BitwiseLogic implements Expression {
             case LONG:
                 return LongValue.of(leftValue.asLong() | rightValue.asLong());
             default:
-                throw new IllegalArgumentException("Invalid type for bitwise OR: " + widenKind);
+                throw new EvaluatorException("Invalid type for bitwise OR: " + widenKind, this);
         }
     }
 

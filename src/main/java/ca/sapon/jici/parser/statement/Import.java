@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.statement;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
@@ -42,16 +43,34 @@ public class Import implements Statement {
 
     @Override
     public void execute(Environment environment) {
-        if (_package) {
-            throw new IllegalArgumentException("Package imports are not supported");
-        }
-        if (_class == null) {
-            _class = ReflectionUtil.findClass(name);
-            if (_class == null) {
-                throw new IllegalArgumentException("Class not found: " + StringUtil.toString(name, "."));
+        try {
+            if (_package) {
+                final int end = name.get(name.size() - 1).getEnd() + 1;
+                throw new EvaluatorException("Package imports are not supported", end, end);
             }
+            if (_class == null) {
+                _class = ReflectionUtil.findClass(name);
+                if (_class == null) {
+                    throw new EvaluatorException("Class not found: " + StringUtil.toString(name, "."), this);
+                }
+            }
+            environment.importClass(_class);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
         }
-        environment.importClass(_class);
+    }
+
+    @Override
+    public int getStart() {
+        return name.get(0).getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return name.get(name.size() - 1).getEnd();
     }
 
     @Override

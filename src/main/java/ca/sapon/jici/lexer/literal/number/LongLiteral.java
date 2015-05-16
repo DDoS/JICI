@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -43,7 +44,11 @@ public class LongLiteral extends NumberLiteral implements Value {
         if (!evaluated) {
             String source = getSource();
             final int radix = StringUtil.findRadix(source);
-            source = StringUtil.removeRadixIdentifier(source, radix);
+            try {
+                source = StringUtil.removeRadixIdentifier(source, radix);
+            } catch (IllegalArgumentException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
+            }
             value = Long.parseLong(source, radix);
             evaluated = true;
         }
@@ -51,7 +56,7 @@ public class LongLiteral extends NumberLiteral implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert a long to a boolean");
+        throw new EvaluatorException("Cannot convert a long to a boolean", this);
     }
 
     @Override
@@ -130,7 +135,6 @@ public class LongLiteral extends NumberLiteral implements Value {
     public String toString() {
         return getSource() + 'L';
     }
-
 
     @Override
     public Value getValue(Environment environment) {

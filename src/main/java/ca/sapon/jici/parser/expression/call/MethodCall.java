@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.evaluator.value.type.ValueType;
@@ -51,8 +52,15 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public void execute(Environment environment) {
-        getValueType(environment);
-        getValue(environment);
+        try {
+            getValueType(environment);
+            getValue(environment);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
+        }
     }
 
     @Override
@@ -86,8 +94,18 @@ public class MethodCall implements Expression, Statement {
                 return valueType.getKind().wrap(callable.invoke(value, values));
             }
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not call method", exception);
+            throw new EvaluatorException("Could not call method", exception, this);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return method.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return arguments.isEmpty() ? method.getEnd() : arguments.get(arguments.size() - 1).getEnd();
     }
 
     @Override

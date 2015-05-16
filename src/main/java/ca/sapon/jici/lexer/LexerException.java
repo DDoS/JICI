@@ -30,7 +30,7 @@ public class LexerException extends SourceException {
     private final char _char;
 
     public LexerException(String error, char offender, int index) {
-        super(error, escapeOffender(offender), index);
+        super(error, escapeOffender(offender), index, index);
         _char = offender;
     }
 

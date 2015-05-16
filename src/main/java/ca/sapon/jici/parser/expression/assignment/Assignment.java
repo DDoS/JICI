@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
@@ -66,14 +67,21 @@ public class Assignment implements Expression, Statement {
                 this.value = new Shift(assignee, value, operator.getCompoundAssignOperator());
                 break;
             default:
-                throw new IllegalArgumentException("Not a valid operator for assign: " + operator);
+                throw new EvaluatorException("Not a valid operator for assign: " + operator, operator);
         }
     }
 
     @Override
     public void execute(Environment environment) {
-        getValueType(environment);
-        getValue(environment);
+        try {
+            getValueType(environment);
+            getValue(environment);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
+        }
     }
 
     @Override
@@ -85,10 +93,10 @@ public class Assignment implements Expression, Statement {
                 if (value instanceof IntLiteral) {
                     final IntLiteral intLiteral = (IntLiteral) value;
                     if (!assigneeType.unbox().canNarrowFrom(intLiteral.asInt())) {
-                        throw new IllegalArgumentException("Cannot narrow " + intLiteral + " to " + assigneeType.getName());
+                        throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + assigneeType.getName(), intLiteral);
                     }
                 } else {
-                    throw new IllegalArgumentException("Cannot convert " + type.getName() + " to " + assigneeType.getName());
+                    throw new EvaluatorException("Cannot convert " + type.getName() + " to " + assigneeType.getName(), value);
                 }
             }
             valueType = assigneeType;
@@ -101,6 +109,16 @@ public class Assignment implements Expression, Statement {
         final Value result = value.getValue(environment);
         assignee.setValue(environment, simpleAssign ? result : valueType.getKind().convert(result));
         return result;
+    }
+
+    @Override
+    public int getStart() {
+        return assignee.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return value.getEnd();
     }
 
     @Override

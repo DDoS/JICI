@@ -23,7 +23,9 @@
  */
 package ca.sapon.jici.lexer;
 
-public abstract class Token {
+import ca.sapon.jici.SourceIndexed;
+
+public abstract class Token implements SourceIndexed {
     private final TokenID id;
     private final String source;
     private final int index;
@@ -48,6 +50,16 @@ public abstract class Token {
 
     public int getIndex() {
         return index;
+    }
+
+    @Override
+    public int getStart() {
+        return getIndex();
+    }
+
+    @Override
+    public int getEnd() {
+        return getStart() + getSource().length() - 1;
     }
 
     @Override

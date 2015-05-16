@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -49,10 +50,10 @@ public class BooleanLogic implements Expression {
             final ValueType leftClass = left.getValueType(environment).unbox();
             final ValueType rightClass = right.getValueType(environment).unbox();
             if (!leftClass.isBoolean()) {
-                throw new IllegalArgumentException("Not a boolean: " + leftClass.getName());
+                throw new EvaluatorException("Not a boolean: " + leftClass.getName(), left);
             }
             if (!rightClass.isBoolean()) {
-                throw new IllegalArgumentException("Not a boolean: " + rightClass.getName());
+                throw new EvaluatorException("Not a boolean: " + rightClass.getName(), right);
             }
             valueType = PrimitiveValueType.THE_BOOLEAN;
         }
@@ -69,8 +70,18 @@ public class BooleanLogic implements Expression {
             case SYMBOL_BOOLEAN_OR:
                 return doBooleanOR(leftValue, rightValue);
             default:
-                throw new IllegalArgumentException("Invalid operator for boolean logic: " + operator);
+                throw new EvaluatorException("Invalid operator for boolean logic: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doBooleanAND(Value leftValue, Value rightValue) {

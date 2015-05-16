@@ -54,7 +54,7 @@ public final class Decoder {
                     try {
                         c = StringUtil.decodeUnicodeEscape(source.substring(i + 1, end));
                     } catch (IllegalArgumentException exception) {
-                        throw new DecoderException("Malformed unicode escape", source.substring(i - 1, end), i - 1);
+                        throw new DecoderException("Malformed unicode escape", source.substring(i - 1, end), i - 1, end - 1);
                     }
                     j--;
                     advance = 5;

@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.statement;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
@@ -46,30 +47,47 @@ public class Declaration implements Statement {
 
     @Override
     public void execute(Environment environment) {
-        if (valueType == null) {
-            final ValueType declarationType = type.getValueType(environment);
-            if (declarationType.isVoid()) {
-                throw new IllegalArgumentException("Illegal type: void");
-            }
-            for (Variable variable : variables) {
-                final ValueType variableType = variable.getValueType(environment);
-                if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {
-                    if (variable.getValueExpression() instanceof IntLiteral) {
-                        final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
-                        if (!declarationType.unbox().canNarrowFrom(intLiteral.asInt())) {
-                            throw new IllegalArgumentException("Cannot narrow " + intLiteral + " to " + declarationType.getName());
+        try {
+            if (valueType == null) {
+                final ValueType declarationType = type.getValueType(environment);
+                if (declarationType.isVoid()) {
+                    throw new EvaluatorException("Illegal type: void", type);
+                }
+                for (Variable variable : variables) {
+                    final ValueType variableType = variable.getValueType(environment);
+                    if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {
+                        if (variable.getValueExpression() instanceof IntLiteral) {
+                            final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
+                            if (!declarationType.unbox().canNarrowFrom(intLiteral.asInt())) {
+                                throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + declarationType.getName(), intLiteral);
+                            }
+                        } else {
+                            throw new EvaluatorException("Cannot convert " + variableType.getName() + " to " + declarationType.getName(), variable.getValueExpression());
                         }
-                    } else {
-                        throw new IllegalArgumentException("Cannot convert " + variableType.getName() + " to " + declarationType.getName());
                     }
                 }
+                valueType = declarationType;
             }
-            valueType = declarationType;
+            for (Variable variable : variables) {
+                final Identifier name = variable.getName();
+                environment.declareVariable(name, valueType, variable.getValue(environment));
+            }
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
         }
-        for (Variable variable : variables) {
-            final Identifier name = variable.getName();
-            environment.declareVariable(name, valueType, variable.getValue(environment));
-        }
+    }
+
+    @Override
+    public int getStart() {
+        return type.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return variables.get(variables.size() - 1).getEnd();
     }
 
     @Override
@@ -111,6 +129,10 @@ public class Declaration implements Statement {
                 valueType = value.getValueType(environment);
             }
             return valueType;
+        }
+
+        public int getEnd() {
+            return value == null ? name.getEnd() : value.getEnd();
         }
 
         @Override

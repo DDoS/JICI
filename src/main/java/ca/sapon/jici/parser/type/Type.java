@@ -23,11 +23,18 @@
  */
 package ca.sapon.jici.parser.type;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 
-public interface Type {
+public interface Type extends SourceIndexed {
     ValueType getValueType(Environment environment);
+
+    @Override
+    int getStart();
+
+    @Override
+    int getEnd();
 
     String toString();
 }

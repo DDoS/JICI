@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -43,7 +44,7 @@ public class BooleanNot implements Expression {
         if (valueType == null) {
             final ValueType innerClass = inner.getValueType(environment).unbox();
             if (!innerClass.isBoolean()) {
-                throw new IllegalArgumentException("Not a boolean: " + innerClass.getName());
+                throw new EvaluatorException("Not a boolean: " + innerClass.getName(), inner);
             }
             valueType = PrimitiveValueType.THE_BOOLEAN;
         }
@@ -54,6 +55,16 @@ public class BooleanNot implements Expression {
     public Value getValue(Environment environment) {
         final Value innerValue = inner.getValue(environment);
         return BooleanValue.of(!innerValue.asBoolean());
+    }
+
+    @Override
+    public int getStart() {
+        return inner.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return inner.getEnd();
     }
 
     @Override

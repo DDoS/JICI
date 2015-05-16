@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
@@ -52,8 +53,15 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public void execute(Environment environment) {
-        getValueType(environment);
-        getValue(environment);
+        try {
+            getValueType(environment);
+            getValue(environment);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
+        }
     }
 
     @Override
@@ -79,7 +87,7 @@ public class ConstructorCall implements Statement, Expression {
             // try to resolve the overloads
             final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, argumentTypes);
             if (constructor == null) {
-                throw new IllegalArgumentException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")");
+                throw new EvaluatorException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")", this);
             }
             this.constructor = constructor;
         }
@@ -96,8 +104,18 @@ public class ConstructorCall implements Statement, Expression {
         try {
             return ObjectValue.of(constructor.newInstance(values));
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not call constructor", exception);
+            throw new EvaluatorException("Could not call constructor", exception, this);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return type.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return arguments.isEmpty() ? type.getEnd() : arguments.get(arguments.size() - 1).getEnd();
     }
 
     @Override

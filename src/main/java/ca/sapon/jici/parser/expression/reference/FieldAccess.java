@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.expression.reference;
 import java.lang.reflect.Field;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
@@ -58,7 +59,7 @@ public class FieldAccess implements Reference {
         try {
             return valueType.getKind().wrap(member.get(object.getValue(environment)));
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not access field: " + field.getSource());
+            throw new EvaluatorException("Could not access field: " + field.getSource(), field);
         }
     }
 
@@ -67,8 +68,18 @@ public class FieldAccess implements Reference {
         try {
             member.set(object.getValue(environment), value.asObject());
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Could not access field: " + field.getSource());
+            throw new EvaluatorException("Could not access field: " + field.getSource(), field);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return object.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return field.getEnd();
     }
 
     @Override

@@ -21,17 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.decoder;
+package ca.sapon.jici.evaluator;
 
 import ca.sapon.jici.SourceException;
+import ca.sapon.jici.SourceIndexed;
 
 /**
  *
  */
-public class DecoderException extends SourceException {
+public class EvaluatorException extends SourceException {
     private static final long serialVersionUID = 1;
 
-    public DecoderException(String error, String offender, int start, int end) {
-        super(error, offender, start, end);
+    public EvaluatorException(Throwable cause, SourceIndexed indexed) {
+        this(cause.getMessage(), cause, indexed);
+    }
+
+    public EvaluatorException(String error, Throwable cause, SourceIndexed indexed) {
+        super(getMessage(error, cause), cause, null, indexed.getStart(), indexed.getEnd());
+    }
+
+    public EvaluatorException(String error, SourceIndexed indexed) {
+        this(error, indexed.getStart(), indexed.getEnd());
+    }
+
+    public EvaluatorException(String error, int start, int end) {
+        super(error, null, start, end);
+    }
+
+    private static String getMessage(String error, Throwable cause) {
+        String causeMessage = cause.getMessage();
+        if (causeMessage != null) {
+            causeMessage = causeMessage.trim();
+            if (causeMessage.isEmpty()) {
+                causeMessage = null;
+            }
+        }
+        String message = error + ": " + cause.getClass().getSimpleName();
+        if (causeMessage != null) {
+            message += " " + causeMessage;
+        }
+        return message;
     }
 }

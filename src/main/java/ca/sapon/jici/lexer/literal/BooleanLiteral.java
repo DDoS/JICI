@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer.literal;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -47,37 +48,37 @@ public class BooleanLiteral extends Literal implements Value {
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a byte");
+        throw new EvaluatorException("Cannot convert a boolean to a byte", this);
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a short");
+        throw new EvaluatorException("Cannot convert a boolean to a short", this);
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a char");
+        throw new EvaluatorException("Cannot convert a boolean to a char", this);
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot convert a boolean to an int");
+        throw new EvaluatorException("Cannot convert a boolean to an int", this);
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a long");
+        throw new EvaluatorException("Cannot convert a boolean to a long", this);
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a float");
+        throw new EvaluatorException("Cannot convert a boolean to a float", this);
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot convert a boolean to a double");
+        throw new EvaluatorException("Cannot convert a boolean to a double", this);
     }
 
     @Override

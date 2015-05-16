@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.expression.call;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
@@ -47,8 +48,15 @@ public class AmbiguousCall implements Expression, Statement {
 
     @Override
     public void execute(Environment environment) {
-        getValueType(environment);
-        getValue(environment);
+        try {
+            getValueType(environment);
+            getValue(environment);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
+        }
     }
 
     @Override
@@ -65,6 +73,16 @@ public class AmbiguousCall implements Expression, Statement {
     @Override
     public Value getValue(Environment environment) {
         return call.getValue(environment);
+    }
+
+    @Override
+    public int getStart() {
+        return name.get(0).getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return arguments.isEmpty() ? name.get(name.size() - 1).getEnd() : arguments.get(arguments.size() - 1).getEnd();
     }
 
     @Override

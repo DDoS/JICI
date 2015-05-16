@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -47,7 +48,7 @@ public class FloatLiteral extends NumberLiteral implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert a float to a boolean");
+        throw new EvaluatorException("Cannot convert a float to a boolean", this);
     }
 
     @Override

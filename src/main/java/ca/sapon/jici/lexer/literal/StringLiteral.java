@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer.literal;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
@@ -35,19 +36,24 @@ public class StringLiteral extends Literal implements Value {
     private String value = null;
 
     private StringLiteral(String source, int index) {
-        super(TokenID.LITERAL_STRING, source.substring(1, source.length() - 1), index);
+        super(TokenID.LITERAL_STRING, source, index);
     }
 
     private void evaluate() {
         if (value == null) {
-            final String source = getSource();
+            String source = getSource();
+            source = source.substring(1, source.length() - 1);
             final int length = source.length();
             final char[] chars = new char[length];
             int count = 0;
             boolean escaped = false;
             for (int i = 0; i < length; i++) {
                 if (escaped) {
-                    chars[count++] = StringUtil.decodeJavaEscape(source.charAt(i));
+                    try {
+                        chars[count++] = StringUtil.decodeJavaEscape(source.charAt(i));
+                    } catch (IllegalArgumentException exception) {
+                        throw new EvaluatorException(exception.getMessage(), this);
+                    }
                     escaped = false;
                 } else {
                     final char c = source.charAt(i);
@@ -65,42 +71,42 @@ public class StringLiteral extends Literal implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert an object to a boolean");
+        throw new EvaluatorException("Cannot convert an object to a boolean", this);
     }
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot convert an object to a byte");
+        throw new EvaluatorException("Cannot convert an object to a byte", this);
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot convert an object to a short");
+        throw new EvaluatorException("Cannot convert an object to a short", this);
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot convert an object to a char");
+        throw new EvaluatorException("Cannot convert an object to a char", this);
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot convert an object to an int");
+        throw new EvaluatorException("Cannot convert an object to an int", this);
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot convert an object to a long");
+        throw new EvaluatorException("Cannot convert an object to a long", this);
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot convert an object to a float");
+        throw new EvaluatorException("Cannot convert an object to a float", this);
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot convert an object to a double");
+        throw new EvaluatorException("Cannot convert an object to a double", this);
     }
 
     @Override
@@ -138,11 +144,6 @@ public class StringLiteral extends Literal implements Value {
     @Override
     public ValueType getValueType(Environment environment) {
         return ObjectValueType.THE_STRING;
-    }
-
-    @Override
-    public String toString() {
-        return "\"" + getSource() + "\"";
     }
 
     @Override

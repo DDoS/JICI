@@ -42,6 +42,16 @@ public class PreIncrement extends PostIncrement {
     }
 
     @Override
+    public int getStart() {
+        return operator.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return inner.getEnd();
+    }
+
+    @Override
     public String toString() {
         return "PreIncrement(" + operator.toString() + inner.toString() + ")";
     }

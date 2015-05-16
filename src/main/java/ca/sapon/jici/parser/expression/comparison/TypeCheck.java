@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -47,7 +48,7 @@ public class TypeCheck implements Expression {
         if (valueType == null) {
             final ValueType objectType = object.getValueType(environment);
             if (objectType.isPrimitive()) {
-                throw new IllegalArgumentException("Cannot type check a primitive: " + objectType.getName());
+                throw new EvaluatorException("Cannot type check a primitive: " + objectType.getName(), object);
             }
             checkType = type.getValueType(environment);
             valueType = PrimitiveValueType.THE_BOOLEAN;
@@ -59,6 +60,16 @@ public class TypeCheck implements Expression {
     public Value getValue(Environment environment) {
         final Value value = object.getValue(environment);
         return BooleanValue.of(checkType.getTypeClass().isInstance(value.asObject()));
+    }
+
+    @Override
+    public int getStart() {
+        return object.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return type.getEnd();
     }
 
     @Override

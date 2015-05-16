@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Symbol;
@@ -53,8 +54,15 @@ public class PostIncrement implements Expression, Statement {
 
     @Override
     public void execute(Environment environment) {
-        getValueType(environment);
-        getValue(environment);
+        try {
+            getValueType(environment);
+            getValue(environment);
+        } catch (Exception exception) {
+            if (exception instanceof EvaluatorException) {
+                throw exception;
+            }
+            throw new EvaluatorException(exception, this);
+        }
     }
 
     @Override
@@ -63,7 +71,7 @@ public class PostIncrement implements Expression, Statement {
             increment.getValueType(environment);
             final ValueType innerType = inner.getValueType(environment).unbox();
             if (!innerType.isNumeric()) {
-                throw new IllegalArgumentException("Not a numeric type: " + innerType.getName());
+                throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }
             valueType = innerType;
         }
@@ -76,6 +84,16 @@ public class PostIncrement implements Expression, Statement {
         final Value result = increment.getValue(environment);
         inner.setValue(environment, valueType.getKind().convert(result));
         return value;
+    }
+
+    @Override
+    public int getStart() {
+        return inner.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return operator.getEnd();
     }
 
     @Override

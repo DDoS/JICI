@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -50,10 +51,10 @@ public class Shift implements Expression {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
             if (!leftType.isIntegral()) {
-                throw new IllegalArgumentException("Not an integral type: " + leftType.getName());
+                throw new EvaluatorException("Not an integral type: " + leftType.getName(), left);
             }
             if (!rightType.isIntegral()) {
-                throw new IllegalArgumentException("Not an integral type: " + rightType.getName());
+                throw new EvaluatorException("Not an integral type: " + rightType.getName(), right);
             }
             valueType = leftType.unaryWiden();
             shiftType = rightType.unaryWiden();
@@ -75,8 +76,18 @@ public class Shift implements Expression {
             case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
                 return doArithmeticRightShift(leftValue, leftWidenKind, rightValue, rightWidenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for shift: " + operator);
+                throw new EvaluatorException("Invalid operator for shift: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doLogicalLeftShift(Value leftValue, ValueKind leftWidenKind, Value rightValue, ValueKind rightWidenKind) {
@@ -88,7 +99,7 @@ public class Shift implements Expression {
                     case LONG:
                         return IntValue.of(leftValue.asInt() << rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for logical-left-shift right operand: " + rightWidenKind, this);
                 }
             case LONG:
                 switch (rightWidenKind) {
@@ -97,10 +108,10 @@ public class Shift implements Expression {
                     case LONG:
                         return LongValue.of(leftValue.asLong() << rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-left-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for logical-left-shift right operand: " + rightWidenKind, this);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for logical-left-shift left operand: " + leftWidenKind);
+                throw new EvaluatorException("Invalid type for logical-left-shift left operand: " + leftWidenKind, this);
         }
     }
 
@@ -113,7 +124,7 @@ public class Shift implements Expression {
                     case LONG:
                         return IntValue.of(leftValue.asInt() >>> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for logical-right-shift right operand: " + rightWidenKind, this);
                 }
             case LONG:
                 switch (rightWidenKind) {
@@ -122,10 +133,10 @@ public class Shift implements Expression {
                     case LONG:
                         return LongValue.of(leftValue.asLong() >>> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for logical-right-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for logical-right-shift right operand: " + rightWidenKind, this);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for logical-right-shift left operand: " + leftWidenKind);
+                throw new EvaluatorException("Invalid type for logical-right-shift left operand: " + leftWidenKind, this);
         }
     }
 
@@ -138,7 +149,7 @@ public class Shift implements Expression {
                     case LONG:
                         return IntValue.of(leftValue.asInt() >> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind, this);
                 }
             case LONG:
                 switch (rightWidenKind) {
@@ -147,10 +158,10 @@ public class Shift implements Expression {
                     case LONG:
                         return LongValue.of(leftValue.asLong() >> rightValue.asLong());
                     default:
-                        throw new IllegalArgumentException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind);
+                        throw new EvaluatorException("Invalid type for arithmetic-right-shift right operand: " + rightWidenKind, this);
                 }
             default:
-                throw new IllegalArgumentException("Invalid type for arithmetic-right-shift left operand: " + leftWidenKind);
+                throw new EvaluatorException("Invalid type for arithmetic-right-shift left operand: " + leftWidenKind, this);
         }
     }
 

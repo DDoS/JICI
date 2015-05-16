@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -60,10 +61,10 @@ public class Arithmetic implements Expression {
                 stringConcatenation = true;
             } else {
                 if (!leftType.isNumeric()) {
-                    throw new IllegalArgumentException("Not a numeric type: " + leftType.getName());
+                    throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
                 }
                 if (!rightType.isNumeric()) {
-                    throw new IllegalArgumentException("Not a numeric type: " + rightType.getName());
+                    throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
                 }
                 valueType = leftType.binaryWiden(rightType.getTypeClass());
             }
@@ -91,8 +92,18 @@ public class Arithmetic implements Expression {
             case SYMBOL_MODULO:
                 return doModulo(leftValue, rightValue, widenKind);
             default:
-                throw new IllegalArgumentException("Invalid operator for arithmetic: " + operator);
+                throw new EvaluatorException("Invalid operator for arithmetic: " + operator, operator);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return left.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return right.getEnd();
     }
 
     private Value doStringConcatenation(Value leftValue, Value rightValue) {
@@ -110,7 +121,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() + rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for add: " + widenKind);
+                throw new EvaluatorException("Invalid type for add: " + widenKind, this);
         }
     }
 
@@ -125,7 +136,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() - rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for subtract: " + widenKind);
+                throw new EvaluatorException("Invalid type for subtract: " + widenKind, this);
         }
     }
 
@@ -140,7 +151,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() * rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for multiply: " + widenKind);
+                throw new EvaluatorException("Invalid type for multiply: " + widenKind, this);
         }
     }
 
@@ -155,7 +166,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() / rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for divide: " + widenKind);
+                throw new EvaluatorException("Invalid type for divide: " + widenKind, this);
         }
     }
 
@@ -170,7 +181,7 @@ public class Arithmetic implements Expression {
             case DOUBLE:
                 return DoubleValue.of(leftValue.asDouble() % rightValue.asDouble());
             default:
-                throw new IllegalArgumentException("Invalid type for modulo: " + widenKind);
+                throw new EvaluatorException("Invalid type for modulo: " + widenKind, this);
         }
     }
 

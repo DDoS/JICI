@@ -26,6 +26,7 @@ package ca.sapon.jici.parser.type;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
@@ -56,11 +57,21 @@ public class ClassType implements Type {
                 }
             }
             if (_class == null) {
-                throw new IllegalArgumentException("Class not found: " + toString());
+                throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
             valueType = ObjectValueType.of(_class);
         }
         return valueType;
+    }
+
+    @Override
+    public int getStart() {
+        return type.get(0).getIndex();
+    }
+
+    @Override
+    public int getEnd() {
+        return  type.get(type.size() - 1).getEnd();
     }
 
     @Override

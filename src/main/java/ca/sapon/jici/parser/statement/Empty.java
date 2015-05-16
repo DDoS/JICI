@@ -26,8 +26,24 @@ package ca.sapon.jici.parser.statement;
 import ca.sapon.jici.evaluator.Environment;
 
 public class Empty implements Statement {
+    private final int index;
+
+    public Empty(int index) {
+        this.index = index;
+    }
+
     @Override
     public void execute(Environment environment) {
+    }
+
+    @Override
+    public int getStart() {
+        return index;
+    }
+
+    @Override
+    public int getEnd() {
+        return index;
     }
 
     @Override

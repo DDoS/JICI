@@ -57,40 +57,60 @@ public class SourceMetadata {
     }
 
     public String generateErrorMessage(SourceException exception) {
-        int index = exception.getIndex();
+        int start = exception.getStart();
+        int end = exception.getEnd();
         if (exception instanceof LexerException || exception instanceof ParserException) {
             final int length = source.length();
-            if (index < length) {
-                index = decodedMap[index];
+            if (start < length) {
+                start = decodedMap[start];
             } else {
-                index = length;
+                start = length;
+            }
+            if (end < length) {
+                end = decodedMap[end];
+            } else {
+                end = length;
             }
         }
-        return generateErrorMessage(exception.getError(), exception.getOffender(), index);
+        return generateErrorMessage(exception.getError(), exception.getOffender(), start, end);
     }
 
-    protected String generateErrorMessage(String error, String offender, int index) {
+    protected String generateErrorMessage(String error, String offender, int start, int end) {
         final int length = source.length();
         // find the line number the error occurred on
-        final int lineNumber = findLine(source, Math.min(index, length - 1));
+        final int lineNumber = findLine(source, Math.min(start, length - 1));
         // find start and end of line containing the offender
-        int start = index, end = index - 1;
-        while (--start >= 0 && !isLineTerminator(source.charAt(start))) {
+        int lineStart = start, lineEnd = start - 1;
+        while (--lineStart >= 0 && !isLineTerminator(source.charAt(lineStart))) {
         }
-        while (++end < length && !isLineTerminator(source.charAt(end))) {
+        lineStart++;
+        while (++lineEnd < length && !isLineTerminator(source.charAt(lineEnd))) {
         }
-        final String line = source.substring(start + 1, end);
-        index -= start;
+        lineEnd--;
+        System.out.println(lineStart + " " + lineEnd);
+        final String line = source.substring(lineStart, lineEnd + 1);
+        start -= lineStart;
+        end = Math.min(end, lineEnd) - lineStart;
         // build the error message with source and cursor lines
         final StringBuilder builder = new StringBuilder().append('"').append(error).append('"');
         if (offender != null) {
             builder.append(" caused by \"").append(offender).append('"');
         }
-        builder.append(" at line: ").append(lineNumber).append(" index: ").append(index).append(" in \n").append(line).append('\n');
-        for (int i = 0; i < index - 1; i++) {
+        builder.append(" at line: ").append(lineNumber).append(" index: ").append(start);
+        if (start != end) {
+            builder.append(" to ").append(end);
+        }
+        builder.append(" in \n").append(line).append('\n');
+        for (int i = 0; i < start; i++) {
             builder.append(' ');
         }
-        builder.append('^');
+        if (start == end) {
+            builder.append('^');
+        } else {
+            for (int i = start; i <= end; i++) {
+                builder.append('~');
+            }
+        }
         return builder.toString();
     }
 

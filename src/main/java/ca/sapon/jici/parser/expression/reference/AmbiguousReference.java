@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
@@ -49,7 +50,7 @@ public class AmbiguousReference implements Reference {
         if (valueType == null) {
             final Expression resolved = disambiguate(environment, name);
             if (!(resolved instanceof Reference)) {
-                throw new IllegalArgumentException("Not a reference");
+                throw new EvaluatorException("Not a reference", resolved);
             }
             reference = (Reference) resolved;
             valueType = reference.getValueType(environment);
@@ -65,6 +66,16 @@ public class AmbiguousReference implements Reference {
     @Override
     public void setValue(Environment environment, Value value) {
         reference.setValue(environment, value);
+    }
+
+    @Override
+    public int getStart() {
+        return name.get(0).getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return name.get(name.size() - 1).getEnd();
     }
 
     @Override
@@ -84,15 +95,16 @@ public class AmbiguousReference implements Reference {
         } else {
             Class<?> _class = environment.findClass(identifier);
             if (_class != null) {
-                resolved = new StaticAccess(_class);
+                resolved = new StaticAccess(_class, identifier.getStart(), identifier.getEnd());
                 accesses = name.subList(1, name.size());
             } else {
                 accesses = new ArrayList<>(name);
                 _class = ReflectionUtil.disambiguateClass(accesses);
+                final int start = identifier.getStart();
                 if (_class == null) {
-                    throw new IllegalArgumentException("Unknown identifier " + StringUtil.toString(name, "."));
+                    throw new EvaluatorException("Unknown identifier " + StringUtil.toString(name, "."), start, name.get(name.size() - 1).getEnd());
                 }
-                resolved = new StaticAccess(_class);
+                resolved = new StaticAccess(_class, start, accesses.isEmpty() ? name.get(name.size() - 1).getEnd() : accesses.get(0).getStart());
             }
         }
         for (Identifier access : accesses) {
@@ -103,10 +115,14 @@ public class AmbiguousReference implements Reference {
 
     private static class StaticAccess implements Expression {
         private final Class<?> _class;
+        private final int start;
+        private final int end;
         private ValueType valueType = null;
 
-        private StaticAccess(Class<?> _class) {
+        private StaticAccess(Class<?> _class, int start, int end) {
             this._class = _class;
+            this.start = start;
+            this.end = end;
         }
 
         @Override
@@ -120,6 +136,16 @@ public class AmbiguousReference implements Reference {
         @Override
         public Value getValue(Environment environment) {
             return ObjectValue.of(null);
+        }
+
+        @Override
+        public int getStart() {
+            return start;
+        }
+
+        @Override
+        public int getEnd() {
+            return end;
         }
 
         @Override

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Symbol;
@@ -95,7 +96,7 @@ public final class Parser {
         final Token token = tokens.get();
         if (token.getID() == TokenID.SYMBOL_SEMICOLON) {
             tokens.advance();
-            return new Empty();
+            return new Empty(token.getIndex());
         }
         // try to parse an import
         try {
@@ -290,8 +291,7 @@ public final class Parser {
                     final Expression value = parseAssignment(tokens);
                     return new Assignment((Reference) assignee, value, (Symbol) token);
                 }
-                tokens.retreat();
-                throw new ParseError("Expected a reference", tokens);
+                throw new ParseError("Expected a reference", assignee);
             }
         }
         return assignee;
@@ -498,7 +498,7 @@ public final class Parser {
                     if (inner instanceof Reference) {
                         return new PreIncrement((Reference) inner, (Symbol) token);
                     }
-                    throw new ParseError("Expected a reference", tokens);
+                    throw new ParseError("Expected a reference", inner);
                 }
                 case SYMBOL_PLUS:
                 case SYMBOL_MINUS: {
@@ -557,8 +557,7 @@ public final class Parser {
                         final PostIncrement outer = new PostIncrement((Reference) inner, (Symbol) token);
                         return parseUnary(tokens, outer);
                     }
-                    tokens.retreat(2);
-                    throw new ParseError("Expected a reference", tokens);
+                    throw new ParseError("Expected a reference", inner);
                 }
             }
         }
@@ -639,7 +638,7 @@ public final class Parser {
                             case SYMBOL_OPEN_PARENTHESIS: {
                                 tokens.advance();
                                 if (name.size() == 1) {
-                                    throw new ParseError("Local methods are not supported", tokens);
+                                    throw new ParseError("Local methods are not supported", name.get(0));
                                 } else {
                                     final List<Expression> arguments = parseArguments(tokens);
                                     return new AmbiguousCall(name, arguments);
@@ -700,7 +699,7 @@ public final class Parser {
         private static final long serialVersionUID = 1;
 
         private ParseFailure(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : null, getErrorIndex(tokens));
+            super(error, tokens.has() ? tokens.get() : null, getErrorStart(tokens), getErrorEnd(tokens));
         }
     }
 
@@ -708,11 +707,15 @@ public final class Parser {
         private static final long serialVersionUID = 1;
 
         private ParseError(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : null, getErrorIndex(tokens));
+            super(error, tokens.has() ? tokens.get() : null, getErrorStart(tokens), getErrorEnd(tokens));
+        }
+
+        private ParseError(String error, SourceIndexed indexed) {
+            super(error, null, indexed.getStart(), indexed.getEnd());
         }
     }
 
-    private static int getErrorIndex(ListNavigator<Token> tokens) {
+    private static int getErrorStart(ListNavigator<Token> tokens) {
         if (tokens.has()) {
             return tokens.get().getIndex();
         }
@@ -721,5 +724,13 @@ public final class Parser {
             return token.getIndex() + token.getSource().length();
         }
         return 0;
+    }
+
+    private static int getErrorEnd(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            final Token token = tokens.get();
+            return token.getIndex() + token.getSource().length() - 1;
+        }
+        return getErrorStart(tokens);
     }
 }

@@ -24,6 +24,7 @@
 package ca.sapon.jici.lexer.literal;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
@@ -36,12 +37,13 @@ public class CharacterLiteral extends Literal implements Value {
     private boolean evaluated = false;
 
     private CharacterLiteral(String source, int index) {
-        super(TokenID.LITERAL_CHARACTER, source.substring(1, source.length() - 1), index);
+        super(TokenID.LITERAL_CHARACTER, source, index);
     }
 
     private void evaluate() {
         if (!evaluated) {
-            final String source = getSource();
+            String source = getSource();
+            source = source.substring(1, source.length() - 1);
             // format: X or \X where X is any character
             switch (source.length()) {
                 case 1:
@@ -50,18 +52,22 @@ public class CharacterLiteral extends Literal implements Value {
                     return;
                 case 2:
                     if (source.charAt(0) == '\\') {
-                        value = StringUtil.decodeJavaEscape(source.charAt(1));
+                        try {
+                            value = StringUtil.decodeJavaEscape(source.charAt(1));
+                        } catch (IllegalArgumentException exception) {
+                            throw new EvaluatorException(exception.getMessage(), this);
+                        }
                         evaluated = true;
                         return;
                     }
             }
-            throw new IllegalArgumentException("Malformed character literal: '" + source + "'");
+            throw new EvaluatorException("Malformed character literal: '" + source + "'", this);
         }
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert a char to a boolean");
+        throw new EvaluatorException("Cannot convert a char to a boolean", this);
     }
 
     @Override
@@ -134,11 +140,6 @@ public class CharacterLiteral extends Literal implements Value {
     @Override
     public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
-    }
-
-    @Override
-    public String toString() {
-        return "'" + getSource() + "'";
     }
 
     @Override

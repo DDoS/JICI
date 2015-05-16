@@ -101,22 +101,22 @@ public class LexerTest {
 
     @Test
     public void testLexCharacterLiteral() {
-        testLex(TokenID.LITERAL_CHARACTER, "a", "'a'");
-        testLex(TokenID.LITERAL_CHARACTER, "\\'", "'\\''");
-        testLex(TokenID.LITERAL_CHARACTER, "\\\\", "'\\\\'");
-        testLex(TokenID.LITERAL_CHARACTER, "\\n", "'\\n'");
-        testLex(TokenID.LITERAL_CHARACTER, "\\u0061", "'\\u0061'");
+        testLex(TokenID.LITERAL_CHARACTER, "'a'", "'a'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\''", "'\\''");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\\\'", "'\\\\'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\n'", "'\\n'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\u0061'", "'\\u0061'");
     }
 
     @Test
     public void testLexStringLiteral() {
-        testLex(TokenID.LITERAL_STRING, "", "\"\"");
-        testLex(TokenID.LITERAL_STRING, "t", "\"t\"");
-        testLex(TokenID.LITERAL_STRING, "test", "\"test\"");
-        testLex(TokenID.LITERAL_STRING, "this is a test", "\"this is a test\"");
-        testLex(TokenID.LITERAL_STRING, "\\\"", "\"\\\"\"");
-        testLex(TokenID.LITERAL_STRING, "\\\\", "\"\\\\\"");
-        testLex(TokenID.LITERAL_STRING, "\\n", "\"\\n\"");
+        testLex(TokenID.LITERAL_STRING, "\"\"", "\"\"");
+        testLex(TokenID.LITERAL_STRING, "\"t\"", "\"t\"");
+        testLex(TokenID.LITERAL_STRING, "\"test\"", "\"test\"");
+        testLex(TokenID.LITERAL_STRING, "\"this is a test\"", "\"this is a test\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\\"\"", "\"\\\"\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\\\\"", "\"\\\\\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\n\"", "\"\\n\"");
     }
 
     @Test

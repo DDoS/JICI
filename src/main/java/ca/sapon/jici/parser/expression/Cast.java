@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.type.Type;
@@ -81,7 +82,7 @@ public class Cast implements Expression {
     }
 
     private void failCast(ValueType cast, Class<?> object) {
-        throw new IllegalArgumentException("Cannot cast " + object.getCanonicalName() + " to " + cast.getName());
+        throw new EvaluatorException("Cannot cast " + object.getCanonicalName() + " to " + cast.getName(), this);
     }
 
     @Override
@@ -97,6 +98,16 @@ public class Cast implements Expression {
             default:
                 return valueType.getKind().convert(value);
         }
+    }
+
+    @Override
+    public int getStart() {
+        return type.getStart();
+    }
+
+    @Override
+    public int getEnd() {
+        return object.getEnd();
     }
 
     @Override

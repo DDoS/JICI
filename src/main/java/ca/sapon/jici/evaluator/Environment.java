@@ -77,7 +77,7 @@ public class Environment {
     public Class<?> getClass(Identifier name) {
         final Class<?> _class = findClass(name);
         if (_class == null) {
-            throw new EvaluatorException("Class " + name.getSource() + " does not exist", name);
+            throw new IllegalArgumentException("Class " + name.getSource() + " does not exist");
         }
         return _class;
     }
@@ -92,7 +92,7 @@ public class Environment {
 
     public void declareVariable(Identifier name, ValueType type, Value value) {
         if (hasVariable(name)) {
-            throw new EvaluatorException("Variable " + name.getSource() + " is already declared", name);
+            throw new IllegalArgumentException("Variable " + name.getSource() + " is already declared");
         }
         variables.put(name.getSource(), new Variable(name, type, value));
     }
@@ -121,7 +121,7 @@ public class Environment {
         final String nameString = name.getSource();
         final Variable variable = variables.get(nameString);
         if (variable == null) {
-            throw new EvaluatorException("Variable " + nameString + " does not exist", name);
+            throw new IllegalArgumentException("Variable " + nameString + " does not exist");
         }
         return variable;
     }
@@ -151,7 +151,7 @@ public class Environment {
 
         public Value getValue() {
             if (!initialized()) {
-                throw new EvaluatorException("Variable " + name.getSource() + " has not been initialized", name);
+                throw new IllegalArgumentException("Variable " + name.getSource() + " has not been initialized");
             }
             return value;
         }

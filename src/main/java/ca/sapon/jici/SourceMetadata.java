@@ -87,7 +87,6 @@ public class SourceMetadata {
         while (++lineEnd < length && !isLineTerminator(source.charAt(lineEnd))) {
         }
         lineEnd--;
-        System.out.println(lineStart + " " + lineEnd);
         final String line = source.substring(lineStart, lineEnd + 1);
         start -= lineStart;
         end = Math.min(end, lineEnd) - lineStart;

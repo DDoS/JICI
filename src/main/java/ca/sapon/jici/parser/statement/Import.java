@@ -55,10 +55,9 @@ public class Import implements Statement {
                 }
             }
             environment.importClass(_class);
+        } catch (EvaluatorException exception) {
+            throw exception;
         } catch (Exception exception) {
-            if (exception instanceof EvaluatorException) {
-                throw exception;
-            }
             throw new EvaluatorException(exception, this);
         }
     }

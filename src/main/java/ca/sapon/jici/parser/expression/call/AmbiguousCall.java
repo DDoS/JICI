@@ -51,10 +51,9 @@ public class AmbiguousCall implements Expression, Statement {
         try {
             getValueType(environment);
             getValue(environment);
+        } catch (EvaluatorException exception) {
+            throw exception;
         } catch (Exception exception) {
-            if (exception instanceof EvaluatorException) {
-                throw exception;
-            }
             throw new EvaluatorException(exception, this);
         }
     }

@@ -70,12 +70,15 @@ public class Declaration implements Statement {
             }
             for (Variable variable : variables) {
                 final Identifier name = variable.getName();
-                environment.declareVariable(name, valueType, variable.getValue(environment));
+                try {
+                    environment.declareVariable(name, valueType, variable.getValue(environment));
+                } catch (IllegalArgumentException exception) {
+                    throw new EvaluatorException(exception.getMessage(), name);
+                }
             }
+        } catch (EvaluatorException exception) {
+            throw exception;
         } catch (Exception exception) {
-            if (exception instanceof EvaluatorException) {
-                throw exception;
-            }
             throw new EvaluatorException(exception, this);
         }
     }

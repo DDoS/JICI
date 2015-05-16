@@ -125,7 +125,7 @@ public final class Parser {
             }
             throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseFailure("Expected a statement", tokens);
+        throw new ParseError("Expected a statement", tokens);
     }
 
     /*
@@ -533,7 +533,7 @@ public final class Parser {
                                 tokens.discardPosition();
                                 return new Cast(type, inner);
                             }
-                        } catch (ParseError exception) {
+                        } catch (ParserException exception) {
                             // this is not a cast, but an access
                         }
                         tokens.popPosition();

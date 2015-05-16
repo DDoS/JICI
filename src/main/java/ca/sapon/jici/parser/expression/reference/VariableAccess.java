@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.expression.reference;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
@@ -42,19 +43,31 @@ public class VariableAccess implements Reference {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            valueType = environment.getVariableType(name);
+            try {
+                valueType = environment.getVariableType(name);
+            } catch (IllegalArgumentException exception) {
+                throw new EvaluatorException(exception.getMessage(), name);
+            }
         }
         return valueType;
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return environment.getVariable(name);
+        try {
+            return environment.getVariable(name);
+        } catch (IllegalArgumentException exception) {
+            throw new EvaluatorException(exception.getMessage(), name);
+        }
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
-        environment.setVariable(name, value);
+        try {
+            environment.setVariable(name, value);
+        } catch (IllegalArgumentException exception) {
+            throw new EvaluatorException(exception.getMessage(), name);
+        }
     }
 
     @Override

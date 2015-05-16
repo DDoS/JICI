@@ -99,7 +99,7 @@ public class NullValueType implements ValueType {
 
     @Override
     public ValueType unbox() {
-        throw new IllegalArgumentException("Cannot unbox the null type");
+        return this;
     }
 
     @Override

@@ -93,7 +93,7 @@ public class SourceMetadata {
         // build the error message with source and cursor lines
         final StringBuilder builder = new StringBuilder().append('"').append(error).append('"');
         if (offender != null) {
-            builder.append(" caused by \"").append(offender).append('"');
+            builder.append(" caused by ").append(offender);
         }
         builder.append(" at line: ").append(lineNumber).append(" index: ").append(start);
         if (start != end) {

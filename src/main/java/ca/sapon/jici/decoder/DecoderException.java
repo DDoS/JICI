@@ -32,6 +32,6 @@ public class DecoderException extends SourceException {
     private static final long serialVersionUID = 1;
 
     public DecoderException(String error, String offender, int start, int end) {
-        super(error, offender, start, end);
+        super(error, '"' + offender + '"', start, end);
     }
 }

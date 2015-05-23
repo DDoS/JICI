@@ -299,7 +299,7 @@ public final class Lexer {
         while (consumer.has()) {
             c = consumer.get();
             if (isLineTerminator(c)) {
-                throw new LexerException("Expected '" + enclosure + "'", consumer.get(), consumer.position());
+                throw new LexerException("Expected '" + enclosure + '\'', consumer.get(), consumer.position());
             }
             consumer.consume();
             if (c == enclosure && (escapeCount & 1) == 0) {

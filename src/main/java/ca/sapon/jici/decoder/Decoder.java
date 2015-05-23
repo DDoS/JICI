@@ -64,7 +64,7 @@ public final class Decoder {
                 escapes = 0;
             }
             chars[j] = c;
-            metadata.mapDecodedChar(i, j);
+            metadata.mapDecodedChar(advance > 1 ? i - 1 : i, j);
             i += advance;
             j++;
         }

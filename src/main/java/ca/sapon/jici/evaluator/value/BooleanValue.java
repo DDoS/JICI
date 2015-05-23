@@ -105,7 +105,7 @@ public class BooleanValue implements Value {
 
     @Override
     public String toString() {
-        return Boolean.toString(value);
+        return asString();
     }
 
     public static BooleanValue of(boolean value) {

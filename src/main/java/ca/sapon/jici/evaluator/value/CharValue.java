@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.evaluator.value;
 
+import ca.sapon.jici.util.StringUtil;
+
 public class CharValue implements Value {
     private static final CharValue[] COMMON_VALUES = new CharValue[256];
     private final char value;
@@ -110,7 +112,7 @@ public class CharValue implements Value {
 
     @Override
     public String toString() {
-        return Character.toString(value);
+        return StringUtil.escapeCharacter(value);
     }
 
     public static CharValue of(char value) {

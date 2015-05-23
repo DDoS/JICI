@@ -110,7 +110,7 @@ public class ByteValue implements Value {
 
     @Override
     public String toString() {
-        return Byte.toString(value);
+        return asString();
     }
 
     public static ByteValue of(byte value) {

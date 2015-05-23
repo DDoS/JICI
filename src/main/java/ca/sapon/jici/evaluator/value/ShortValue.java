@@ -110,7 +110,7 @@ public class ShortValue implements Value {
 
     @Override
     public String toString() {
-        return Short.toString(value);
+        return asString();
     }
 
     public static ShortValue of(short value) {

@@ -138,7 +138,7 @@ public class ObjectValue implements Value {
 
     @Override
     public String toString() {
-        return value.toString();
+        return '"' + asString() + '"';
     }
 
     public static ObjectValue of(Object value) {

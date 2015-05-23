@@ -24,24 +24,18 @@
 package ca.sapon.jici.lexer;
 
 import ca.sapon.jici.SourceException;
+import ca.sapon.jici.util.StringUtil;
 
 public class LexerException extends SourceException {
     private static final long serialVersionUID = 1;
     private final char _char;
 
     public LexerException(String error, char offender, int index) {
-        super(error, escapeOffender(offender), index, index);
+        super(error, StringUtil.escapeCharacter(offender), index, index);
         _char = offender;
     }
 
     public char getChar() {
         return _char;
-    }
-
-    private static String escapeOffender(char offender) {
-        if (Character.isWhitespace(offender)) {
-            return Character.getName(offender);
-        }
-        return '\'' + String.valueOf(offender) + '\'';
     }
 }

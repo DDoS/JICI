@@ -179,4 +179,14 @@ public final class StringUtil {
         }
         throw new IllegalArgumentException("Expected 4 hexadecimal digits, got: " + escape);
     }
+
+    public static String escapeCharacter(char offender) {
+        final String string;
+        if (Character.isWhitespace(offender)) {
+            string = Character.getName(offender);
+        } else {
+            string = String.valueOf(offender);
+        }
+        return '\'' + string + '\'';
+    }
 }

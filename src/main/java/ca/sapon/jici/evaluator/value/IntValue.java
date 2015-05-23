@@ -110,7 +110,7 @@ public class IntValue implements Value {
 
     @Override
     public String toString() {
-        return Integer.toString(value);
+        return asString();
     }
 
     public static IntValue of(int value) {

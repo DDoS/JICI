@@ -24,7 +24,6 @@
 package ca.sapon.jici.parser;
 
 import ca.sapon.jici.SourceException;
-import ca.sapon.jici.lexer.Token;
 
 /**
  *
@@ -32,7 +31,7 @@ import ca.sapon.jici.lexer.Token;
 public class ParserException extends SourceException {
     private static final long serialVersionUID = 1;
 
-    public ParserException(String error, Token offender, int start, int end) {
-        super(error, null, offender == null ? start : offender.getIndex(), end);
+    public ParserException(String error, int start, int end) {
+        super(error, null, start, end);
     }
 }

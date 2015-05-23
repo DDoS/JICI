@@ -125,7 +125,7 @@ public final class Parser {
             }
             throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseError("Expected a statement", tokens);
+        throw new ParseError("Expected a statement", token.getStart(), tokens.get(tokens.remaining() - 1).getEnd());
     }
 
     /*
@@ -159,7 +159,7 @@ public final class Parser {
                 return name;
             }
         }
-        throw new ParseFailure("Expected an identifier", tokens);
+        throw new ParseError("Expected an identifier", tokens);
     }
 
     private static Type parseType(ListNavigator<Token> tokens) {
@@ -171,7 +171,7 @@ public final class Parser {
             }
             return new ClassType(parseName(tokens));
         }
-        throw new ParseFailure("Expected an identifier or a primitive type", tokens);
+        throw new ParseError("Expected an identifier or a primitive type", tokens);
     }
 
     private static Variable parseVariable(ListNavigator<Token> tokens) {
@@ -187,7 +187,7 @@ public final class Parser {
                 return new Variable((Identifier) token);
             }
         }
-        throw new ParseFailure("Expected an identifier", tokens);
+        throw new ParseFailure();
     }
 
     private static List<Variable> parseVariableList(ListNavigator<Token> tokens) {
@@ -205,14 +205,20 @@ public final class Parser {
 
     private static Declaration parseDeclaration(ListNavigator<Token> tokens) {
         if (tokens.has()) {
-            final Declaration declaration = new Declaration(parseType(tokens), parseVariableList(tokens));
+            final Type type;
+            try {
+                type = parseType(tokens);
+            } catch (ParserException exception) {
+                throw new ParseFailure();
+            }
+            final Declaration declaration = new Declaration(type, parseVariableList(tokens));
             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
                 tokens.advance();
                 return declaration;
             }
             throw new ParseError("Expected ';'", tokens);
         }
-        throw new ParseFailure("Expected an identifier or a primitive type", tokens);
+        throw new ParseFailure();
     }
 
     /*
@@ -239,7 +245,7 @@ public final class Parser {
             }
             throw new ParseError("Expected '*' or ';'", tokens);
         }
-        throw new ParseFailure("Expected \"import\"", tokens);
+        throw new ParseFailure();
     }
 
     /*
@@ -698,8 +704,8 @@ public final class Parser {
     private static class ParseFailure extends ParserException {
         private static final long serialVersionUID = 1;
 
-        private ParseFailure(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : null, getErrorStart(tokens), getErrorEnd(tokens));
+        private ParseFailure() {
+            super("parse failure", 0, 0);
         }
     }
 
@@ -707,11 +713,15 @@ public final class Parser {
         private static final long serialVersionUID = 1;
 
         private ParseError(String error, ListNavigator<Token> tokens) {
-            super(error, tokens.has() ? tokens.get() : null, getErrorStart(tokens), getErrorEnd(tokens));
+            super(error, getErrorStart(tokens), getErrorEnd(tokens));
         }
 
         private ParseError(String error, SourceIndexed indexed) {
-            super(error, null, indexed.getStart(), indexed.getEnd());
+            this(error, indexed.getStart(), indexed.getEnd());
+        }
+
+        private ParseError(String error, int start, int end) {
+            super(error, start, end);
         }
     }
 

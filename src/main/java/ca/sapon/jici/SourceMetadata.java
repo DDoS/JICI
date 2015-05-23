@@ -80,16 +80,16 @@ public class SourceMetadata {
         // find the line number the error occurred on
         final int lineNumber = findLine(source, Math.min(start, length - 1));
         // find start and end of line containing the offender
-        int lineStart = start, lineEnd = start - 1;
+        int lineStart = start, lineEnd = start;
         while (--lineStart >= 0 && !isLineTerminator(source.charAt(lineStart))) {
         }
         lineStart++;
         while (++lineEnd < length && !isLineTerminator(source.charAt(lineEnd))) {
         }
         lineEnd--;
-        final String line = source.substring(lineStart, lineEnd + 1);
+        final String line = source.substring(lineStart, Math.min(lineEnd + 1, source.length()));
         start -= lineStart;
-        end = Math.min(end, lineEnd) - lineStart;
+        end -= lineStart;
         // build the error message with source and cursor lines
         final StringBuilder builder = new StringBuilder().append('"').append(error).append('"');
         if (offender != null) {

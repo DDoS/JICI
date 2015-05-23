@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -67,6 +68,8 @@ public interface ValueType {
     PrimitiveValueType binaryWiden(Class<?> with);
 
     boolean convertibleTo(Class<?> to);
+
+    Constructor<?> getConstructor(ValueType[] arguments);
 
     Field getField(String name);
 

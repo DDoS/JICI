@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -125,6 +126,11 @@ public class NullValueType implements ValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return !to.isPrimitive();
+    }
+
+    @Override
+    public Constructor<?> getConstructor(ValueType[] arguments) {
+        throw new IllegalArgumentException("Cannot dereference null");
     }
 
     @Override

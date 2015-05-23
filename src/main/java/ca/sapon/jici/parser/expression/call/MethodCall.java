@@ -65,13 +65,14 @@ public class MethodCall implements Expression, Statement {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
+            final ValueType objectType = object.getValueType(environment);
             final int size = arguments.size();
             final ValueType[] argumentTypes = new ValueType[size];
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
             try {
-                callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
+                callable = objectType.getMethod(method.getSource(), argumentTypes);
             } catch (IllegalArgumentException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }

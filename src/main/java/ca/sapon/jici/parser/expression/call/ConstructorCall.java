@@ -24,10 +24,7 @@
 package ca.sapon.jici.parser.expression.call;
 
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
@@ -37,7 +34,6 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassType;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
@@ -66,29 +62,17 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            // get types
             valueType = type.getValueType(environment);
             final int size = arguments.size();
             final ValueType[] argumentTypes = new ValueType[size];
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
-            // try to find a matching constructor
-            final Constructor<?>[] constructors = valueType.getTypeClass().getConstructors();
-            // look for matches in length
-            final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
-            for (Constructor<?> candidate : constructors) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                if (parameterTypes.length == size) {
-                    candidates.put(candidate, parameterTypes);
-                }
+            try {
+                constructor = valueType.getConstructor(argumentTypes);
+            } catch (IllegalArgumentException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
             }
-            // try to resolve the overloads
-            final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, argumentTypes);
-            if (constructor == null) {
-                throw new EvaluatorException("No constructor for signature: " + valueType.getName() + "(" + StringUtil.toString(Arrays.asList(argumentTypes), ", ") + ")", this);
-            }
-            this.constructor = constructor;
         }
         return valueType;
     }

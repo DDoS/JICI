@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -156,6 +157,27 @@ public class ObjectValueType implements ValueType {
     @Override
     public boolean convertibleTo(Class<?> to) {
         return convertibleTo(type, to);
+    }
+
+    @Override
+    public Constructor<?> getConstructor(ValueType[] arguments) {
+        // try to find a matching constructor
+        final Constructor<?>[] constructors = type.getConstructors();
+        // look for matches in length
+        final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
+        for (Constructor<?> candidate : constructors) {
+            final Class<?>[] parameterTypes = candidate.getParameterTypes();
+            if (parameterTypes.length == arguments.length) {
+                candidates.put(candidate, parameterTypes);
+            }
+        }
+        // try to resolve the overloads
+        final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (constructor == null) {
+            throw new IllegalArgumentException("No constructor for signature: "
+                    + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        }
+        return constructor;
     }
 
     @Override

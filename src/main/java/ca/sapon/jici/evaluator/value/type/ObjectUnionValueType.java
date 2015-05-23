@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.value.type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -48,6 +49,17 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
+    public Constructor<?> getConstructor(ValueType[] arguments) {
+        final Constructor<?> constructor1 = type1.getConstructor(arguments);
+        final Constructor<?> constructor2 = type2.getConstructor(arguments);
+        if (!constructor1.equals(constructor2)) {
+            throw new IllegalArgumentException("No constructor for signature: "
+                    + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+        }
+        return constructor1;
+    }
+
+    @Override
     public Field getField(String name) {
         final Field field1 = type1.getField(name);
         final Field field2 = type2.getField(name);
@@ -60,11 +72,16 @@ public class ObjectUnionValueType extends ObjectValueType {
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
         final Method method1 = type1.getMethod(name, arguments);
-        final Method method2 = type1.getMethod(name, arguments);
+        final Method method2 = type2.getMethod(name, arguments);
         if (!method1.equals(method2)) {
             throw new IllegalArgumentException("No method for signature: "
                     + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
         }
         return method1;
+    }
+
+    @Override
+    public String toString() {
+        return type1.getName() + " * " + type2.getName();
     }
 }

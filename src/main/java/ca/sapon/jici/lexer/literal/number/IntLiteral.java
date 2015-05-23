@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class IntLiteral extends NumberLiteral implements Value {
+public class IntLiteral extends NumberLiteral {
     private int value = 0;
     private boolean evaluated = false;
 

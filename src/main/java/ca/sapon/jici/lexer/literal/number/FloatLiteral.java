@@ -31,7 +31,7 @@ import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
-public class FloatLiteral extends NumberLiteral implements Value {
+public class FloatLiteral extends NumberLiteral {
     private float value = 0;
     private boolean evaluated = false;
 

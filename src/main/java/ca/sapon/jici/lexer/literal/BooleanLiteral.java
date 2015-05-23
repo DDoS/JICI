@@ -31,7 +31,7 @@ import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
-public class BooleanLiteral extends Literal implements Value {
+public class BooleanLiteral extends Literal {
     private static final String trueSource = "true";
     private static final String falseSource = "false";
     private final boolean value;

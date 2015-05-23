@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
-public class StringLiteral extends Literal implements Value {
+public class StringLiteral extends Literal {
     private String value = null;
 
     private StringLiteral(String source, int index) {

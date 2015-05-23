@@ -31,7 +31,7 @@ import ca.sapon.jici.evaluator.value.type.NullValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
 
-public class NullLiteral extends Literal implements Value {
+public class NullLiteral extends Literal {
     private static final String nullSource = "null";
 
     private NullLiteral(int index) {

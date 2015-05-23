@@ -23,11 +23,12 @@
  */
 package ca.sapon.jici.lexer.literal;
 
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
 
-public abstract class Literal extends Token implements Expression {
+public abstract class Literal extends Token implements Value, Expression {
     protected Literal(TokenID id, String source, int index) {
         super(id, source, index);
     }

@@ -70,7 +70,11 @@ public class MethodCall implements Expression, Statement {
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
-            callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
+            try {
+                callable = object.getValueType(environment).getMethod(method.getSource(), argumentTypes);
+            } catch (IllegalArgumentException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
+            }
             final Class<?> returnType = callable.getReturnType();
             valueType = ReflectionUtil.wrap(returnType);
         }
@@ -99,7 +103,7 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public int getStart() {
-        return method.getStart();
+        return object.getStart();
     }
 
     @Override

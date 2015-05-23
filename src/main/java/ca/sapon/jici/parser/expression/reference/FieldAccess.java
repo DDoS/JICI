@@ -47,7 +47,11 @@ public class FieldAccess implements Reference {
     @Override
     public ValueType getValueType(Environment environment) {
         if (valueType == null) {
-            member = object.getValueType(environment).getField(field.getSource());
+            try {
+                member = object.getValueType(environment).getField(field.getSource());
+            } catch (IllegalArgumentException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
+            }
             final Class<?> type = member.getType();
             valueType = ReflectionUtil.wrap(type);
         }

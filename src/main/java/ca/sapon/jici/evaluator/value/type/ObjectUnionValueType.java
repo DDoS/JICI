@@ -86,7 +86,12 @@ public class ObjectUnionValueType extends ObjectValueType {
 
     @Override
     public boolean isArray() {
-        return getTypeClass().isArray();
+        for (ObjectValueType bound : lowestUpperBound) {
+            if (bound.isArray()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

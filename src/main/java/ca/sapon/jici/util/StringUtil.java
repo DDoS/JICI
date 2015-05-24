@@ -23,7 +23,8 @@
  */
 package ca.sapon.jici.util;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 
 public final class StringUtil {
     private static final int[] DIGIT_VALUES = new int[256];
@@ -46,15 +47,16 @@ public final class StringUtil {
     private StringUtil() {
     }
 
-    public static String toString(List<?> list, String separator) {
-        final int size = list.size() - 1;
+    public static String toString(Collection<?> elements, String separator) {
+        final int size = elements.size() - 1;
         if (size >= 0) {
             final StringBuilder builder = new StringBuilder();
+            final Iterator<?> iterator = elements.iterator();
             for (int i = 0; i < size; i++) {
-                builder.append(list.get(i));
+                builder.append(iterator.next());
                 builder.append(separator);
             }
-            return builder.append(list.get(size)).toString();
+            return builder.append(iterator.next()).toString();
         }
         return "";
     }

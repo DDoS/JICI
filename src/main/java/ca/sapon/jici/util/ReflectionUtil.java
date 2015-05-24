@@ -24,6 +24,7 @@
 package ca.sapon.jici.util;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.type.NullValueType;
@@ -195,5 +197,66 @@ public final class ReflectionUtil {
             return PrimitiveValueType.of(type);
         }
         return ObjectValueType.of(type);
+    }
+
+    // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla
+    public static Set<Class<?>> getLowestUpperBound(Iterable<Class<?>> classes) {
+        final Set<Class<?>> common = getCommonSuperClasses(classes);
+        final Set<Class<?>> lowest = new HashSet<>(common.size());
+        while (!common.isEmpty()) {
+            final Iterator<Class<?>> iterator = common.iterator();
+            Class<?> _class = iterator.next();
+            iterator.remove();
+            while (iterator.hasNext()) {
+                Class<?> candidate = iterator.next();
+                if (candidate.isAssignableFrom(_class)) {
+                    iterator.remove();
+                } else if (_class.isAssignableFrom(candidate)) {
+                    _class = candidate;
+                    iterator.remove();
+                }
+            }
+            lowest.add(_class);
+        }
+        return lowest;
+    }
+
+    public static Set<Class<?>> getCommonSuperClasses(Iterable<Class<?>> classes) {
+        final Iterator<Class<?>> iterator = classes.iterator();
+        if (!iterator.hasNext()) {
+            return Collections.emptySet();
+        }
+        final Set<Class<?>> superClasses = getSuperClasses(iterator.next());
+        while (iterator.hasNext()) {
+            final Class<?> _class = iterator.next();
+            final Iterator<Class<?>> candidates = superClasses.iterator();
+            while (candidates.hasNext()) {
+                final Class<?> superClass = candidates.next();
+                if (!superClass.isAssignableFrom(_class)) {
+                    candidates.remove();
+                }
+            }
+        }
+        return superClasses;
+    }
+
+    public static Set<Class<?>> getSuperClasses(Class<?> _class) {
+        final Set<Class<?>> result = new HashSet<>();
+        final Queue<Class<?>> queue = new ArrayDeque<>();
+        queue.add(_class);
+        if (_class.isInterface()) {
+            queue.add(Object.class);
+        }
+        while (!queue.isEmpty()) {
+            final Class<?> child = queue.remove();
+            if (result.add(child)) {
+                final Class<?> superClass = child.getSuperclass();
+                if (superClass != null) {
+                    queue.add(superClass);
+                }
+                queue.addAll(Arrays.asList(child.getInterfaces()));
+            }
+        }
+        return result;
     }
 }

@@ -33,12 +33,20 @@ import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.util.ReflectionUtil;
 
 /**
  *
  */
 public class PrimitiveValueType implements ValueType {
     public static final PrimitiveValueType THE_BOOLEAN;
+    public static final PrimitiveValueType THE_BYTE;
+    public static final PrimitiveValueType THE_SHORT;
+    public static final PrimitiveValueType THE_CHAR;
+    public static final PrimitiveValueType THE_INT;
+    public static final PrimitiveValueType THE_LONG;
+    public static final PrimitiveValueType THE_FLOAT;
+    public static final PrimitiveValueType THE_DOUBLE;
     private static final Map<Class<?>, PrimitiveValueType> ALL_TYPES = new HashMap<>();
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
@@ -50,15 +58,22 @@ public class PrimitiveValueType implements ValueType {
 
     static {
         THE_BOOLEAN = new PrimitiveValueType(boolean.class, ValueKind.BOOLEAN);
+        THE_BYTE = new PrimitiveValueType(byte.class, ValueKind.BYTE);
+        THE_SHORT = new PrimitiveValueType(short.class, ValueKind.SHORT);
+        THE_CHAR = new PrimitiveValueType(char.class, ValueKind.CHAR);
+        THE_INT = new PrimitiveValueType(int.class, ValueKind.INT);
+        THE_LONG = new PrimitiveValueType(long.class, ValueKind.LONG);
+        THE_FLOAT = new PrimitiveValueType(float.class, ValueKind.FLOAT);
+        THE_DOUBLE = new PrimitiveValueType(double.class, ValueKind.DOUBLE);
 
         ALL_TYPES.put(boolean.class, THE_BOOLEAN);
-        ALL_TYPES.put(byte.class, new PrimitiveValueType(byte.class, ValueKind.BYTE));
-        ALL_TYPES.put(short.class, new PrimitiveValueType(short.class, ValueKind.SHORT));
-        ALL_TYPES.put(char.class, new PrimitiveValueType(char.class, ValueKind.CHAR));
-        ALL_TYPES.put(int.class, new PrimitiveValueType(int.class, ValueKind.INT));
-        ALL_TYPES.put(long.class, new PrimitiveValueType(long.class, ValueKind.LONG));
-        ALL_TYPES.put(float.class, new PrimitiveValueType(float.class, ValueKind.FLOAT));
-        ALL_TYPES.put(double.class, new PrimitiveValueType(double.class, ValueKind.DOUBLE));
+        ALL_TYPES.put(byte.class, THE_BYTE);
+        ALL_TYPES.put(short.class, THE_SHORT);
+        ALL_TYPES.put(char.class, THE_CHAR);
+        ALL_TYPES.put(int.class, THE_INT);
+        ALL_TYPES.put(long.class, THE_LONG);
+        ALL_TYPES.put(float.class, THE_FLOAT);
+        ALL_TYPES.put(double.class, THE_DOUBLE);
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -115,8 +130,8 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public boolean is(Class<?> type) {
-        return this.type == type;
+    public boolean is(ValueType type) {
+        return type instanceof PrimitiveValueType && this.type == ((PrimitiveValueType) type).getTypeClass();
     }
 
     @Override
@@ -181,13 +196,19 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(Class<?> with) {
-        return of(binaryWiden(type, with));
+    public PrimitiveValueType binaryWiden(ValueType with) {
+        if (!(with instanceof PrimitiveValueType)) {
+            throw new IllegalArgumentException("Cannot binary widen an object type");
+        }
+        return of(binaryWiden(type, ((PrimitiveValueType) with).getTypeClass()));
     }
 
     @Override
-    public boolean convertibleTo(Class<?> to) {
-        return convertibleTo(type, to);
+    public boolean convertibleTo(ValueType to) {
+        if (to instanceof ObjectUnionValueType) {
+            throw new IllegalArgumentException("Cannot convert to an object union type");
+        }
+        return convertibleTo(type, to.getTypeClass());
     }
 
     @Override
@@ -226,7 +247,7 @@ public class PrimitiveValueType implements ValueType {
         if (!to.isPrimitive()) {
             to = ObjectValueType.unbox(to);
             if (!to.isPrimitive()) {
-                return box(from).convertibleTo(to);
+                return box(from).convertibleTo(ReflectionUtil.wrap(to));
             }
         }
         return VALID_CONVERSIONS.get(from).contains(to);

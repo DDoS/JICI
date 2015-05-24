@@ -39,6 +39,7 @@ import ca.sapon.jici.util.StringUtil;
  */
 public class ObjectValueType implements ValueType {
     public static final ObjectValueType THE_STRING = ObjectValueType.of(String.class);
+    public static final ObjectValueType THE_OBJECT = ObjectValueType.of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
     private Class<?> type;
     private ValueType unbox = null;
@@ -75,8 +76,8 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public boolean is(Class<?> type) {
-        return this.type == type;
+    public boolean is(ValueType type) {
+        return type instanceof ObjectValueType && this.type == ((ObjectValueType) type).getTypeClass();
     }
 
     @Override
@@ -150,13 +151,16 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(Class<?> with) {
+    public PrimitiveValueType binaryWiden(ValueType with) {
         throw new IllegalArgumentException("Cannot binary widen an object type");
     }
 
     @Override
-    public boolean convertibleTo(Class<?> to) {
-        return convertibleTo(type, to);
+    public boolean convertibleTo(ValueType to) {
+        if (to instanceof ObjectUnionValueType) {
+            throw new IllegalArgumentException("Cannot convert to an object union type");
+        }
+        return convertibleTo(type, to.getTypeClass());
     }
 
     @Override

@@ -54,8 +54,8 @@ public class NullValueType implements ValueType {
     }
 
     @Override
-    public boolean is(Class<?> type) {
-        return type == null;
+    public boolean is(ValueType type) {
+        return type.isNull();
     }
 
     @Override
@@ -119,12 +119,12 @@ public class NullValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(Class<?> with) {
+    public PrimitiveValueType binaryWiden(ValueType with) {
         throw new IllegalArgumentException("Cannot binary widen the null type");
     }
 
     @Override
-    public boolean convertibleTo(Class<?> to) {
+    public boolean convertibleTo(ValueType to) {
         return !to.isPrimitive();
     }
 

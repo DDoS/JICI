@@ -39,7 +39,7 @@ public interface ValueType {
 
     ValueKind getKind();
 
-    boolean is(Class<?> type);
+    boolean is(ValueType type);
 
     boolean isVoid();
 
@@ -65,9 +65,9 @@ public interface ValueType {
 
     PrimitiveValueType unaryWiden();
 
-    PrimitiveValueType binaryWiden(Class<?> with);
+    PrimitiveValueType binaryWiden(ValueType with);
 
-    boolean convertibleTo(Class<?> to);
+    boolean convertibleTo(ValueType to);
 
     Constructor<?> getConstructor(ValueType[] arguments);
 

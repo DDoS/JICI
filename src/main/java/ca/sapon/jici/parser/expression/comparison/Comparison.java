@@ -58,7 +58,7 @@ public class Comparison implements Expression {
                 throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
             }
             valueType = PrimitiveValueType.THE_BOOLEAN;
-            widenType = leftType.binaryWiden(rightType.getTypeClass());
+            widenType = leftType.binaryWiden(rightType);
         }
         return valueType;
     }

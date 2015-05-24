@@ -56,7 +56,7 @@ public class Arithmetic implements Expression {
         if (valueType == null) {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(String.class) || rightType.is(String.class))) {
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ObjectValueType.THE_STRING) || rightType.is(ObjectValueType.THE_STRING))) {
                 valueType = ObjectValueType.THE_STRING;
                 stringConcatenation = true;
             } else {
@@ -66,7 +66,7 @@ public class Arithmetic implements Expression {
                 if (!rightType.isNumeric()) {
                     throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
                 }
-                valueType = leftType.binaryWiden(rightType.getTypeClass());
+                valueType = leftType.binaryWiden(rightType);
             }
         }
         return valueType;

@@ -55,7 +55,7 @@ public class Declaration implements Statement {
                 }
                 for (Variable variable : variables) {
                     final ValueType variableType = variable.getValueType(environment);
-                    if (variableType != null && !variableType.convertibleTo(declarationType.getTypeClass())) {
+                    if (variableType != null && !variableType.convertibleTo(declarationType)) {
                         if (variable.getValueExpression() instanceof IntLiteral) {
                             final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
                             if (!declarationType.unbox().canNarrowFrom(intLiteral.asInt())) {

@@ -54,8 +54,8 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public boolean is(Class<?> type) {
-        return type == void.class;
+    public boolean is(ValueType type) {
+        return type.isVoid();
     }
 
     @Override
@@ -119,12 +119,12 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(Class<?> with) {
+    public PrimitiveValueType binaryWiden(ValueType with) {
         throw new IllegalArgumentException("Cannot unary widen the void type");
     }
 
     @Override
-    public boolean convertibleTo(Class<?> to) {
+    public boolean convertibleTo(ValueType to) {
         throw new IllegalArgumentException("Cannot convert the void type");
     }
 

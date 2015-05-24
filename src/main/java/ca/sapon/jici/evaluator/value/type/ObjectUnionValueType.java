@@ -70,44 +70,72 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public boolean convertibleTo(Class<?> to) {
-        return type1.convertibleTo(to) && type2.convertibleTo(to);
+    public Class<?> getTypeClass() {
+        throw new IllegalArgumentException("No type class for object type union");
+    }
+
+    @Override
+    public String getName() {
+        return '(' + StringUtil.toString(lowestUpperBound, ", ") + ')';
+    }
+
+    @Override
+    public boolean is(ValueType type) {
+        return type instanceof ObjectUnionValueType && this.lowestUpperBound.equals(((ObjectUnionValueType) type).lowestUpperBound);
+    }
+
+    @Override
+    public boolean isArray() {
+        return getTypeClass().isArray();
+    }
+
+    @Override
+    public ValueType unbox() {
+        return this;
+    }
+
+    @Override
+    public boolean convertibleTo(ValueType to) {
+        for (ObjectValueType bound : lowestUpperBound) {
+            if (bound.convertibleTo(to)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public Constructor<?> getConstructor(ValueType[] arguments) {
-        final Constructor<?> constructor1 = type1.getConstructor(arguments);
-        final Constructor<?> constructor2 = type2.getConstructor(arguments);
-        if (!constructor1.equals(constructor2)) {
-            throw new IllegalArgumentException("No constructor for signature: "
-                    + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+        for (ObjectValueType bound : lowestUpperBound) {
+            try {
+                return bound.getConstructor(arguments);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
-        return constructor1;
+        throw new IllegalArgumentException("No constructor for signature: "
+                + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     @Override
     public Field getField(String name) {
-        final Field field1 = type1.getField(name);
-        final Field field2 = type2.getField(name);
-        if (!field1.equals(field2)) {
-            throw new IllegalArgumentException("No field named " + name);
+        for (ObjectValueType bound : lowestUpperBound) {
+            try {
+                return bound.getField(name);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
-        return field1;
+        throw new IllegalArgumentException("No field named " + name + " in " + getName());
     }
 
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
-        final Method method1 = type1.getMethod(name, arguments);
-        final Method method2 = type2.getMethod(name, arguments);
-        if (!method1.equals(method2)) {
-            throw new IllegalArgumentException("No method for signature: "
-                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")");
+        for (ObjectValueType bound : lowestUpperBound) {
+            try {
+                return bound.getMethod(name, arguments);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
-        return method1;
-    }
-
-    @Override
-    public String toString() {
-        return type1.getName() + " * " + type2.getName();
+        throw new IllegalArgumentException("No method for signature: "
+                + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 }

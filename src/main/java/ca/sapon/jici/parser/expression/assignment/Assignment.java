@@ -88,7 +88,7 @@ public class Assignment implements Expression, Statement {
         if (valueType == null) {
             final ValueType type = value.getValueType(environment);
             final ValueType assigneeType = assignee.getValueType(environment);
-            if ((simpleAssign || !type.isNumeric() || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType.getTypeClass())) {
+            if ((simpleAssign || !type.isNumeric() || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType)) {
                 if (value instanceof IntLiteral) {
                     final IntLiteral intLiteral = (IntLiteral) value;
                     if (!assigneeType.unbox().canNarrowFrom(intLiteral.asInt())) {

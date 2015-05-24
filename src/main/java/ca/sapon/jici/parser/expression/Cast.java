@@ -52,14 +52,14 @@ public class Cast implements Expression {
             if (castType.isVoid()) {
                 failCast(castType, objectType);
             } else if (castType.isPrimitive()) {
-                if (!objectType.isPrimitive() && !objectType.unbox().is(castType.getTypeClass())) {
+                if (!objectType.isPrimitive() && !objectType.unbox().is(castType)) {
                     failCast(castType, objectType);
                 }
                 if (castType.isBoolean() ^ objectType.isBoolean()) {
                     failCast(castType, objectType);
                 }
             } else if (objectType.isPrimitive()) {
-                if (!castType.unbox().is(objectType.getTypeClass())) {
+                if (!castType.unbox().is(objectType)) {
                     failCast(castType, objectType);
                 }
             } else {

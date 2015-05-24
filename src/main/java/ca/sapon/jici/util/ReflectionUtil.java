@@ -134,7 +134,7 @@ public final class ReflectionUtil {
             for (int i = 0; i < parameters.length; i++) {
                 final ValueType argument = arguments[i];
                 final Class<?> parameter = parameters[i];
-                if (!argument.convertibleTo(parameter)) {
+                if (!argument.convertibleTo(wrap(parameter))) {
                     iterator.remove();
                     continue candidates;
                 }

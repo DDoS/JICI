@@ -59,7 +59,7 @@ public class Conditional implements Expression {
             } else if (rightType.isVoid()) {
                 throw new EvaluatorException("Illegal type: void", right);
             }
-            if (leftType.is(rightType.getTypeClass())) {
+            if (leftType.is(rightType)) {
                 // both same type to that type
                 return valueType = leftType;
             }
@@ -85,12 +85,13 @@ public class Conditional implements Expression {
                 // right constant numeric that narrows to left, use left
                 return valueType = leftType;
             }
-            if (leftType.is(byte.class) && rightType.is(short.class) || leftType.is(short.class) && rightType.is(byte.class)) {
+            if (leftType.is(PrimitiveValueType.THE_BYTE) && rightType.is(PrimitiveValueType.THE_SHORT)
+                    || leftType.is(PrimitiveValueType.THE_SHORT) && rightType.is(PrimitiveValueType.THE_BYTE)) {
                 // one byte and other short to short
-                return valueType = PrimitiveValueType.of(short.class);
+                return valueType = PrimitiveValueType.THE_SHORT;
             }
             // else use binary widening
-            return valueType = leftType.binaryWiden(rightType.getTypeClass());
+            return valueType = leftType.binaryWiden(rightType);
         }
         return valueType;
     }

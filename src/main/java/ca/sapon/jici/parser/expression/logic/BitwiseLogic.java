@@ -60,7 +60,7 @@ public class BitwiseLogic implements Expression {
                 }
             } else if (leftType.isIntegral()) {
                 if (rightType.isIntegral()) {
-                    valueType = leftType.binaryWiden(rightType.getTypeClass());
+                    valueType = leftType.binaryWiden(rightType);
                 } else {
                     throw new EvaluatorException("Not an integral type: " + rightType.getName(), right);
                 }

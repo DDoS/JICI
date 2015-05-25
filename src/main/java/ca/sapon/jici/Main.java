@@ -28,9 +28,13 @@ import java.util.Scanner;
 
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
+import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.Parser;
+import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 
 public class Main {
@@ -49,9 +53,17 @@ public class Main {
         try {
             source = Decoder.decode(source, metadata);
             final List<Token> tokens = Lexer.lex(source);
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                statement.execute(environment);
+            if (tokens.get(tokens.size() - 1).getID() == TokenID.SYMBOL_SEMICOLON) {
+                final List<Statement> statements = Parser.parse(tokens);
+                for (Statement statement : statements) {
+                    statement.execute(environment);
+                }
+            } else {
+                final Expression expression = Parser.parseExpression(tokens);
+                final ValueType type = expression.getValueType(environment);
+                final Value value = expression.getValue(environment);
+                System.out.println("Type: " + type);
+                System.out.println("Value: " + value);
             }
         } catch (SourceException exception) {
             System.out.println(metadata.generateErrorMessage(exception));

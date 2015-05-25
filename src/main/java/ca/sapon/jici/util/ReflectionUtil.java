@@ -127,11 +127,16 @@ public final class ReflectionUtil {
     }
 
     public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, ValueType[] arguments) {
-        // remove methods with un-applicable parameters and look for perfect matches
+        // fast-track the lack of candidates
+        if (candidates.isEmpty()) {
+            return null;
+        }
+        // remove methods with un-applicable parameters
         candidates:
         for (Iterator<Entry<C, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<C, Class<?>[]> entry = iterator.next();
             final Class<?>[] parameters = entry.getValue();
+            boolean allEqual = true;
             for (int i = 0; i < parameters.length; i++) {
                 final ValueType argument = arguments[i];
                 final Class<?> parameter = parameters[i];
@@ -139,11 +144,13 @@ public final class ReflectionUtil {
                     iterator.remove();
                     continue candidates;
                 }
-                if (argument.getTypeClass() != parameter) {
-                    continue candidates;
-                }
+                // look for a perfect match
+                allEqual &= argument.getTypeClass() == parameter;
             }
-            return entry.getKey();
+            // fast track perfect matches
+            if (allEqual) {
+                return entry.getKey();
+            }
         }
         // remove methods with the corresponding wider types
         C callable = null;

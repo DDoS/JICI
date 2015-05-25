@@ -71,9 +71,13 @@ public interface ValueType {
 
     Constructor<?> getConstructor(ValueType[] arguments);
 
+    Constructor<?> getVarargConstructor(ValueType[] arguments);
+
     Field getField(String name);
 
     Method getMethod(String name, ValueType[] arguments);
+
+    Method getVarargMethod(String name, ValueType[] arguments);
 
     String toString();
 }

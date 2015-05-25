@@ -259,4 +259,15 @@ public final class ReflectionUtil {
         }
         return result;
     }
+
+    public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {
+        final Class<?>[] expanded = new Class<?>[count];
+        final int lastIndex = parameters.length - 1;
+        System.arraycopy(parameters, 0, expanded, 0, lastIndex);
+        final Class<?> varargType = parameters[lastIndex].getComponentType();
+        for (int i = lastIndex; i < count; i++) {
+            expanded[i] = varargType;
+        }
+        return expanded;
+    }
 }

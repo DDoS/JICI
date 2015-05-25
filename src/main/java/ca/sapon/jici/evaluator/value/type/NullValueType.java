@@ -134,6 +134,11 @@ public class NullValueType implements ValueType {
     }
 
     @Override
+    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+        return getConstructor(arguments);
+    }
+
+    @Override
     public Field getField(String name) {
         throw new IllegalArgumentException("Cannot dereference null");
     }
@@ -141,6 +146,11 @@ public class NullValueType implements ValueType {
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
         throw new IllegalArgumentException("Cannot dereference null");
+    }
+
+    @Override
+    public Method getVarargMethod(String name, ValueType[] arguments) {
+        return getMethod(name, arguments);
     }
 
     @Override

@@ -217,6 +217,11 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
+    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+        return getConstructor(arguments);
+    }
+
+    @Override
     public Field getField(String name) {
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
@@ -224,6 +229,11 @@ public class PrimitiveValueType implements ValueType {
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
         throw new IllegalArgumentException("Cannot dereference a primitive type");
+    }
+
+    @Override
+    public Method getVarargMethod(String name, ValueType[] arguments) {
+        return getMethod(name, arguments);
     }
 
     @Override

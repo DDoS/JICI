@@ -117,6 +117,21 @@ public class ObjectUnionValueType extends ObjectValueType {
             } catch (IllegalArgumentException ignored) {
             }
         }
+        return failGetConstructor(arguments);
+    }
+
+    @Override
+    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+        for (ObjectValueType bound : lowestUpperBound) {
+            try {
+                return bound.getVarargConstructor(arguments);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return failGetConstructor(arguments);
+    }
+
+    private Constructor<?> failGetConstructor(ValueType[] arguments) {
         throw new IllegalArgumentException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
@@ -140,6 +155,21 @@ public class ObjectUnionValueType extends ObjectValueType {
             } catch (IllegalArgumentException ignored) {
             }
         }
+        return failGetMethod(name, arguments);
+    }
+
+    @Override
+    public Method getVarargMethod(String name, ValueType[] arguments) {
+        for (ObjectValueType bound : lowestUpperBound) {
+            try {
+                return bound.getVarargMethod(name, arguments);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return failGetMethod(name, arguments);
+    }
+
+    private Method failGetMethod(String name, ValueType[] arguments) {
         throw new IllegalArgumentException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }

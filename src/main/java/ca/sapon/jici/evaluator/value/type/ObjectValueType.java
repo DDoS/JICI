@@ -168,20 +168,49 @@ public class ObjectValueType implements ValueType {
         // try to find a matching constructor
         final Constructor<?>[] constructors = type.getConstructors();
         // look for matches in length
+        final int argumentCount = arguments.length;
         final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
         for (Constructor<?> candidate : constructors) {
             final Class<?>[] parameterTypes = candidate.getParameterTypes();
-            if (parameterTypes.length == arguments.length) {
+            if (parameterTypes.length == argumentCount) {
                 candidates.put(candidate, parameterTypes);
             }
         }
         // try to resolve the overloads
         final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
         if (constructor == null) {
-            throw new IllegalArgumentException("No constructor for signature: "
-                    + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+            failGetConstructor(arguments);
         }
         return constructor;
+    }
+
+    @Override
+    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+        // try to find a matching constructor
+        final Constructor<?>[] constructors = type.getConstructors();
+        // look for varargs with match in length of non-varargs
+        final int argumentCount = arguments.length;
+        final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
+        for (Constructor<?> candidate : constructors) {
+            if (candidate.isVarArgs()) {
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length - 1 <= argumentCount) {
+                    // expand the parameters through the vararg to match the argument count
+                    candidates.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                }
+            }
+        }
+        // try to resolve the overloads
+        final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (constructor == null) {
+            failGetConstructor(arguments);
+        }
+        return constructor;
+    }
+
+    private void failGetConstructor(ValueType[] arguments) {
+        throw new IllegalArgumentException("No constructor for signature: "
+                + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     @Override
@@ -195,14 +224,15 @@ public class ObjectValueType implements ValueType {
 
     @Override
     public Method getMethod(String name, ValueType[] arguments) {
-        // try to find a matching method
+        // try to find a matching method without varargs
         final Method[] methods = type.getMethods();
         // look for matches in length and name
+        final int argumentCount = arguments.length;
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
         for (Method candidate : methods) {
             if (candidate.getName().equals(name)) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                if (parameterTypes.length == arguments.length) {
+                if (parameterTypes.length == argumentCount) {
                     candidates.put(candidate, parameterTypes);
                 }
             }
@@ -210,10 +240,38 @@ public class ObjectValueType implements ValueType {
         // try to resolve the overloads
         final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
         if (method == null) {
-            throw new IllegalArgumentException("No method for signature: "
-                    + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+            failGetMethod(name, arguments);
         }
         return method;
+    }
+
+    @Override
+    public Method getVarargMethod(String name, ValueType[] arguments) {
+        // try to find a matching method with varargs
+        final Method[] methods = type.getMethods();
+        // look for varargs with matches in name and length of non-varargs
+        final int argumentCount = arguments.length;
+        final Map<Method, Class<?>[]> candidates = new HashMap<>();
+        for (Method candidate : methods) {
+            if (candidate.isVarArgs() && candidate.getName().equals(name)) {
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length - 1 <= argumentCount) {
+                    // expand the parameters through the vararg to match the argument count
+                    candidates.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                }
+            }
+        }
+        // try to resolve the overloads
+        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (method == null) {
+            failGetMethod(name, arguments);
+        }
+        return method;
+    }
+
+    private void failGetMethod(String name, ValueType[] arguments) {
+        throw new IllegalArgumentException("No method for signature: "
+                + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     @Override

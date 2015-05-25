@@ -43,6 +43,8 @@ public class MethodCall implements Expression, Statement {
     private final List<Expression> arguments;
     private ValueType valueType = null;
     private Method callable = null;
+    private int varargIndex = -1;
+    private Class<?> varargType = null;
 
     public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
         this.object = object;
@@ -71,10 +73,18 @@ public class MethodCall implements Expression, Statement {
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getValueType(environment);
             }
+            final String name = method.getSource();
             try {
-                callable = objectType.getMethod(method.getSource(), argumentTypes);
-            } catch (IllegalArgumentException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
+                callable = objectType.getMethod(name, argumentTypes);
+            } catch (IllegalArgumentException ignored) {
+                try {
+                    callable = objectType.getVarargMethod(name, argumentTypes);
+                    final Class<?>[] parameters = callable.getParameterTypes();
+                    varargIndex = parameters.length - 1;
+                    varargType = parameters[varargIndex].getComponentType();
+                } catch (IllegalArgumentException exception) {
+                    throw new EvaluatorException(exception.getMessage(), this);
+                }
             }
             final Class<?> returnType = callable.getReturnType();
             valueType = ReflectionUtil.wrap(returnType);
@@ -86,9 +96,12 @@ public class MethodCall implements Expression, Statement {
     public Value getValue(Environment environment) {
         final Object value = object.getValue(environment).asObject();
         final int size = arguments.size();
-        final Object[] values = new Object[size];
+        Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
             values[i] = arguments.get(i).getValue(environment).asObject();
+        }
+        if (varargIndex >= 0) {
+            values = ReflectionUtil.compactVarargs(varargType, varargIndex, values);
         }
         try {
             if (valueType.isVoid()) {

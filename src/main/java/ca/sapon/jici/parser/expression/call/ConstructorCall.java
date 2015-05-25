@@ -34,6 +34,7 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassType;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
@@ -41,6 +42,8 @@ public class ConstructorCall implements Statement, Expression {
     private final List<Expression> arguments;
     private ValueType valueType = null;
     private Constructor<?> constructor = null;
+    private int varargIndex = -1;
+    private Class<?> varargType = null;
 
     public ConstructorCall(ClassType type, List<Expression> arguments) {
         this.arguments = arguments;
@@ -70,8 +73,15 @@ public class ConstructorCall implements Statement, Expression {
             }
             try {
                 constructor = valueType.getConstructor(argumentTypes);
-            } catch (IllegalArgumentException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
+            } catch (IllegalArgumentException ignored) {
+                try {
+                    constructor = valueType.getVarargConstructor(argumentTypes);
+                    final Class<?>[] parameters = constructor.getParameterTypes();
+                    varargIndex = parameters.length - 1;
+                    varargType = parameters[varargIndex].getComponentType();
+                } catch (IllegalArgumentException exception) {
+                    throw new EvaluatorException(exception.getMessage(), this);
+                }
             }
         }
         return valueType;
@@ -80,9 +90,12 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public Value getValue(Environment environment) {
         final int size = arguments.size();
-        final Object[] values = new Object[size];
+        Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
             values[i] = arguments.get(i).getValue(environment).asObject();
+        }
+        if (varargIndex >= 0) {
+            values = ReflectionUtil.compactVarargs(varargType, varargIndex, values);
         }
         try {
             return ObjectValue.of(constructor.newInstance(values));

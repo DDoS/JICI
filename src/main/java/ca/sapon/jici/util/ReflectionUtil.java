@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.util;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -269,5 +270,17 @@ public final class ReflectionUtil {
             expanded[i] = varargType;
         }
         return expanded;
+    }
+
+    public static Object[] compactVarargs(Class<?> varargType, int varargIndex, Object[] arguments) {
+        final Object[] compacted = new Object[varargIndex + 1];
+        System.arraycopy(arguments, 0, compacted, 0, varargIndex);
+        final int varargCount = arguments.length - varargIndex;
+        final Object array = Array.newInstance(varargType, varargCount);
+        for (int i = 0; i < varargCount; i++) {
+            Array.set(array, i, arguments[i + varargIndex]);
+        }
+        compacted[varargIndex] = array;
+        return compacted;
     }
 }

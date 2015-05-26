@@ -29,7 +29,7 @@ import java.util.Scanner;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;

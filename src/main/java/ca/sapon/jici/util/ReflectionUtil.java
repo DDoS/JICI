@@ -36,11 +36,11 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.value.type.NullType;
-import ca.sapon.jici.evaluator.value.type.ObjectType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveType;
-import ca.sapon.jici.evaluator.value.type.Type;
-import ca.sapon.jici.evaluator.value.type.VoidType;
+import ca.sapon.jici.evaluator.type.NullType;
+import ca.sapon.jici.evaluator.type.ObjectType;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.VoidType;
 
 /**
  *

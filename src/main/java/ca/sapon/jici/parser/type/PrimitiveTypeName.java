@@ -25,9 +25,9 @@ package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.type.PrimitiveType;
-import ca.sapon.jici.evaluator.value.type.Type;
-import ca.sapon.jici.evaluator.value.type.VoidType;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveTypeName implements TypeName {

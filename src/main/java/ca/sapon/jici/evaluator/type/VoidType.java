@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator.value.type;
+package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -32,40 +32,40 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  *
  */
-public class NullType implements Type {
-    public static final NullType THE_NULL = new NullType();
+public class VoidType implements Type {
+    public static final VoidType THE_VOID = new VoidType();
 
-    private NullType() {
+    private VoidType() {
     }
 
     @Override
     public Class<?> getTypeClass() {
-        return null;
+        return void.class;
     }
 
     @Override
     public String getName() {
-        return "null";
+        return "void";
     }
 
     @Override
     public ValueKind getKind() {
-        return ValueKind.OBJECT;
+        return ValueKind.VOID;
     }
 
     @Override
     public boolean is(Type type) {
-        return type.isNull();
+        return type.isVoid();
     }
 
     @Override
     public boolean isVoid() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isNull() {
-        return true;
+        return false;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class NullType implements Type {
 
     @Override
     public boolean isObject() {
-        return true;
+        return false;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class NullType implements Type {
 
     @Override
     public ObjectType box() {
-        throw new IllegalArgumentException("Cannot box the null type");
+        return ObjectType.of(Void.class);
     }
 
     @Override
@@ -115,22 +115,22 @@ public class NullType implements Type {
 
     @Override
     public PrimitiveType unaryWiden() {
-        throw new IllegalArgumentException("Cannot unary widen the null type");
+        throw new IllegalArgumentException("Cannot unary widen the void type");
     }
 
     @Override
     public PrimitiveType binaryWiden(Type with) {
-        throw new IllegalArgumentException("Cannot binary widen the null type");
+        throw new IllegalArgumentException("Cannot unary widen the void type");
     }
 
     @Override
     public boolean convertibleTo(Type to) {
-        return !to.isPrimitive();
+        throw new IllegalArgumentException("Cannot convert the void type");
     }
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new IllegalArgumentException("Cannot dereference void");
     }
 
     @Override
@@ -140,12 +140,12 @@ public class NullType implements Type {
 
     @Override
     public Field getField(String name) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new IllegalArgumentException("Cannot dereference void");
     }
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new IllegalArgumentException("Cannot dereference void");
     }
 
     @Override

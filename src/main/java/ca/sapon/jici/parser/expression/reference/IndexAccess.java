@@ -28,8 +28,8 @@ import java.lang.reflect.Array;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.PrimitiveType;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 

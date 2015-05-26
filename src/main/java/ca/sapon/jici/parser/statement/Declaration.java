@@ -28,7 +28,7 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;

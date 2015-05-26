@@ -25,7 +25,7 @@ package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.Type;
 
 public interface TypeName extends SourceIndexed {
     Type getType(Environment environment);

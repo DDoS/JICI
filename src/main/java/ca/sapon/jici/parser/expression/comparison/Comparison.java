@@ -28,8 +28,8 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.PrimitiveType;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 

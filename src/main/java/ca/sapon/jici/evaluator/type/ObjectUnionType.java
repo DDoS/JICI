@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator.value.type;
+package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

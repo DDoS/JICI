@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression;
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.Type;
 
 public interface Expression extends SourceIndexed {
     Type getType(Environment environment);

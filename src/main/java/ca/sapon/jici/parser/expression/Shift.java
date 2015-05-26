@@ -29,7 +29,7 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 
 public class Shift implements Expression {

@@ -31,7 +31,7 @@ public class VoidValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert void to a byte");
+        throw new IllegalArgumentException("Cannot convert void to a boolean");
     }
 
     @Override
@@ -76,7 +76,7 @@ public class VoidValue implements Value {
 
     @Override
     public String asString() {
-        throw new IllegalArgumentException("Cannot convert void to a string");
+        return "void";
     }
 
     @Override
@@ -102,7 +102,7 @@ public class VoidValue implements Value {
 
     @Override
     public String toString() {
-        return "void";
+        return asString();
     }
 
     public static VoidValue defaultValue() {

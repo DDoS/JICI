@@ -101,22 +101,22 @@ public class LexerTest {
 
     @Test
     public void testLexCharacterLiteral() {
-        testLex(TokenID.LITERAL_CHARACTER, "'a'", "'a'");
-        testLex(TokenID.LITERAL_CHARACTER, "'\\''", "'\\''");
-        testLex(TokenID.LITERAL_CHARACTER, "'\\\\'", "'\\\\'");
-        testLex(TokenID.LITERAL_CHARACTER, "'\\n'", "'\\n'");
-        testLex(TokenID.LITERAL_CHARACTER, "'\\u0061'", "'\\u0061'");
+        testLex(TokenID.LITERAL_CHARACTER, "'a'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\''");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\\\'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\n'");
+        testLex(TokenID.LITERAL_CHARACTER, "'\\u0061'");
     }
 
     @Test
     public void testLexStringLiteral() {
-        testLex(TokenID.LITERAL_STRING, "\"\"", "\"\"");
-        testLex(TokenID.LITERAL_STRING, "\"t\"", "\"t\"");
-        testLex(TokenID.LITERAL_STRING, "\"test\"", "\"test\"");
-        testLex(TokenID.LITERAL_STRING, "\"this is a test\"", "\"this is a test\"");
-        testLex(TokenID.LITERAL_STRING, "\"\\\"\"", "\"\\\"\"");
-        testLex(TokenID.LITERAL_STRING, "\"\\\\\"", "\"\\\\\"");
-        testLex(TokenID.LITERAL_STRING, "\"\\n\"", "\"\\n\"");
+        testLex(TokenID.LITERAL_STRING, "\"\"");
+        testLex(TokenID.LITERAL_STRING, "\"t\"");
+        testLex(TokenID.LITERAL_STRING, "\"test\"");
+        testLex(TokenID.LITERAL_STRING, "\"this is a test\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\\"\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\\\\"");
+        testLex(TokenID.LITERAL_STRING, "\"\\n\"");
     }
 
     @Test
@@ -130,77 +130,77 @@ public class LexerTest {
         testLex(TokenID.LITERAL_DOUBLE, "1.0");
         testLex(TokenID.LITERAL_DOUBLE, ".1");
 
-        testLex(TokenID.LITERAL_DOUBLE, "1", "1d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.", "1.d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.0", "1.0d");
-        testLex(TokenID.LITERAL_DOUBLE, ".1", ".1d");
+        testLex(TokenID.LITERAL_DOUBLE, "1d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.0d");
+        testLex(TokenID.LITERAL_DOUBLE, ".1d");
 
         testLex(TokenID.LITERAL_DOUBLE, "1e2");
         testLex(TokenID.LITERAL_DOUBLE, "1.e2");
         testLex(TokenID.LITERAL_DOUBLE, "1.0e2");
         testLex(TokenID.LITERAL_DOUBLE, ".1e2");
 
-        testLex(TokenID.LITERAL_DOUBLE, "1e2", "1e2d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.e2", "1.e2d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.0e2", "1.0e2d");
-        testLex(TokenID.LITERAL_DOUBLE, ".1e2", ".1e2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1e2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.e2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.0e2d");
+        testLex(TokenID.LITERAL_DOUBLE, ".1e2d");
 
         testLex(TokenID.LITERAL_DOUBLE, "1e-2");
         testLex(TokenID.LITERAL_DOUBLE, "1.e-2");
         testLex(TokenID.LITERAL_DOUBLE, "1.0e-2");
         testLex(TokenID.LITERAL_DOUBLE, ".1e-2");
 
-        testLex(TokenID.LITERAL_DOUBLE, "1e-2", "1e-2d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.e-2", "1.e-2d");
-        testLex(TokenID.LITERAL_DOUBLE, "1.0e-2", "1.0e-2d");
-        testLex(TokenID.LITERAL_DOUBLE, ".1e-2", ".1e-2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1e-2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.e-2d");
+        testLex(TokenID.LITERAL_DOUBLE, "1.0e-2d");
+        testLex(TokenID.LITERAL_DOUBLE, ".1e-2d");
 
         testLex(TokenID.LITERAL_DOUBLE, "0x1p2");
         testLex(TokenID.LITERAL_DOUBLE, "0x1.p2");
         testLex(TokenID.LITERAL_DOUBLE, "0x.fp2");
         testLex(TokenID.LITERAL_DOUBLE, "0x1.fp2");
 
-        testLex(TokenID.LITERAL_DOUBLE, "0x1p2", "0x1p2d");
-        testLex(TokenID.LITERAL_DOUBLE, "0x1.p2", "0x1.p2d");
-        testLex(TokenID.LITERAL_DOUBLE, "0x.fp2", "0x.fp2d");
-        testLex(TokenID.LITERAL_DOUBLE, "0x1.fp2", "0x1.fp2d");
+        testLex(TokenID.LITERAL_DOUBLE, "0x1p2d");
+        testLex(TokenID.LITERAL_DOUBLE, "0x1.p2d");
+        testLex(TokenID.LITERAL_DOUBLE, "0x.fp2d");
+        testLex(TokenID.LITERAL_DOUBLE, "0x1.fp2d");
 
-        testLex(TokenID.LITERAL_DOUBLE, "1", "1D");
+        testLex(TokenID.LITERAL_DOUBLE, "1D");
         testLex(TokenID.LITERAL_DOUBLE, "1E2");
-        testLex(TokenID.LITERAL_DOUBLE, "1E2", "1E2D");
+        testLex(TokenID.LITERAL_DOUBLE, "1E2D");
         testLex(TokenID.LITERAL_DOUBLE, "0X1P2");
-        testLex(TokenID.LITERAL_DOUBLE, "0X1P2", "0X1P2D");
+        testLex(TokenID.LITERAL_DOUBLE, "0X1P2D");
 
-        testLex(TokenID.LITERAL_DOUBLE, "1234567890", "1234567890d");
+        testLex(TokenID.LITERAL_DOUBLE, "1234567890d");
     }
 
     @Test
     public void testLexFloatLiteral() {
-        testLex(TokenID.LITERAL_FLOAT, "1", "1f");
-        testLex(TokenID.LITERAL_FLOAT, "1.", "1.f");
-        testLex(TokenID.LITERAL_FLOAT, "1.0", "1.0f");
-        testLex(TokenID.LITERAL_FLOAT, ".1", ".1f");
+        testLex(TokenID.LITERAL_FLOAT, "1f");
+        testLex(TokenID.LITERAL_FLOAT, "1.f");
+        testLex(TokenID.LITERAL_FLOAT, "1.0f");
+        testLex(TokenID.LITERAL_FLOAT, ".1f");
 
-        testLex(TokenID.LITERAL_FLOAT, "1e2", "1e2f");
-        testLex(TokenID.LITERAL_FLOAT, "1.e2", "1.e2f");
-        testLex(TokenID.LITERAL_FLOAT, "1.0e2", "1.0e2f");
-        testLex(TokenID.LITERAL_FLOAT, ".1e2", ".1e2f");
+        testLex(TokenID.LITERAL_FLOAT, "1e2f");
+        testLex(TokenID.LITERAL_FLOAT, "1.e2f");
+        testLex(TokenID.LITERAL_FLOAT, "1.0e2f");
+        testLex(TokenID.LITERAL_FLOAT, ".1e2f");
 
-        testLex(TokenID.LITERAL_FLOAT, "1e-2", "1e-2f");
-        testLex(TokenID.LITERAL_FLOAT, "1.e-2", "1.e-2f");
-        testLex(TokenID.LITERAL_FLOAT, "1.0e-2", "1.0e-2f");
-        testLex(TokenID.LITERAL_FLOAT, ".1e-2", ".1e-2f");
+        testLex(TokenID.LITERAL_FLOAT, "1e-2f");
+        testLex(TokenID.LITERAL_FLOAT, "1.e-2f");
+        testLex(TokenID.LITERAL_FLOAT, "1.0e-2f");
+        testLex(TokenID.LITERAL_FLOAT, ".1e-2f");
 
-        testLex(TokenID.LITERAL_FLOAT, "0x1p2", "0x1p2f");
-        testLex(TokenID.LITERAL_FLOAT, "0x1.p2", "0x1.p2f");
-        testLex(TokenID.LITERAL_FLOAT, "0x.fp2", "0x.fp2f");
-        testLex(TokenID.LITERAL_FLOAT, "0x1.fp2", "0x1.fp2f");
+        testLex(TokenID.LITERAL_FLOAT, "0x1p2f");
+        testLex(TokenID.LITERAL_FLOAT, "0x1.p2f");
+        testLex(TokenID.LITERAL_FLOAT, "0x.fp2f");
+        testLex(TokenID.LITERAL_FLOAT, "0x1.fp2f");
 
-        testLex(TokenID.LITERAL_FLOAT, "1", "1F");
-        testLex(TokenID.LITERAL_FLOAT, "1E2", "1E2F");
-        testLex(TokenID.LITERAL_FLOAT, "0X1P2", "0X1P2F");
+        testLex(TokenID.LITERAL_FLOAT, "1F");
+        testLex(TokenID.LITERAL_FLOAT, "1E2F");
+        testLex(TokenID.LITERAL_FLOAT, "0X1P2F");
 
-        testLex(TokenID.LITERAL_FLOAT, "1234567890", "1234567890f");
+        testLex(TokenID.LITERAL_FLOAT, "1234567890f");
     }
 
     @Test
@@ -221,23 +221,23 @@ public class LexerTest {
 
     @Test
     public void testLexLongLiteral() {
-        testLex(TokenID.LITERAL_LONG, "1", "1l");
+        testLex(TokenID.LITERAL_LONG, "1l");
 
-        testLex(TokenID.LITERAL_LONG, "0x1", "0x1l");
-        testLex(TokenID.LITERAL_LONG, "0X1F", "0X1Fl");
+        testLex(TokenID.LITERAL_LONG, "0x1l");
+        testLex(TokenID.LITERAL_LONG, "0X1Fl");
 
-        testLex(TokenID.LITERAL_LONG, "0b1", "0b1l");
-        testLex(TokenID.LITERAL_LONG, "0B11", "0B11l");
+        testLex(TokenID.LITERAL_LONG, "0b1l");
+        testLex(TokenID.LITERAL_LONG, "0B11l");
 
-        testLex(TokenID.LITERAL_LONG, "01", "01l");
-        testLex(TokenID.LITERAL_LONG, "017", "017l");
+        testLex(TokenID.LITERAL_LONG, "01l");
+        testLex(TokenID.LITERAL_LONG, "017l");
 
-        testLex(TokenID.LITERAL_LONG, "1", "1L");
-        testLex(TokenID.LITERAL_LONG, "0X1", "0X1L");
-        testLex(TokenID.LITERAL_LONG, "0B1", "0B1L");
-        testLex(TokenID.LITERAL_LONG, "017", "017L");
+        testLex(TokenID.LITERAL_LONG, "1L");
+        testLex(TokenID.LITERAL_LONG, "0X1L");
+        testLex(TokenID.LITERAL_LONG, "0B1L");
+        testLex(TokenID.LITERAL_LONG, "017L");
 
-        testLex(TokenID.LITERAL_LONG, "1234567890", "1234567890l");
+        testLex(TokenID.LITERAL_LONG, "1234567890l");
     }
 
     @Test
@@ -274,11 +274,7 @@ public class LexerTest {
     }
 
     private void testLex(TokenID expectedID, String source) {
-        testLex(expectedID, source, source);
-    }
-
-    private void testLex(TokenID expectedID, String expectedSource, String source) {
-        assertEquals(expectedID, expectedSource, Lexer.lex(source));
+        assertEquals(expectedID, source, Lexer.lex(source));
     }
 
     private void assertEquals(TokenID expectedID, String expectedSource, List<Token> actual) {

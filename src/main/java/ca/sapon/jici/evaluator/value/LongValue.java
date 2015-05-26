@@ -110,7 +110,7 @@ public class LongValue implements Value {
 
     @Override
     public String toString() {
-        return asString() + "L";
+        return asString();
     }
 
     public static LongValue of(long value) {

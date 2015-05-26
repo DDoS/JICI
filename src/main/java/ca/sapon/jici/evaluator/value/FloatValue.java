@@ -103,7 +103,7 @@ public class FloatValue implements Value {
 
     @Override
     public String toString() {
-        return asString() + "f";
+        return asString();
     }
 
     public static FloatValue of(float value) {

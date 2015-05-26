@@ -30,6 +30,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class FloatLiteral extends NumberLiteral {
     private float value = 0;
@@ -41,7 +42,12 @@ public class FloatLiteral extends NumberLiteral {
 
     private void evaluate() {
         if (!evaluated) {
-            value = Float.parseFloat(getSource());
+            String source = getSource();
+            final int lastIndex = source.length() - 1;
+            if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'f')) {
+                source = source.substring(0, lastIndex);
+            }
+            value = Float.parseFloat(source);
             evaluated = true;
         }
     }
@@ -121,11 +127,6 @@ public class FloatLiteral extends NumberLiteral {
     @Override
     public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
-    }
-
-    @Override
-    public String toString() {
-        return getSource() + 'f';
     }
 
     @Override

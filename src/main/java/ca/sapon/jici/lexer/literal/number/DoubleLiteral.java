@@ -30,6 +30,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.TokenID;
+import ca.sapon.jici.util.StringUtil;
 
 public class DoubleLiteral extends NumberLiteral {
     private double value = 0;
@@ -41,7 +42,12 @@ public class DoubleLiteral extends NumberLiteral {
 
     private void evaluate() {
         if (!evaluated) {
-            value = Double.parseDouble(getSource());
+            String source = getSource();
+            final int lastIndex = source.length() - 1;
+            if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'd')) {
+                source = source.substring(0, lastIndex);
+            }
+            value = Double.parseDouble(source);
             evaluated = true;
         }
     }
@@ -121,11 +127,6 @@ public class DoubleLiteral extends NumberLiteral {
     @Override
     public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
-    }
-
-    @Override
-    public String toString() {
-        return getSource() + 'd';
     }
 
     @Override

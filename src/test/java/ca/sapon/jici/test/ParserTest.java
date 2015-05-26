@@ -78,6 +78,7 @@ public class ParserTest {
         testParseExpression("-1", "+-1");
         testParseExpression("-1", "-+1");
         testParseExpression("1", "- -1");
+        testParseExpression("1", "+ +1");
 
         testParseExpression("Sign(+test)", "+test");
         testParseExpression("Sign(-test)", "-test");

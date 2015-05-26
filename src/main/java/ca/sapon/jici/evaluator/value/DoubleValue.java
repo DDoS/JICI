@@ -103,7 +103,7 @@ public class DoubleValue implements Value {
 
     @Override
     public String toString() {
-        return asString() + "d";
+        return asString();
     }
 
     public static DoubleValue of(double value) {

@@ -43,6 +43,10 @@ public class LongLiteral extends NumberLiteral {
     private void evaluate() {
         if (!evaluated) {
             String source = getSource();
+            final int lastIndex = source.length() - 1;
+            if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'l')) {
+                source = source.substring(0, lastIndex);
+            }
             final int radix = StringUtil.findRadix(source);
             try {
                 source = StringUtil.removeRadixIdentifier(source, radix);
@@ -129,11 +133,6 @@ public class LongLiteral extends NumberLiteral {
     @Override
     public ValueType getValueType(Environment environment) {
         return PrimitiveValueType.of(getTypeClass());
-    }
-
-    @Override
-    public String toString() {
-        return getSource() + 'L';
     }
 
     @Override

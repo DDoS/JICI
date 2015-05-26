@@ -57,6 +57,12 @@ public class Arithmetic implements Expression {
             final ValueType leftType = left.getValueType(environment).unbox();
             final ValueType rightType = right.getValueType(environment).unbox();
             if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ObjectValueType.THE_STRING) || rightType.is(ObjectValueType.THE_STRING))) {
+                if (leftType.isVoid()) {
+                    throw new EvaluatorException("Cannot convert void to java.lang.String", left);
+                }
+                if (rightType.isVoid()) {
+                    throw new EvaluatorException("Cannot convert void to java.lang.String", right);
+                }
                 valueType = ObjectValueType.THE_STRING;
                 stringConcatenation = true;
             } else {

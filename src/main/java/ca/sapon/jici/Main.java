@@ -62,8 +62,8 @@ public class Main {
                 final Expression expression = Parser.parseExpression(tokens);
                 final ValueType type = expression.getValueType(environment);
                 final Value value = expression.getValue(environment);
-                System.out.println("Type: " + type);
-                System.out.println("Value: " + value);
+                System.out.println("Type: " + type.getName());
+                System.out.println("Value: " + value.asString());
             }
         } catch (SourceException exception) {
             System.out.println(metadata.generateErrorMessage(exception));

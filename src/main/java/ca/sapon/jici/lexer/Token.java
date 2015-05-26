@@ -40,8 +40,8 @@ public abstract class Token implements SourceIndexed {
         return id;
     }
 
-    public TokenType getType() {
-        return id.getType();
+    public TokenGroup getGroup() {
+        return id.getGroup();
     }
 
     public String getSource() {

@@ -31,7 +31,7 @@ import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.lexer.TokenType;
+import ca.sapon.jici.lexer.TokenGroup;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -87,7 +87,7 @@ public class LexerTest {
     @Test
     public void testLexSymbol() {
         for (Symbol symbol : Symbol.all()) {
-            if (symbol.getType() != TokenType.COMMENT_DELIMITER) {
+            if (symbol.getGroup() != TokenGroup.COMMENT_DELIMITER) {
                 testLex(symbol.getID(), symbol.getSource());
             }
         }

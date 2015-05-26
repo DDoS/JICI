@@ -33,7 +33,7 @@ import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.lexer.TokenType;
+import ca.sapon.jici.lexer.TokenGroup;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.parser.expression.Cast;
@@ -165,7 +165,7 @@ public final class Parser {
     private static TypeName parseTypeName(ListNavigator<Token> tokens) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.PRIMITIVE_TYPE) {
+            if (token.getGroup() == TokenGroup.PRIMITIVE_TYPE) {
                 tokens.advance();
                 return new PrimitiveTypeName((Keyword) token);
             }
@@ -291,7 +291,7 @@ public final class Parser {
         final Expression assignee = parseConditional(tokens);
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.ASSIGNMENT) {
+            if (token.getGroup() == TokenGroup.ASSIGNMENT) {
                 if (assignee instanceof Reference) {
                     tokens.advance();
                     final Expression value = parseAssignment(tokens);
@@ -410,7 +410,7 @@ public final class Parser {
     private static Expression parseEqual(ListNavigator<Token> tokens, Expression left) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.EQUAL_OPERATOR) {
+            if (token.getGroup() == TokenGroup.EQUAL_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseComparison(tokens);
                 final Equal add = new Equal(left, right, (Symbol) token);
@@ -427,7 +427,7 @@ public final class Parser {
     private static Expression parseComparison(ListNavigator<Token> tokens, Expression left) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.COMPARISON_OPERATOR) {
+            if (token.getGroup() == TokenGroup.COMPARISON_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseShift(tokens);
                 final Comparison add = new Comparison(left, right, (Symbol) token);
@@ -449,7 +449,7 @@ public final class Parser {
     private static Expression parseShift(ListNavigator<Token> tokens, Expression left) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.SHIFT_OPERATOR) {
+            if (token.getGroup() == TokenGroup.SHIFT_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseAdd(tokens);
                 final Shift add = new Shift(left, right, (Symbol) token);
@@ -466,7 +466,7 @@ public final class Parser {
     private static Expression parseAdd(ListNavigator<Token> tokens, Expression left) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.ADD_OPERATOR) {
+            if (token.getGroup() == TokenGroup.ADD_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseMultiply(tokens);
                 final Arithmetic arithmetic = new Arithmetic(left, right, (Symbol) token);
@@ -483,7 +483,7 @@ public final class Parser {
     private static Expression parseMultiply(ListNavigator<Token> tokens, Expression left) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            if (token.getType() == TokenType.MULTIPLY_OPERATOR) {
+            if (token.getGroup() == TokenGroup.MULTIPLY_OPERATOR) {
                 tokens.advance();
                 final Expression right = parseUnary(tokens);
                 final Arithmetic arithmetic = new Arithmetic(left, right, (Symbol) token);
@@ -581,7 +581,7 @@ public final class Parser {
                     tokens.advance();
                     if (tokens.has()) {
                         final Token token = tokens.get();
-                        if (token.getType() == TokenType.IDENTIFIER) {
+                        if (token.getGroup() == TokenGroup.IDENTIFIER) {
                             tokens.advance();
                             final Expression access;
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
@@ -614,7 +614,7 @@ public final class Parser {
     private static Expression parseAtom(ListNavigator<Token> tokens) {
         if (tokens.has()) {
             final Token token = tokens.get();
-            switch (token.getType()) {
+            switch (token.getGroup()) {
                 case LITERAL: {
                     tokens.advance();
                     return (Literal) token;

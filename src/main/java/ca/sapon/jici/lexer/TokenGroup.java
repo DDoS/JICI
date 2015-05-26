@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.lexer;
 
-public enum TokenType {
+public enum TokenGroup {
     IDENTIFIER,
     LITERAL,
     ACCESS_MODIFIER,

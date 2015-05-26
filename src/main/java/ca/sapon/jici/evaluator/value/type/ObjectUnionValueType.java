@@ -93,7 +93,7 @@ public class ObjectUnionValueType extends ObjectValueType {
 
     @Override
     public String getName() {
-        return '(' + StringUtil.toString(lowestUpperBound, ", ") + ')';
+        return StringUtil.toString(lowestUpperBound, ", ");
     }
 
     @Override

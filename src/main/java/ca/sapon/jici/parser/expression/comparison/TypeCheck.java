@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.ClassTypeName;
+import ca.sapon.jici.parser.name.ClassTypeName;
 
 public class TypeCheck implements Expression {
     private final Expression object;

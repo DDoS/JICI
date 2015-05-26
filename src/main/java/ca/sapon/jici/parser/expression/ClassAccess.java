@@ -28,7 +28,7 @@ import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.parser.type.TypeName;
+import ca.sapon.jici.parser.name.TypeName;
 
 public class ClassAccess implements Expression {
     private static final ClassType VALUE_TYPE = ClassType.of(Class.class);

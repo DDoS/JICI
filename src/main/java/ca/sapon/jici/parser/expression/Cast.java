@@ -27,7 +27,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.parser.type.TypeName;
+import ca.sapon.jici.parser.name.TypeName;
 
 public class Cast implements Expression {
     private final TypeName typeName;

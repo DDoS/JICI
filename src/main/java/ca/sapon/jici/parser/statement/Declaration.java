@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.TypeName;
+import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.StringUtil;
 
 public class Declaration implements Statement {

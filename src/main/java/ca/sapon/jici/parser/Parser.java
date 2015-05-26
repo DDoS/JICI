@@ -66,9 +66,9 @@ import ca.sapon.jici.parser.statement.Declaration.Variable;
 import ca.sapon.jici.parser.statement.Empty;
 import ca.sapon.jici.parser.statement.Import;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.parser.type.ClassTypeName;
-import ca.sapon.jici.parser.type.PrimitiveTypeName;
-import ca.sapon.jici.parser.type.TypeName;
+import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.name.PrimitiveTypeName;
+import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.ListNavigator;
 
 public final class Parser {

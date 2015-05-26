@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.type;
+package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;

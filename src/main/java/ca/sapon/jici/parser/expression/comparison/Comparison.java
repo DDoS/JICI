@@ -28,8 +28,8 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -37,8 +37,8 @@ public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private ValueType valueType = null;
-    private ValueType widenType = null;
+    private Type type = null;
+    private Type widenType = null;
 
     public Comparison(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -47,20 +47,20 @@ public class Comparison implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType leftType = left.getValueType(environment).unbox();
-            final ValueType rightType = right.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type leftType = left.getType(environment).unbox();
+            final Type rightType = right.getType(environment).unbox();
             if (!leftType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
             }
             if (!rightType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
             }
-            valueType = PrimitiveValueType.THE_BOOLEAN;
+            type = PrimitiveType.THE_BOOLEAN;
             widenType = leftType.binaryWiden(rightType);
         }
-        return valueType;
+        return type;
     }
 
     @Override

@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.type.ClassTypeName;
@@ -38,22 +38,22 @@ import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
-    private final ClassTypeName type;
+    private final ClassTypeName typeName;
     private final List<Expression> arguments;
-    private ValueType valueType = null;
+    private Type type = null;
     private Constructor<?> constructor = null;
     private int varargIndex = -1;
     private Class<?> varargType = null;
 
-    public ConstructorCall(ClassTypeName type, List<Expression> arguments) {
+    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments) {
         this.arguments = arguments;
-        this.type = type;
+        this.typeName = typeName;
     }
 
     @Override
     public void execute(Environment environment) {
         try {
-            getValueType(environment);
+            getType(environment);
             getValue(environment);
         } catch (EvaluatorException exception) {
             throw exception;
@@ -63,19 +63,19 @@ public class ConstructorCall implements Statement, Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            valueType = type.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            type = typeName.getType(environment);
             final int size = arguments.size();
-            final ValueType[] argumentTypes = new ValueType[size];
+            final Type[] argumentTypes = new Type[size];
             for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).getValueType(environment);
+                argumentTypes[i] = arguments.get(i).getType(environment);
             }
             try {
-                constructor = valueType.getConstructor(argumentTypes);
+                constructor = type.getConstructor(argumentTypes);
             } catch (IllegalArgumentException ignored) {
                 try {
-                    constructor = valueType.getVarargConstructor(argumentTypes);
+                    constructor = type.getVarargConstructor(argumentTypes);
                     final Class<?>[] parameters = constructor.getParameterTypes();
                     varargIndex = parameters.length - 1;
                     varargType = parameters[varargIndex].getComponentType();
@@ -84,7 +84,7 @@ public class ConstructorCall implements Statement, Expression {
                 }
             }
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -106,16 +106,16 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public int getStart() {
-        return type.getStart();
+        return typeName.getStart();
     }
 
     @Override
     public int getEnd() {
-        return arguments.isEmpty() ? type.getEnd() : arguments.get(arguments.size() - 1).getEnd();
+        return arguments.isEmpty() ? typeName.getEnd() : arguments.get(arguments.size() - 1).getEnd();
     }
 
     @Override
     public String toString() {
-        return "ConstructorCall(new " + type + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "ConstructorCall(new " + typeName + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

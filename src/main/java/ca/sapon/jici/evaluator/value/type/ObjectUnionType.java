@@ -36,11 +36,11 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class ObjectUnionValueType extends ObjectValueType {
-    private final ObjectValueType[] types;
-    private final Set<ObjectValueType> lowestUpperBound;
+public class ObjectUnionType extends ObjectType {
+    private final ObjectType[] types;
+    private final Set<ObjectType> lowestUpperBound;
 
-    public ObjectUnionValueType(ObjectValueType... types) {
+    public ObjectUnionType(ObjectType... types) {
         super(Object.class);
         if (types.length <= 1) {
             throw new IllegalArgumentException("Expected more than one type");
@@ -48,9 +48,9 @@ public class ObjectUnionValueType extends ObjectValueType {
         final Set<Class<?>> classes = new HashSet<>(types.length);
         boolean allEqual = true;
         Class<?> previous = null;
-        for (ObjectValueType type : types) {
-            if (type instanceof ObjectUnionValueType) {
-                classes.addAll(((ObjectUnionValueType) type).getTypeClasses());
+        for (ObjectType type : types) {
+            if (type instanceof ObjectUnionType) {
+                classes.addAll(((ObjectUnionType) type).getTypeClasses());
                 allEqual = false;
             } else {
                 final Class<?> _class = type.getTypeClass();
@@ -69,16 +69,16 @@ public class ObjectUnionValueType extends ObjectValueType {
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            final ObjectValueType type = new ObjectValueType(bound);
+            final ObjectType type = new ObjectType(bound);
             lowestUpperBound.add(type);
         }
     }
 
     public Set<Class<?>> getTypeClasses() {
         final Set<Class<?>> classes = new HashSet<>(types.length);
-        for (ObjectValueType type : types) {
-            if (type instanceof ObjectUnionValueType) {
-                classes.addAll(((ObjectUnionValueType) type).getTypeClasses());
+        for (ObjectType type : types) {
+            if (type instanceof ObjectUnionType) {
+                classes.addAll(((ObjectUnionType) type).getTypeClasses());
             } else {
                 classes.add(type.getTypeClass());
             }
@@ -97,13 +97,13 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public boolean is(ValueType type) {
-        return type instanceof ObjectUnionValueType && this.lowestUpperBound.equals(((ObjectUnionValueType) type).lowestUpperBound);
+    public boolean is(Type type) {
+        return type instanceof ObjectUnionType && this.lowestUpperBound.equals(((ObjectUnionType) type).lowestUpperBound);
     }
 
     @Override
     public boolean isArray() {
-        for (ObjectValueType bound : lowestUpperBound) {
+        for (ObjectType bound : lowestUpperBound) {
             if (bound.isArray()) {
                 return true;
             }
@@ -112,13 +112,13 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public ValueType unbox() {
+    public Type unbox() {
         return this;
     }
 
     @Override
-    public boolean convertibleTo(ValueType to) {
-        for (ObjectValueType bound : lowestUpperBound) {
+    public boolean convertibleTo(Type to) {
+        for (ObjectType bound : lowestUpperBound) {
             if (bound.convertibleTo(to)) {
                 return true;
             }
@@ -127,8 +127,8 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public Constructor<?> getConstructor(ValueType[] arguments) {
-        for (ObjectValueType bound : lowestUpperBound) {
+    public Constructor<?> getConstructor(Type[] arguments) {
+        for (ObjectType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
             } catch (IllegalArgumentException ignored) {
@@ -138,8 +138,8 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
-        for (ObjectValueType bound : lowestUpperBound) {
+    public Constructor<?> getVarargConstructor(Type[] arguments) {
+        for (ObjectType bound : lowestUpperBound) {
             try {
                 return bound.getVarargConstructor(arguments);
             } catch (IllegalArgumentException ignored) {
@@ -148,14 +148,14 @@ public class ObjectUnionValueType extends ObjectValueType {
         return failGetConstructor(arguments);
     }
 
-    private Constructor<?> failGetConstructor(ValueType[] arguments) {
+    private Constructor<?> failGetConstructor(Type[] arguments) {
         throw new IllegalArgumentException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     @Override
     public Field getField(String name) {
-        for (ObjectValueType bound : lowestUpperBound) {
+        for (ObjectType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);
             } catch (IllegalArgumentException ignored) {
@@ -165,8 +165,8 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public Method getMethod(String name, ValueType[] arguments) {
-        for (ObjectValueType bound : lowestUpperBound) {
+    public Method getMethod(String name, Type[] arguments) {
+        for (ObjectType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
             } catch (IllegalArgumentException ignored) {
@@ -176,8 +176,8 @@ public class ObjectUnionValueType extends ObjectValueType {
     }
 
     @Override
-    public Method getVarargMethod(String name, ValueType[] arguments) {
-        for (ObjectValueType bound : lowestUpperBound) {
+    public Method getVarargMethod(String name, Type[] arguments) {
+        for (ObjectType bound : lowestUpperBound) {
             try {
                 return bound.getVarargMethod(name, arguments);
             } catch (IllegalArgumentException ignored) {
@@ -186,7 +186,7 @@ public class ObjectUnionValueType extends ObjectValueType {
         return failGetMethod(name, arguments);
     }
 
-    private Method failGetMethod(String name, ValueType[] arguments) {
+    private Method failGetMethod(String name, Type[] arguments) {
         throw new IllegalArgumentException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }

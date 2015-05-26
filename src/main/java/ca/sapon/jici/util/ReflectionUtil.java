@@ -36,11 +36,11 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.value.type.NullValueType;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.evaluator.value.type.VoidValueType;
+import ca.sapon.jici.evaluator.value.type.NullType;
+import ca.sapon.jici.evaluator.value.type.ObjectType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.value.type.VoidType;
 
 /**
  *
@@ -126,7 +126,7 @@ public final class ReflectionUtil {
         return null;
     }
 
-    public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, ValueType[] arguments) {
+    public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, Type[] arguments) {
         // fast-track the lack of candidates
         if (candidates.isEmpty()) {
             return null;
@@ -138,7 +138,7 @@ public final class ReflectionUtil {
             final Class<?>[] parameters = entry.getValue();
             boolean allEqual = true;
             for (int i = 0; i < parameters.length; i++) {
-                final ValueType argument = arguments[i];
+                final Type argument = arguments[i];
                 final Class<?> parameter = parameters[i];
                 if (!argument.convertibleTo(wrap(parameter))) {
                     iterator.remove();
@@ -189,22 +189,22 @@ public final class ReflectionUtil {
         //   else
         //     A < B
         if (parameterA.isPrimitive()) {
-            return parameterB.isPrimitive() ? PrimitiveValueType.convertibleTo(parameterA, parameterB) : argument.isPrimitive();
+            return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : argument.isPrimitive();
         }
-        return parameterB.isPrimitive() ? !argument.isPrimitive() : ObjectValueType.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !argument.isPrimitive() : ObjectType.convertibleTo(parameterA, parameterB);
     }
 
-    public static ValueType wrap(Class<?> type) {
+    public static Type wrap(Class<?> type) {
         if (type == null) {
-            return NullValueType.THE_NULL;
+            return NullType.THE_NULL;
         }
         if (type == void.class) {
-            return VoidValueType.THE_VOID;
+            return VoidType.THE_VOID;
         }
         if (type.isPrimitive()) {
-            return PrimitiveValueType.of(type);
+            return PrimitiveType.of(type);
         }
-        return ObjectValueType.of(type);
+        return ObjectType.of(type);
     }
 
     // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla

@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -41,7 +41,7 @@ public class MethodCall implements Expression, Statement {
     private final Expression object;
     private final Identifier method;
     private final List<Expression> arguments;
-    private ValueType valueType = null;
+    private Type type = null;
     private Method callable = null;
     private int varargIndex = -1;
     private Class<?> varargType = null;
@@ -55,7 +55,7 @@ public class MethodCall implements Expression, Statement {
     @Override
     public void execute(Environment environment) {
         try {
-            getValueType(environment);
+            getType(environment);
             getValue(environment);
         } catch (EvaluatorException exception) {
             throw exception;
@@ -65,13 +65,13 @@ public class MethodCall implements Expression, Statement {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType objectType = object.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type objectType = object.getType(environment);
             final int size = arguments.size();
-            final ValueType[] argumentTypes = new ValueType[size];
+            final Type[] argumentTypes = new Type[size];
             for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).getValueType(environment);
+                argumentTypes[i] = arguments.get(i).getType(environment);
             }
             final String name = method.getSource();
             try {
@@ -87,9 +87,9 @@ public class MethodCall implements Expression, Statement {
                 }
             }
             final Class<?> returnType = callable.getReturnType();
-            valueType = ReflectionUtil.wrap(returnType);
+            type = ReflectionUtil.wrap(returnType);
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -104,11 +104,11 @@ public class MethodCall implements Expression, Statement {
             values = ReflectionUtil.compactVarargs(varargType, varargIndex, values);
         }
         try {
-            if (valueType.isVoid()) {
+            if (type.isVoid()) {
                 callable.invoke(value, values);
                 return VoidValue.THE_VOID;
             } else {
-                return valueType.getKind().wrap(callable.invoke(value, values));
+                return type.getKind().wrap(callable.invoke(value, values));
             }
         } catch (Exception exception) {
             throw new EvaluatorException("Could not call method", exception, this);

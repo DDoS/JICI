@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -38,7 +38,7 @@ import ca.sapon.jici.util.StringUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
-    private ValueType valueType = null;
+    private Type type = null;
     private Reference reference = null;
 
     public AmbiguousReference(List<Identifier> name) {
@@ -46,16 +46,16 @@ public class AmbiguousReference implements Reference {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
+    public Type getType(Environment environment) {
+        if (type == null) {
             final Expression resolved = disambiguate(environment, name);
             if (!(resolved instanceof Reference)) {
                 throw new EvaluatorException("Not a reference", resolved);
             }
             reference = (Reference) resolved;
-            valueType = reference.getValueType(environment);
+            type = reference.getType(environment);
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -117,7 +117,7 @@ public class AmbiguousReference implements Reference {
         private final Class<?> _class;
         private final int start;
         private final int end;
-        private ValueType valueType = null;
+        private Type type = null;
 
         private StaticAccess(Class<?> _class, int start, int end) {
             this._class = _class;
@@ -126,11 +126,11 @@ public class AmbiguousReference implements Reference {
         }
 
         @Override
-        public ValueType getValueType(Environment environment) {
-            if (valueType == null) {
-                valueType = ReflectionUtil.wrap(_class);
+        public Type getType(Environment environment) {
+            if (type == null) {
+                type = ReflectionUtil.wrap(_class);
             }
-            return valueType;
+            return type;
         }
 
         @Override

@@ -27,33 +27,33 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.type.ClassTypeName;
 
 public class TypeCheck implements Expression {
     private final Expression object;
-    private final ClassTypeName type;
-    private ValueType valueType = null;
-    private ValueType checkType = null;
+    private final ClassTypeName typeName;
+    private Type type = null;
+    private Type checkType = null;
 
-    public TypeCheck(Expression object, ClassTypeName type) {
+    public TypeCheck(Expression object, ClassTypeName typeName) {
         this.object = object;
-        this.type = type;
+        this.typeName = typeName;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType objectType = object.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type objectType = object.getType(environment);
             if (objectType.isPrimitive()) {
                 throw new EvaluatorException("Cannot type check a primitive: " + objectType.getName(), object);
             }
-            checkType = type.getValueType(environment);
-            valueType = PrimitiveValueType.THE_BOOLEAN;
+            checkType = typeName.getType(environment);
+            type = PrimitiveType.THE_BOOLEAN;
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -69,11 +69,11 @@ public class TypeCheck implements Expression {
 
     @Override
     public int getEnd() {
-        return type.getEnd();
+        return typeName.getEnd();
     }
 
     @Override
     public String toString() {
-        return "TypeCheck(" + object + " instanceof " + type + ")";
+        return "TypeCheck(" + object + " instanceof " + typeName + ")";
     }
 }

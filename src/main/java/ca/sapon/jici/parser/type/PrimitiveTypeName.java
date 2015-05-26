@@ -25,24 +25,24 @@ package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.evaluator.value.type.VoidValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
+import ca.sapon.jici.evaluator.value.type.VoidType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveTypeName implements TypeName {
-    private final Keyword type;
-    private ValueType valueType = null;
+    private final Keyword name;
+    private Type type = null;
 
-    public PrimitiveTypeName(Keyword type) {
-        this.type = type;
+    public PrimitiveTypeName(Keyword name) {
+        this.name = name;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
+    public Type getType(Environment environment) {
+        if (type == null) {
             final Class<?> _class;
-            switch (type.getID()) {
+            switch (name.getID()) {
                 case KEYWORD_BOOLEAN:
                     _class = boolean.class;
                     break;
@@ -71,25 +71,25 @@ public class PrimitiveTypeName implements TypeName {
                     _class = void.class;
                     break;
                 default:
-                    throw new EvaluatorException("Not a primitive type: " + type, getStart(), getEnd());
+                    throw new EvaluatorException("Not a primitive type: " + name, getStart(), getEnd());
             }
-            valueType = _class == void.class ? VoidValueType.THE_VOID : PrimitiveValueType.of(_class);
+            type = _class == void.class ? VoidType.THE_VOID : PrimitiveType.of(_class);
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public int getStart() {
-        return type.getStart();
+        return name.getStart();
     }
 
     @Override
     public int getEnd() {
-        return type.getEnd();
+        return name.getEnd();
     }
 
     @Override
     public String toString() {
-        return type.toString();
+        return name.toString();
     }
 }

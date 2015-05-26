@@ -31,14 +31,14 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class Sign implements Expression {
     private final Expression inner;
     private final Symbol operator;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public Sign(Expression inner, Symbol operator) {
         this.inner = inner;
@@ -46,21 +46,21 @@ public class Sign implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType innerType = inner.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type innerType = inner.getType(environment).unbox();
             if (!innerType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }
-            valueType = innerType.unaryWiden();
+            type = innerType.unaryWiden();
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value innerValue = inner.getValue(environment);
-        final ValueKind widenKind = valueType.getKind();
+        final ValueKind widenKind = type.getKind();
         switch (operator.getID()) {
             case SYMBOL_PLUS:
                 return doReaffirm(innerValue, widenKind);

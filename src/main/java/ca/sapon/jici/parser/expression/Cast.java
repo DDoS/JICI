@@ -26,24 +26,24 @@ package ca.sapon.jici.parser.expression;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.type.TypeName;
 
 public class Cast implements Expression {
-    private final TypeName type;
+    private final TypeName typeName;
     private final Expression object;
-    private ValueType valueType = null;
+    private Type type = null;
 
-    public Cast(TypeName type, Expression object) {
-        this.type = type;
+    public Cast(TypeName typeName, Expression object) {
+        this.typeName = typeName;
         this.object = object;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType castType = type.getValueType(environment);
-            final ValueType objectType = object.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type castType = typeName.getType(environment);
+            final Type objectType = object.getType(environment);
             // cannot cast to void
             // cast primitive to primitive
             // cast boolean to boolean
@@ -72,37 +72,37 @@ public class Cast implements Expression {
                     }
                 }
             }
-            valueType = castType;
+            type = castType;
         }
-        return valueType;
+        return type;
     }
 
-    private void failCast(ValueType cast, ValueType object) {
+    private void failCast(Type cast, Type object) {
         failCast(cast, object.getTypeClass());
     }
 
-    private void failCast(ValueType cast, Class<?> object) {
+    private void failCast(Type cast, Class<?> object) {
         throw new EvaluatorException("Cannot cast " + object.getCanonicalName() + " to " + cast.getName(), this);
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value value = object.getValue(environment);
-        switch (valueType.getKind()) {
+        switch (type.getKind()) {
             case OBJECT:
                 final Object object = value.asObject();
-                if (object != null && !valueType.getTypeClass().isInstance(object)) {
-                    failCast(valueType, object.getClass());
+                if (object != null && !type.getTypeClass().isInstance(object)) {
+                    failCast(type, object.getClass());
                 }
                 return value;
             default:
-                return valueType.getKind().convert(value);
+                return type.getKind().convert(value);
         }
     }
 
     @Override
     public int getStart() {
-        return type.getStart();
+        return typeName.getStart();
     }
 
     @Override
@@ -112,6 +112,6 @@ public class Cast implements Expression {
 
     @Override
     public String toString() {
-        return "Cast((" + type + ") " + object + ")";
+        return "Cast((" + typeName + ") " + object + ")";
     }
 }

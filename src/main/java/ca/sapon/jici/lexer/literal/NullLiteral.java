@@ -27,8 +27,8 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.NullValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.NullType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.TokenID;
 
 public class NullLiteral extends Literal {
@@ -109,8 +109,8 @@ public class NullLiteral extends Literal {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        return NullValueType.THE_NULL;
+    public Type getType(Environment environment) {
+        return NullType.THE_NULL;
     }
 
     public static boolean is(String source) {

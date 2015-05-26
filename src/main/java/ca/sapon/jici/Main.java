@@ -29,7 +29,7 @@ import java.util.Scanner;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenID;
@@ -60,7 +60,7 @@ public class Main {
                 }
             } else {
                 final Expression expression = Parser.parseExpression(tokens);
-                final ValueType type = expression.getValueType(environment);
+                final Type type = expression.getType(environment);
                 final Value value = expression.getValue(environment);
                 System.out.println("Type: " + type.getName());
                 System.out.println("Value: " + value.asString());

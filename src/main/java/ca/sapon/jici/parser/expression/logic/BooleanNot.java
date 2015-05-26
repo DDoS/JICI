@@ -27,28 +27,28 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public BooleanNot(Expression inner) {
         this.inner = inner;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType innerClass = inner.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type innerClass = inner.getType(environment).unbox();
             if (!innerClass.isBoolean()) {
                 throw new EvaluatorException("Not a boolean: " + innerClass.getName(), inner);
             }
-            valueType = PrimitiveValueType.THE_BOOLEAN;
+            type = PrimitiveType.THE_BOOLEAN;
         }
-        return valueType;
+        return type;
     }
 
     @Override

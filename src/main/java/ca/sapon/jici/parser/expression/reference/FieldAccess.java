@@ -28,7 +28,7 @@ import java.lang.reflect.Field;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -36,7 +36,7 @@ import ca.sapon.jici.util.ReflectionUtil;
 public class FieldAccess implements Reference {
     private final Expression object;
     private final Identifier field;
-    private ValueType valueType = null;
+    private Type type = null;
     private Field member = null;
 
     public FieldAccess(Expression object, Identifier field) {
@@ -45,23 +45,22 @@ public class FieldAccess implements Reference {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
+    public Type getType(Environment environment) {
+        if (type == null) {
             try {
-                member = object.getValueType(environment).getField(field.getSource());
+                member = object.getType(environment).getField(field.getSource());
             } catch (IllegalArgumentException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }
-            final Class<?> type = member.getType();
-            valueType = ReflectionUtil.wrap(type);
+            type = ReflectionUtil.wrap(member.getType());
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         try {
-            return valueType.getKind().wrap(member.get(object.getValue(environment)));
+            return type.getKind().wrap(member.get(object.getValue(environment)));
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field: " + field.getSource(), field);
         }

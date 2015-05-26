@@ -25,10 +25,10 @@ package ca.sapon.jici.parser.type;
 
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 
 public interface TypeName extends SourceIndexed {
-    ValueType getValueType(Environment environment);
+    Type getType(Environment environment);
 
     @Override
     int getStart();

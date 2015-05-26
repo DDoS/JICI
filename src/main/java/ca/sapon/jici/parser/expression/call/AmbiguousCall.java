@@ -28,7 +28,7 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
@@ -38,7 +38,7 @@ import ca.sapon.jici.util.StringUtil;
 public class AmbiguousCall implements Expression, Statement {
     private final List<Identifier> name;
     private final List<Expression> arguments;
-    private ValueType valueType = null;
+    private Type type = null;
     private MethodCall call = null;
 
     public AmbiguousCall(List<Identifier> name, List<Expression> arguments) {
@@ -49,7 +49,7 @@ public class AmbiguousCall implements Expression, Statement {
     @Override
     public void execute(Environment environment) {
         try {
-            getValueType(environment);
+            getType(environment);
             getValue(environment);
         } catch (EvaluatorException exception) {
             throw exception;
@@ -59,14 +59,14 @@ public class AmbiguousCall implements Expression, Statement {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
+    public Type getType(Environment environment) {
+        if (type == null) {
             final int lastIndex = name.size() - 1;
             final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
             call = new MethodCall(resolved, name.get(lastIndex), arguments);
-            valueType = call.getValueType(environment);
+            type = call.getType(environment);
         }
-        return valueType;
+        return type;
     }
 
     @Override

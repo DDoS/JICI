@@ -29,33 +29,33 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 
 public class BitwiseNot implements Expression {
     private final Expression inner;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public BitwiseNot(Expression inner) {
         this.inner = inner;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType innerType = inner.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type innerType = inner.getType(environment).unbox();
             if (!innerType.isIntegral()) {
                 throw new EvaluatorException("Not an integral type: " + innerType.getName(), inner);
             }
-            valueType = innerType.unaryWiden();
+            type = innerType.unaryWiden();
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value innerValue = inner.getValue(environment);
-        final ValueKind widenKind = valueType.getKind();
+        final ValueKind widenKind = type.getKind();
         switch (widenKind) {
             case INT:
                 return IntValue.of(~innerValue.asInt());

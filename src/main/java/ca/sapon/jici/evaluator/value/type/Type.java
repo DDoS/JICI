@@ -32,14 +32,14 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  *
  */
-public interface ValueType {
+public interface Type {
     Class<?> getTypeClass();
 
     String getName();
 
     ValueKind getKind();
 
-    boolean is(ValueType type);
+    boolean is(Type type);
 
     boolean isVoid();
 
@@ -57,27 +57,27 @@ public interface ValueType {
 
     boolean isObject();
 
-    ValueType unbox();
+    Type unbox();
 
-    ObjectValueType box();
+    ObjectType box();
 
     boolean canNarrowFrom(int value);
 
-    PrimitiveValueType unaryWiden();
+    PrimitiveType unaryWiden();
 
-    PrimitiveValueType binaryWiden(ValueType with);
+    PrimitiveType binaryWiden(Type with);
 
-    boolean convertibleTo(ValueType to);
+    boolean convertibleTo(Type to);
 
-    Constructor<?> getConstructor(ValueType[] arguments);
+    Constructor<?> getConstructor(Type[] arguments);
 
-    Constructor<?> getVarargConstructor(ValueType[] arguments);
+    Constructor<?> getVarargConstructor(Type[] arguments);
 
     Field getField(String name);
 
-    Method getMethod(String name, ValueType[] arguments);
+    Method getMethod(String name, Type[] arguments);
 
-    Method getVarargMethod(String name, ValueType[] arguments);
+    Method getVarargMethod(String name, Type[] arguments);
 
     String toString();
 }

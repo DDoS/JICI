@@ -37,12 +37,12 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class ObjectValueType implements ValueType {
-    public static final ObjectValueType THE_STRING = ObjectValueType.of(String.class);
-    public static final ObjectValueType THE_OBJECT = ObjectValueType.of(Object.class);
+public class ObjectType implements Type {
+    public static final ObjectType THE_STRING = ObjectType.of(String.class);
+    public static final ObjectType THE_OBJECT = ObjectType.of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
     private Class<?> type;
-    private ValueType unbox = null;
+    private Type unbox = null;
 
     static {
         UNBOXED_TYPES.put(Boolean.class, boolean.class);
@@ -56,7 +56,7 @@ public class ObjectValueType implements ValueType {
         UNBOXED_TYPES.put(Void.class, void.class);
     }
 
-    protected ObjectValueType(Class<?> type) {
+    protected ObjectType(Class<?> type) {
         this.type = type;
     }
 
@@ -76,8 +76,8 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public boolean is(ValueType type) {
-        return !(type instanceof ObjectUnionValueType) && this.type == type.getTypeClass();
+    public boolean is(Type type) {
+        return !(type instanceof ObjectUnionType) && this.type == type.getTypeClass();
     }
 
     @Override
@@ -121,13 +121,13 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public ValueType unbox() {
+    public Type unbox() {
         if (unbox == null) {
             final Class<?> unboxClass = unbox(type);
             if (unboxClass == void.class) {
-                unbox = VoidValueType.THE_VOID;
+                unbox = VoidType.THE_VOID;
             } else if (unboxClass != null && unboxClass.isPrimitive()) {
-                unbox = PrimitiveValueType.of(unboxClass);
+                unbox = PrimitiveType.of(unboxClass);
             } else {
                 unbox = this;
             }
@@ -136,7 +136,7 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public ObjectValueType box() {
+    public ObjectType box() {
         return this;
     }
 
@@ -146,25 +146,25 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType unaryWiden() {
+    public PrimitiveType unaryWiden() {
         throw new IllegalArgumentException("Cannot unary widen an object type");
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(ValueType with) {
+    public PrimitiveType binaryWiden(Type with) {
         throw new IllegalArgumentException("Cannot binary widen an object type");
     }
 
     @Override
-    public boolean convertibleTo(ValueType to) {
-        if (to instanceof ObjectUnionValueType) {
+    public boolean convertibleTo(Type to) {
+        if (to instanceof ObjectUnionType) {
             throw new IllegalArgumentException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
     }
 
     @Override
-    public Constructor<?> getConstructor(ValueType[] arguments) {
+    public Constructor<?> getConstructor(Type[] arguments) {
         // try to find a matching constructor
         final Constructor<?>[] constructors = type.getConstructors();
         // look for matches in length
@@ -185,7 +185,7 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+    public Constructor<?> getVarargConstructor(Type[] arguments) {
         // try to find a matching constructor
         final Constructor<?>[] constructors = type.getConstructors();
         // look for varargs with match in length of non-varargs
@@ -208,7 +208,7 @@ public class ObjectValueType implements ValueType {
         return constructor;
     }
 
-    private void failGetConstructor(ValueType[] arguments) {
+    private void failGetConstructor(Type[] arguments) {
         throw new IllegalArgumentException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
@@ -223,7 +223,7 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public Method getMethod(String name, ValueType[] arguments) {
+    public Method getMethod(String name, Type[] arguments) {
         // try to find a matching method without varargs
         final Method[] methods = type.getMethods();
         // look for matches in length and name
@@ -246,7 +246,7 @@ public class ObjectValueType implements ValueType {
     }
 
     @Override
-    public Method getVarargMethod(String name, ValueType[] arguments) {
+    public Method getVarargMethod(String name, Type[] arguments) {
         // try to find a matching method with varargs
         final Method[] methods = type.getMethods();
         // look for varargs with matches in name and length of non-varargs
@@ -269,7 +269,7 @@ public class ObjectValueType implements ValueType {
         return method;
     }
 
-    private void failGetMethod(String name, ValueType[] arguments) {
+    private void failGetMethod(String name, Type[] arguments) {
         throw new IllegalArgumentException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
@@ -288,14 +288,14 @@ public class ObjectValueType implements ValueType {
         if (to.isPrimitive()) {
             from = unbox(from);
             if (from.isPrimitive()) {
-                return PrimitiveValueType.convertibleTo(from, to);
+                return PrimitiveType.convertibleTo(from, to);
             }
-            to = PrimitiveValueType.box(to).getTypeClass();
+            to = PrimitiveType.box(to).getTypeClass();
         }
         return to.isAssignableFrom(from);
     }
 
-    public static ObjectValueType of(Class<?> type) {
-        return new ObjectValueType(type);
+    public static ObjectType of(Class<?> type) {
+        return new ObjectType(type);
     }
 }

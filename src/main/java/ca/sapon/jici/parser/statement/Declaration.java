@@ -28,7 +28,7 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
@@ -36,25 +36,25 @@ import ca.sapon.jici.parser.type.TypeName;
 import ca.sapon.jici.util.StringUtil;
 
 public class Declaration implements Statement {
-    private final TypeName type;
+    private final TypeName typeName;
     private final List<Variable> variables;
-    private ValueType valueType = null;
+    private Type type = null;
 
-    public Declaration(TypeName type, List<Variable> variables) {
-        this.type = type;
+    public Declaration(TypeName typeName, List<Variable> variables) {
+        this.typeName = typeName;
         this.variables = variables;
     }
 
     @Override
     public void execute(Environment environment) {
         try {
-            if (valueType == null) {
-                final ValueType declarationType = type.getValueType(environment);
+            if (type == null) {
+                final Type declarationType = typeName.getType(environment);
                 if (declarationType.isVoid()) {
-                    throw new EvaluatorException("Illegal type: void", type);
+                    throw new EvaluatorException("Illegal type: void", typeName);
                 }
                 for (Variable variable : variables) {
-                    final ValueType variableType = variable.getValueType(environment);
+                    final Type variableType = variable.getType(environment);
                     if (variableType != null && !variableType.convertibleTo(declarationType)) {
                         if (variable.getValueExpression() instanceof IntLiteral) {
                             final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
@@ -66,12 +66,12 @@ public class Declaration implements Statement {
                         }
                     }
                 }
-                valueType = declarationType;
+                type = declarationType;
             }
             for (Variable variable : variables) {
                 final Identifier name = variable.getName();
                 try {
-                    environment.declareVariable(name, valueType, variable.getValue(environment));
+                    environment.declareVariable(name, type, variable.getValue(environment));
                 } catch (IllegalArgumentException exception) {
                     throw new EvaluatorException(exception.getMessage(), name);
                 }
@@ -85,7 +85,7 @@ public class Declaration implements Statement {
 
     @Override
     public int getStart() {
-        return type.getStart();
+        return typeName.getStart();
     }
 
     @Override
@@ -95,13 +95,13 @@ public class Declaration implements Statement {
 
     @Override
     public String toString() {
-        return "Declaration(" + type + " " + StringUtil.toString(variables, ", ") + ")";
+        return "Declaration(" + typeName + " " + StringUtil.toString(variables, ", ") + ")";
     }
 
     public static class Variable {
         private final Identifier name;
         private final Expression value;
-        private ValueType valueType = null;
+        private Type type = null;
 
         public Variable(Identifier name) {
             this(name, null);
@@ -124,14 +124,14 @@ public class Declaration implements Statement {
             return value == null ? null : value.getValue(environment);
         }
 
-        private ValueType getValueType(Environment environment) {
+        private Type getType(Environment environment) {
             if (value == null) {
                 return null;
             }
-            if (valueType == null) {
-                valueType = value.getValueType(environment);
+            if (type == null) {
+                type = value.getType(environment);
             }
-            return valueType;
+            return type;
         }
 
         public int getEnd() {

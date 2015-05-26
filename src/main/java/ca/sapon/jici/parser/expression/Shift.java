@@ -29,15 +29,15 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 
 public class Shift implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private ValueType valueType = null;
-    private ValueType shiftType = null;
+    private Type type = null;
+    private Type shiftType = null;
 
     public Shift(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -46,27 +46,27 @@ public class Shift implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType leftType = left.getValueType(environment).unbox();
-            final ValueType rightType = right.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type leftType = left.getType(environment).unbox();
+            final Type rightType = right.getType(environment).unbox();
             if (!leftType.isIntegral()) {
                 throw new EvaluatorException("Not an integral type: " + leftType.getName(), left);
             }
             if (!rightType.isIntegral()) {
                 throw new EvaluatorException("Not an integral type: " + rightType.getName(), right);
             }
-            valueType = leftType.unaryWiden();
+            type = leftType.unaryWiden();
             shiftType = rightType.unaryWiden();
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value leftValue = left.getValue(environment);
         final Value rightValue = right.getValue(environment);
-        final ValueKind leftWidenKind = valueType.getKind();
+        final ValueKind leftWidenKind = type.getKind();
         final ValueKind rightWidenKind = shiftType.getKind();
         switch (operator.getID()) {
             case SYMBOL_LOGICAL_LEFT_SHIFT:

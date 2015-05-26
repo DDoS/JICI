@@ -36,7 +36,7 @@ public class PreIncrement extends PostIncrement {
     @Override
     public Value getValue(Environment environment) {
         final Value result = increment.getValue(environment);
-        final Value value = valueType.getKind().convert(result);
+        final Value value = type.getKind().convert(result);
         inner.setValue(environment, value);
         return value;
     }

@@ -30,8 +30,8 @@ import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -39,7 +39,7 @@ public class BitwiseLogic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public BitwiseLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -48,19 +48,19 @@ public class BitwiseLogic implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType leftType = left.getValueType(environment).unbox();
-            final ValueType rightType = right.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type leftType = left.getType(environment).unbox();
+            final Type rightType = right.getType(environment).unbox();
             if (leftType.isBoolean()) {
                 if (rightType.isBoolean()) {
-                    valueType = PrimitiveValueType.THE_BOOLEAN;
+                    type = PrimitiveType.THE_BOOLEAN;
                 } else {
                     throw new EvaluatorException("Not a boolean type: " + rightType.getName(), right);
                 }
             } else if (leftType.isIntegral()) {
                 if (rightType.isIntegral()) {
-                    valueType = leftType.binaryWiden(rightType);
+                    type = leftType.binaryWiden(rightType);
                 } else {
                     throw new EvaluatorException("Not an integral type: " + rightType.getName(), right);
                 }
@@ -68,14 +68,14 @@ public class BitwiseLogic implements Expression {
                 throw new EvaluatorException("Not a boolean or integral type: " + leftType.getName(), left);
             }
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value leftValue = left.getValue(environment);
         final Value rightValue = right.getValue(environment);
-        final ValueKind widenKind = valueType.getKind();
+        final ValueKind widenKind = type.getKind();
         switch (operator.getID()) {
             case SYMBOL_BITWISE_AND:
                 return doBitwiseAND(leftValue, rightValue, widenKind);

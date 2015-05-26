@@ -28,15 +28,15 @@ import java.lang.reflect.Array;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 
 public class IndexAccess implements Reference {
     private final Expression object;
     private final Expression index;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public IndexAccess(Expression object, Expression index) {
         this.object = object;
@@ -44,20 +44,20 @@ public class IndexAccess implements Reference {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType objectType = object.getValueType(environment);
-            final ValueType indexType = index.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type objectType = object.getType(environment);
+            final Type indexType = index.getType(environment);
             if (!objectType.isArray()) {
                 throw new EvaluatorException("Not an array: " + objectType.getName(), object);
             }
-            if (!indexType.convertibleTo(PrimitiveValueType.THE_INT)) {
+            if (!indexType.convertibleTo(PrimitiveType.THE_INT)) {
                 throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
             }
             final Class<?> componentType = objectType.getTypeClass().getComponentType();
-            valueType = ReflectionUtil.wrap(componentType);
+            type = ReflectionUtil.wrap(componentType);
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class IndexAccess implements Reference {
         final Value objectValue = object.getValue(environment);
         final Value indexValue = index.getValue(environment);
         try {
-            return valueType.getKind().wrap(Array.get(objectValue.asObject(), indexValue.asInt()));
+            return type.getKind().wrap(Array.get(objectValue.asObject(), indexValue.asInt()));
         } catch (Exception exception) {
             throw new EvaluatorException("Could not get array item", exception, this);
         }

@@ -32,8 +32,8 @@ import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.ObjectType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
@@ -43,7 +43,7 @@ public class Arithmetic implements Expression {
     private final Expression right;
     private final Symbol operator;
     private boolean stringConcatenation = false;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public Arithmetic(Expression left, Expression right, Symbol operator) {
         this.left = left;
@@ -52,18 +52,18 @@ public class Arithmetic implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType leftType = left.getValueType(environment).unbox();
-            final ValueType rightType = right.getValueType(environment).unbox();
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ObjectValueType.THE_STRING) || rightType.is(ObjectValueType.THE_STRING))) {
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type leftType = left.getType(environment).unbox();
+            final Type rightType = right.getType(environment).unbox();
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ObjectType.THE_STRING) || rightType.is(ObjectType.THE_STRING))) {
                 if (leftType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", left);
                 }
                 if (rightType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", right);
                 }
-                valueType = ObjectValueType.THE_STRING;
+                type = ObjectType.THE_STRING;
                 stringConcatenation = true;
             } else {
                 if (!leftType.isNumeric()) {
@@ -72,10 +72,10 @@ public class Arithmetic implements Expression {
                 if (!rightType.isNumeric()) {
                     throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
                 }
-                valueType = leftType.binaryWiden(rightType);
+                type = leftType.binaryWiden(rightType);
             }
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class Arithmetic implements Expression {
         if (stringConcatenation) {
             return doStringConcatenation(leftValue, rightValue);
         }
-        final ValueKind widenKind = valueType.getKind();
+        final ValueKind widenKind = type.getKind();
         switch (operator.getID()) {
             case SYMBOL_PLUS:
                 return doAdd(leftValue, rightValue, widenKind);

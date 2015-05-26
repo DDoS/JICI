@@ -28,8 +28,8 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -37,7 +37,7 @@ public class Equal implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private ValueType valueType = null;
+    private Type type = null;
     private ValueKind widenKind = null;
 
     public Equal(Expression left, Expression right, Symbol operator) {
@@ -47,10 +47,10 @@ public class Equal implements Expression {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType leftType = left.getValueType(environment).unbox();
-            final ValueType rightType = right.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type leftType = left.getType(environment).unbox();
+            final Type rightType = right.getType(environment).unbox();
             if (leftType.isObject()) {
                 if (rightType.isObject()) {
                     widenKind = ValueKind.OBJECT;
@@ -66,9 +66,9 @@ public class Equal implements Expression {
             } else {
                 widenKind = leftType.binaryWiden(rightType).getKind();
             }
-            valueType = PrimitiveValueType.THE_BOOLEAN;
+            type = PrimitiveType.THE_BOOLEAN;
         }
-        return valueType;
+        return type;
     }
 
     @Override

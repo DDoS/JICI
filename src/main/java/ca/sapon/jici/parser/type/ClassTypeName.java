@@ -27,30 +27,30 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.ObjectType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassTypeName implements TypeName {
-    private final List<Identifier> type;
-    private ValueType valueType = null;
+    private final List<Identifier> name;
+    private Type type = null;
 
-    public ClassTypeName(List<Identifier> type) {
-        this.type = type;
+    public ClassTypeName(List<Identifier> name) {
+        this.name = name;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            Class<?> _class = environment.findClass(type.get(0));
+    public Type getType(Environment environment) {
+        if (type == null) {
+            Class<?> _class = environment.findClass(name.get(0));
             if (_class == null) {
-                _class = ReflectionUtil.findClass(type);
+                _class = ReflectionUtil.findClass(name);
             } else {
-                final int size = type.size();
+                final int size = name.size();
                 for (int i = 1; i < size; i++) {
-                    _class = ReflectionUtil.lookupNestedClass(_class, type.get(i).getSource());
+                    _class = ReflectionUtil.lookupNestedClass(_class, name.get(i).getSource());
                     if (_class == null) {
                         break;
                     }
@@ -59,23 +59,23 @@ public class ClassTypeName implements TypeName {
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
-            valueType = ObjectValueType.of(_class);
+            type = ObjectType.of(_class);
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public int getStart() {
-        return type.get(0).getIndex();
+        return name.get(0).getIndex();
     }
 
     @Override
     public int getEnd() {
-        return  type.get(type.size() - 1).getEnd();
+        return  name.get(name.size() - 1).getEnd();
     }
 
     @Override
     public String toString() {
-        return StringUtil.toString(type, ".");
+        return StringUtil.toString(name, ".");
     }
 }

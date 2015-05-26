@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression.assignment;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
@@ -44,7 +44,7 @@ public class PostIncrement implements Expression, Statement {
     protected final Reference inner;
     protected final Expression increment;
     protected final Symbol operator;
-    protected ValueType valueType = null;
+    protected Type type = null;
 
     public PostIncrement(Reference inner, Symbol operator) {
         this.inner = inner;
@@ -55,7 +55,7 @@ public class PostIncrement implements Expression, Statement {
     @Override
     public void execute(Environment environment) {
         try {
-            getValueType(environment);
+            getType(environment);
             getValue(environment);
         } catch (EvaluatorException exception) {
             throw exception;
@@ -65,23 +65,23 @@ public class PostIncrement implements Expression, Statement {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            increment.getValueType(environment);
-            final ValueType innerType = inner.getValueType(environment).unbox();
+    public Type getType(Environment environment) {
+        if (type == null) {
+            increment.getType(environment);
+            final Type innerType = inner.getType(environment).unbox();
             if (!innerType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }
-            valueType = innerType;
+            type = innerType;
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value value = inner.getValue(environment);
         final Value result = increment.getValue(environment);
-        inner.setValue(environment, valueType.getKind().convert(result));
+        inner.setValue(environment, type.getKind().convert(result));
         return value;
     }
 

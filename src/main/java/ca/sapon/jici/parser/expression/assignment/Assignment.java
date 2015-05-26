@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression.assignment;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
@@ -40,7 +40,7 @@ public class Assignment implements Expression, Statement {
     private final Reference assignee;
     private final Expression value;
     private boolean simpleAssign = false;
-    private ValueType valueType = null;
+    private Type type = null;
 
     public Assignment(Reference assignee, Expression value, Symbol operator) {
         this.assignee = assignee;
@@ -74,7 +74,7 @@ public class Assignment implements Expression, Statement {
     @Override
     public void execute(Environment environment) {
         try {
-            getValueType(environment);
+            getType(environment);
             getValue(environment);
         } catch (EvaluatorException exception) {
             throw exception;
@@ -84,10 +84,10 @@ public class Assignment implements Expression, Statement {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            final ValueType type = value.getValueType(environment);
-            final ValueType assigneeType = assignee.getValueType(environment);
+    public Type getType(Environment environment) {
+        if (type == null) {
+            final Type type = value.getType(environment);
+            final Type assigneeType = assignee.getType(environment);
             if ((simpleAssign || !type.isNumeric() || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType)) {
                 if (value instanceof IntLiteral) {
                     final IntLiteral intLiteral = (IntLiteral) value;
@@ -98,15 +98,15 @@ public class Assignment implements Expression, Statement {
                     throw new EvaluatorException("Cannot convert " + type.getName() + " to " + assigneeType.getName(), value);
                 }
             }
-            valueType = assigneeType;
+            this.type = assigneeType;
         }
-        return valueType;
+        return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value result = value.getValue(environment);
-        assignee.setValue(environment, simpleAssign ? result : valueType.getKind().convert(result));
+        assignee.setValue(environment, simpleAssign ? result : type.getKind().convert(result));
         return result;
     }
 

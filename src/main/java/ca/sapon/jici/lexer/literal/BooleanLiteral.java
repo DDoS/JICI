@@ -27,8 +27,8 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.PrimitiveType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.lexer.TokenID;
 
 public class BooleanLiteral extends Literal {
@@ -113,8 +113,8 @@ public class BooleanLiteral extends Literal {
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        return PrimitiveValueType.THE_BOOLEAN;
+    public Type getType(Environment environment) {
+        return PrimitiveType.THE_BOOLEAN;
     }
 
     public static boolean is(String source) {

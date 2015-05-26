@@ -26,27 +26,27 @@ package ca.sapon.jici.parser.expression;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.type.ObjectValueType;
-import ca.sapon.jici.evaluator.value.type.ValueType;
+import ca.sapon.jici.evaluator.value.type.ObjectType;
+import ca.sapon.jici.evaluator.value.type.Type;
 import ca.sapon.jici.parser.type.TypeName;
 
 public class ClassAccess implements Expression {
-    private static final ObjectValueType VALUE_TYPE = ObjectValueType.of(Class.class);
-    private final TypeName type;
-    private ValueType valueType = null;
+    private static final ObjectType VALUE_TYPE = ObjectType.of(Class.class);
+    private final TypeName typeName;
+    private Type type = null;
     private Class<?> typeClass = null;
 
-    public ClassAccess(TypeName type) {
-        this.type = type;
+    public ClassAccess(TypeName typeName) {
+        this.typeName = typeName;
     }
 
     @Override
-    public ValueType getValueType(Environment environment) {
-        if (valueType == null) {
-            typeClass = type.getValueType(environment).getTypeClass();
-            valueType = VALUE_TYPE;
+    public Type getType(Environment environment) {
+        if (type == null) {
+            typeClass = typeName.getType(environment).getTypeClass();
+            type = VALUE_TYPE;
         }
-        return valueType;
+        return type;
     }
 
     @Override
@@ -56,16 +56,16 @@ public class ClassAccess implements Expression {
 
     @Override
     public int getStart() {
-        return type.getStart();
+        return typeName.getStart();
     }
 
     @Override
     public int getEnd() {
-        return type.getEnd();
+        return typeName.getEnd();
     }
 
     @Override
     public String toString() {
-        return "ClassAccess(" + type + ".class" + ")";
+        return "ClassAccess(" + typeName + ".class" + ")";
     }
 }

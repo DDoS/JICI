@@ -32,10 +32,10 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  *
  */
-public class VoidValueType implements ValueType {
-    public static final VoidValueType THE_VOID = new VoidValueType();
+public class VoidType implements Type {
+    public static final VoidType THE_VOID = new VoidType();
 
-    private VoidValueType() {
+    private VoidType() {
     }
 
     @Override
@@ -54,7 +54,7 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public boolean is(ValueType type) {
+    public boolean is(Type type) {
         return type.isVoid();
     }
 
@@ -99,13 +99,13 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public ValueType unbox() {
+    public Type unbox() {
         return this;
     }
 
     @Override
-    public ObjectValueType box() {
-        return ObjectValueType.of(Void.class);
+    public ObjectType box() {
+        return ObjectType.of(Void.class);
     }
 
     @Override
@@ -114,27 +114,27 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType unaryWiden() {
+    public PrimitiveType unaryWiden() {
         throw new IllegalArgumentException("Cannot unary widen the void type");
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(ValueType with) {
+    public PrimitiveType binaryWiden(Type with) {
         throw new IllegalArgumentException("Cannot unary widen the void type");
     }
 
     @Override
-    public boolean convertibleTo(ValueType to) {
+    public boolean convertibleTo(Type to) {
         throw new IllegalArgumentException("Cannot convert the void type");
     }
 
     @Override
-    public Constructor<?> getConstructor(ValueType[] arguments) {
+    public Constructor<?> getConstructor(Type[] arguments) {
         throw new IllegalArgumentException("Cannot dereference void");
     }
 
     @Override
-    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+    public Constructor<?> getVarargConstructor(Type[] arguments) {
         return getConstructor(arguments);
     }
 
@@ -144,12 +144,12 @@ public class VoidValueType implements ValueType {
     }
 
     @Override
-    public Method getMethod(String name, ValueType[] arguments) {
+    public Method getMethod(String name, Type[] arguments) {
         throw new IllegalArgumentException("Cannot dereference void");
     }
 
     @Override
-    public Method getVarargMethod(String name, ValueType[] arguments) {
+    public Method getVarargMethod(String name, Type[] arguments) {
         return getMethod(name, arguments);
     }
 

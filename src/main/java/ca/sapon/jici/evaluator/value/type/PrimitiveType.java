@@ -38,33 +38,33 @@ import ca.sapon.jici.util.ReflectionUtil;
 /**
  *
  */
-public class PrimitiveValueType implements ValueType {
-    public static final PrimitiveValueType THE_BOOLEAN;
-    public static final PrimitiveValueType THE_BYTE;
-    public static final PrimitiveValueType THE_SHORT;
-    public static final PrimitiveValueType THE_CHAR;
-    public static final PrimitiveValueType THE_INT;
-    public static final PrimitiveValueType THE_LONG;
-    public static final PrimitiveValueType THE_FLOAT;
-    public static final PrimitiveValueType THE_DOUBLE;
-    private static final Map<Class<?>, PrimitiveValueType> ALL_TYPES = new HashMap<>();
+public class PrimitiveType implements Type {
+    public static final PrimitiveType THE_BOOLEAN;
+    public static final PrimitiveType THE_BYTE;
+    public static final PrimitiveType THE_SHORT;
+    public static final PrimitiveType THE_CHAR;
+    public static final PrimitiveType THE_INT;
+    public static final PrimitiveType THE_LONG;
+    public static final PrimitiveType THE_FLOAT;
+    public static final PrimitiveType THE_DOUBLE;
+    private static final Map<Class<?>, PrimitiveType> ALL_TYPES = new HashMap<>();
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
     private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
-    private static final Map<Class<?>, ObjectValueType> BOXING_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, ObjectType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
 
     static {
-        THE_BOOLEAN = new PrimitiveValueType(boolean.class, ValueKind.BOOLEAN);
-        THE_BYTE = new PrimitiveValueType(byte.class, ValueKind.BYTE);
-        THE_SHORT = new PrimitiveValueType(short.class, ValueKind.SHORT);
-        THE_CHAR = new PrimitiveValueType(char.class, ValueKind.CHAR);
-        THE_INT = new PrimitiveValueType(int.class, ValueKind.INT);
-        THE_LONG = new PrimitiveValueType(long.class, ValueKind.LONG);
-        THE_FLOAT = new PrimitiveValueType(float.class, ValueKind.FLOAT);
-        THE_DOUBLE = new PrimitiveValueType(double.class, ValueKind.DOUBLE);
+        THE_BOOLEAN = new PrimitiveType(boolean.class, ValueKind.BOOLEAN);
+        THE_BYTE = new PrimitiveType(byte.class, ValueKind.BYTE);
+        THE_SHORT = new PrimitiveType(short.class, ValueKind.SHORT);
+        THE_CHAR = new PrimitiveType(char.class, ValueKind.CHAR);
+        THE_INT = new PrimitiveType(int.class, ValueKind.INT);
+        THE_LONG = new PrimitiveType(long.class, ValueKind.LONG);
+        THE_FLOAT = new PrimitiveType(float.class, ValueKind.FLOAT);
+        THE_DOUBLE = new PrimitiveType(double.class, ValueKind.DOUBLE);
 
         ALL_TYPES.put(boolean.class, THE_BOOLEAN);
         ALL_TYPES.put(byte.class, THE_BYTE);
@@ -99,17 +99,17 @@ public class PrimitiveValueType implements ValueType {
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
-        BOXING_CONVERSIONS.put(boolean.class, ObjectValueType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, ObjectValueType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, ObjectValueType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, ObjectValueType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, ObjectValueType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, ObjectValueType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, ObjectValueType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, ObjectValueType.of(Double.class));
+        BOXING_CONVERSIONS.put(boolean.class, ObjectType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, ObjectType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, ObjectType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, ObjectType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, ObjectType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, ObjectType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, ObjectType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, ObjectType.of(Double.class));
     }
 
-    private PrimitiveValueType(Class<?> type, ValueKind kind) {
+    private PrimitiveType(Class<?> type, ValueKind kind) {
         this.type = type;
         this.kind = kind;
     }
@@ -130,8 +130,8 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public boolean is(ValueType type) {
-        return type instanceof PrimitiveValueType && this.type == ((PrimitiveValueType) type).getTypeClass();
+    public boolean is(Type type) {
+        return type instanceof PrimitiveType && this.type == ((PrimitiveType) type).getTypeClass();
     }
 
     @Override
@@ -175,12 +175,12 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public ValueType unbox() {
+    public Type unbox() {
         return this;
     }
 
     @Override
-    public ObjectValueType box() {
+    public ObjectType box() {
         return box(type);
     }
 
@@ -191,33 +191,33 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public PrimitiveValueType unaryWiden() {
+    public PrimitiveType unaryWiden() {
         return of(unaryWiden(type));
     }
 
     @Override
-    public PrimitiveValueType binaryWiden(ValueType with) {
-        if (!(with instanceof PrimitiveValueType)) {
+    public PrimitiveType binaryWiden(Type with) {
+        if (!(with instanceof PrimitiveType)) {
             throw new IllegalArgumentException("Cannot binary widen an object type");
         }
-        return of(binaryWiden(type, ((PrimitiveValueType) with).getTypeClass()));
+        return of(binaryWiden(type, ((PrimitiveType) with).getTypeClass()));
     }
 
     @Override
-    public boolean convertibleTo(ValueType to) {
-        if (to instanceof ObjectUnionValueType) {
+    public boolean convertibleTo(Type to) {
+        if (to instanceof ObjectUnionType) {
             throw new IllegalArgumentException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
     }
 
     @Override
-    public Constructor<?> getConstructor(ValueType[] arguments) {
+    public Constructor<?> getConstructor(Type[] arguments) {
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 
     @Override
-    public Constructor<?> getVarargConstructor(ValueType[] arguments) {
+    public Constructor<?> getVarargConstructor(Type[] arguments) {
         return getConstructor(arguments);
     }
 
@@ -227,12 +227,12 @@ public class PrimitiveValueType implements ValueType {
     }
 
     @Override
-    public Method getMethod(String name, ValueType[] arguments) {
+    public Method getMethod(String name, Type[] arguments) {
         throw new IllegalArgumentException("Cannot dereference a primitive type");
     }
 
     @Override
-    public Method getVarargMethod(String name, ValueType[] arguments) {
+    public Method getVarargMethod(String name, Type[] arguments) {
         return getMethod(name, arguments);
     }
 
@@ -241,7 +241,7 @@ public class PrimitiveValueType implements ValueType {
         return getName();
     }
 
-    public static ObjectValueType box(Class<?> type) {
+    public static ObjectType box(Class<?> type) {
         return BOXING_CONVERSIONS.get(type);
     }
 
@@ -255,7 +255,7 @@ public class PrimitiveValueType implements ValueType {
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
         if (!to.isPrimitive()) {
-            to = ObjectValueType.unbox(to);
+            to = ObjectType.unbox(to);
             if (!to.isPrimitive()) {
                 return box(from).convertibleTo(ReflectionUtil.wrap(to));
             }
@@ -263,7 +263,7 @@ public class PrimitiveValueType implements ValueType {
         return VALID_CONVERSIONS.get(from).contains(to);
     }
 
-    public static PrimitiveValueType of(Class<?> type) {
+    public static PrimitiveType of(Class<?> type) {
         return ALL_TYPES.get(type);
     }
 

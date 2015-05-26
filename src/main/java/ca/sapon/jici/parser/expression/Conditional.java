@@ -28,7 +28,7 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.ObjectUnionType;
+import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
@@ -75,7 +75,7 @@ public class Conditional implements Expression {
             rightType = rightType.unbox();
             if (leftType.isObject() || rightType.isObject()) {
                 // for objects return a union
-                return type = new ObjectUnionType(leftType.box(), rightType.box());
+                return type = new ClassUnionType(leftType.box(), rightType.box());
             }
             if (left instanceof IntLiteral && rightType.canNarrowFrom(((IntLiteral) left).asInt())) {
                 // left constant numeric that narrows to right, use right

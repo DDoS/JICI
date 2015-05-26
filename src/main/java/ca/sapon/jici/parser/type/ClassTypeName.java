@@ -27,7 +27,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ObjectType;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -59,7 +59,7 @@ public class ClassTypeName implements TypeName {
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
-            type = ObjectType.of(_class);
+            type = ClassType.of(_class);
         }
         return type;
     }

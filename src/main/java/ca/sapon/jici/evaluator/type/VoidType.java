@@ -104,8 +104,8 @@ public class VoidType implements Type {
     }
 
     @Override
-    public ObjectType box() {
-        return ObjectType.of(Void.class);
+    public ClassType box() {
+        return ClassType.of(Void.class);
     }
 
     @Override

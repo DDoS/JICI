@@ -37,9 +37,9 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class ObjectType implements Type {
-    public static final ObjectType THE_STRING = ObjectType.of(String.class);
-    public static final ObjectType THE_OBJECT = ObjectType.of(Object.class);
+public class ClassType implements Type {
+    public static final ClassType THE_STRING = ClassType.of(String.class);
+    public static final ClassType THE_OBJECT = ClassType.of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
     private Class<?> type;
     private Type unbox = null;
@@ -56,7 +56,7 @@ public class ObjectType implements Type {
         UNBOXED_TYPES.put(Void.class, void.class);
     }
 
-    protected ObjectType(Class<?> type) {
+    protected ClassType(Class<?> type) {
         this.type = type;
     }
 
@@ -77,7 +77,7 @@ public class ObjectType implements Type {
 
     @Override
     public boolean is(Type type) {
-        return !(type instanceof ObjectUnionType) && this.type == type.getTypeClass();
+        return !(type instanceof ClassUnionType) && this.type == type.getTypeClass();
     }
 
     @Override
@@ -136,7 +136,7 @@ public class ObjectType implements Type {
     }
 
     @Override
-    public ObjectType box() {
+    public ClassType box() {
         return this;
     }
 
@@ -157,7 +157,7 @@ public class ObjectType implements Type {
 
     @Override
     public boolean convertibleTo(Type to) {
-        if (to instanceof ObjectUnionType) {
+        if (to instanceof ClassUnionType) {
             throw new IllegalArgumentException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
@@ -295,7 +295,7 @@ public class ObjectType implements Type {
         return to.isAssignableFrom(from);
     }
 
-    public static ObjectType of(Class<?> type) {
-        return new ObjectType(type);
+    public static ClassType of(Class<?> type) {
+        return new ClassType(type);
     }
 }

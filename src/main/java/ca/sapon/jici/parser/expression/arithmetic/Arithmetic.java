@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.ObjectType;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
@@ -56,14 +56,14 @@ public class Arithmetic implements Expression {
         if (type == null) {
             final Type leftType = left.getType(environment).unbox();
             final Type rightType = right.getType(environment).unbox();
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ObjectType.THE_STRING) || rightType.is(ObjectType.THE_STRING))) {
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ClassType.THE_STRING) || rightType.is(ClassType.THE_STRING))) {
                 if (leftType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", left);
                 }
                 if (rightType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", right);
                 }
-                type = ObjectType.THE_STRING;
+                type = ClassType.THE_STRING;
                 stringConcatenation = true;
             } else {
                 if (!leftType.isNumeric()) {

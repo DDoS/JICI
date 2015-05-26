@@ -27,7 +27,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.ObjectType;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
@@ -143,7 +143,7 @@ public class StringLiteral extends Literal {
 
     @Override
     public Type getType(Environment environment) {
-        return ObjectType.THE_STRING;
+        return ClassType.THE_STRING;
     }
 
     @Override

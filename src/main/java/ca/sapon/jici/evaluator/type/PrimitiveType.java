@@ -52,7 +52,7 @@ public class PrimitiveType implements Type {
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
     private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
-    private static final Map<Class<?>, ObjectType> BOXING_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, ClassType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
 
@@ -99,14 +99,14 @@ public class PrimitiveType implements Type {
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
-        BOXING_CONVERSIONS.put(boolean.class, ObjectType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, ObjectType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, ObjectType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, ObjectType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, ObjectType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, ObjectType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, ObjectType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, ObjectType.of(Double.class));
+        BOXING_CONVERSIONS.put(boolean.class, ClassType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, ClassType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, ClassType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, ClassType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, ClassType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, ClassType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, ClassType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, ClassType.of(Double.class));
     }
 
     private PrimitiveType(Class<?> type, ValueKind kind) {
@@ -180,7 +180,7 @@ public class PrimitiveType implements Type {
     }
 
     @Override
-    public ObjectType box() {
+    public ClassType box() {
         return box(type);
     }
 
@@ -205,7 +205,7 @@ public class PrimitiveType implements Type {
 
     @Override
     public boolean convertibleTo(Type to) {
-        if (to instanceof ObjectUnionType) {
+        if (to instanceof ClassUnionType) {
             throw new IllegalArgumentException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
@@ -241,7 +241,7 @@ public class PrimitiveType implements Type {
         return getName();
     }
 
-    public static ObjectType box(Class<?> type) {
+    public static ClassType box(Class<?> type) {
         return BOXING_CONVERSIONS.get(type);
     }
 
@@ -255,7 +255,7 @@ public class PrimitiveType implements Type {
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
         if (!to.isPrimitive()) {
-            to = ObjectType.unbox(to);
+            to = ClassType.unbox(to);
             if (!to.isPrimitive()) {
                 return box(from).convertibleTo(ReflectionUtil.wrap(to));
             }

@@ -104,7 +104,7 @@ public class NullType implements Type {
     }
 
     @Override
-    public ObjectType box() {
+    public ClassType box() {
         throw new IllegalArgumentException("Cannot box the null type");
     }
 

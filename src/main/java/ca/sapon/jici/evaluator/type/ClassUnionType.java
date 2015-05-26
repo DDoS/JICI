@@ -36,11 +36,11 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class ObjectUnionType extends ObjectType {
-    private final ObjectType[] types;
-    private final Set<ObjectType> lowestUpperBound;
+public class ClassUnionType extends ClassType {
+    private final ClassType[] types;
+    private final Set<ClassType> lowestUpperBound;
 
-    public ObjectUnionType(ObjectType... types) {
+    public ClassUnionType(ClassType... types) {
         super(Object.class);
         if (types.length <= 1) {
             throw new IllegalArgumentException("Expected more than one type");
@@ -48,9 +48,9 @@ public class ObjectUnionType extends ObjectType {
         final Set<Class<?>> classes = new HashSet<>(types.length);
         boolean allEqual = true;
         Class<?> previous = null;
-        for (ObjectType type : types) {
-            if (type instanceof ObjectUnionType) {
-                classes.addAll(((ObjectUnionType) type).getTypeClasses());
+        for (ClassType type : types) {
+            if (type instanceof ClassUnionType) {
+                classes.addAll(((ClassUnionType) type).getTypeClasses());
                 allEqual = false;
             } else {
                 final Class<?> _class = type.getTypeClass();
@@ -69,16 +69,16 @@ public class ObjectUnionType extends ObjectType {
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            final ObjectType type = new ObjectType(bound);
+            final ClassType type = new ClassType(bound);
             lowestUpperBound.add(type);
         }
     }
 
     public Set<Class<?>> getTypeClasses() {
         final Set<Class<?>> classes = new HashSet<>(types.length);
-        for (ObjectType type : types) {
-            if (type instanceof ObjectUnionType) {
-                classes.addAll(((ObjectUnionType) type).getTypeClasses());
+        for (ClassType type : types) {
+            if (type instanceof ClassUnionType) {
+                classes.addAll(((ClassUnionType) type).getTypeClasses());
             } else {
                 classes.add(type.getTypeClass());
             }
@@ -98,12 +98,12 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public boolean is(Type type) {
-        return type instanceof ObjectUnionType && this.lowestUpperBound.equals(((ObjectUnionType) type).lowestUpperBound);
+        return type instanceof ClassUnionType && this.lowestUpperBound.equals(((ClassUnionType) type).lowestUpperBound);
     }
 
     @Override
     public boolean isArray() {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             if (bound.isArray()) {
                 return true;
             }
@@ -118,7 +118,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             if (bound.convertibleTo(to)) {
                 return true;
             }
@@ -128,7 +128,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
             } catch (IllegalArgumentException ignored) {
@@ -139,7 +139,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public Constructor<?> getVarargConstructor(Type[] arguments) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargConstructor(arguments);
             } catch (IllegalArgumentException ignored) {
@@ -155,7 +155,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public Field getField(String name) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);
             } catch (IllegalArgumentException ignored) {
@@ -166,7 +166,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
             } catch (IllegalArgumentException ignored) {
@@ -177,7 +177,7 @@ public class ObjectUnionType extends ObjectType {
 
     @Override
     public Method getVarargMethod(String name, Type[] arguments) {
-        for (ObjectType bound : lowestUpperBound) {
+        for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargMethod(name, arguments);
             } catch (IllegalArgumentException ignored) {

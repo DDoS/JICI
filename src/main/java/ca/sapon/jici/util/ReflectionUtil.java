@@ -37,7 +37,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.type.NullType;
-import ca.sapon.jici.evaluator.type.ObjectType;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
@@ -191,7 +191,7 @@ public final class ReflectionUtil {
         if (parameterA.isPrimitive()) {
             return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : argument.isPrimitive();
         }
-        return parameterB.isPrimitive() ? !argument.isPrimitive() : ObjectType.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !argument.isPrimitive() : ClassType.convertibleTo(parameterA, parameterB);
     }
 
     public static Type wrap(Class<?> type) {
@@ -204,7 +204,7 @@ public final class ReflectionUtil {
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
         }
-        return ObjectType.of(type);
+        return ClassType.of(type);
     }
 
     // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla

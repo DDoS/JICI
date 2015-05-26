@@ -59,7 +59,7 @@ public interface Type {
 
     Type unbox();
 
-    ObjectType box();
+    ClassType box();
 
     boolean canNarrowFrom(int value);
 

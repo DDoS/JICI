@@ -77,7 +77,7 @@ public class ObjectValueType implements ValueType {
 
     @Override
     public boolean is(ValueType type) {
-        return type instanceof ObjectValueType && this.type == ((ObjectValueType) type).getTypeClass();
+        return !(type instanceof ObjectUnionValueType) && this.type == type.getTypeClass();
     }
 
     @Override

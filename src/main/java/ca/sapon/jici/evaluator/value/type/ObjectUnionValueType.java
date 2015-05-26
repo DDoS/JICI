@@ -26,10 +26,8 @@ package ca.sapon.jici.evaluator.value.type;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import ca.sapon.jici.util.ReflectionUtil;
@@ -39,6 +37,7 @@ import ca.sapon.jici.util.StringUtil;
  *
  */
 public class ObjectUnionValueType extends ObjectValueType {
+    private final ObjectValueType[] types;
     private final Set<ObjectValueType> lowestUpperBound;
 
     public ObjectUnionValueType(ObjectValueType... types) {
@@ -46,27 +45,45 @@ public class ObjectUnionValueType extends ObjectValueType {
         if (types.length <= 1) {
             throw new IllegalArgumentException("Expected more than one type");
         }
-        final List<Class<?>> classes = new ArrayList<>(types.length);
+        final Set<Class<?>> classes = new HashSet<>(types.length);
         boolean allEqual = true;
         Class<?> previous = null;
         for (ObjectValueType type : types) {
-            final Class<?> _class = type.getTypeClass();
-            classes.add(_class);
-            if (previous == null) {
-                previous = _class;
+            if (type instanceof ObjectUnionValueType) {
+                classes.addAll(((ObjectUnionValueType) type).getTypeClasses());
+                allEqual = false;
             } else {
-                allEqual &= previous == _class;
+                final Class<?> _class = type.getTypeClass();
+                classes.add(_class);
+                if (previous == null) {
+                    previous = _class;
+                } else {
+                    allEqual &= previous == _class;
+                }
             }
         }
         if (allEqual) {
             throw new IllegalArgumentException("Expected differing types in the union");
         }
+        this.types = types;
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
             final ObjectValueType type = new ObjectValueType(bound);
             lowestUpperBound.add(type);
         }
+    }
+
+    public Set<Class<?>> getTypeClasses() {
+        final Set<Class<?>> classes = new HashSet<>(types.length);
+        for (ObjectValueType type : types) {
+            if (type instanceof ObjectUnionValueType) {
+                classes.addAll(((ObjectUnionValueType) type).getTypeClasses());
+            } else {
+                classes.add(type.getTypeClass());
+            }
+        }
+        return classes;
     }
 
     @Override

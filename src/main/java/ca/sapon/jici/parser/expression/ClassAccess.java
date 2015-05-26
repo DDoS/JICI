@@ -28,15 +28,15 @@ import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ObjectValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.parser.type.TypeName;
 
 public class ClassAccess implements Expression {
     private static final ObjectValueType VALUE_TYPE = ObjectValueType.of(Class.class);
-    private final Type type;
+    private final TypeName type;
     private ValueType valueType = null;
     private Class<?> typeClass = null;
 
-    public ClassAccess(Type type) {
+    public ClassAccess(TypeName type) {
         this.type = type;
     }
 

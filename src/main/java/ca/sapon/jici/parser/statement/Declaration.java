@@ -32,15 +32,15 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.parser.type.TypeName;
 import ca.sapon.jici.util.StringUtil;
 
 public class Declaration implements Statement {
-    private final Type type;
+    private final TypeName type;
     private final List<Variable> variables;
     private ValueType valueType = null;
 
-    public Declaration(Type type, List<Variable> variables) {
+    public Declaration(TypeName type, List<Variable> variables) {
         this.type = type;
         this.variables = variables;
     }

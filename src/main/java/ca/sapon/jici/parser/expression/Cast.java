@@ -27,14 +27,14 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
-import ca.sapon.jici.parser.type.Type;
+import ca.sapon.jici.parser.type.TypeName;
 
 public class Cast implements Expression {
-    private final Type type;
+    private final TypeName type;
     private final Expression object;
     private ValueType valueType = null;
 
-    public Cast(Type type, Expression object) {
+    public Cast(TypeName type, Expression object) {
         this.type = type;
         this.object = object;
     }

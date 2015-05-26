@@ -30,11 +30,11 @@ import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.evaluator.value.type.VoidValueType;
 import ca.sapon.jici.lexer.Keyword;
 
-public class PrimitiveType implements Type {
+public class PrimitiveTypeName implements TypeName {
     private final Keyword type;
     private ValueType valueType = null;
 
-    public PrimitiveType(Keyword type) {
+    public PrimitiveTypeName(Keyword type) {
         this.type = type;
     }
 

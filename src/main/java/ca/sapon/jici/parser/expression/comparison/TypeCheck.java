@@ -30,15 +30,15 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.PrimitiveValueType;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.type.ClassType;
+import ca.sapon.jici.parser.type.ClassTypeName;
 
 public class TypeCheck implements Expression {
     private final Expression object;
-    private final ClassType type;
+    private final ClassTypeName type;
     private ValueType valueType = null;
     private ValueType checkType = null;
 
-    public TypeCheck(Expression object, ClassType type) {
+    public TypeCheck(Expression object, ClassTypeName type) {
         this.object = object;
         this.type = type;
     }

@@ -33,11 +33,11 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
-public class ClassType implements Type {
+public class ClassTypeName implements TypeName {
     private final List<Identifier> type;
     private ValueType valueType = null;
 
-    public ClassType(List<Identifier> type) {
+    public ClassTypeName(List<Identifier> type) {
         this.type = type;
     }
 

@@ -33,19 +33,19 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.parser.type.ClassType;
+import ca.sapon.jici.parser.type.ClassTypeName;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
-    private final ClassType type;
+    private final ClassTypeName type;
     private final List<Expression> arguments;
     private ValueType valueType = null;
     private Constructor<?> constructor = null;
     private int varargIndex = -1;
     private Class<?> varargType = null;
 
-    public ConstructorCall(ClassType type, List<Expression> arguments) {
+    public ConstructorCall(ClassTypeName type, List<Expression> arguments) {
         this.arguments = arguments;
         this.type = type;
     }

@@ -27,7 +27,7 @@ import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.value.type.ValueType;
 
-public interface Type extends SourceIndexed {
+public interface TypeName extends SourceIndexed {
     ValueType getValueType(Environment environment);
 
     @Override

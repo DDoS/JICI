@@ -32,8 +32,8 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenGroup;
+import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
 import ca.sapon.jici.parser.expression.Cast;
@@ -61,14 +61,16 @@ import ca.sapon.jici.parser.expression.reference.FieldAccess;
 import ca.sapon.jici.parser.expression.reference.IndexAccess;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.expression.reference.VariableAccess;
+import ca.sapon.jici.parser.name.ArrayTypeName;
+import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.name.PrimitiveTypeName;
+import ca.sapon.jici.parser.name.TypeName;
+import ca.sapon.jici.parser.name.VoidTypeName;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;
 import ca.sapon.jici.parser.statement.Empty;
 import ca.sapon.jici.parser.statement.Import;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.parser.name.ClassTypeName;
-import ca.sapon.jici.parser.name.PrimitiveTypeName;
-import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.ListNavigator;
 
 public final class Parser {
@@ -129,9 +131,11 @@ public final class Parser {
     }
 
     /*
-        CLASS_NAME:      IDENTIFIER.CLASS_NAME _ IDENTIFIER
+        NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME
+        CLASS_NAME:      NAME
+        ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
+        TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
         VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION
         VARIABLE_LIST:   VARIABLE, VARIABLE_LIST _ VARIABLE
@@ -139,11 +143,11 @@ public final class Parser {
         DECLARATION:     TYPE VARIABLE_LIST;
     */
 
-    private static List<Identifier> parseClassName(ListNavigator<Token> tokens) {
-        return parseClassName(tokens, new ArrayList<Identifier>());
+    private static List<Identifier> parseName(ListNavigator<Token> tokens) {
+        return parseName(tokens, new ArrayList<Identifier>());
     }
 
-    private static List<Identifier> parseClassName(ListNavigator<Token> tokens, List<Identifier> name) {
+    private static List<Identifier> parseName(ListNavigator<Token> tokens, List<Identifier> name) {
         if (tokens.has()) {
             final Token token = tokens.get();
             if (token instanceof Identifier) {
@@ -151,7 +155,7 @@ public final class Parser {
                 name.add((Identifier) token);
                 if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_PERIOD) {
                     tokens.advance();
-                    return parseClassName(tokens, name);
+                    return parseName(tokens, name);
                 }
                 return name;
             } else if (!name.isEmpty()) {
@@ -162,14 +166,33 @@ public final class Parser {
         throw new ParseError("Expected an identifier", tokens);
     }
 
+    private static ClassTypeName parseClassName(ListNavigator<Token> tokens) {
+        return new ClassTypeName(parseName(tokens));
+    }
+
+    private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {
+        return parseArrayName(tokens, componentType, 0);
+    }
+
+    private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType, int dimension) {
+        if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_OPEN_BRACKET && tokens.get(1).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+            tokens.advance(2);
+            return parseArrayName(tokens, componentType, dimension + 1);
+        }
+        return dimension > 0 ? new ArrayTypeName(componentType, dimension) : componentType;
+    }
+
     private static TypeName parseTypeName(ListNavigator<Token> tokens) {
         if (tokens.has()) {
+            final TypeName type;
             final Token token = tokens.get();
             if (token.getGroup() == TokenGroup.PRIMITIVE_TYPE) {
                 tokens.advance();
-                return new PrimitiveTypeName((Keyword) token);
+                type = new PrimitiveTypeName((Keyword) token);
+            } else {
+                type = parseClassName(tokens);
             }
-            return new ClassTypeName(parseClassName(tokens));
+            return parseArrayName(tokens, type);
         }
         throw new ParseError("Expected an identifier or a primitive type", tokens);
     }
@@ -228,7 +251,7 @@ public final class Parser {
     private static Import parseImport(ListNavigator<Token> tokens) {
         if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_IMPORT) {
             tokens.advance();
-            final List<Identifier> name = parseClassName(tokens);
+            final List<Identifier> name = parseName(tokens);
             if (tokens.has()) {
                 final Token token = tokens.get();
                 if (token.getID() == TokenID.SYMBOL_PERIOD && tokens.has(2) && tokens.get(1).getID() == TokenID.SYMBOL_MULTIPLY) {
@@ -434,7 +457,7 @@ public final class Parser {
                 return parseComparison(tokens, add);
             } else if (token.getID() == TokenID.KEYWORD_INSTANCEOF) {
                 tokens.advance();
-                final ClassTypeName type = new ClassTypeName(parseClassName(tokens));
+                final TypeName type = parseTypeName(tokens);
                 final TypeCheck typeCheck = new TypeCheck(left, type);
                 return parseComparison(tokens, typeCheck);
             }
@@ -629,7 +652,7 @@ public final class Parser {
                     break;
                 }
                 case IDENTIFIER: {
-                    final List<Identifier> name = parseClassName(tokens);
+                    final List<Identifier> name = parseName(tokens);
                     if (tokens.has()) {
                         switch (tokens.get().getID()) {
                             case SYMBOL_PERIOD: {
@@ -671,7 +694,7 @@ public final class Parser {
                         }
                         case KEYWORD_NEW: {
                             tokens.advance();
-                            final ClassTypeName name = new ClassTypeName(parseClassName(tokens));
+                            final ClassTypeName name = parseClassName(tokens);
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArguments(tokens);

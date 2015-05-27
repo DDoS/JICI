@@ -61,6 +61,14 @@ public final class StringUtil {
         return "";
     }
 
+    public static String repeat(String string, int number) {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < number; i++) {
+            builder.append(string);
+        }
+        return builder.toString();
+    }
+
     public static String removeAll(String string, char remove) {
         final int length = string.length();
         final char[] chars = new char[length];

@@ -94,6 +94,9 @@ public class ParserTest {
 
         testParseExpression("Cast((int) test)", "(int) test");
         testParseExpression("Cast((Object) test)", "(Object) test");
+        testParseExpression("Cast((Object[]) test)", "(Object[]) test");
+        testParseExpression("Cast((int[]) test)", "(int[]) test");
+        testParseExpression("Cast((int[][]) test)", "(int[][]) test");
 
         testParseExpression("Cast((Object) BooleanNot(!Sign(-Sign(+PostIncrement(test++)))))", "(Object) !-+test++");
     }
@@ -132,6 +135,8 @@ public class ParserTest {
         testParseExpression("Comparison(l >= r)", "l >= r");
 
         testParseExpression("TypeCheck(l instanceof Object)", "l instanceof Object");
+        testParseExpression("TypeCheck(l instanceof Object[])", "l instanceof Object[]");
+        testParseExpression("TypeCheck(l instanceof int[])", "l instanceof int[]");
 
         testParseExpression("TypeCheck(Comparison(Comparison(Comparison(a < b) > c) <= d) instanceof e)", "a < b > c <= d instanceof e");
     }
@@ -236,6 +241,8 @@ public class ParserTest {
 
         testParseStatement("Declaration(Object m = 1)", "Object m = 1;");
         testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");
+
+        testParseStatement("Declaration(Object[] m)", "Object[] m;");
     }
 
     @Test

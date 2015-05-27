@@ -25,35 +25,38 @@ package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.VoidType;
+import ca.sapon.jici.util.StringUtil;
 
-/**
- *
- */
-public class VoidTypeName implements TypeName {
-    private final int index;
+public class ArrayTypeName implements TypeName {
+    private final TypeName componentType;
+    private final int dimensions;
+    private Type type = null;
 
-    public VoidTypeName(int index) {
-        this.index = index;
+    public ArrayTypeName(TypeName componentType, int dimensions) {
+        this.componentType = componentType;
+        this.dimensions = dimensions;
     }
 
     @Override
     public Type getType(Environment environment) {
-        return VoidType.THE_VOID;
+        if (type == null) {
+
+        }
+        return type;
     }
 
     @Override
     public int getStart() {
-        return index;
+        return componentType.getStart();
     }
 
     @Override
     public int getEnd() {
-        return index + 3;
+        return  componentType.getEnd();
     }
 
     @Override
     public String toString() {
-        return "void";
+        return componentType.toString() + StringUtil.repeat("[]", dimensions);
     }
 }

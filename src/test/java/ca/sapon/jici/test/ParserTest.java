@@ -243,6 +243,9 @@ public class ParserTest {
         testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");
 
         testParseStatement("Declaration(Object[] m)", "Object[] m;");
+        testParseStatement("Declaration(Object m[])", "Object m[];");
+        testParseStatement("Declaration(Object m[], k, j[][])", "Object m[], k, j[][];");
+        testParseStatement("Declaration(Object[] m[], k, j[][])", "Object[] m[], k, j[][];");
     }
 
     @Test

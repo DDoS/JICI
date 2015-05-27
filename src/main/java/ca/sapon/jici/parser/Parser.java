@@ -171,15 +171,20 @@ public final class Parser {
     }
 
     private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {
-        return parseArrayName(tokens, componentType, 0);
+        final int dimensions = parseArrayDimensions(tokens);
+        return dimensions > 0 ? new ArrayTypeName(componentType, dimensions) : componentType;
     }
 
-    private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType, int dimension) {
+    private static int parseArrayDimensions(ListNavigator<Token> tokens) {
+        return parseArrayDimensions(tokens, 0);
+    }
+
+    private static int parseArrayDimensions(ListNavigator<Token> tokens, int dimensions) {
         if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_OPEN_BRACKET && tokens.get(1).getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
             tokens.advance(2);
-            return parseArrayName(tokens, componentType, dimension + 1);
+            return parseArrayDimensions(tokens, dimensions + 1);
         }
-        return dimension > 0 ? new ArrayTypeName(componentType, dimension) : componentType;
+        return dimensions;
     }
 
     private static TypeName parseTypeName(ListNavigator<Token> tokens) {
@@ -202,12 +207,13 @@ public final class Parser {
             final Token token = tokens.get();
             if (token instanceof Identifier) {
                 tokens.advance();
+                final int dimensions = parseArrayDimensions(tokens);
                 if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_ASSIGN) {
                     tokens.advance();
                     final Expression value = parseExpression(tokens);
-                    return new Variable((Identifier) token, value);
+                    return new Variable((Identifier) token, dimensions, value);
                 }
-                return new Variable((Identifier) token);
+                return new Variable((Identifier) token, dimensions);
             }
         }
         throw new ParseFailure();

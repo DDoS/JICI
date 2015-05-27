@@ -97,20 +97,26 @@ public class Declaration implements Statement {
 
     public static class Variable {
         private final Identifier name;
+        private final int dimensions;
         private final Expression value;
         private Type type = null;
 
-        public Variable(Identifier name) {
-            this(name, null);
+        public Variable(Identifier name, int dimensions) {
+            this(name, dimensions, null);
         }
 
-        public Variable(Identifier name, Expression value) {
+        public Variable(Identifier name, int dimensions, Expression value) {
             this.name = name;
+            this.dimensions = dimensions;
             this.value = value;
         }
 
         public Identifier getName() {
             return name;
+        }
+
+        public int getDimensions() {
+            return dimensions;
         }
 
         public Expression getValueExpression() {
@@ -137,7 +143,7 @@ public class Declaration implements Statement {
 
         @Override
         public String toString() {
-            return name + (value != null ? " = " + value : "");
+            return name + StringUtil.repeat("[]", dimensions) + (value != null ? " = " + value : "");
         }
     }
 }

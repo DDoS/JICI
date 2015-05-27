@@ -24,39 +24,47 @@
 package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ArrayTypeName implements TypeName {
-    private final TypeName componentType;
+    private final TypeName componentTypeName;
     private final int dimensions;
     private Type type = null;
 
-    public ArrayTypeName(TypeName componentType, int dimensions) {
-        this.componentType = componentType;
+    public ArrayTypeName(TypeName componentTypeName, int dimensions) {
+        this.componentTypeName = componentTypeName;
         this.dimensions = dimensions;
     }
 
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-
+            final Type componentType = componentTypeName.getType(environment);
+            final Class<?> _class = ReflectionUtil.asArrayType(componentType.getTypeClass(), dimensions);
+            if (_class == null) {
+                throw new EvaluatorException("Class not found: array of " + componentTypeName.toString() + " with dimensions " + dimensions, this);
+            }
+            type = ClassType.of(_class);
         }
         return type;
     }
 
     @Override
     public int getStart() {
-        return componentType.getStart();
+        return componentTypeName.getStart();
     }
 
     @Override
     public int getEnd() {
-        return  componentType.getEnd();
+        return  componentTypeName.getEnd();
     }
 
     @Override
     public String toString() {
-        return componentType.toString() + StringUtil.repeat("[]", dimensions);
+        return componentTypeName.toString() + StringUtil.repeat("[]", dimensions);
     }
 }

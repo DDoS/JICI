@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,8 +37,8 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
@@ -66,6 +67,18 @@ public final class ReflectionUtil {
                     "VerifyError", "VirtualMachineError", "Deprecated", "Override", "SafeVarargs", "SuppressWarnings"
             ))
     );
+    private static final Map<Class<?>, Character> ARRAY_NAME_PRIMITIVE_ENCODING = new HashMap<>();
+
+    static {
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(boolean.class, 'Z');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(byte.class, 'B');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(short.class, 'S');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(char.class, 'C');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(int.class, 'I');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(long.class, 'J');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(float.class, 'F');
+        ARRAY_NAME_PRIMITIVE_ENCODING.put(double.class, 'D');
+    }
 
     private ReflectionUtil() {
     }
@@ -124,6 +137,12 @@ public final class ReflectionUtil {
             }
         }
         return null;
+    }
+
+    public static Class<?> asArrayType(Class<?> componentType, int dimensions) {
+        final Character character = ARRAY_NAME_PRIMITIVE_ENCODING.get(componentType);
+        final String encodedName = character != null ? character.toString() : 'L' + componentType.getCanonicalName() + ';';
+        return lookupClass(StringUtil.repeat("[", dimensions) + encodedName);
     }
 
     public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, Type[] arguments) {

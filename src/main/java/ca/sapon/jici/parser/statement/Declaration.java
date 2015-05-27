@@ -50,9 +50,6 @@ public class Declaration implements Statement {
         try {
             if (type == null) {
                 final Type declarationType = typeName.getType(environment);
-                if (declarationType.isVoid()) {
-                    throw new EvaluatorException("Illegal type: void", typeName);
-                }
                 for (Variable variable : variables) {
                     final Type variableType = variable.getType(environment);
                     if (variableType != null && !variableType.convertibleTo(declarationType)) {

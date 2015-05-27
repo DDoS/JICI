@@ -49,9 +49,7 @@ public class Cast implements Expression {
             // cast boolean to boolean
             // cast object or null to object
             // box to unbox or unbox to box
-            if (castType.isVoid()) {
-                failCast(castType, objectType);
-            } else if (castType.isPrimitive()) {
+            if (castType.isPrimitive()) {
                 if (!objectType.isPrimitive() && !objectType.unbox().is(castType)) {
                     failCast(castType, objectType);
                 }

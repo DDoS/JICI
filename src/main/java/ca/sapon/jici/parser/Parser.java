@@ -267,7 +267,7 @@ public final class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ CLASS_NAME _ CLASS_NAME(EXPRESSION_LIST) _ new CLASS_NAME(EXPRESSION_LIST) _ TYPE.class _ (EXPRESSION)
+        ATOM:            LITERAL _ CLASS_NAME _ CLASS_NAME(EXPRESSION_LIST) _ new CLASS_NAME(EXPRESSION_LIST) _ TYPE.class _ void.class _ (EXPRESSION)
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
@@ -678,6 +678,15 @@ public final class Parser {
                                 return new ConstructorCall(name, arguments);
                             }
                             throw new ParseError("Expected '('", tokens);
+                        }
+                        case KEYWORD_VOID: {
+                            tokens.advance();
+                            if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                                tokens.advance(2);
+                                return new ClassAccess(new VoidTypeName(token.getIndex()));
+                            }
+                            tokens.retreat();
+                            break;
                         }
                     }
                 }

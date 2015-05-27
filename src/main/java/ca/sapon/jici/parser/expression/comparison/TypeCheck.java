@@ -25,20 +25,20 @@ package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.BooleanValue;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.BooleanValue;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.name.TypeName;
 
 public class TypeCheck implements Expression {
     private final Expression object;
-    private final ClassTypeName typeName;
+    private final TypeName typeName;
     private Type type = null;
     private Type checkType = null;
 
-    public TypeCheck(Expression object, ClassTypeName typeName) {
+    public TypeCheck(Expression object, TypeName typeName) {
         this.object = object;
         this.typeName = typeName;
     }
@@ -47,10 +47,16 @@ public class TypeCheck implements Expression {
     public Type getType(Environment environment) {
         if (type == null) {
             final Type objectType = object.getType(environment);
-            if (objectType.isPrimitive()) {
-                throw new EvaluatorException("Cannot type check a primitive: " + objectType.getName(), object);
-            }
             checkType = typeName.getType(environment);
+            if (checkType.isPrimitive()) {
+                throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
+            }
+            if (objectType.isPrimitive()) {
+                throw new EvaluatorException("Cannot type check " + objectType.getName(), object);
+            }
+            if (objectType.isVoid()) {
+                throw new EvaluatorException("Cannot type check void", object);
+            }
             type = PrimitiveType.THE_BOOLEAN;
         }
         return type;

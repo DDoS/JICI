@@ -262,19 +262,23 @@ public final class Parser {
     */
 
     private static ArrayInitializer parseArrayInitializer(ListNavigator<Token> tokens) {
-        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_BRACE) {
-            final int start = tokens.position();
-            tokens.advance();
-            final List<Expression> contents = parseArrayContents(tokens);
-            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+        if (tokens.has()) {
+            final Token startToken = tokens.get();
+            if (startToken.getID() == TokenID.SYMBOL_OPEN_BRACE) {
                 tokens.advance();
+                final List<Expression> contents = parseArrayContents(tokens);
+                if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+                    tokens.advance();
+                }
+                if (tokens.has()) {
+                    final Token endToken = tokens.get();
+                    if (endToken.getID() == TokenID.SYMBOL_CLOSE_BRACE) {
+                        tokens.advance();
+                        return new ArrayInitializer(contents, startToken.getStart(), endToken.getEnd());
+                    }
+                }
+                throw new ParseError("Expected '}", tokens);
             }
-            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACE) {
-                final int end = tokens.position();
-                tokens.advance();
-                return new ArrayInitializer(contents, start, end);
-            }
-            throw new ParseError("Expected '}", tokens);
         }
         throw new ParseFailure();
     }

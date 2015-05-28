@@ -229,13 +229,13 @@ public final class Parser {
         return parseVariableList(tokens, new ArrayList<Variable>());
     }
 
-    private static List<Variable> parseVariableList(ListNavigator<Token> tokens, List<Variable> list) {
-        list.add(parseVariable(tokens));
+    private static List<Variable> parseVariableList(ListNavigator<Token> tokens, List<Variable> variables) {
+        variables.add(parseVariable(tokens));
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
             tokens.advance();
-            return parseVariableList(tokens, list);
+            return parseVariableList(tokens, variables);
         }
-        return list;
+        return variables;
     }
 
     private static Declaration parseDeclaration(ListNavigator<Token> tokens) {
@@ -287,21 +287,21 @@ public final class Parser {
         return parseArrayContents(tokens, new ArrayList<Expression>());
     }
 
-    private static List<Expression> parseArrayContents(ListNavigator<Token> tokens, List<Expression> list) {
+    private static List<Expression> parseArrayContents(ListNavigator<Token> tokens, List<Expression> contents) {
         try {
-            list.add(parseArrayInitializer(tokens));
+            contents.add(parseArrayInitializer(tokens));
         } catch (ParseFailure failure) {
             try {
-                list.add(parseExpression(tokens));
+                contents.add(parseExpression(tokens));
             } catch (ParseError ignored) {
-                return list;
+                return contents;
             }
         }
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
             tokens.advance();
-            return parseArrayContents(tokens, list);
+            return parseArrayContents(tokens, contents);
         }
-        return list;
+        return contents;
     }
 
     /*
@@ -361,13 +361,13 @@ public final class Parser {
         return parseExpressionList(tokens, new ArrayList<Expression>());
     }
 
-    private static List<Expression> parseExpressionList(ListNavigator<Token> tokens, List<Expression> list) {
-        list.add(parseExpression(tokens));
+    private static List<Expression> parseExpressionList(ListNavigator<Token> tokens, List<Expression> expressions) {
+        expressions.add(parseExpression(tokens));
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
             tokens.advance();
-            return parseExpressionList(tokens, list);
+            return parseExpressionList(tokens, expressions);
         }
-        return list;
+        return expressions;
     }
 
     private static Expression parseAssignment(ListNavigator<Token> tokens) {

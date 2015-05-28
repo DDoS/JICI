@@ -36,6 +36,7 @@ import ca.sapon.jici.lexer.TokenGroup;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
 import ca.sapon.jici.parser.expression.Conditional;
@@ -251,6 +252,50 @@ public final class Parser {
     }
 
     /*
+        ARRAY_INIT:      { ARRAY_CONTENTS } _ { ARRAY_CONTENTS, } _ { } _ {, }
+        ARRAY_CONTENTS:   EXPRESSION, ARRAY_CONTENTS _ ARRAY_INIT, ARRAY_CONTENTS _ EXPRESSION _ ARRAY_INIT
+    */
+
+    private static ArrayInitializer parseArrayInitializer(ListNavigator<Token> tokens) {
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_BRACE) {
+            final int start = tokens.position();
+            tokens.advance();
+            final List<Expression> contents = parseArrayContents(tokens);
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+                tokens.advance();
+            }
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACE) {
+                final int end = tokens.position();
+                tokens.advance();
+                return new ArrayInitializer(contents, start, end);
+            }
+            throw new ParseError("Expected '}", tokens);
+        }
+        throw new ParseFailure();
+    }
+
+    private static List<Expression> parseArrayContents(ListNavigator<Token> tokens) {
+        return parseArrayContents(tokens, new ArrayList<Expression>());
+    }
+
+    private static List<Expression> parseArrayContents(ListNavigator<Token> tokens, List<Expression> list) {
+        try {
+            list.add(parseArrayInitializer(tokens));
+        } catch (ParseFailure failure) {
+            try {
+                list.add(parseExpression(tokens));
+            } catch (ParseError ignored) {
+                return list;
+            }
+        }
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+            tokens.advance();
+            return parseArrayContents(tokens, list);
+        }
+        return list;
+    }
+
+    /*
         IMPORT:          import CLASS_NAME; _ import CLASS_NAME.*;
     */
 
@@ -296,7 +341,7 @@ public final class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ CLASS_NAME _ CLASS_NAME(EXPRESSION_LIST) _ new CLASS_NAME(EXPRESSION_LIST) _ TYPE.class _ void.class _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME(EXPRESSION_LIST) _ new CLASS_NAME(EXPRESSION_LIST) _ TYPE.class _ void.class _ (EXPRESSION)
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {

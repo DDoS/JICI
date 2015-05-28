@@ -35,6 +35,7 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
+import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.TypeName;
@@ -67,7 +68,7 @@ public class Declaration implements Statement {
                         // else add the dimensions and compute the new array type
                         final Class<?> componentType;
                         if (typeName instanceof ArrayTypeName) {
-                            // ReflectionUtil.asArrayType doesn't support array types, so get the base one
+                            // ReflectionUtil.asArrayType doesn't support array types for component type, so get the base one
                             final ArrayTypeName arrayTypeName = ((ArrayTypeName) typeName);
                             componentType = arrayTypeName.getComponentType();
                             dimensions += arrayTypeName.getDimensions();
@@ -82,8 +83,8 @@ public class Declaration implements Statement {
                 for (Entry<Variable, Type> entry : declaredTypes.entrySet()) {
                     final Variable variable = entry.getKey();
                     final Type declaredType = entry.getValue();
-                    final Type valueType = variable.getType(environment);
-                    if (valueType != null && !valueType.convertibleTo(declaredType)) {
+                    final Type valueType = variable.getType(environment, declaredType);
+                    if (!valueType.convertibleTo(declaredType)) {
                         if (variable.getValueExpression() instanceof IntLiteral) {
                             final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
                             if (!declaredType.unbox().canNarrowFrom(intLiteral.asInt())) {
@@ -144,33 +145,37 @@ public class Declaration implements Statement {
             this.value = value;
         }
 
-        public Identifier getName() {
+        private Identifier getName() {
             return name;
         }
 
-        public int getDimensions() {
+        private int getDimensions() {
             return dimensions;
         }
 
-        public Expression getValueExpression() {
+        private Expression getValueExpression() {
             return value;
         }
 
-        public Value getValue(Environment environment) {
+        private Value getValue(Environment environment) {
             return value == null ? null : value.getValue(environment);
         }
 
-        private Type getType(Environment environment) {
-            if (value == null) {
-                return null;
-            }
+        private Type getType(Environment environment, Type declaredType) {
             if (type == null) {
-                type = value.getType(environment);
+                if (value == null) {
+                    type = declaredType;
+                } else if (value instanceof ArrayInitializer) {
+                    ((ArrayInitializer) value).setType(declaredType);
+                    type = declaredType;
+                } else {
+                    type = value.getType(environment);
+                }
             }
             return type;
         }
 
-        public int getEnd() {
+        private int getEnd() {
             return value == null ? name.getEnd() : value.getEnd();
         }
 

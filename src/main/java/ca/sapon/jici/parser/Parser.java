@@ -138,7 +138,7 @@ public final class Parser {
         ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
         TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
-        VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION
+        VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION _ IDENTIFIER = ARRAY_INIT
         VARIABLE_LIST:   VARIABLE, VARIABLE_LIST _ VARIABLE
 
         DECLARATION:     TYPE VARIABLE_LIST;
@@ -211,7 +211,12 @@ public final class Parser {
                 final int dimensions = parseArrayDimensions(tokens);
                 if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_ASSIGN) {
                     tokens.advance();
-                    final Expression value = parseExpression(tokens);
+                    Expression value;
+                    try {
+                        value = parseArrayInitializer(tokens);
+                    } catch (ParseFailure ignored) {
+                        value = parseExpression(tokens);
+                    }
                     return new Variable((Identifier) token, dimensions, value);
                 }
                 return new Variable((Identifier) token, dimensions);

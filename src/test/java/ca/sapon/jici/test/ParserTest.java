@@ -246,6 +246,15 @@ public class ParserTest {
         testParseStatement("Declaration(Object m[])", "Object m[];");
         testParseStatement("Declaration(Object m[], k, j[][])", "Object m[], k, j[][];");
         testParseStatement("Declaration(Object[] m[], k, j[][])", "Object[] m[], k, j[][];");
+
+        testParseStatement("Declaration(Object[] m = {})", "Object[] m = {};");
+        testParseStatement("Declaration(Object[] m = {})", "Object[] m = {,};");
+        testParseStatement("Declaration(Object[] m = {null})", "Object[] m = {null};");
+        testParseStatement("Declaration(Object[] m = {null})", "Object[] m = {null,};");
+        testParseStatement("Declaration(Object[] m = {null, null})", "Object[] m = {null, null};");
+        testParseStatement("Declaration(Object[][] m = {{}})", "Object[][] m = {{}};");
+        testParseStatement("Declaration(Object[][] m = {{}, {}})", "Object[][] m = {{}, {}};");
+        testParseStatement("Declaration(Object[][] m = {{}, null, {}})", "Object[][] m = {{}, null, {}};");
     }
 
     @Test

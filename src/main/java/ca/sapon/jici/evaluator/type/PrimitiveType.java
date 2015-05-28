@@ -255,10 +255,7 @@ public class PrimitiveType implements Type {
 
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
         if (!to.isPrimitive()) {
-            to = ClassType.unbox(to);
-            if (!to.isPrimitive()) {
-                return box(from).convertibleTo(ReflectionUtil.wrap(to));
-            }
+            return box(from).convertibleTo(ReflectionUtil.wrap(to));
         }
         return VALID_CONVERSIONS.get(from).contains(to);
     }

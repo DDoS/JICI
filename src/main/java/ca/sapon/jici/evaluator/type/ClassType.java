@@ -287,10 +287,7 @@ public class ClassType implements Type {
     public static boolean convertibleTo(Class<?> from, Class<?> to) {
         if (to.isPrimitive()) {
             from = unbox(from);
-            if (from.isPrimitive()) {
-                return PrimitiveType.convertibleTo(from, to);
-            }
-            to = PrimitiveType.box(to).getTypeClass();
+            return from.isPrimitive() && PrimitiveType.convertibleTo(from, to);
         }
         return to.isAssignableFrom(from);
     }

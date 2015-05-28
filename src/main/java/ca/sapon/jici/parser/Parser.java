@@ -36,6 +36,7 @@ import ca.sapon.jici.lexer.TokenGroup;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+import ca.sapon.jici.parser.expression.ArrayConstructor;
 import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Cast;
 import ca.sapon.jici.parser.expression.ClassAccess;
@@ -159,7 +160,8 @@ public final class Parser {
                     return parseName(tokens, name);
                 }
                 return name;
-            } else if (!name.isEmpty()) {
+            }
+            if (!name.isEmpty()) {
                 tokens.retreat();
                 return name;
             }
@@ -348,9 +350,17 @@ public final class Parser {
         ADD:             ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:        MULTIPLY * UNARY _ UNARY
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
-        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER(EXPRESSION_LIST) _ ACCESS[EXPRESSION] _ ATOM
+        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ NAME _ NAME(EXPRESSION_LIST) _ new CLASS_NAME(EXPRESSION_LIST) _ TYPE.class _ void.class _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME ARGUMENTS _ CONSTRUCTOR _ TYPE.class _ void.class _ (EXPRESSION)
+
+        CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
+
+        ARGUMENTS:       (EXPRESSION_LIST)
+
+        ARRAY_SIZES:     SIZED_ARRAYS _ SIZED_ARRAYS UNSIZED_ARRAYS
+        SIZED_ARRAYS:    [EXPRESSION] _ SIZED_ARRAYS[EXPRESSION]
+        UNSIZED_ARRAYS:  [] _ UNSIZED_ARRAYS[]
     */
 
     private static Expression parseExpression(ListNavigator<Token> tokens) {
@@ -596,9 +606,8 @@ public final class Parser {
                     if (inner instanceof NumberLiteral) {
                         ((NumberLiteral) inner).applySign(token.getID() == TokenID.SYMBOL_MINUS);
                         return inner;
-                    } else {
-                        return new Sign(inner, (Symbol) token);
                     }
+                    return new Sign(inner, (Symbol) token);
                 }
                 case SYMBOL_BOOLEAN_NOT: {
                     tokens.advance();
@@ -728,18 +737,16 @@ public final class Parser {
                                 tokens.advance();
                                 if (name.size() == 1) {
                                     throw new ParseError("Local methods are not supported", name.get(0));
-                                } else {
-                                    final List<Expression> arguments = parseArguments(tokens);
-                                    return new AmbiguousCall(name, arguments);
                                 }
+                                final List<Expression> arguments = parseArguments(tokens);
+                                return new AmbiguousCall(name, arguments);
                             }
                         }
                     }
                     if (name.size() == 1) {
                         return new VariableAccess(name.get(0));
-                    } else {
-                        return new AmbiguousReference(name);
                     }
+                    return new AmbiguousReference(name);
                 }
                 default: {
                     switch (token.getID()) {
@@ -754,13 +761,7 @@ public final class Parser {
                         }
                         case KEYWORD_NEW: {
                             tokens.advance();
-                            final ClassTypeName name = parseClassName(tokens);
-                            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
-                                tokens.advance();
-                                final List<Expression> arguments = parseArguments(tokens);
-                                return new ConstructorCall(name, arguments);
-                            }
-                            throw new ParseError("Expected '('", tokens);
+                            return parseConstructor(tokens);
                         }
                         case KEYWORD_VOID: {
                             tokens.advance();
@@ -791,6 +792,77 @@ public final class Parser {
             tokens.advance();
         }
         return arguments;
+    }
+
+    private static Expression parseConstructor(ListNavigator<Token> tokens) {
+        final TypeName type = parseTypeName(tokens);
+        if (type instanceof ArrayTypeName) {
+            try {
+                return new ArrayConstructor((ArrayTypeName) type, parseArrayInitializer(tokens));
+            } catch (ParseFailure failure) {
+                throw new ParseError("Expected array initializer", tokens);
+            }
+        }
+        if (tokens.has()) {
+            switch (tokens.get().getID()) {
+                case SYMBOL_OPEN_PARENTHESIS: {
+                    if (!(type instanceof ClassTypeName)) {
+                        throw new ParseError("Expected class type", type);
+                    }
+                    tokens.advance();
+                    return new ConstructorCall((ClassTypeName) type, parseArguments(tokens));
+                }
+                case SYMBOL_OPEN_BRACKET: {
+                    tokens.advance();
+                    return new ArrayConstructor(type, parseArraySizes(tokens), tokens.get(-1).getEnd());
+                }
+            }
+        }
+        throw new ParseError("Expected '(' or '['", tokens);
+    }
+
+    private static List<Expression> parseArraySizes(ListNavigator<Token> tokens) {
+        final List<Expression> sizes = new ArrayList<>();
+        parseSizedArrays(tokens, sizes);
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_BRACKET) {
+            tokens.advance();
+            parseUnsizedArrays(tokens, sizes);
+        }
+        return sizes;
+    }
+
+    private static List<Expression> parseSizedArrays(ListNavigator<Token> tokens, List<Expression> sizes) {
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+            if (sizes.isEmpty()) {
+                throw new ParseError("Expected array size expression", tokens);
+            }
+            tokens.retreat();
+            return sizes;
+        }
+        final Expression expression = parseExpression(tokens);
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+            sizes.add(expression);
+            tokens.advance();
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_BRACKET) {
+                tokens.advance();
+                return parseSizedArrays(tokens, sizes);
+            }
+            return sizes;
+        }
+        throw new ParseError("Expected ']'", tokens);
+    }
+
+    private static List<Expression> parseUnsizedArrays(ListNavigator<Token> tokens, List<Expression> sizes) {
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+            tokens.advance();
+            sizes.add(null);
+            if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_BRACKET) {
+                tokens.advance();
+                return parseUnsizedArrays(tokens, sizes);
+            }
+            return sizes;
+        }
+        throw new ParseError("Expected ']'", tokens);
     }
 
     private static class ParseFailure extends ParserException {

@@ -33,7 +33,7 @@ import ca.sapon.jici.util.StringUtil;
 public class ArrayTypeName implements TypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
-    private Class<?> componentType;
+    private Class<?> componentType = null;
     private Type type = null;
 
     public ArrayTypeName(TypeName componentTypeName, int dimensions) {
@@ -44,13 +44,13 @@ public class ArrayTypeName implements TypeName {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type componentType = componentTypeName.getType(environment);
-            final Class<?> _class = ReflectionUtil.asArrayType(componentType.getTypeClass(), dimensions);
-            if (_class == null) {
-                throw new EvaluatorException("Class not found: array of " + componentTypeName.toString() + " with dimensions " + dimensions, this);
+            final Class<?> componentType = componentTypeName.getType(environment).getTypeClass();
+            final Class<?> arrayType = ReflectionUtil.asArrayType(componentType, dimensions);
+            if (arrayType == null) {
+                throw new EvaluatorException("Class not found: array of " + componentType.getCanonicalName() + " with dimensions " + dimensions, this);
             }
-            this.componentType = componentType.getTypeClass();
-            type = ClassType.of(_class);
+            this.componentType = componentType;
+            type = ClassType.of(arrayType);
         }
         return type;
     }

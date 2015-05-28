@@ -53,6 +53,13 @@ public class ParserTest {
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
 
+        testParseExpression("ArrayConstructor(new int[1])", "new int[1]");
+        testParseExpression("ArrayConstructor(new Object[1])", "new Object[1]");
+        testParseExpression("ArrayConstructor(new Object[1][2])", "new Object[1][2]");
+        testParseExpression("ArrayConstructor(new Object[1][])", "new Object[1][]");
+        testParseExpression("ArrayConstructor(new Object[]{})", "new Object[]{}");
+        testParseExpression("ArrayConstructor(new Object[][]{})", "new Object[][]{}");
+
         testParseExpression("ClassAccess(test.class)", "test.class");
         testParseExpression("ClassAccess(int.class)", "int.class");
         testParseExpression("ClassAccess(void.class)", "void.class");

@@ -166,7 +166,7 @@ public class Declaration implements Statement {
                 if (value == null) {
                     type = declaredType;
                 } else if (value instanceof ArrayInitializer) {
-                    ((ArrayInitializer) value).setType(declaredType);
+                    ((ArrayInitializer) value).setType(environment, declaredType);
                     type = declaredType;
                 } else {
                     type = value.getType(environment);

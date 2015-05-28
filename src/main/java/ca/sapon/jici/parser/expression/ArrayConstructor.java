@@ -23,9 +23,12 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -65,19 +68,39 @@ public class ArrayConstructor implements Expression {
     }
 
     public static class ArrayInitializer implements Expression {
-        private final List<Expression> list;
+        private final List<Expression> elements;
         private final int start;
         private final int end;
         private Type type = null;
+        private Type componentType = null;
 
-        public ArrayInitializer(List<Expression> list, int start, int end) {
-            this.list = list;
+        public ArrayInitializer(List<Expression> elements, int start, int end) {
+            this.elements = elements;
             this.start = start;
             this.end = end;
         }
 
-        public void setType(Type type) {
-            this.type = type;
+        public void setType(Environment environment, Type type) {
+            if (this.type == null) {
+                if (!type.isArray()) {
+                    throw new EvaluatorException("Cannot convert array type to " + type.getName(), this);
+                }
+                final Type componentType = ClassType.of(type.getTypeClass().getComponentType());
+                for (final Expression element : elements) {
+                    if (element instanceof ArrayInitializer) {
+                        ((ArrayInitializer) element).setType(environment, componentType);
+                    } else {
+                        final Type elementType = element.getType(environment);
+                        if (!elementType.convertibleTo(componentType)) {
+                            throw new EvaluatorException("Cannot convert " + elementType.getName() + " to " + componentType.getName(), this);
+                        }
+                    }
+                }
+                this.componentType = componentType;
+                this.type = type;
+                return;
+            }
+            throw new IllegalArgumentException("Cannot reset array initializer type");
         }
 
         @Override
@@ -90,7 +113,12 @@ public class ArrayConstructor implements Expression {
 
         @Override
         public Value getValue(Environment environment) {
-            return ObjectValue.of(null);
+            final int size = elements.size();
+            final Object array = Array.newInstance(componentType.getTypeClass(), size);
+            for (int i = 0; i < size; i++) {
+                Array.set(array, i, elements.get(i).getValue(environment).asObject());
+            }
+            return ObjectValue.of(array);
         }
 
         @Override
@@ -105,7 +133,7 @@ public class ArrayConstructor implements Expression {
 
         @Override
         public String toString() {
-            return '{' + StringUtil.toString(list, ", ") + '}';
+            return '{' + StringUtil.toString(elements, ", ") + '}';
         }
     }
 }

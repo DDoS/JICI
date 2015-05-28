@@ -93,7 +93,12 @@ public final class Parser {
     }
 
     public static Expression parseExpression(List<Token> tokens) {
-        return parseExpression(new ListNavigator<>(tokens));
+        final ListNavigator<Token> navigableTokens = new ListNavigator<>(tokens);
+        final Expression expression = parseExpression(navigableTokens);
+        if (navigableTokens.has()) {
+            throw new ParseError("Expected end of expression", navigableTokens);
+        }
+        return expression;
     }
 
     private static Statement parseStatement(ListNavigator<Token> tokens) {

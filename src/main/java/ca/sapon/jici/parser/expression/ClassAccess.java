@@ -31,7 +31,7 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.name.TypeName;
 
 public class ClassAccess implements Expression {
-    private static final ClassType VALUE_TYPE = ClassType.of(Class.class);
+    private static final ClassType TYPE = ClassType.of(Class.class);
     private final TypeName typeName;
     private Type type = null;
     private Class<?> typeClass = null;
@@ -44,7 +44,7 @@ public class ClassAccess implements Expression {
     public Type getType(Environment environment) {
         if (type == null) {
             typeClass = typeName.getType(environment).getTypeClass();
-            type = VALUE_TYPE;
+            type = TYPE;
         }
         return type;
     }

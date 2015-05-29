@@ -23,12 +23,15 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.IntValue;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -38,6 +41,7 @@ public class FieldAccess implements Reference {
     private final Identifier field;
     private Type type = null;
     private Field member = null;
+    private boolean arrayLength = false;
 
     public FieldAccess(Expression object, Identifier field) {
         this.object = object;
@@ -47,31 +51,50 @@ public class FieldAccess implements Reference {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            try {
-                member = object.getType(environment).getField(field.getSource());
-            } catch (IllegalArgumentException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
+            final Type objectType = object.getType(environment);
+            final String name = field.getSource();
+            if (objectType.isArray() && "length".equals(name)) {
+                arrayLength = true;
+                type = PrimitiveType.THE_INT;
+            } else {
+                try {
+                    member = objectType.getField(name);
+                } catch (IllegalArgumentException exception) {
+                    throw new EvaluatorException(exception.getMessage(), this);
+                }
+                type = ReflectionUtil.wrap(member.getType());
             }
-            type = ReflectionUtil.wrap(member.getType());
         }
         return type;
     }
 
     @Override
     public Value getValue(Environment environment) {
+        final Object objectValue = object.getValue(environment).asObject();
+        if (arrayLength) {
+            try {
+                return IntValue.of(Array.getLength(objectValue));
+            } catch (Exception exception) {
+                throw new EvaluatorException("Could not access array length field", exception, field);
+            }
+        }
         try {
-            return type.getKind().wrap(member.get(object.getValue(environment)));
+            return type.getKind().wrap(member.get(objectValue));
         } catch (Exception exception) {
-            throw new EvaluatorException("Could not access field: " + field.getSource(), field);
+            throw new EvaluatorException("Could not access field", exception, field);
         }
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
+        if (arrayLength) {
+            throw new EvaluatorException("Array length field is read-only", field);
+        }
+        final Object objectValue = object.getValue(environment).asObject();
         try {
-            member.set(object.getValue(environment), value.asObject());
+            member.set(objectValue, value.asObject());
         } catch (Exception exception) {
-            throw new EvaluatorException("Could not access field: " + field.getSource(), field);
+            throw new EvaluatorException("Could not access field", exception, field);
         }
     }
 

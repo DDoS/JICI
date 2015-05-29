@@ -28,9 +28,10 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
@@ -45,6 +46,7 @@ public class MethodCall implements Expression, Statement {
     private Method callable = null;
     private int varargIndex = -1;
     private Class<?> varargType = null;
+    private boolean arrayClone = false;
 
     public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
         this.object = object;
@@ -69,25 +71,30 @@ public class MethodCall implements Expression, Statement {
         if (type == null) {
             final Type objectType = object.getType(environment);
             final int size = arguments.size();
-            final Type[] argumentTypes = new Type[size];
-            for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).getType(environment);
-            }
             final String name = method.getSource();
-            try {
-                callable = objectType.getMethod(name, argumentTypes);
-            } catch (IllegalArgumentException ignored) {
-                try {
-                    callable = objectType.getVarargMethod(name, argumentTypes);
-                    final Class<?>[] parameters = callable.getParameterTypes();
-                    varargIndex = parameters.length - 1;
-                    varargType = parameters[varargIndex].getComponentType();
-                } catch (IllegalArgumentException exception) {
-                    throw new EvaluatorException(exception.getMessage(), this);
+            if (objectType.isArray() && size == 0 && "clone".equals(name)) {
+                arrayClone = true;
+                type = objectType;
+            } else {
+                final Type[] argumentTypes = new Type[size];
+                for (int i = 0; i < size; i++) {
+                    argumentTypes[i] = arguments.get(i).getType(environment);
                 }
+                try {
+                    callable = objectType.getMethod(name, argumentTypes);
+                } catch (IllegalArgumentException ignored) {
+                    try {
+                        callable = objectType.getVarargMethod(name, argumentTypes);
+                        final Class<?>[] parameters = callable.getParameterTypes();
+                        varargIndex = parameters.length - 1;
+                        varargType = parameters[varargIndex].getComponentType();
+                    } catch (IllegalArgumentException exception) {
+                        throw new EvaluatorException(exception.getMessage(), this);
+                    }
+                }
+                final Class<?> returnType = callable.getReturnType();
+                type = ReflectionUtil.wrap(returnType);
             }
-            final Class<?> returnType = callable.getReturnType();
-            type = ReflectionUtil.wrap(returnType);
         }
         return type;
     }
@@ -95,6 +102,13 @@ public class MethodCall implements Expression, Statement {
     @Override
     public Value getValue(Environment environment) {
         final Object value = object.getValue(environment).asObject();
+        if (arrayClone) {
+            try {
+                return ObjectValue.of(ReflectionUtil.cloneArray(value));
+            } catch (Exception exception) {
+                throw new EvaluatorException("Could not clone array", exception, this);
+            }
+        }
         final int size = arguments.size();
         Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
@@ -107,9 +121,8 @@ public class MethodCall implements Expression, Statement {
             if (type.isVoid()) {
                 callable.invoke(value, values);
                 return VoidValue.THE_VOID;
-            } else {
-                return type.getKind().wrap(callable.invoke(value, values));
             }
+            return type.getKind().wrap(callable.invoke(value, values));
         } catch (Exception exception) {
             throw new EvaluatorException("Could not call method", exception, this);
         }

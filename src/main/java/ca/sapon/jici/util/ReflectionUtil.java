@@ -373,4 +373,12 @@ public final class ReflectionUtil {
             }
         }
     }
+
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    public static Object cloneArray(Object array) {
+        final int length = Array.getLength(array);
+        final Object clone = Array.newInstance(array.getClass().getComponentType(), length);
+        System.arraycopy(array, 0, clone, 0, length);
+        return clone;
+    }
 }

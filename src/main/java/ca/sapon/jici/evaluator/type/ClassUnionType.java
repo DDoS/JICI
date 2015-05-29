@@ -86,6 +86,10 @@ public class ClassUnionType extends ClassType {
         return classes;
     }
 
+    public Set<ClassType> getLowestUpperBound() {
+        return lowestUpperBound;
+    }
+
     @Override
     public Class<?> getTypeClass() {
         throw new IllegalArgumentException("No type class for object type union");

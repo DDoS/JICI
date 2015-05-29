@@ -168,14 +168,13 @@ public final class ReflectionUtil {
             boolean allEqual = true;
             for (int i = 0; i < parameters.length; i++) {
                 final Type argument = arguments[i];
-                final Class<?> parameter = parameters[i];
-                if (!argument.convertibleTo(wrap(parameter))) {
+                final Type parameter = wrap(parameters[i]);
+                if (!argument.convertibleTo(parameter)) {
                     iterator.remove();
                     continue candidates;
                 }
                 // look for a perfect match
-                // TODO: broken for type union
-                allEqual &= argument.getTypeClass() == parameter;
+                allEqual &= argument.is(parameter);
             }
             // fast track perfect matches
             if (allEqual) {
@@ -194,8 +193,7 @@ public final class ReflectionUtil {
                 }
                 for (int i = 0; i < parameters.length; i++) {
                     // remove when the challenge is narrower than the parameter
-                    // TODO: broken for type union
-                    if (ReflectionUtil.isNarrowerParameter(arguments[i].getTypeClass(), challenges[i], parameters[i])) {
+                    if (isNarrowerParameter(challenges[i], parameters[i], arguments[i].isPrimitive())) {
                         candidateCount--;
                         continue candidates;
                     }
@@ -208,7 +206,7 @@ public final class ReflectionUtil {
         return candidateCount != 1 || callable == null ? null : callable;
     }
 
-    private static boolean isNarrowerParameter(Class<?> argument, Class<?> parameterA, Class<?> parameterB) {
+    private static boolean isNarrowerParameter(Class<?> parameterA, Class<?> parameterB, boolean primitiveArgument) {
         // if A is primitive
         //   if B is primitive
         //     A < B
@@ -220,9 +218,9 @@ public final class ReflectionUtil {
         //   else
         //     A < B
         if (parameterA.isPrimitive()) {
-            return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : argument.isPrimitive();
+            return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : primitiveArgument;
         }
-        return parameterB.isPrimitive() ? !argument.isPrimitive() : ClassType.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !primitiveArgument : ClassType.convertibleTo(parameterA, parameterB);
     }
 
     public static Type wrap(Class<?> type) {

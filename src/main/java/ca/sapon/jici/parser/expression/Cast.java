@@ -25,8 +25,10 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.name.TypeName;
 
 public class Cast implements Expression {
@@ -62,11 +64,26 @@ public class Cast implements Expression {
                 }
             } else {
                 // down or up casts
-                final Class<?> object = objectType.getTypeClass();
-                if (object != null) {
+                if (objectType instanceof ClassUnionType) {
                     final Class<?> cast = castType.getTypeClass();
-                    if (!cast.isAssignableFrom(object) && !object.isAssignableFrom(cast)) {
+                    boolean oneValid = false;
+                    for (ClassType bound : ((ClassUnionType) objectType).getLowestUpperBound()) {
+                        final Class<?> object = bound.getTypeClass();
+                        if (cast.isAssignableFrom(object) || object.isAssignableFrom(cast)) {
+                            oneValid = true;
+                            break;
+                        }
+                    }
+                    if (!oneValid) {
                         failCast(castType, objectType);
+                    }
+                } else {
+                    final Class<?> object = objectType.getTypeClass();
+                    if (object != null) {
+                        final Class<?> cast = castType.getTypeClass();
+                        if (!cast.isAssignableFrom(object) && !object.isAssignableFrom(cast)) {
+                            failCast(castType, objectType);
+                        }
                     }
                 }
             }
@@ -76,11 +93,15 @@ public class Cast implements Expression {
     }
 
     private void failCast(Type cast, Type object) {
-        failCast(cast, object.getTypeClass());
+        failCast(cast.getName(), object.getName());
     }
 
     private void failCast(Type cast, Class<?> object) {
-        throw new EvaluatorException("Cannot cast " + object.getCanonicalName() + " to " + cast.getName(), this);
+        failCast(cast.getName(), object.getCanonicalName());
+    }
+
+    private void failCast(String cast, String object) {
+        throw new EvaluatorException("Cannot cast " + object + " to " + cast, this);
     }
 
     @Override

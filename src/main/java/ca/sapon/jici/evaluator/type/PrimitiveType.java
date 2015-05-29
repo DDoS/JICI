@@ -131,7 +131,7 @@ public class PrimitiveType implements Type {
 
     @Override
     public boolean is(Type type) {
-        return type instanceof PrimitiveType && this.type == ((PrimitiveType) type).getTypeClass();
+        return type instanceof PrimitiveType && this.type == type.getTypeClass();
     }
 
     @Override
@@ -200,7 +200,7 @@ public class PrimitiveType implements Type {
         if (!(with instanceof PrimitiveType)) {
             throw new IllegalArgumentException("Cannot binary widen an object type");
         }
-        return of(binaryWiden(type, ((PrimitiveType) with).getTypeClass()));
+        return of(binaryWiden(type, with.getTypeClass()));
     }
 
     @Override

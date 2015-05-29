@@ -24,12 +24,15 @@
 package ca.sapon.jici.parser.expression.reference;
 
 import java.lang.reflect.Array;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 
@@ -54,8 +57,18 @@ public class IndexAccess implements Reference {
             if (!indexType.convertibleTo(PrimitiveType.THE_INT)) {
                 throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
             }
-            final Class<?> componentType = objectType.getTypeClass().getComponentType();
-            type = ReflectionUtil.wrap(componentType);
+            if (objectType instanceof ClassUnionType) {
+                final ClassUnionType unionType = (ClassUnionType) objectType;
+                final Set<Class<?>> typeClasses = unionType.getTypeClasses();
+                final ClassType[] componentUnionType = new ClassType[typeClasses.size()];
+                int i = 0;
+                for (Class<?> typeClass : typeClasses) {
+                    componentUnionType[i++] = ClassType.of(typeClass.getComponentType());
+                }
+                type = new ClassUnionType(componentUnionType);
+            } else {
+                type = ReflectionUtil.wrap(objectType.getTypeClass().getComponentType());
+            }
         }
         return type;
     }

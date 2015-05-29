@@ -33,7 +33,7 @@ public class EvaluatorException extends SourceException {
     private static final long serialVersionUID = 1;
 
     public EvaluatorException(Throwable cause, SourceIndexed indexed) {
-        this(cause.getMessage(), cause, indexed);
+        this("EvaluatorException", cause, indexed);
     }
 
     public EvaluatorException(String error, Throwable cause, SourceIndexed indexed) {

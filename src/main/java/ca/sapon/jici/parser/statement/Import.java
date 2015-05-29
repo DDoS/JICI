@@ -24,6 +24,7 @@
 package ca.sapon.jici.parser.statement;
 
 import java.util.List;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
@@ -34,7 +35,6 @@ import ca.sapon.jici.util.StringUtil;
 public class Import implements Statement {
     private final List<Identifier> name;
     private final boolean _package;
-    private Class<?> _class = null;
 
     public Import(List<Identifier> name, boolean _package) {
         this.name = name;
@@ -45,16 +45,20 @@ public class Import implements Statement {
     public void execute(Environment environment) {
         try {
             if (_package) {
-                final int end = name.get(name.size() - 1).getEnd() + 1;
-                throw new EvaluatorException("Package imports are not supported", end, end);
-            }
-            if (_class == null) {
-                _class = ReflectionUtil.findClass(name);
+                final Set<Class<?>> classes = ReflectionUtil.findClasses(name);
+                if (classes.isEmpty()) {
+                    throw new EvaluatorException("No classes in package, perhaps they were loaded by the bootstrap class loader?", this);
+                }
+                for (Class<?> _class : classes) {
+                    environment.importClass(_class);
+                }
+            } else {
+                final Class<?> _class = ReflectionUtil.findClass(name);
                 if (_class == null) {
                     throw new EvaluatorException("Class not found: " + StringUtil.toString(name, "."), this);
                 }
+                environment.importClass(_class);
             }
-            environment.importClass(_class);
         } catch (EvaluatorException exception) {
             throw exception;
         } catch (Exception exception) {

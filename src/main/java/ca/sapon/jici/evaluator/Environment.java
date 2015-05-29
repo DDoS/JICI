@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 

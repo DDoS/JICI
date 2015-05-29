@@ -23,11 +23,16 @@
  */
 package ca.sapon.jici.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -308,5 +313,64 @@ public final class ReflectionUtil {
         }
         compacted[varargIndex] = array;
         return compacted;
+    }
+
+    public static Set<Class<?>> findClasses(List<?> packageName) {
+        final String packageString = StringUtil.toString(packageName, ".");
+        final ClassLoader[] classLoaders = {ClassLoader.getSystemClassLoader(), Thread.currentThread().getContextClassLoader()};
+        final Set<File> directories = new HashSet<>();
+        for (ClassLoader classLoader : classLoaders) {
+            if (classLoader == null) {
+                continue;
+            }
+            try {
+                final Enumeration<URL> resources = classLoader.getResources(StringUtil.toString(packageName, "/"));
+                while (resources.hasMoreElements()) {
+                    final File file = new File(URLDecoder.decode(resources.nextElement().getPath(), "UTF-8"));
+                    directories.add(file);
+                    findDirectories(directories, file);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        final Set<Class<?>> classes = new HashSet<>();
+        for (File directory : directories) {
+            if (!directory.exists()) {
+                continue;
+            }
+            for (String file : directory.list()) {
+                if (!file.endsWith(".class")) {
+                    continue;
+                }
+                final String name;
+                try {
+                    String path = directory.getCanonicalPath().replaceAll("/", ".").replaceAll("\\\\", ".");
+                    path = path.substring(path.indexOf(packageString));
+                    name = path + '.' + file.substring(0, file.length() - 6);
+                } catch (IOException exception) {
+                    return Collections.emptySet();
+                }
+                if (name.indexOf('$') != -1) {
+                    continue;
+                }
+                try {
+                    classes.add(Class.forName(name));
+                } catch (ClassNotFoundException ignored) {
+                }
+            }
+        }
+        return classes;
+    }
+
+    private static void findDirectories(Set<File> directories, File directory) {
+        final File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    directories.add(file);
+                    findDirectories(directories, file);
+                }
+            }
+        }
     }
 }

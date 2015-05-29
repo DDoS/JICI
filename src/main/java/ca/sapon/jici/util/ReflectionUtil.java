@@ -25,12 +25,14 @@ package ca.sapon.jici.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -145,6 +147,9 @@ public final class ReflectionUtil {
     }
 
     public static Class<?> asArrayType(Class<?> componentType, int dimensions) {
+        if (dimensions == 0) {
+            return componentType;
+        }
         final Character character = ARRAY_NAME_PRIMITIVE_ENCODING.get(componentType);
         final String encodedName = character != null ? character.toString() : 'L' + componentType.getCanonicalName() + ';';
         return lookupClass(StringUtil.repeat("[", dimensions) + encodedName);
@@ -169,6 +174,7 @@ public final class ReflectionUtil {
                     continue candidates;
                 }
                 // look for a perfect match
+                // TODO: broken for type union
                 allEqual &= argument.getTypeClass() == parameter;
             }
             // fast track perfect matches
@@ -188,6 +194,7 @@ public final class ReflectionUtil {
                 }
                 for (int i = 0; i < parameters.length; i++) {
                     // remove when the challenge is narrower than the parameter
+                    // TODO: broken for type union
                     if (ReflectionUtil.isNarrowerParameter(arguments[i].getTypeClass(), challenges[i], parameters[i])) {
                         candidateCount--;
                         continue candidates;
@@ -282,14 +289,39 @@ public final class ReflectionUtil {
         while (!queue.isEmpty()) {
             final Class<?> child = queue.remove();
             if (result.add(child)) {
-                final Class<?> superClass = child.getSuperclass();
-                if (superClass != null) {
-                    queue.add(superClass);
+                if (child.isArray()) {
+                    addArraySuperClasses(child, queue);
+                } else {
+                    final Class<?> superClass = child.getSuperclass();
+                    if (superClass != null) {
+                        queue.add(superClass);
+                    }
+                    queue.addAll(Arrays.asList(child.getInterfaces()));
                 }
-                queue.addAll(Arrays.asList(child.getInterfaces()));
             }
         }
         return result;
+    }
+
+    private static void addArraySuperClasses(Class<?> arrayType, Collection<Class<?>> to) {
+        int dimensions = 0;
+        Class<?> componentType = arrayType;
+        do {
+            componentType = componentType.getComponentType();
+            to.add(asArrayType(Object.class, dimensions));
+            to.add(asArrayType(Cloneable.class, dimensions));
+            to.add(asArrayType(Serializable.class, dimensions));
+            dimensions++;
+        } while (componentType.isArray());
+        if (!componentType.isPrimitive()) {
+            final Class<?> superClass = componentType.getSuperclass();
+            if (superClass != null) {
+                to.add(asArrayType(superClass, dimensions));
+            }
+            for (Class<?> _interface : componentType.getInterfaces()) {
+                to.add(asArrayType(_interface, dimensions));
+            }
+        }
     }
 
     public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {

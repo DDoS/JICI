@@ -160,6 +160,10 @@ public final class ReflectionUtil {
         if (candidates.isEmpty()) {
             return null;
         }
+        // particular case for varargs where the expansion can lead to many candidates with no arguments. This case cannot be resolved
+        if (arguments.length == 0 && candidates.size() > 1) {
+            return null;
+        }
         // remove methods with un-applicable parameters
         candidates:
         for (Iterator<Entry<C, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {

@@ -60,10 +60,11 @@ public class Environment {
         if (_class.isAnonymousClass()) {
             throw new IllegalArgumentException("Can't import an anonymous class: " + name);
         }
-        // Check for existing import under the same name
+        // Check for existing import under the same simple name
         final String simpleName = _class.getSimpleName();
         final Class<?> existing = classes.get(simpleName);
-        if (existing != null) {
+        // ignore cases where the classes are the same as redundant imports are allowed
+        if (existing != null && _class != existing) {
             throw new IllegalArgumentException("Class " + name + " clashes with existing import " + existing.getCanonicalName());
         }
         // Add the class to the imports

@@ -73,13 +73,13 @@ public class ConstructorCall implements Statement, Expression {
             }
             try {
                 constructor = type.getConstructor(argumentTypes);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
                 try {
                     constructor = type.getVarargConstructor(argumentTypes);
                     final Class<?>[] parameters = constructor.getParameterTypes();
                     varargIndex = parameters.length - 1;
                     varargType = parameters[varargIndex].getComponentType();
-                } catch (IllegalArgumentException exception) {
+                } catch (UnsupportedOperationException exception) {
                     throw new EvaluatorException(exception.getMessage(), this);
                 }
             }

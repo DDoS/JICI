@@ -43,7 +43,7 @@ public class ClassUnionType extends ClassType {
     public ClassUnionType(ClassType... types) {
         super(Object.class);
         if (types.length <= 1) {
-            throw new IllegalArgumentException("Expected more than one type");
+            throw new UnsupportedOperationException("Expected more than one type");
         }
         final Set<Class<?>> classes = new HashSet<>(types.length);
         boolean allEqual = true;
@@ -63,7 +63,7 @@ public class ClassUnionType extends ClassType {
             }
         }
         if (allEqual) {
-            throw new IllegalArgumentException("Expected differing types in the union");
+            throw new UnsupportedOperationException("Expected differing types in the union");
         }
         this.types = types;
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
@@ -92,7 +92,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Class<?> getTypeClass() {
-        throw new IllegalArgumentException("No type class for object type union");
+        throw new UnsupportedOperationException("No type class for object type union");
     }
 
     @Override
@@ -135,7 +135,7 @@ public class ClassUnionType extends ClassType {
         for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
         return failGetConstructor(arguments);
@@ -146,14 +146,14 @@ public class ClassUnionType extends ClassType {
         for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargConstructor(arguments);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
         return failGetConstructor(arguments);
     }
 
     private Constructor<?> failGetConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("No constructor for signature: "
+        throw new UnsupportedOperationException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
@@ -162,10 +162,10 @@ public class ClassUnionType extends ClassType {
         for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
-        throw new IllegalArgumentException("No field named " + name + " in " + getName());
+        throw new UnsupportedOperationException("No field named " + name + " in " + getName());
     }
 
     @Override
@@ -173,7 +173,7 @@ public class ClassUnionType extends ClassType {
         for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
         return failGetMethod(name, arguments);
@@ -184,14 +184,14 @@ public class ClassUnionType extends ClassType {
         for (ClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargMethod(name, arguments);
-            } catch (IllegalArgumentException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
         return failGetMethod(name, arguments);
     }
 
     private Method failGetMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("No method for signature: "
+        throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 }

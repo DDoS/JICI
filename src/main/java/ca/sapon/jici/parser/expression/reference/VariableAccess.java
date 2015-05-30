@@ -45,7 +45,7 @@ public class VariableAccess implements Reference {
         if (type == null) {
             try {
                 type = environment.getVariableType(name);
-            } catch (IllegalArgumentException exception) {
+            } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), name);
             }
         }
@@ -56,7 +56,7 @@ public class VariableAccess implements Reference {
     public Value getValue(Environment environment) {
         try {
             return environment.getVariable(name);
-        } catch (IllegalArgumentException exception) {
+        } catch (UnsupportedOperationException exception) {
             throw new EvaluatorException(exception.getMessage(), name);
         }
     }
@@ -65,7 +65,7 @@ public class VariableAccess implements Reference {
     public void setValue(Environment environment, Value value) {
         try {
             environment.setVariable(name, value);
-        } catch (IllegalArgumentException exception) {
+        } catch (UnsupportedOperationException exception) {
             throw new EvaluatorException(exception.getMessage(), name);
         }
     }

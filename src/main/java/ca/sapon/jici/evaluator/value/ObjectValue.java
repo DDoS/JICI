@@ -44,7 +44,7 @@ public class ObjectValue implements Value {
     @Override
     public boolean asBoolean() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a boolean");
+            throw new UnsupportedOperationException("Cannot convert an object to a boolean");
         }
         return unboxed.asBoolean();
     }
@@ -52,7 +52,7 @@ public class ObjectValue implements Value {
     @Override
     public byte asByte() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a byte");
+            throw new UnsupportedOperationException("Cannot convert an object to a byte");
         }
         return unboxed.asByte();
     }
@@ -60,7 +60,7 @@ public class ObjectValue implements Value {
     @Override
     public short asShort() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a short");
+            throw new UnsupportedOperationException("Cannot convert an object to a short");
         }
         return unboxed.asShort();
     }
@@ -68,7 +68,7 @@ public class ObjectValue implements Value {
     @Override
     public char asChar() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a char");
+            throw new UnsupportedOperationException("Cannot convert an object to a char");
         }
         return unboxed.asChar();
     }
@@ -76,7 +76,7 @@ public class ObjectValue implements Value {
     @Override
     public int asInt() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a int");
+            throw new UnsupportedOperationException("Cannot convert an object to a int");
         }
         return unboxed.asInt();
     }
@@ -84,7 +84,7 @@ public class ObjectValue implements Value {
     @Override
     public long asLong() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a long");
+            throw new UnsupportedOperationException("Cannot convert an object to a long");
         }
         return unboxed.asLong();
     }
@@ -92,7 +92,7 @@ public class ObjectValue implements Value {
     @Override
     public float asFloat() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a float");
+            throw new UnsupportedOperationException("Cannot convert an object to a float");
         }
         return unboxed.asFloat();
     }
@@ -100,7 +100,7 @@ public class ObjectValue implements Value {
     @Override
     public double asDouble() {
         if (kind == ValueKind.OBJECT) {
-            throw new IllegalArgumentException("Cannot convert an object to a double");
+            throw new UnsupportedOperationException("Cannot convert an object to a double");
         }
         return unboxed.asDouble();
     }

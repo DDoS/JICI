@@ -38,7 +38,7 @@ public enum ValueKind {
             if (object instanceof Boolean) {
                 return BooleanValue.of((Boolean) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a boolean");
+            throw new UnsupportedOperationException("Cannot convert an object to a boolean");
         }
 
         @Override
@@ -57,7 +57,7 @@ public enum ValueKind {
             if (object instanceof Byte) {
                 return ByteValue.of((Byte) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a byte");
+            throw new UnsupportedOperationException("Cannot convert an object to a byte");
         }
 
         @Override
@@ -76,7 +76,7 @@ public enum ValueKind {
             if (object instanceof Short) {
                 return ShortValue.of((Short) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a short");
+            throw new UnsupportedOperationException("Cannot convert an object to a short");
         }
 
         @Override
@@ -95,7 +95,7 @@ public enum ValueKind {
             if (object instanceof Character) {
                 return CharValue.of((Character) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a char");
+            throw new UnsupportedOperationException("Cannot convert an object to a char");
         }
 
         @Override
@@ -114,7 +114,7 @@ public enum ValueKind {
             if (object instanceof Integer) {
                 return IntValue.of((Integer) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to an int");
+            throw new UnsupportedOperationException("Cannot convert an object to an int");
         }
 
         @Override
@@ -133,7 +133,7 @@ public enum ValueKind {
             if (object instanceof Long) {
                 return LongValue.of((Long) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a long");
+            throw new UnsupportedOperationException("Cannot convert an object to a long");
         }
 
         @Override
@@ -152,7 +152,7 @@ public enum ValueKind {
             if (object instanceof Float) {
                 return FloatValue.of((Float) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a float");
+            throw new UnsupportedOperationException("Cannot convert an object to a float");
         }
 
         @Override
@@ -171,7 +171,7 @@ public enum ValueKind {
             if (object instanceof Double) {
                 return DoubleValue.of((Double) object);
             }
-            throw new IllegalArgumentException("Cannot convert an object to a double");
+            throw new UnsupportedOperationException("Cannot convert an object to a double");
         }
 
         @Override
@@ -190,12 +190,12 @@ public enum ValueKind {
             if (object instanceof Void) {
                 return VoidValue.THE_VOID;
             }
-            throw new IllegalArgumentException("Cannot convert an object to void");
+            throw new UnsupportedOperationException("Cannot convert an object to void");
         }
 
         @Override
         public Value convert(Value value) {
-            throw new IllegalArgumentException("Cannot convert anything to void");
+            throw new UnsupportedOperationException("Cannot convert anything to void");
         }
     },
     OBJECT(null) {
@@ -243,7 +243,7 @@ public enum ValueKind {
             return null;
         }
         if (kind == OBJECT) {
-            throw new IllegalArgumentException("Not a box type: " + box.getClass().getSimpleName());
+            throw new UnsupportedOperationException("Not a box type: " + box.getClass().getSimpleName());
         }
         return kind.wrap(box);
     }

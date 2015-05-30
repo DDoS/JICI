@@ -39,7 +39,7 @@ public class IntValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert an int to a boolean");
+        throw new UnsupportedOperationException("Cannot convert an int to a boolean");
     }
 
     @Override

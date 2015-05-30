@@ -41,7 +41,7 @@ public class CharValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert a char to a boolean");
+        throw new UnsupportedOperationException("Cannot convert a char to a boolean");
     }
 
     @Override

@@ -39,7 +39,7 @@ public class ByteValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert a byte to a boolean");
+        throw new UnsupportedOperationException("Cannot convert a byte to a boolean");
     }
 
     @Override

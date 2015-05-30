@@ -82,13 +82,13 @@ public class MethodCall implements Expression, Statement {
                 }
                 try {
                     callable = objectType.getMethod(name, argumentTypes);
-                } catch (IllegalArgumentException ignored) {
+                } catch (UnsupportedOperationException ignored) {
                     try {
                         callable = objectType.getVarargMethod(name, argumentTypes);
                         final Class<?>[] parameters = callable.getParameterTypes();
                         varargIndex = parameters.length - 1;
                         varargType = parameters[varargIndex].getComponentType();
-                    } catch (IllegalArgumentException exception) {
+                    } catch (UnsupportedOperationException exception) {
                         throw new EvaluatorException(exception.getMessage(), this);
                     }
                 }

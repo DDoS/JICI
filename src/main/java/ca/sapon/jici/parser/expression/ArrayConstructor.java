@@ -180,13 +180,13 @@ public class ArrayConstructor implements Expression {
                 this.type = type;
                 return;
             }
-            throw new IllegalArgumentException("Cannot reset array initializer type");
+            throw new UnsupportedOperationException("Cannot reset array initializer type");
         }
 
         @Override
         public Type getType(Environment environment) {
             if (type == null) {
-                throw new IllegalArgumentException("Array initializer type has not been set");
+                throw new UnsupportedOperationException("Array initializer type has not been set");
             }
             return type;
         }

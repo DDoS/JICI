@@ -115,22 +115,22 @@ public class VoidType implements Type {
 
     @Override
     public PrimitiveType unaryWiden() {
-        throw new IllegalArgumentException("Cannot unary widen the void type");
+        throw new UnsupportedOperationException("Cannot unary widen the void type");
     }
 
     @Override
     public PrimitiveType binaryWiden(Type with) {
-        throw new IllegalArgumentException("Cannot unary widen the void type");
+        throw new UnsupportedOperationException("Cannot unary widen the void type");
     }
 
     @Override
     public boolean convertibleTo(Type to) {
-        throw new IllegalArgumentException("Cannot convert the void type");
+        throw new UnsupportedOperationException("Cannot convert the void type");
     }
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference void");
+        throw new UnsupportedOperationException("Cannot dereference void");
     }
 
     @Override
@@ -140,12 +140,12 @@ public class VoidType implements Type {
 
     @Override
     public Field getField(String name) {
-        throw new IllegalArgumentException("Cannot dereference void");
+        throw new UnsupportedOperationException("Cannot dereference void");
     }
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference void");
+        throw new UnsupportedOperationException("Cannot dereference void");
     }
 
     @Override

@@ -59,7 +59,7 @@ public class FieldAccess implements Reference {
             } else {
                 try {
                     member = objectType.getField(name);
-                } catch (IllegalArgumentException exception) {
+                } catch (UnsupportedOperationException exception) {
                     throw new EvaluatorException(exception.getMessage(), this);
                 }
                 type = ReflectionUtil.wrap(member.getType());

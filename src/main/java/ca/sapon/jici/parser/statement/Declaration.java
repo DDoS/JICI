@@ -103,7 +103,7 @@ public class Declaration implements Statement {
                 final Identifier name = variable.getName();
                 try {
                     environment.declareVariable(name, declaredType, variable.getValue(environment));
-                } catch (IllegalArgumentException exception) {
+                } catch (UnsupportedOperationException exception) {
                     throw new EvaluatorException(exception.getMessage(), name);
                 }
             }

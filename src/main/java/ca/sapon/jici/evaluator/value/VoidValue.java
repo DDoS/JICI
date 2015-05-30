@@ -31,47 +31,47 @@ public class VoidValue implements Value {
 
     @Override
     public boolean asBoolean() {
-        throw new IllegalArgumentException("Cannot convert void to a boolean");
+        throw new UnsupportedOperationException("Cannot convert void to a boolean");
     }
 
     @Override
     public byte asByte() {
-        throw new IllegalArgumentException("Cannot convert void to a byte");
+        throw new UnsupportedOperationException("Cannot convert void to a byte");
     }
 
     @Override
     public short asShort() {
-        throw new IllegalArgumentException("Cannot convert void to a short");
+        throw new UnsupportedOperationException("Cannot convert void to a short");
     }
 
     @Override
     public char asChar() {
-        throw new IllegalArgumentException("Cannot convert void to a char");
+        throw new UnsupportedOperationException("Cannot convert void to a char");
     }
 
     @Override
     public int asInt() {
-        throw new IllegalArgumentException("Cannot convert void to an int");
+        throw new UnsupportedOperationException("Cannot convert void to an int");
     }
 
     @Override
     public long asLong() {
-        throw new IllegalArgumentException("Cannot convert void to a long");
+        throw new UnsupportedOperationException("Cannot convert void to a long");
     }
 
     @Override
     public float asFloat() {
-        throw new IllegalArgumentException("Cannot convert void to a float");
+        throw new UnsupportedOperationException("Cannot convert void to a float");
     }
 
     @Override
     public double asDouble() {
-        throw new IllegalArgumentException("Cannot convert void to a double");
+        throw new UnsupportedOperationException("Cannot convert void to a double");
     }
 
     @Override
     public Boolean asObject() {
-        throw new IllegalArgumentException("Cannot convert void to an object");
+        throw new UnsupportedOperationException("Cannot convert void to an object");
     }
 
     @Override
@@ -106,6 +106,6 @@ public class VoidValue implements Value {
     }
 
     public static VoidValue defaultValue() {
-        throw new IllegalArgumentException("Void has no value");
+        throw new UnsupportedOperationException("Void has no value");
     }
 }

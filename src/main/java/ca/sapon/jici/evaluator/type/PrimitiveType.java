@@ -198,7 +198,7 @@ public class PrimitiveType implements Type {
     @Override
     public PrimitiveType binaryWiden(Type with) {
         if (!(with instanceof PrimitiveType)) {
-            throw new IllegalArgumentException("Cannot binary widen an object type");
+            throw new UnsupportedOperationException("Cannot binary widen an object type");
         }
         return of(binaryWiden(type, with.getTypeClass()));
     }
@@ -206,14 +206,14 @@ public class PrimitiveType implements Type {
     @Override
     public boolean convertibleTo(Type to) {
         if (to instanceof ClassUnionType) {
-            throw new IllegalArgumentException("Cannot convert to an object union type");
+            throw new UnsupportedOperationException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
     }
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference a primitive type");
+        throw new UnsupportedOperationException("Cannot dereference a primitive type");
     }
 
     @Override
@@ -223,12 +223,12 @@ public class PrimitiveType implements Type {
 
     @Override
     public Field getField(String name) {
-        throw new IllegalArgumentException("Cannot dereference a primitive type");
+        throw new UnsupportedOperationException("Cannot dereference a primitive type");
     }
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference a primitive type");
+        throw new UnsupportedOperationException("Cannot dereference a primitive type");
     }
 
     @Override

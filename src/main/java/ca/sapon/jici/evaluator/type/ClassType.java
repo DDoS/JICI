@@ -147,18 +147,18 @@ public class ClassType implements Type {
 
     @Override
     public PrimitiveType unaryWiden() {
-        throw new IllegalArgumentException("Cannot unary widen an object type");
+        throw new UnsupportedOperationException("Cannot unary widen an object type");
     }
 
     @Override
     public PrimitiveType binaryWiden(Type with) {
-        throw new IllegalArgumentException("Cannot binary widen an object type");
+        throw new UnsupportedOperationException("Cannot binary widen an object type");
     }
 
     @Override
     public boolean convertibleTo(Type to) {
         if (to instanceof ClassUnionType) {
-            throw new IllegalArgumentException("Cannot convert to an object union type");
+            throw new UnsupportedOperationException("Cannot convert to an object union type");
         }
         return convertibleTo(type, to.getTypeClass());
     }
@@ -209,7 +209,7 @@ public class ClassType implements Type {
     }
 
     private void failGetConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("No constructor for signature: "
+        throw new UnsupportedOperationException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
@@ -218,7 +218,7 @@ public class ClassType implements Type {
         try {
             return type.getField(name);
         } catch (NoSuchFieldException exception) {
-            throw new IllegalArgumentException("No field named " + name + " in " + getName());
+            throw new UnsupportedOperationException("No field named " + name + " in " + getName());
         }
     }
 
@@ -270,7 +270,7 @@ public class ClassType implements Type {
     }
 
     private void failGetMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("No method for signature: "
+        throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 

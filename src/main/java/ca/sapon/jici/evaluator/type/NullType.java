@@ -105,7 +105,7 @@ public class NullType implements Type {
 
     @Override
     public ClassType box() {
-        throw new IllegalArgumentException("Cannot box the null type");
+        throw new UnsupportedOperationException("Cannot box the null type");
     }
 
     @Override
@@ -115,12 +115,12 @@ public class NullType implements Type {
 
     @Override
     public PrimitiveType unaryWiden() {
-        throw new IllegalArgumentException("Cannot unary widen the null type");
+        throw new UnsupportedOperationException("Cannot unary widen the null type");
     }
 
     @Override
     public PrimitiveType binaryWiden(Type with) {
-        throw new IllegalArgumentException("Cannot binary widen the null type");
+        throw new UnsupportedOperationException("Cannot binary widen the null type");
     }
 
     @Override
@@ -130,7 +130,7 @@ public class NullType implements Type {
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new UnsupportedOperationException("Cannot dereference null");
     }
 
     @Override
@@ -140,12 +140,12 @@ public class NullType implements Type {
 
     @Override
     public Field getField(String name) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new UnsupportedOperationException("Cannot dereference null");
     }
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        throw new IllegalArgumentException("Cannot dereference null");
+        throw new UnsupportedOperationException("Cannot dereference null");
     }
 
     @Override

@@ -52,20 +52,20 @@ public class Environment {
         final String name = _class.getCanonicalName();
         // Validate the type of class
         if (_class.isPrimitive()) {
-            throw new IllegalArgumentException("Can't import a primitive type: " + name);
+            throw new UnsupportedOperationException("Can't import a primitive type: " + name);
         }
         if (_class.isArray()) {
-            throw new IllegalArgumentException("Can't import an array class: " + name);
+            throw new UnsupportedOperationException("Can't import an array class: " + name);
         }
         if (_class.isAnonymousClass()) {
-            throw new IllegalArgumentException("Can't import an anonymous class: " + name);
+            throw new UnsupportedOperationException("Can't import an anonymous class: " + name);
         }
         // Check for existing import under the same simple name
         final String simpleName = _class.getSimpleName();
         final Class<?> existing = classes.get(simpleName);
         // ignore cases where the classes are the same as redundant imports are allowed
         if (existing != null && _class != existing) {
-            throw new IllegalArgumentException("Class " + name + " clashes with existing import " + existing.getCanonicalName());
+            throw new UnsupportedOperationException("Class " + name + " clashes with existing import " + existing.getCanonicalName());
         }
         // Add the class to the imports
         classes.put(simpleName, _class);
@@ -78,7 +78,7 @@ public class Environment {
     public Class<?> getClass(Identifier name) {
         final Class<?> _class = findClass(name);
         if (_class == null) {
-            throw new IllegalArgumentException("Class " + name.getSource() + " does not exist");
+            throw new UnsupportedOperationException("Class " + name.getSource() + " does not exist");
         }
         return _class;
     }
@@ -93,7 +93,7 @@ public class Environment {
 
     public void declareVariable(Identifier name, Type type, Value value) {
         if (hasVariable(name)) {
-            throw new IllegalArgumentException("Variable " + name.getSource() + " is already declared");
+            throw new UnsupportedOperationException("Variable " + name.getSource() + " is already declared");
         }
         variables.put(name.getSource(), new Variable(name, type, value));
     }
@@ -122,7 +122,7 @@ public class Environment {
         final String nameString = name.getSource();
         final Variable variable = variables.get(nameString);
         if (variable == null) {
-            throw new IllegalArgumentException("Variable " + nameString + " does not exist");
+            throw new UnsupportedOperationException("Variable " + nameString + " does not exist");
         }
         return variable;
     }
@@ -152,7 +152,7 @@ public class Environment {
 
         public Value getValue() {
             if (!initialized()) {
-                throw new IllegalArgumentException("Variable " + name.getSource() + " has not been initialized");
+                throw new UnsupportedOperationException("Variable " + name.getSource() + " has not been initialized");
             }
             return value;
         }

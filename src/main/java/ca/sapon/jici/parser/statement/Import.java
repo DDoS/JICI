@@ -61,7 +61,7 @@ public class Import implements Statement {
             }
         } catch (EvaluatorException exception) {
             throw exception;
-        } catch (IllegalArgumentException exception) {
+        } catch (UnsupportedOperationException exception) {
             throw new EvaluatorException(exception.getMessage(), this);
         } catch (Exception exception) {
             throw new EvaluatorException(exception, this);

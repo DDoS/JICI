@@ -727,26 +727,27 @@ public final class Parser {
                 }
                 case IDENTIFIER: {
                     final List<Identifier> name = parseName(tokens);
-                    if (tokens.has()) {
-                        switch (tokens.get().getID()) {
-                            case SYMBOL_PERIOD: {
-                                tokens.advance();
-                                if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_CLASS) {
-                                    tokens.advance();
-                                    return new ClassAccess(new ClassTypeName(name));
-                                }
-                                tokens.retreat();
-                                break;
-                            }
-                            case SYMBOL_OPEN_PARENTHESIS: {
-                                tokens.advance();
-                                if (name.size() == 1) {
-                                    throw new ParseError("Local methods are not supported", name.get(0));
-                                }
-                                final List<Expression> arguments = parseArguments(tokens);
-                                return new AmbiguousCall(name, arguments);
-                            }
+                    // try for a class access
+                    tokens.pushPosition();
+                    final int dimensions = parseArrayDimensions(tokens);
+                    if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                        tokens.advance(2);
+                        TypeName type = new ClassTypeName(name);
+                        if (dimensions > 0) {
+                            type = new ArrayTypeName(type, dimensions);
                         }
+                        tokens.discardPosition();
+                        return new ClassAccess(type);
+                    }
+                    tokens.popPosition();
+                    // else this is just a regular member access
+                    if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
+                        tokens.advance();
+                        if (name.size() == 1) {
+                            throw new ParseError("Local methods are not supported", name.get(0));
+                        }
+                        final List<Expression> arguments = parseArguments(tokens);
+                        return new AmbiguousCall(name, arguments);
                     }
                     if (name.size() == 1) {
                         return new VariableAccess(name.get(0));

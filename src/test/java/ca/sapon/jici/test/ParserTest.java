@@ -63,6 +63,7 @@ public class ParserTest {
         testParseExpression("ClassAccess(test.class)", "test.class");
         testParseExpression("ClassAccess(int.class)", "int.class");
         testParseExpression("ClassAccess(void.class)", "void.class");
+        testParseExpression("ClassAccess(test[].class)", "test[].class");
 
         testParseExpression("test", "(test)");
     }

@@ -25,11 +25,11 @@ package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -37,7 +37,6 @@ public class Equal implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
-    private Type type = null;
     private ValueKind widenKind = null;
 
     public Equal(Expression left, Expression right, Symbol operator) {
@@ -48,27 +47,26 @@ public class Equal implements Expression {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final Type leftType = left.getType(environment).unbox();
-            final Type rightType = right.getType(environment).unbox();
-            if (leftType.isObject()) {
-                if (rightType.isObject()) {
-                    widenKind = ValueKind.OBJECT;
-                } else {
-                    throw new EvaluatorException("Not an object type: " + rightType.getName(), right);
-                }
-            } else if (leftType.isBoolean()) {
-                if (rightType.isBoolean()) {
-                    widenKind = ValueKind.BOOLEAN;
-                } else {
-                    throw new EvaluatorException("Not a boolean type: " + rightType.getName(), right);
-                }
-            } else {
-                widenKind = leftType.binaryWiden(rightType).getKind();
+        if (widenKind == null) {
+            Type leftType = left.getType(environment);
+            Type rightType = right.getType(environment);
+            if (leftType.isObject() && rightType.isObject()) {
+                widenKind = ValueKind.OBJECT;
+                return PrimitiveType.THE_BOOLEAN;
             }
-            type = PrimitiveType.THE_BOOLEAN;
+            leftType = leftType.unbox();
+            rightType = rightType.unbox();
+            if (leftType.isBoolean() && rightType.isBoolean()) {
+                widenKind = ValueKind.BOOLEAN;
+                return PrimitiveType.THE_BOOLEAN;
+            }
+            if (leftType.isNumeric() && rightType.isNumeric()) {
+                widenKind = leftType.binaryWiden(rightType).getKind();
+                return PrimitiveType.THE_BOOLEAN;
+            }
+            throw new EvaluatorException("Invalid types for equality operation: " + leftType.getName() + " and " + rightType.getName(), this);
         }
-        return type;
+        return PrimitiveType.THE_BOOLEAN;
     }
 
     @Override

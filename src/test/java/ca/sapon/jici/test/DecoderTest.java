@@ -28,9 +28,6 @@ import ca.sapon.jici.decoder.DecoderException;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- *
- */
 public class DecoderTest {
     @Test
     public void test() {

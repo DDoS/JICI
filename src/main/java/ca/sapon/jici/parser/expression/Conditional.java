@@ -56,7 +56,8 @@ public class Conditional implements Expression {
             }
             if (leftType.isVoid()) {
                 throw new EvaluatorException("Illegal type: void", left);
-            } else if (rightType.isVoid()) {
+            }
+            if (rightType.isVoid()) {
                 throw new EvaluatorException("Illegal type: void", right);
             }
             if (leftType.is(rightType)) {

@@ -23,12 +23,13 @@
  */
 package ca.sapon.jici.util;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 public class ListNavigator<E> {
     private final List<E> list;
-    private final Stack<Integer> positions = new Stack<>();
+    private final Deque<Integer> positions = new ArrayDeque<>();
     private int topPosition = 0;
 
     public ListNavigator(List<E> list) {

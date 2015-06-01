@@ -25,10 +25,10 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
@@ -47,7 +47,11 @@ public class FloatLiteral extends NumberLiteral {
             if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'f')) {
                 source = source.substring(0, lastIndex);
             }
-            value = Float.parseFloat(source);
+            try {
+                value = Float.parseFloat(source);
+            } catch (NumberFormatException exception) {
+                throw new EvaluatorException(exception, this);
+            }
             evaluated = true;
         }
     }

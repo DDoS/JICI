@@ -47,7 +47,11 @@ public class DoubleLiteral extends NumberLiteral {
             if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'd')) {
                 source = source.substring(0, lastIndex);
             }
-            value = Double.parseDouble(source);
+            try {
+                value = Double.parseDouble(source);
+            } catch (NumberFormatException exception) {
+                throw new EvaluatorException(exception, this);
+            }
             evaluated = true;
         }
     }

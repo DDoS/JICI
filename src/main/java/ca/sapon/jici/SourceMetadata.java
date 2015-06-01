@@ -36,7 +36,7 @@ public class SourceMetadata {
         }
 
         @Override
-        public String generateErrorMessage(SourceException exception) {
+        public ErrorInformation generateErrorInformation(SourceException exception) {
             throw new UnsupportedOperationException("No metadata is available to generate a message");
         }
     };
@@ -56,7 +56,7 @@ public class SourceMetadata {
         decodedMap[decodedIndex] = sourceIndex;
     }
 
-    public String generateErrorMessage(SourceException exception) {
+    public ErrorInformation generateErrorInformation(SourceException exception) {
         int start = exception.getStart();
         int end = exception.getEnd();
         if (exception instanceof LexerException || exception instanceof ParserException) {
@@ -72,10 +72,11 @@ public class SourceMetadata {
                 end = length;
             }
         }
-        return generateErrorMessage(exception.getError(), exception.getOffender(), start, end);
+        return generateErrorInformation(exception.getError(), exception.getOffender(), start, end);
     }
 
-    protected String generateErrorMessage(String error, String offender, int start, int end) {
+    @SuppressWarnings("StatementWithEmptyBody")
+    private ErrorInformation generateErrorInformation(String error, String offender, int start, int end) {
         final int length = source.length();
         // find the line number the error occurred on
         final int lineNumber = findLine(source, Math.min(start, length - 1));
@@ -90,27 +91,7 @@ public class SourceMetadata {
         final String line = source.substring(lineStart, Math.min(lineEnd + 1, source.length()));
         start -= lineStart;
         end -= lineStart;
-        // build the error message with source and cursor lines
-        final StringBuilder builder = new StringBuilder().append('"').append(error).append('"');
-        if (offender != null) {
-            builder.append(" caused by ").append(offender);
-        }
-        builder.append(" at line: ").append(lineNumber).append(" index: ").append(start);
-        if (start != end) {
-            builder.append(" to ").append(end);
-        }
-        builder.append(" in \n").append(line).append('\n');
-        for (int i = 0; i < start; i++) {
-            builder.append(' ');
-        }
-        if (start == end) {
-            builder.append('^');
-        } else {
-            for (int i = start; i <= end; i++) {
-                builder.append('~');
-            }
-        }
-        return builder.toString();
+        return new ErrorInformation(error, offender, line, lineNumber, start, end);
     }
 
     private static int findLine(String source, int index) {
@@ -142,5 +123,76 @@ public class SourceMetadata {
 
     private static boolean isLineTerminator(char c) {
         return c == '\n' || c == '\r';
+    }
+
+    public static class ErrorInformation {
+        private final String message;
+        private final String offender;
+        private final String line;
+        private final int lineNumber;
+        private final int startIndex;
+        private final int endIndex;
+        private String asString = null;
+
+        private ErrorInformation(String message, String offender, String line, int lineNumber, int startIndex, int endIndex) {
+            this.message = message;
+            this.offender = offender;
+            this.line = line;
+            this.lineNumber = lineNumber;
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getOffender() {
+            return offender;
+        }
+
+        public String getLine() {
+            return line;
+        }
+
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
+        public int getStartIndex() {
+            return startIndex;
+        }
+
+        public int getEndIndex() {
+            return endIndex;
+        }
+
+        @Override
+        public String toString() {
+            if (asString == null) {
+                final StringBuilder builder = new StringBuilder();
+                builder.append('"').append(message).append('"');
+                if (offender != null) {
+                    builder.append(" caused by ").append(offender);
+                }
+                builder.append(" at line: ").append(lineNumber).append(" index: ").append(startIndex);
+                if (startIndex != endIndex) {
+                    builder.append(" to ").append(endIndex);
+                }
+                builder.append(" in \n").append(line).append('\n');
+                for (int i = 0; i < startIndex; i++) {
+                    builder.append(' ');
+                }
+                if (startIndex == endIndex) {
+                    builder.append('^');
+                } else {
+                    for (int i = startIndex; i <= endIndex; i++) {
+                        builder.append('~');
+                    }
+                }
+                asString = builder.toString();
+            }
+            return asString;
+        }
     }
 }

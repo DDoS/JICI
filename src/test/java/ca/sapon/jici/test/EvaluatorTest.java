@@ -648,7 +648,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asBoolean());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -663,7 +663,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asByte());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -678,7 +678,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asShort());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -693,7 +693,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asChar());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -708,7 +708,7 @@ public class EvaluatorTest {
             Assert.assertArrayEquals(expected, (char[]) expression.getValue(environment).asObject());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -723,7 +723,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asInt());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -738,7 +738,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asLong());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -753,7 +753,7 @@ public class EvaluatorTest {
             Assert.assertArrayEquals(expected, (int[]) expression.getValue(environment).asObject());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -768,7 +768,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asFloat(), 0);
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -783,7 +783,7 @@ public class EvaluatorTest {
             Assert.assertArrayEquals(expected, (float[]) expression.getValue(environment).asObject(), 0);
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -798,7 +798,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asDouble(), 0);
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -817,7 +817,7 @@ public class EvaluatorTest {
             Assert.assertEquals(expected, expression.getValue(environment).asObject());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -836,7 +836,7 @@ public class EvaluatorTest {
             Assert.assertArrayEquals(expected, (Object[]) expression.getValue(environment).asObject());
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -860,7 +860,7 @@ public class EvaluatorTest {
             }
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }
@@ -897,7 +897,7 @@ public class EvaluatorTest {
             return Parser.parseExpression(tokens);
         } catch (Exception exception) {
             if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorMessage((SourceException) exception));
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
             throw exception;
         }

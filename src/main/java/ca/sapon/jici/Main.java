@@ -66,7 +66,7 @@ public class Main {
                 System.out.println("Value: " + value.asString());
             }
         } catch (SourceException exception) {
-            System.out.println(metadata.generateErrorMessage(exception));
+            System.out.println(metadata.generateErrorInformation(exception));
         } catch (Exception exception) {
             exception.printStackTrace();
         }

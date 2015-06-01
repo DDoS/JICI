@@ -717,12 +717,19 @@ public final class Parser {
                     return (Literal) token;
                 }
                 case PRIMITIVE_TYPE: {
+                    tokens.pushPosition();
                     tokens.advance();
+                    final int dimensions = parseArrayDimensions(tokens);
                     if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
                         tokens.advance(2);
-                        return new ClassAccess(new PrimitiveTypeName((Keyword) token));
+                        TypeName type = new PrimitiveTypeName((Keyword) token);
+                        if (dimensions > 0) {
+                            type = new ArrayTypeName(type, dimensions);
+                        }
+                        tokens.discardPosition();
+                        return new ClassAccess(type);
                     }
-                    tokens.retreat();
+                    tokens.popPosition();
                     break;
                 }
                 case IDENTIFIER: {
@@ -782,7 +789,7 @@ public final class Parser {
                 }
             }
         }
-        throw new ParseError("Expected a literal, an identifier, \"new\" or '('", tokens);
+        throw new ParseError("Expected either a literal, a type class access, an identifier, \"new\" or '('", tokens);
     }
 
     private static List<Expression> parseArguments(ListNavigator<Token> tokens) {

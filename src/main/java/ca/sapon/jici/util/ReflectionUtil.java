@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -160,16 +161,12 @@ public final class ReflectionUtil {
         if (candidates.isEmpty()) {
             return null;
         }
-        // particular case for varargs where the expansion can lead to many candidates with no arguments. This case cannot be resolved
-        if (arguments.length == 0 && candidates.size() > 1) {
-            return null;
-        }
         // remove methods with un-applicable parameters
         candidates:
         for (Iterator<Entry<C, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<C, Class<?>[]> entry = iterator.next();
             final Class<?>[] parameters = entry.getValue();
-            boolean allEqual = true;
+            boolean allEqual = parameters.length != 0;
             for (int i = 0; i < parameters.length; i++) {
                 final Type argument = arguments[i];
                 final Type parameter = wrap(parameters[i]);
@@ -192,6 +189,7 @@ public final class ReflectionUtil {
         for (final Entry<C, Class<?>[]> entry : candidates.entrySet()) {
             final Class<?>[] parameters = entry.getValue();
             for (Class<?>[] challenges : candidates.values()) {
+                // don't compare with itself
                 if (challenges == parameters) {
                     continue;
                 }
@@ -207,7 +205,7 @@ public final class ReflectionUtil {
             callable = entry.getKey();
         }
         // we need exactly one match
-        return candidateCount != 1 || callable == null ? null : callable;
+        return candidateCount != 1 ? null : callable;
     }
 
     private static boolean isNarrowerParameter(Class<?> parameterA, Class<?> parameterB, boolean primitiveArgument) {
@@ -225,6 +223,50 @@ public final class ReflectionUtil {
             return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : primitiveArgument;
         }
         return parameterB.isPrimitive() ? !primitiveArgument : ClassType.convertibleTo(parameterA, parameterB);
+    }
+
+    public static void fixReturnTypeConflicts(Map<Method, Class<?>[]> candidates) {
+        // check if some methods have the same parameters
+        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Method, Class<?>[]> candidate = iterator.next();
+            final Method method = candidate.getKey();
+            Method conflict = null;
+            for (Entry<Method, Class<?>[]> challenge : candidates.entrySet()) {
+                // don't compare with itself
+                if (challenge.getKey() == method) {
+                    continue;
+                }
+                if (Arrays.equals(candidate.getValue(), challenge.getValue())) {
+                    conflict = challenge.getKey();
+                    break;
+                }
+            }
+            // only keep the one with the narrowest return type
+            if (conflict != null && isNarrowerReturnType(conflict.getReturnType(), method.getReturnType())) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static boolean isNarrowerReturnType(Class<?> parameterA, Class<?> parameterB) {
+        // if A is void
+        //   false
+        // else if B is void
+        //   true
+        // else if A is primitive
+        //   B !is primitive or A < B
+        // else
+        //   B !is primitive and A < B
+        if (parameterA == void.class) {
+            return false;
+        }
+        if (parameterB == void.class) {
+            return true;
+        }
+        if (parameterA.isPrimitive()) {
+            return !parameterB.isPrimitive() || PrimitiveType.convertibleTo(parameterA, parameterB);
+        }
+        return !parameterB.isPrimitive() && ClassType.convertibleTo(parameterA, parameterB);
     }
 
     public static Type wrap(Class<?> type) {

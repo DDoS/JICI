@@ -237,6 +237,8 @@ public class ClassType implements Type {
                 }
             }
         }
+        // generics can cause methods to only differ by the return type, so fix that
+        ReflectionUtil.fixReturnTypeConflicts(candidates);
         // try to resolve the overloads
         final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
         if (method == null) {
@@ -261,6 +263,8 @@ public class ClassType implements Type {
                 }
             }
         }
+        // generics can cause methods to only differ by the return type, so fix that
+        ReflectionUtil.fixReturnTypeConflicts(candidates);
         // try to resolve the overloads
         final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
         if (method == null) {

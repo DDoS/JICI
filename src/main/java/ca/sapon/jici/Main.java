@@ -53,6 +53,9 @@ public class Main {
         try {
             source = Decoder.decode(source, metadata);
             final List<Token> tokens = Lexer.lex(source);
+            if (tokens.size() <= 0) {
+                return;
+            }
             if (tokens.get(tokens.size() - 1).getID() == TokenID.SYMBOL_SEMICOLON) {
                 final List<Statement> statements = Parser.parse(tokens);
                 for (Statement statement : statements) {

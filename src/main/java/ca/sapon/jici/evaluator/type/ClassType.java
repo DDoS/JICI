@@ -171,9 +171,11 @@ public class ClassType implements Type {
         final int argumentCount = arguments.length;
         final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
         for (Constructor<?> candidate : constructors) {
-            final Class<?>[] parameterTypes = candidate.getParameterTypes();
-            if (parameterTypes.length == argumentCount) {
-                candidates.put(candidate, parameterTypes);
+            if (!candidate.isSynthetic()) {
+                final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                if (parameterTypes.length == argumentCount) {
+                    candidates.put(candidate, parameterTypes);
+                }
             }
         }
         // try to resolve the overloads
@@ -192,7 +194,7 @@ public class ClassType implements Type {
         final int argumentCount = arguments.length;
         final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
         for (Constructor<?> candidate : constructors) {
-            if (candidate.isVarArgs()) {
+            if (!candidate.isSynthetic() && candidate.isVarArgs()) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
                 if (parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count
@@ -215,11 +217,20 @@ public class ClassType implements Type {
 
     @Override
     public Field getField(String name) {
+        Field field = null;
         try {
-            return type.getField(name);
+            field = type.getField(name);
+            if (field.isSynthetic()) {
+                failGetField(name);
+            }
         } catch (NoSuchFieldException exception) {
-            throw new UnsupportedOperationException("No field named " + name + " in " + getName());
+            failGetField(name);
         }
+        return field;
+    }
+
+    private void failGetField(String name) {
+        throw new UnsupportedOperationException("No field named " + name + " in " + getName());
     }
 
     @Override
@@ -230,7 +241,7 @@ public class ClassType implements Type {
         final int argumentCount = arguments.length;
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
         for (Method candidate : methods) {
-            if (candidate.getName().equals(name)) {
+            if (!candidate.isSynthetic() && candidate.getName().equals(name)) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
                 if (parameterTypes.length == argumentCount) {
                     candidates.put(candidate, parameterTypes);
@@ -255,7 +266,7 @@ public class ClassType implements Type {
         final int argumentCount = arguments.length;
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
         for (Method candidate : methods) {
-            if (candidate.isVarArgs() && candidate.getName().equals(name)) {
+            if (!candidate.isSynthetic() && candidate.isVarArgs() && candidate.getName().equals(name)) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
                 if (parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count

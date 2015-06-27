@@ -226,6 +226,10 @@ public final class ReflectionUtil {
     }
 
     public static void fixReturnTypeConflicts(Map<Method, Class<?>[]> candidates) {
+        // no possible conflicts if less than 2 methods
+        if (candidates.size() <= 1) {
+            return;
+        }
         // check if some methods have the same parameters
         for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<Method, Class<?>[]> candidate = iterator.next();

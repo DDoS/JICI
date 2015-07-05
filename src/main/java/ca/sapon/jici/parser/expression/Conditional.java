@@ -100,10 +100,8 @@ public class Conditional implements Expression {
     @Override
     public Value getValue(Environment environment) {
         final Value testValue = test.getValue(environment);
-        final Value leftValue = left.getValue(environment);
-        final Value rightValue = right.getValue(environment);
         final ValueKind widenKind = type.getKind();
-        final Value resultValue = testValue.asBoolean() ? leftValue : rightValue;
+        final Value resultValue = testValue.asBoolean() ? left.getValue(environment) : right.getValue(environment);
         if (resultValue.getKind() == widenKind) {
             // prevent useless conversion
             return resultValue;

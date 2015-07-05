@@ -23,55 +23,8 @@
  */
 package ca.sapon.jici;
 
-import java.util.List;
-import java.util.Scanner;
-
-import ca.sapon.jici.decoder.Decoder;
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.lexer.Lexer;
-import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.lexer.TokenID;
-import ca.sapon.jici.parser.Parser;
-import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.statement.Statement;
-
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("JICI\n\n");
-        final Environment environment = new Environment();
-        final Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            eval(environment, scanner.nextLine());
-        }
-        scanner.close();
-    }
-
-    private static void eval(Environment environment, String source) {
-        final SourceMetadata metadata = new SourceMetadata(source);
-        try {
-            source = Decoder.decode(source, metadata);
-            final List<Token> tokens = Lexer.lex(source);
-            if (tokens.size() <= 0) {
-                return;
-            }
-            if (tokens.get(tokens.size() - 1).getID() == TokenID.SYMBOL_SEMICOLON) {
-                final List<Statement> statements = Parser.parse(tokens);
-                for (Statement statement : statements) {
-                    statement.execute(environment);
-                }
-            } else {
-                final Expression expression = Parser.parseExpression(tokens);
-                final Type type = expression.getType(environment);
-                final Value value = expression.getValue(environment);
-                System.out.println("Type: " + type.getName());
-                System.out.println("Value: " + value.asString());
-            }
-        } catch (SourceException exception) {
-            System.out.println(metadata.generateErrorInformation(exception));
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
+    public static void main(String[] args) throws InterruptedException {
+        JICI.breakInto();
     }
 }

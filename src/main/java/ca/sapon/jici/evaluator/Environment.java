@@ -34,6 +34,7 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 
 public class Environment {
+    // TODO make me thread safe
     private static final Map<String, Class<?>> DEFAULT_CLASSES = new HashMap<>();
     private final Map<String, Class<?>> classes = new LinkedHashMap<>(DEFAULT_CLASSES);
     private final Map<String, Variable> variables = new LinkedHashMap<>();
@@ -89,6 +90,10 @@ public class Environment {
 
     public boolean hasClass(Identifier name) {
         return classes.containsKey(name.getSource());
+    }
+
+    public boolean hasClass(Class<?> _class) {
+        return classes.containsValue(_class);
     }
 
     public void declareVariable(Identifier name, Type type, Value value) {

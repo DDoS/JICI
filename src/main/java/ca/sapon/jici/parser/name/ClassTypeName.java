@@ -33,8 +33,9 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
-public class ClassTypeName implements TypeName {
+public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
+    private ClassType hint = null;
     private Type type = null;
 
     public ClassTypeName(List<Identifier> name) {
@@ -44,10 +45,9 @@ public class ClassTypeName implements TypeName {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
+            // look for an imported class with possible inner classes
             Class<?> _class = environment.findClass(name.get(0));
-            if (_class == null) {
-                _class = ReflectionUtil.findClass(name);
-            } else {
+            if (_class != null) {
                 final int size = name.size();
                 for (int i = 1; i < size; i++) {
                     _class = ReflectionUtil.lookupNestedClass(_class, name.get(i).getSource());
@@ -56,12 +56,46 @@ public class ClassTypeName implements TypeName {
                     }
                 }
             }
+            // else try for a full class name
+            if (_class == null) {
+                _class = ReflectionUtil.findClass(name);
+            }
+            // else try the hint
+            if (_class == null && hintNameMatches()) {
+                _class = hint.getTypeClass();
+                try {
+                    environment.importClass(_class);
+                } catch (UnsupportedOperationException ignored) {
+                }
+            }
+            // we tried everything, fail
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
             type = ClassType.of(_class);
         }
         return type;
+    }
+
+    private boolean hintNameMatches() {
+        if (hint == null) {
+            return false;
+        }
+        Class<?> hintClass = hint.getTypeClass();
+        for (int i = name.size() - 1; i >= 0; i--) {
+            if (hintClass == null || !name.get(i).getSource().equals(hintClass.getSimpleName())) {
+                return false;
+            }
+            hintClass = hintClass.getEnclosingClass();
+        }
+        return true;
+    }
+
+    @Override
+    public void setTypeHint(Type hint) {
+        if (hint instanceof ClassType) {
+            this.hint = (ClassType) hint;
+        }
     }
 
     @Override
@@ -71,7 +105,7 @@ public class ClassTypeName implements TypeName {
 
     @Override
     public int getEnd() {
-        return  name.get(name.size() - 1).getEnd();
+        return name.get(name.size() - 1).getEnd();
     }
 
     @Override

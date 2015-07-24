@@ -38,6 +38,7 @@ import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.ArrayTypeName;
+import ca.sapon.jici.parser.name.ImportedTypeName;
 import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
@@ -56,9 +57,24 @@ public class Declaration implements Statement {
     public void execute(Environment environment) {
         try {
             if (declaredTypes == null) {
+                // get the declaration type using the widest known variable type as a hint to infer it if not actually imported
+                if (typeName instanceof ImportedTypeName) {
+                    Type widestKnownType = null;
+                    for (Variable variable : variables) {
+                        if (variable.hasKnownType()) {
+                            final Type knownType = variable.getType(environment, null);
+                            if (widestKnownType == null) {
+                                widestKnownType = knownType;
+                            } else if (widestKnownType.convertibleTo(knownType)) {
+                                widestKnownType = knownType;
+                            }
+                        }
+                    }
+                    ((ImportedTypeName) typeName).setTypeHint(widestKnownType);
+                }
                 final Type declarationType = typeName.getType(environment);
-                final Map<Variable, Type> declaredTypes = new HashMap<>();
                 // find the declared type of each variable, which can change by array dimensions
+                final Map<Variable, Type> declaredTypes = new HashMap<>();
                 for (Variable variable : variables) {
                     int dimensions = variable.getDimensions();
                     if (dimensions == 0) {
@@ -159,6 +175,10 @@ public class Declaration implements Statement {
 
         private Value getValue(Environment environment) {
             return value == null ? null : value.getValue(environment);
+        }
+
+        private boolean hasKnownType() {
+            return value != null && !(value instanceof ArrayInitializer);
         }
 
         private Type getType(Environment environment, Type declaredType) {

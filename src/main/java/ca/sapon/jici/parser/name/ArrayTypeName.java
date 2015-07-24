@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
-public class ArrayTypeName implements TypeName {
+public class ArrayTypeName implements TypeName, ImportedTypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
     private Class<?> componentType = null;
@@ -53,6 +53,25 @@ public class ArrayTypeName implements TypeName {
             type = ClassType.of(arrayType);
         }
         return type;
+    }
+
+    @Override
+    public void setTypeHint(Type hint) {
+        if (componentTypeName instanceof ImportedTypeName && hint instanceof ClassType && hint.isArray()) {
+            int dimensions = 0;
+            Class<?> componentType = hint.getTypeClass();
+            while (true) {
+                final Class<?> nextComponentType = componentType.getComponentType();
+                if (nextComponentType == null) {
+                    break;
+                }
+                componentType = nextComponentType;
+                dimensions++;
+            }
+            if (dimensions == this.dimensions) {
+                ((ImportedTypeName) componentTypeName).setTypeHint(ReflectionUtil.wrap(componentType));
+            }
+        }
     }
 
     public Class<?> getComponentType() {

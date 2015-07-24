@@ -66,8 +66,8 @@ public class Cast implements Expression {
                 if (!castType.is(objectType)) {
                     failCast(castType, objectType);
                 }
-            } else {
-                // down or up casts
+            } else if (!castType.getTypeClass().isInterface()) {
+                // down or up casts only for regular classes
                 if (objectType instanceof ClassUnionType) {
                     final Class<?> cast = castType.getTypeClass();
                     boolean oneValid = false;

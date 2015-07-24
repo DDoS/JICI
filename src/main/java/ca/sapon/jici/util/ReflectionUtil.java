@@ -152,7 +152,7 @@ public final class ReflectionUtil {
             return componentType;
         }
         final Character character = ARRAY_NAME_PRIMITIVE_ENCODING.get(componentType);
-        final String encodedName = character != null ? character.toString() : 'L' + componentType.getCanonicalName() + ';';
+        final String encodedName = character != null ? character.toString() : 'L' + componentType.getName() + ';';
         return lookupClass(StringUtil.repeat("[", dimensions) + encodedName);
     }
 

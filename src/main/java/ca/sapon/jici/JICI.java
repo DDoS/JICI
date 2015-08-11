@@ -45,10 +45,10 @@ import ca.sapon.jici.parser.statement.Statement;
  */
 public final class JICI {
     private final Thread thread;
-    private final Stoppable repl;
+    private final JICIREPL repl;
     private final Environment environment;
 
-    private JICI(Thread thread, Stoppable repl, Environment environment) {
+    private JICI(Thread thread, JICIREPL repl, Environment environment) {
         this.thread = thread;
         this.repl = repl;
         this.environment = environment;
@@ -94,11 +94,7 @@ public final class JICI {
         return new JICI(thread, repl, environment);
     }
 
-    private interface Stoppable {
-        void stop();
-    }
-
-    private static class JICIREPL implements Runnable, Stoppable {
+    private static class JICIREPL implements Runnable {
         private final Scanner input;
         private final PrintStream output;
         private final Environment environment;
@@ -110,7 +106,6 @@ public final class JICI {
             this.output = output instanceof PrintStream ? (PrintStream) output : new PrintStream(output);
         }
 
-        @Override
         public void stop() {
             this.running = false;
         }
@@ -149,12 +144,6 @@ public final class JICI {
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
-        }
-    }
-
-    private static class NullStoppable implements Stoppable {
-        @Override
-        public void stop() {
         }
     }
 }

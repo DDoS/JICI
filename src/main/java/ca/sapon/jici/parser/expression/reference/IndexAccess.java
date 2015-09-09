@@ -31,10 +31,10 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class IndexAccess implements Reference {
     private final Expression object;
@@ -63,11 +63,11 @@ public class IndexAccess implements Reference {
                 final ClassType[] componentUnionType = new ClassType[typeClasses.size()];
                 int i = 0;
                 for (Class<?> typeClass : typeClasses) {
-                    componentUnionType[i++] = ClassType.of(typeClass.getComponentType());
+                    componentUnionType[i++] = SingleClassType.of(typeClass.getComponentType());
                 }
                 type = new ClassUnionType(componentUnionType);
             } else {
-                type = ReflectionUtil.wrap(objectType.getTypeClass().getComponentType());
+                type = ((SingleClassType) objectType).getComponentType();
             }
         }
         return type;

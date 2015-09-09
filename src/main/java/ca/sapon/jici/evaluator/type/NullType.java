@@ -23,10 +23,6 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import ca.sapon.jici.evaluator.value.ValueKind;
 
 /**
@@ -36,11 +32,6 @@ public class NullType implements Type {
     public static final NullType THE_NULL = new NullType();
 
     private NullType() {
-    }
-
-    @Override
-    public Class<?> getTypeClass() {
-        return null;
     }
 
     @Override
@@ -99,58 +90,8 @@ public class NullType implements Type {
     }
 
     @Override
-    public Type unbox() {
-        return this;
-    }
-
-    @Override
-    public ClassType box() {
-        throw new UnsupportedOperationException("Cannot box the null type");
-    }
-
-    @Override
-    public boolean canNarrowFrom(int value) {
-        return false;
-    }
-
-    @Override
-    public PrimitiveType unaryWiden() {
-        throw new UnsupportedOperationException("Cannot unary widen the null type");
-    }
-
-    @Override
-    public PrimitiveType binaryWiden(Type with) {
-        throw new UnsupportedOperationException("Cannot binary widen the null type");
-    }
-
-    @Override
     public boolean convertibleTo(Type to) {
         return !to.isPrimitive();
-    }
-
-    @Override
-    public Constructor<?> getConstructor(Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference null");
-    }
-
-    @Override
-    public Constructor<?> getVarargConstructor(Type[] arguments) {
-        return getConstructor(arguments);
-    }
-
-    @Override
-    public Field getField(String name) {
-        throw new UnsupportedOperationException("Cannot dereference null");
-    }
-
-    @Override
-    public Method getMethod(String name, Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference null");
-    }
-
-    @Override
-    public Method getVarargMethod(String name, Type[] arguments) {
-        return getMethod(name, arguments);
     }
 
     @Override

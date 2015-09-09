@@ -32,6 +32,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Equal implements Expression {
     private final Expression left;
@@ -48,20 +49,20 @@ public class Equal implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (widenKind == null) {
-            Type leftType = left.getType(environment);
-            Type rightType = right.getType(environment);
+            final Type leftType = left.getType(environment);
+            final Type rightType = right.getType(environment);
             if (leftType.isObject() && rightType.isObject()) {
                 widenKind = ValueKind.OBJECT;
                 return PrimitiveType.THE_BOOLEAN;
             }
-            leftType = leftType.unbox();
-            rightType = rightType.unbox();
-            if (leftType.isBoolean() && rightType.isBoolean()) {
+            final PrimitiveType primitiveLeftType = ReflectionUtil.coerceToPrimitive(left, leftType);
+            final PrimitiveType primitiveRightType = ReflectionUtil.coerceToPrimitive(right, rightType);
+            if (primitiveLeftType.isBoolean() && primitiveRightType.isBoolean()) {
                 widenKind = ValueKind.BOOLEAN;
                 return PrimitiveType.THE_BOOLEAN;
             }
-            if (leftType.isNumeric() && rightType.isNumeric()) {
-                widenKind = leftType.binaryWiden(rightType).getKind();
+            if (primitiveLeftType.isNumeric() && primitiveRightType.isNumeric()) {
+                widenKind = primitiveLeftType.binaryWiden(primitiveRightType).getKind();
                 return PrimitiveType.THE_BOOLEAN;
             }
             throw new EvaluatorException("Invalid types for equality operation: " + leftType.getName() + " and " + rightType.getName(), this);

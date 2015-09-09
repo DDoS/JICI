@@ -30,18 +30,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 /**
  *
  */
-public class ClassUnionType extends ClassType {
+public class ClassUnionType implements ClassType {
     private final ClassType[] types;
-    private final Set<ClassType> lowestUpperBound;
+    private final Set<SingleClassType> lowestUpperBound;
 
     public ClassUnionType(ClassType... types) {
-        super(Object.class);
         if (types.length <= 1) {
             throw new UnsupportedOperationException("Expected more than one type");
         }
@@ -53,7 +53,7 @@ public class ClassUnionType extends ClassType {
                 classes.addAll(((ClassUnionType) type).getTypeClasses());
                 allEqual = false;
             } else {
-                final Class<?> _class = type.getTypeClass();
+                final Class<?> _class = ((SingleClassType) type).getTypeClass();
                 classes.add(_class);
                 if (previous == null) {
                     previous = _class;
@@ -69,7 +69,7 @@ public class ClassUnionType extends ClassType {
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            final ClassType type = new ClassType(bound);
+            final SingleClassType type = SingleClassType.of(bound);
             lowestUpperBound.add(type);
         }
     }
@@ -80,24 +80,24 @@ public class ClassUnionType extends ClassType {
             if (type instanceof ClassUnionType) {
                 classes.addAll(((ClassUnionType) type).getTypeClasses());
             } else {
-                classes.add(type.getTypeClass());
+                classes.add(((SingleClassType) type).getTypeClass());
             }
         }
         return classes;
     }
 
-    public Set<ClassType> getLowestUpperBound() {
+    public Set<SingleClassType> getLowestUpperBound() {
         return lowestUpperBound;
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        throw new UnsupportedOperationException("No type class for object type union");
+    public String getName() {
+        return StringUtil.toString(lowestUpperBound, " | ");
     }
 
     @Override
-    public String getName() {
-        return StringUtil.toString(lowestUpperBound, ", ");
+    public ValueKind getKind() {
+        return ValueKind.OBJECT;
     }
 
     @Override
@@ -106,8 +106,38 @@ public class ClassUnionType extends ClassType {
     }
 
     @Override
+    public boolean isVoid() {
+        return false;
+    }
+
+    @Override
+    public boolean isNull() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
+    public boolean isNumeric() {
+        return false;
+    }
+
+    @Override
+    public boolean isIntegral() {
+        return false;
+    }
+
+    @Override
+    public boolean isBoolean() {
+        return false;
+    }
+
+    @Override
     public boolean isArray() {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             if (bound.isArray()) {
                 return true;
             }
@@ -116,13 +146,13 @@ public class ClassUnionType extends ClassType {
     }
 
     @Override
-    public Type unbox() {
-        return this;
+    public boolean isObject() {
+        return true;
     }
 
     @Override
     public boolean convertibleTo(Type to) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             if (bound.convertibleTo(to)) {
                 return true;
             }
@@ -132,7 +162,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Constructor<?> getConstructor(Type[] arguments) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -143,7 +173,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Constructor<?> getVarargConstructor(Type[] arguments) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -159,7 +189,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Field getField(String name) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);
             } catch (UnsupportedOperationException ignored) {
@@ -170,7 +200,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Method getMethod(String name, Type[] arguments) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -181,7 +211,7 @@ public class ClassUnionType extends ClassType {
 
     @Override
     public Method getVarargMethod(String name, Type[] arguments) {
-        for (ClassType bound : lowestUpperBound) {
+        for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getVarargMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {

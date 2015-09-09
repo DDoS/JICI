@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -96,14 +96,14 @@ public class Environment {
         return classes.containsValue(_class);
     }
 
-    public void declareVariable(Identifier name, Type type, Value value) {
+    public void declareVariable(Identifier name, ConcreteType type, Value value) {
         if (hasVariable(name)) {
             throw new UnsupportedOperationException("Variable " + name.getSource() + " is already declared");
         }
         variables.put(name.getSource(), new Variable(name, type, value));
     }
 
-    public Type getVariableType(Identifier name) {
+    public ConcreteType getVariableType(Identifier name) {
         return findVariable(name).getType();
     }
 
@@ -134,10 +134,10 @@ public class Environment {
 
     public static class Variable {
         private final Identifier name;
-        private final Type type;
+        private final ConcreteType type;
         private Value value;
 
-        private Variable(Identifier name, Type type, Value value) {
+        private Variable(Identifier name, ConcreteType type, Value value) {
             this.name = name;
             this.type = type;
             this.value = value;
@@ -147,7 +147,7 @@ public class Environment {
             return name;
         }
 
-        public Type getType() {
+        public ConcreteType getType() {
             return type;
         }
 

@@ -30,17 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ClassUnionType;
+import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.evaluator.value.BooleanValue;
@@ -56,6 +55,8 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class EvaluatorTest {
     @Test
@@ -101,13 +102,13 @@ public class EvaluatorTest {
         assertReturns(-5, "+-i", environment);
         assertReturns(-5, "-+i", environment);
 
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         assertReturns(-5, "-io", environment);
 
         environment.declareVariable(Identifier.from("b", 0), PrimitiveType.THE_BOOLEAN, BooleanValue.of(true));
         assertFails("+b", environment);
 
-        environment.declareVariable(Identifier.from("s", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertFails("+s", environment);
     }
 
@@ -132,14 +133,14 @@ public class EvaluatorTest {
         environment.declareVariable(Identifier.from("s", 0), PrimitiveType.THE_SHORT, ShortValue.of((short) 0));
         assertReturns((short) 5, "s = 5", environment);
 
-        environment.declareVariable(Identifier.from("st", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("st", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertReturns("t5", "st += 5", environment);
         assertReturns("t55.0", "st += 5d", environment);
         assertReturns("t55.0true", "st += true", environment);
         assertReturns("t55.0true,", "st += \",\"", environment);
         assertReturns("t55.0true,null", "st += null", environment);
 
-        environment.declareVariable(Identifier.from("cs", 0), ClassType.of(CharSequence.class), ObjectValue.of(null));
+        environment.declareVariable(Identifier.from("cs", 0), SingleClassType.of(CharSequence.class), ObjectValue.of(null));
         assertReturns("test", "cs = \"test\"", environment, CharSequence.class);
         assertReturns(null, "cs = null", environment, CharSequence.class);
         assertFails("cs = new Object()", environment);
@@ -154,14 +155,14 @@ public class EvaluatorTest {
         assertReturns(6, "i--", environment);
         assertReturns(5, "i", environment);
 
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         assertReturns(5, "io++", environment);
         assertReturns((Object) 6, "io", environment);
 
         environment.declareVariable(Identifier.from("b", 0), PrimitiveType.THE_BOOLEAN, BooleanValue.of(true));
         assertFails("b++", environment);
 
-        environment.declareVariable(Identifier.from("s", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertFails("s++", environment);
     }
 
@@ -174,14 +175,14 @@ public class EvaluatorTest {
         assertReturns(5, "--i", environment);
         assertReturns(5, "i", environment);
 
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         assertReturns(6, "++io", environment);
         assertReturns((Object) 6, "io", environment);
 
         environment.declareVariable(Identifier.from("b", 0), PrimitiveType.THE_BOOLEAN, BooleanValue.of(true));
         assertFails("++b", environment);
 
-        environment.declareVariable(Identifier.from("s", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertFails("++s", environment);
     }
 
@@ -195,7 +196,7 @@ public class EvaluatorTest {
     @Test
     public void testConstructorCall() {
         final Environment environment = new Environment();
-        environment.declareVariable(Identifier.from("chars", 0), ClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
+        environment.declareVariable(Identifier.from("chars", 0), SingleClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         assertReturns("", "new String()", environment);
         assertReturns("test", "new String(\"test\")", environment);
         assertReturns("bc", "new String(chars, 1, 2)", environment);
@@ -221,12 +222,12 @@ public class EvaluatorTest {
         assertReturns(2, "Integer.bitCount(3)", environment);
         assertFails("Float.intBitsToFloat(0f)", environment);
 
-        environment.declareVariable(Identifier.from("v", 0), ClassType.of(Varargs.class), ObjectValue.of(new Varargs()));
+        environment.declareVariable(Identifier.from("v", 0), SingleClassType.of(Varargs.class), ObjectValue.of(new Varargs()));
         assertSucceeds("v.varargs(\"1\", \"2\")", environment);
         assertSucceeds("v.varargs(1, 2)", environment);
         assertFails("v.varargs()", environment);
 
-        environment.declareVariable(Identifier.from("chars", 0), ClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
+        environment.declareVariable(Identifier.from("chars", 0), SingleClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         assertReturns(new char[]{'a', 'b', 'c', 'd'}, "chars.clone()", environment);
     }
 
@@ -274,11 +275,11 @@ public class EvaluatorTest {
         assertFails("3 <= true", environment);
         assertFails("true <= null", environment);
 
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         assertReturns(false, "io <= 3", environment);
         assertFails("io <= true", environment);
 
-        environment.declareVariable(Identifier.from("s", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertFails("s <= 3", environment);
     }
 
@@ -293,12 +294,12 @@ public class EvaluatorTest {
 
         assertReturns(true, "null == null", environment);
 
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         assertReturns(true, "io == io", environment);
         assertReturns(false, "io == null", environment);
         assertReturns(true, "io == 5", environment);
 
-        environment.declareVariable(Identifier.from("s", 0), ClassType.THE_STRING, ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.THE_STRING, ObjectValue.of("t"));
         assertReturns(true, "s == s", environment);
         assertReturns(false, "s == null", environment);
         assertReturns(false, "s == \"e\"", environment);
@@ -314,10 +315,10 @@ public class EvaluatorTest {
     public void testTypeCheck() {
         final Environment environment = new Environment();
         environment.declareVariable(Identifier.from("i", 0), PrimitiveType.THE_INT, IntValue.of(5));
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         environment.declareVariable(Identifier.from("v", 0), VoidType.THE_VOID, VoidValue.THE_VOID);
-        environment.declareVariable(Identifier.from("c", 0), ClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
-        environment.declareVariable(Identifier.from("f", 0), ClassType.of(Float[].class), ObjectValue.of(new Float[]{1f, 2f, 3f, 4f}));
+        environment.declareVariable(Identifier.from("c", 0), SingleClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
+        environment.declareVariable(Identifier.from("f", 0), SingleClassType.of(Float[].class), ObjectValue.of(new Float[]{1f, 2f, 3f, 4f}));
         assertReturns(true, "io instanceof Integer", environment);
         assertReturns(true, "io instanceof Number", environment);
         assertReturns(true, "io instanceof Comparable", environment);
@@ -392,7 +393,7 @@ public class EvaluatorTest {
         final Environment environment = new Environment();
         environment.importClass(Fields.class);
         final Fields f = new Fields();
-        environment.declareVariable(Identifier.from("f", 0), ClassType.of(Fields.class), ObjectValue.of(f));
+        environment.declareVariable(Identifier.from("f", 0), SingleClassType.of(Fields.class), ObjectValue.of(f));
 
         assertReturns(Integer.TYPE, "java.lang.Integer.TYPE", environment);
         assertReturns(-2, "f.nested.instance", environment);
@@ -404,7 +405,7 @@ public class EvaluatorTest {
         final Environment environment = new Environment();
         environment.importClass(Fields.class);
         final Fields f = new Fields();
-        environment.declareVariable(Identifier.from("f", 0), ClassType.of(Fields.class), ObjectValue.of(f));
+        environment.declareVariable(Identifier.from("f", 0), SingleClassType.of(Fields.class), ObjectValue.of(f));
         assertReturns(-1, "Fields._static", environment);
         assertReturns(-2, "f.instance", environment);
         assertReturns(-1, "f._static", environment);
@@ -421,7 +422,7 @@ public class EvaluatorTest {
         assertFails("Fields.staticReadonly = 2", environment);
         assertFails("f.instanceReadonly = 2", environment);
 
-        environment.declareVariable(Identifier.from("c", 0), ClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
+        environment.declareVariable(Identifier.from("c", 0), SingleClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         assertReturns(4, "c.length", environment);
         assertFails("c.length = 5", environment);
     }
@@ -443,8 +444,8 @@ public class EvaluatorTest {
     @Test
     public void testIndexAccess() {
         final Environment environment = new Environment();
-        environment.declareVariable(Identifier.from("c", 0), ClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
-        environment.declareVariable(Identifier.from("cc", 0), ClassType.of(char[][].class), ObjectValue.of(new char[][]{{'a'}, {'b'}, {'c'}, {'d'}}));
+        environment.declareVariable(Identifier.from("c", 0), SingleClassType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
+        environment.declareVariable(Identifier.from("cc", 0), SingleClassType.of(char[][].class), ObjectValue.of(new char[][]{{'a'}, {'b'}, {'c'}, {'d'}}));
         assertReturns('a', "c[0]", environment);
         assertReturns('b', "c[1]", environment);
         assertReturns('c', "c[2]", environment);
@@ -499,7 +500,7 @@ public class EvaluatorTest {
     public void testCast() {
         final Environment environment = new Environment();
         environment.declareVariable(Identifier.from("i", 0), PrimitiveType.THE_INT, IntValue.of(5));
-        environment.declareVariable(Identifier.from("io", 0), ClassType.of(Integer.class), ObjectValue.of(5));
+        environment.declareVariable(Identifier.from("io", 0), SingleClassType.of(Integer.class), ObjectValue.of(5));
         environment.declareVariable(Identifier.from("d", 0), PrimitiveType.THE_DOUBLE, DoubleValue.of(6));
         environment.declareVariable(Identifier.from("b", 0), PrimitiveType.THE_BOOLEAN, BooleanValue.of(true));
 
@@ -516,7 +517,7 @@ public class EvaluatorTest {
         assertFails("(Number) b", environment);
 
         environment.importClass(Serializable.class);
-        environment.declareVariable(Identifier.from("s", 0), ClassType.of(CharSequence.class), ObjectValue.of("t"));
+        environment.declareVariable(Identifier.from("s", 0), SingleClassType.of(CharSequence.class), ObjectValue.of("t"));
         assertReturns("t", "(Object) s", environment, Object.class);
         assertReturns("t", "(String) s", environment);
         assertReturns(null, "(String) null", environment, String.class);
@@ -528,7 +529,7 @@ public class EvaluatorTest {
         assertFails("(Number) (true ? \"1\" : new StringBuilder(\"2\"))", environment);
 
         final char[][] cc = {{'a'}, {'b'}, {'c'}, {'d'}};
-        environment.declareVariable(Identifier.from("cc", 0), ClassType.of(char[][].class), ObjectValue.of(cc));
+        environment.declareVariable(Identifier.from("cc", 0), SingleClassType.of(char[][].class), ObjectValue.of(cc));
         assertReturns(cc, "(Object) cc", environment, Object.class);
         assertReturns(cc, "(Serializable) cc", environment, Serializable.class);
         assertReturns(cc, "(Cloneable) cc", environment, Cloneable.class);
@@ -878,15 +879,16 @@ public class EvaluatorTest {
 
     private void assertTypeEquals(Type type, Class<?>... expected) {
         if (type instanceof ClassUnionType) {
-            final Set<ClassType> lowestUpperBound = ((ClassUnionType) type).getLowestUpperBound();
+            final Set<SingleClassType> lowestUpperBound = ((ClassUnionType) type).getLowestUpperBound();
             final Set<Class<?>> actualSet = new HashSet<>();
-            for (ClassType bound : lowestUpperBound) {
+            for (SingleClassType bound : lowestUpperBound) {
                 actualSet.add(bound.getTypeClass());
             }
             final Set<Class<?>> expectedSet = new HashSet<>(Arrays.asList(expected));
             Assert.assertEquals(expectedSet, actualSet);
         } else {
-            Assert.assertEquals(expected[0], type.getTypeClass());
+            final Class<?> _class = type instanceof NullType ? null : ((ConcreteType) type).getTypeClass();
+            Assert.assertEquals(expected[0], _class);
         }
     }
 

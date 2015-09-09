@@ -25,8 +25,8 @@ package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
@@ -42,7 +42,7 @@ public class PostIncrement implements Expression, Statement {
         }
     };
     protected final Reference inner;
-    protected final Expression increment;
+    protected final Arithmetic increment;
     protected final Symbol operator;
     protected Type type = null;
 
@@ -68,7 +68,7 @@ public class PostIncrement implements Expression, Statement {
     public Type getType(Environment environment) {
         if (type == null) {
             increment.getType(environment);
-            final Type innerType = inner.getType(environment).unbox();
+            final Type innerType = increment.getLeftType();
             if (!innerType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }

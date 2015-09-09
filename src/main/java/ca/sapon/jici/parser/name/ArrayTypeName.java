@@ -26,15 +26,15 @@ package ca.sapon.jici.parser.name;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.util.StringUtil;
 
 public class ArrayTypeName implements TypeName, ImportedTypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
-    private Class<?> componentType = null;
-    private Type type = null;
+    private ConcreteType componentType = null;
+    private ConcreteType type = null;
 
     public ArrayTypeName(TypeName componentTypeName, int dimensions) {
         this.componentTypeName = componentTypeName;
@@ -42,24 +42,24 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
     }
 
     @Override
-    public Type getType(Environment environment) {
+    public ConcreteType getType(Environment environment) {
         if (type == null) {
-            final Class<?> componentType = componentTypeName.getType(environment).getTypeClass();
-            final Class<?> arrayType = ReflectionUtil.asArrayType(componentType, dimensions);
+            final ConcreteType componentType = componentTypeName.getType(environment);
+            final SingleClassType arrayType = componentType.asArray(dimensions);
             if (arrayType == null) {
-                throw new EvaluatorException("Class not found: array of " + componentType.getCanonicalName() + " with dimensions " + dimensions, this);
+                throw new EvaluatorException("Class not found: array of " + componentType.getName() + " with dimensions " + dimensions, this);
             }
             this.componentType = componentType;
-            type = ClassType.of(arrayType);
+            type = arrayType;
         }
         return type;
     }
 
     @Override
-    public void setTypeHint(Type hint) {
-        if (componentTypeName instanceof ImportedTypeName && hint instanceof ClassType && hint.isArray()) {
+    public void setTypeHint(ClassType hint) {
+        if (componentTypeName instanceof ImportedTypeName && hint instanceof SingleClassType && hint.isArray()) {
             int dimensions = 0;
-            Class<?> componentType = hint.getTypeClass();
+            Class<?> componentType = ((SingleClassType) hint).getTypeClass();
             while (true) {
                 final Class<?> nextComponentType = componentType.getComponentType();
                 if (nextComponentType == null) {
@@ -68,13 +68,13 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
                 componentType = nextComponentType;
                 dimensions++;
             }
-            if (dimensions == this.dimensions) {
-                ((ImportedTypeName) componentTypeName).setTypeHint(ReflectionUtil.wrap(componentType));
+            if (dimensions == this.dimensions && !componentType.isPrimitive()) {
+                ((ImportedTypeName) componentTypeName).setTypeHint(SingleClassType.of(componentType));
             }
         }
     }
 
-    public Class<?> getComponentType() {
+    public ConcreteType getComponentType() {
         return componentType;
     }
 

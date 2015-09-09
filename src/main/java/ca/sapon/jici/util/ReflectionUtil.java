@@ -45,11 +45,14 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.NullType;
+import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
+import ca.sapon.jici.parser.expression.Expression;
 
 /**
  *
@@ -222,7 +225,7 @@ public final class ReflectionUtil {
         if (parameterA.isPrimitive()) {
             return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : primitiveArgument;
         }
-        return parameterB.isPrimitive() ? !primitiveArgument : ClassType.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !primitiveArgument : SingleClassType.convertibleTo(parameterA, parameterB);
     }
 
     public static void fixReturnTypeConflicts(Map<Method, Class<?>[]> candidates) {
@@ -270,12 +273,12 @@ public final class ReflectionUtil {
         if (parameterA.isPrimitive()) {
             return !parameterB.isPrimitive() || PrimitiveType.convertibleTo(parameterA, parameterB);
         }
-        return !parameterB.isPrimitive() && ClassType.convertibleTo(parameterA, parameterB);
+        return !parameterB.isPrimitive() && SingleClassType.convertibleTo(parameterA, parameterB);
     }
 
-    public static Type wrap(Class<?> type) {
+    public static ConcreteType wrap(Class<?> type) {
         if (type == null) {
-            return NullType.THE_NULL;
+            throw new NullPointerException("type");
         }
         if (type == void.class) {
             return VoidType.THE_VOID;
@@ -283,7 +286,7 @@ public final class ReflectionUtil {
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
         }
-        return ClassType.of(type);
+        return SingleClassType.of(type);
     }
 
     // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla
@@ -370,6 +373,22 @@ public final class ReflectionUtil {
                 to.add(asArrayType(_interface, dimensions));
             }
         }
+    }
+
+    public static PrimitiveType coerceToPrimitive(Environment environment, Expression expression) {
+        return coerceToPrimitive(expression, expression.getType(environment));
+    }
+
+    public static PrimitiveType coerceToPrimitive(Expression expression, Type type) {
+        final PrimitiveType primitiveType;
+        if (type instanceof PrimitiveType) {
+            primitiveType = (PrimitiveType) type;
+        } else if (type instanceof SingleClassType && ((SingleClassType) type).isBox()) {
+            primitiveType = ((SingleClassType) type).unbox();
+        } else {
+            throw new EvaluatorException("Not a primitive type: " + type.getName(), expression);
+        }
+        return primitiveType;
     }
 
     public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {

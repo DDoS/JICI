@@ -25,13 +25,14 @@ package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Comparison implements Expression {
     private final Expression left;
@@ -49,16 +50,16 @@ public class Comparison implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type leftType = left.getType(environment).unbox();
-            final Type rightType = right.getType(environment).unbox();
+            final PrimitiveType leftType = ReflectionUtil.coerceToPrimitive(environment, left);
+            final PrimitiveType rightType = ReflectionUtil.coerceToPrimitive(environment, right);
             if (!leftType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
             }
             if (!rightType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
             }
-            type = PrimitiveType.THE_BOOLEAN;
             widenType = leftType.binaryWiden(rightType);
+            type = PrimitiveType.THE_BOOLEAN;
         }
         return type;
     }

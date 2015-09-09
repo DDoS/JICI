@@ -25,8 +25,8 @@ package ca.sapon.jici.parser.expression.assignment;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.Expression;
@@ -35,6 +35,7 @@ import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Assignment implements Expression, Statement {
     private final Reference assignee;
@@ -86,16 +87,16 @@ public class Assignment implements Expression, Statement {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type type = value.getType(environment);
+            final Type valueType = value.getType(environment);
             final Type assigneeType = assignee.getType(environment);
-            if ((simpleAssign || !type.isNumeric() || !assigneeType.isNumeric()) && !type.convertibleTo(assigneeType)) {
+            if ((simpleAssign || !valueType.isNumeric() || !assigneeType.isNumeric()) && !valueType.convertibleTo(assigneeType)) {
                 if (value instanceof IntLiteral) {
                     final IntLiteral intLiteral = (IntLiteral) value;
-                    if (!assigneeType.unbox().canNarrowFrom(intLiteral.asInt())) {
+                    if (!ReflectionUtil.coerceToPrimitive(assignee, assigneeType).canNarrowFrom(intLiteral.asInt())) {
                         throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + assigneeType.getName(), intLiteral);
                     }
                 } else {
-                    throw new EvaluatorException("Cannot convert " + type.getName() + " to " + assigneeType.getName(), value);
+                    throw new EvaluatorException("Cannot convert " + valueType.getName() + " to " + assigneeType.getName(), value);
                 }
             }
             this.type = assigneeType;

@@ -25,6 +25,8 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -32,6 +34,7 @@ import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Conditional implements Expression {
     private final Expression test;
@@ -48,7 +51,7 @@ public class Conditional implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type testType = test.getType(environment).unbox();
+            final Type testType = ReflectionUtil.coerceToPrimitive(environment, test);
             Type leftType = left.getType(environment);
             Type rightType = right.getType(environment);
             if (!testType.isBoolean()) {
@@ -65,34 +68,49 @@ public class Conditional implements Expression {
                 return type = leftType;
             }
             if (leftType.isNull()) {
-                // left null to right type boxed
-                return type = rightType.box();
-            }
-            if (rightType.isNull()) {
-                // right null to left type boxed
-                return type = leftType.box();
-            }
-            leftType = leftType.unbox();
-            rightType = rightType.unbox();
-            if (leftType.isObject() || rightType.isObject()) {
-                // for objects return a union
-                return type = new ClassUnionType(leftType.box(), rightType.box());
-            }
-            if (left instanceof IntLiteral && rightType.canNarrowFrom(((IntLiteral) left).asInt())) {
-                // left constant numeric that narrows to right, use right
+                // left null to right type
+                if (rightType instanceof PrimitiveType) {
+                    rightType = ((PrimitiveType) rightType).box();
+                }
                 return type = rightType;
             }
-            if (right instanceof IntLiteral && leftType.canNarrowFrom(((IntLiteral) right).asInt())) {
-                // right constant numeric that narrows to left, use left
+            if (rightType.isNull()) {
+                // right null to left type
+                if (leftType instanceof PrimitiveType) {
+                    leftType = ((PrimitiveType) leftType).box();
+                }
                 return type = leftType;
             }
-            if (leftType.is(PrimitiveType.THE_BYTE) && rightType.is(PrimitiveType.THE_SHORT)
-                    || leftType.is(PrimitiveType.THE_SHORT) && rightType.is(PrimitiveType.THE_BYTE)) {
+            if (leftType instanceof SingleClassType) {
+                leftType = ((SingleClassType) leftType).tryUnbox();
+            }
+            if (rightType instanceof SingleClassType) {
+                rightType = ((SingleClassType) rightType).tryUnbox();
+            }
+            if (leftType.isObject() || rightType.isObject()) {
+                // for objects return a union
+                return type = new ClassUnionType(
+                        leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ClassType) leftType,
+                        rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ClassType) rightType
+                );
+            }
+            final PrimitiveType leftPrimitiveType = (PrimitiveType) leftType;
+            final PrimitiveType rightPrimitiveType = (PrimitiveType) rightType;
+            if (left instanceof IntLiteral && rightPrimitiveType.canNarrowFrom(((IntLiteral) left).asInt())) {
+                // left constant numeric that narrows to right, use right
+                return type = rightPrimitiveType;
+            }
+            if (right instanceof IntLiteral && leftPrimitiveType.canNarrowFrom(((IntLiteral) right).asInt())) {
+                // right constant numeric that narrows to left, use left
+                return type = leftPrimitiveType;
+            }
+            if (leftPrimitiveType.is(PrimitiveType.THE_BYTE) && rightPrimitiveType.is(PrimitiveType.THE_SHORT)
+                    || leftPrimitiveType.is(PrimitiveType.THE_SHORT) && rightPrimitiveType.is(PrimitiveType.THE_BYTE)) {
                 // one byte and other short to short
                 return type = PrimitiveType.THE_SHORT;
             }
             // else use binary widening
-            return type = leftType.binaryWiden(rightType);
+            return type = leftPrimitiveType.binaryWiden(rightPrimitiveType);
         }
         return type;
     }

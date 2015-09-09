@@ -34,6 +34,7 @@ import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class BitwiseLogic implements Expression {
     private final Expression left;
@@ -50,8 +51,8 @@ public class BitwiseLogic implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type leftType = left.getType(environment).unbox();
-            final Type rightType = right.getType(environment).unbox();
+            final PrimitiveType leftType = ReflectionUtil.coerceToPrimitive(environment, left);
+            final PrimitiveType rightType = ReflectionUtil.coerceToPrimitive(environment, right);
             if (leftType.isBoolean()) {
                 if (rightType.isBoolean()) {
                     type = PrimitiveType.THE_BOOLEAN;

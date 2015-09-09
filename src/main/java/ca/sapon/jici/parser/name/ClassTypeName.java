@@ -28,22 +28,23 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
-    private ClassType hint = null;
-    private Type type = null;
+    private SingleClassType hint = null;
+    private SingleClassType type = null;
 
     public ClassTypeName(List<Identifier> name) {
         this.name = name;
     }
 
     @Override
-    public Type getType(Environment environment) {
+    public ConcreteType getType(Environment environment) {
         if (type == null) {
             // look for an imported class with possible inner classes
             Class<?> _class = environment.findClass(name.get(0));
@@ -72,7 +73,7 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
-            type = ClassType.of(_class);
+            type = SingleClassType.of(_class);
         }
         return type;
     }
@@ -92,9 +93,9 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
     }
 
     @Override
-    public void setTypeHint(Type hint) {
-        if (hint instanceof ClassType) {
-            this.hint = (ClassType) hint;
+    public void setTypeHint(ClassType hint) {
+        if (hint instanceof SingleClassType) {
+            this.hint = (SingleClassType) hint;
         }
     }
 

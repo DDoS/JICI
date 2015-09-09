@@ -25,15 +25,17 @@ package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Sign implements Expression {
     private final Expression inner;
@@ -48,7 +50,7 @@ public class Sign implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type innerType = inner.getType(environment).unbox();
+            final PrimitiveType innerType = ReflectionUtil.coerceToPrimitive(environment, inner);
             if (!innerType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }

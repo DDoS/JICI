@@ -23,9 +23,6 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +35,7 @@ import ca.sapon.jici.util.ReflectionUtil;
 /**
  *
  */
-public class PrimitiveType implements Type {
+public class PrimitiveType implements ConcreteType {
     public static final PrimitiveType THE_BOOLEAN;
     public static final PrimitiveType THE_BYTE;
     public static final PrimitiveType THE_SHORT;
@@ -52,7 +49,7 @@ public class PrimitiveType implements Type {
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
     private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
-    private static final Map<Class<?>, ClassType> BOXING_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, SingleClassType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
 
@@ -99,14 +96,14 @@ public class PrimitiveType implements Type {
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
-        BOXING_CONVERSIONS.put(boolean.class, ClassType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, ClassType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, ClassType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, ClassType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, ClassType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, ClassType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, ClassType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, ClassType.of(Double.class));
+        BOXING_CONVERSIONS.put(boolean.class, SingleClassType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, SingleClassType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, SingleClassType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, SingleClassType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, SingleClassType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, SingleClassType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, SingleClassType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, SingleClassType.of(Double.class));
     }
 
     private PrimitiveType(Class<?> type, ValueKind kind) {
@@ -131,7 +128,7 @@ public class PrimitiveType implements Type {
 
     @Override
     public boolean is(Type type) {
-        return type instanceof PrimitiveType && this.type == type.getTypeClass();
+        return type instanceof PrimitiveType && this.type == ((PrimitiveType) type).getTypeClass();
     }
 
     @Override
@@ -175,31 +172,24 @@ public class PrimitiveType implements Type {
     }
 
     @Override
-    public Type unbox() {
-        return this;
+    public SingleClassType asArray(int dimensions) {
+        return SingleClassType.of(ReflectionUtil.asArrayType(type, dimensions));
     }
 
-    @Override
-    public ClassType box() {
+    public SingleClassType box() {
         return box(type);
     }
 
-    @Override
     public boolean canNarrowFrom(int value) {
         final RangeChecker checker = NARROW_CHECKERS.get(type);
         return checker != null && checker.contains(value);
     }
 
-    @Override
     public PrimitiveType unaryWiden() {
         return of(unaryWiden(type));
     }
 
-    @Override
-    public PrimitiveType binaryWiden(Type with) {
-        if (!(with instanceof PrimitiveType)) {
-            throw new UnsupportedOperationException("Cannot binary widen an object type");
-        }
+    public PrimitiveType binaryWiden(PrimitiveType with) {
         return of(binaryWiden(type, with.getTypeClass()));
     }
 
@@ -208,32 +198,7 @@ public class PrimitiveType implements Type {
         if (to instanceof ClassUnionType) {
             throw new UnsupportedOperationException("Cannot convert to an object union type");
         }
-        return convertibleTo(type, to.getTypeClass());
-    }
-
-    @Override
-    public Constructor<?> getConstructor(Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference a primitive type");
-    }
-
-    @Override
-    public Constructor<?> getVarargConstructor(Type[] arguments) {
-        return getConstructor(arguments);
-    }
-
-    @Override
-    public Field getField(String name) {
-        throw new UnsupportedOperationException("Cannot dereference a primitive type");
-    }
-
-    @Override
-    public Method getMethod(String name, Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference a primitive type");
-    }
-
-    @Override
-    public Method getVarargMethod(String name, Type[] arguments) {
-        return getMethod(name, arguments);
+        return convertibleTo(type, ((ConcreteType) to).getTypeClass());
     }
 
     @Override
@@ -241,7 +206,7 @@ public class PrimitiveType implements Type {
         return getName();
     }
 
-    public static ClassType box(Class<?> type) {
+    public static SingleClassType box(Class<?> type) {
         return BOXING_CONVERSIONS.get(type);
     }
 

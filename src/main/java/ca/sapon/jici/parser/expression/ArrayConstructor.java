@@ -29,13 +29,14 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.TypeName;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 /**
@@ -46,7 +47,7 @@ public class ArrayConstructor implements Expression {
     private final ArrayInitializer initializer;
     private final List<Expression> sizes;
     private final int end;
-    private Class<?> componentType = null;
+    private ConcreteType componentType = null;
     private int sizedDimensions = 0;
     private Type type = null;
 
@@ -82,23 +83,23 @@ public class ArrayConstructor implements Expression {
                 }
                 final int dimensions = sizes.size();
                 final int unsizedDimensions = dimensions - sizedDimensions;
-                final Class<?> baseType = typeName.getType(environment).getTypeClass();
-                final Class<?> componentType;
+                final ConcreteType baseType = typeName.getType(environment);
+                final ConcreteType componentType;
                 if (unsizedDimensions != 0) {
-                    componentType = ReflectionUtil.asArrayType(baseType, unsizedDimensions);
+                    componentType = baseType.asArray(unsizedDimensions);
                     if (componentType == null) {
-                        throw new EvaluatorException("Class not found: array of " + baseType.getCanonicalName() + " with dimensions " + unsizedDimensions, this);
+                        throw new EvaluatorException("Class not found: array of " + baseType.getName() + " with dimensions " + unsizedDimensions, this);
                     }
                 } else {
                     componentType = baseType;
                 }
-                final Class<?> arrayType = ReflectionUtil.asArrayType(baseType, dimensions);
+                final ClassType arrayType = baseType.asArray(dimensions);
                 if (arrayType == null) {
-                    throw new EvaluatorException("Class not found: array of " + componentType.getCanonicalName() + " with dimensions " + sizedDimensions, this);
+                    throw new EvaluatorException("Class not found: array of " + componentType.getName() + " with dimensions " + sizedDimensions, this);
                 }
                 this.componentType = componentType;
                 this.sizedDimensions = sizedDimensions;
-                type = ClassType.of(arrayType);
+                type = arrayType;
             } else {
                 final Type arrayType = typeName.getType(environment);
                 initializer.setType(environment, arrayType);
@@ -115,7 +116,7 @@ public class ArrayConstructor implements Expression {
             for (int i = 0; i < sizedDimensions; i++) {
                 dimensionSizes[i] = sizes.get(i).getValue(environment).asInt();
             }
-            return ObjectValue.of(Array.newInstance(componentType, dimensionSizes));
+            return ObjectValue.of(Array.newInstance(componentType.getTypeClass(), dimensionSizes));
         }
         return initializer.getValue(environment);
     }
@@ -152,7 +153,7 @@ public class ArrayConstructor implements Expression {
         private final int start;
         private final int end;
         private Type type = null;
-        private Class<?> componentType = null;
+        private ConcreteType componentType = null;
 
         public ArrayInitializer(List<Expression> elements, int start, int end) {
             this.elements = elements;
@@ -165,7 +166,7 @@ public class ArrayConstructor implements Expression {
                 if (!type.isArray()) {
                     throw new EvaluatorException("Cannot convert array type to " + type.getName(), this);
                 }
-                final Type componentType = ClassType.of(type.getTypeClass().getComponentType());
+                final ConcreteType componentType = ((SingleClassType) type).getComponentType();
                 for (final Expression element : elements) {
                     if (element instanceof ArrayInitializer) {
                         ((ArrayInitializer) element).setType(environment, componentType);
@@ -176,7 +177,7 @@ public class ArrayConstructor implements Expression {
                         }
                     }
                 }
-                this.componentType = componentType.getTypeClass();
+                this.componentType = componentType;
                 this.type = type;
                 return;
             }
@@ -194,7 +195,7 @@ public class ArrayConstructor implements Expression {
         @Override
         public Value getValue(Environment environment) {
             final int size = elements.size();
-            final Object array = Array.newInstance(componentType, size);
+            final Object array = Array.newInstance(componentType.getTypeClass(), size);
             for (int i = 0; i < size; i++) {
                 Array.set(array, i, elements.get(i).getValue(environment).asObject());
             }

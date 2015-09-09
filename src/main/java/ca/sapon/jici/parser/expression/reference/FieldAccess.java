@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -57,8 +58,12 @@ public class FieldAccess implements Reference {
                 arrayLength = true;
                 type = PrimitiveType.THE_INT;
             } else {
+                if (!(objectType instanceof ClassType)) {
+                    throw new EvaluatorException("Not a class type " + objectType.getName(), object);
+                }
+                final ClassType classType = (ClassType) objectType;
                 try {
-                    member = objectType.getField(name);
+                    member = classType.getField(name);
                 } catch (UnsupportedOperationException exception) {
                     throw new EvaluatorException(exception.getMessage(), this);
                 }

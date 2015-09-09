@@ -23,16 +23,12 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import ca.sapon.jici.evaluator.value.ValueKind;
 
 /**
  *
  */
-public class VoidType implements Type {
+public class VoidType implements ConcreteType {
     public static final VoidType THE_VOID = new VoidType();
 
     private VoidType() {
@@ -41,6 +37,11 @@ public class VoidType implements Type {
     @Override
     public Class<?> getTypeClass() {
         return void.class;
+    }
+
+    @Override
+    public SingleClassType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot create an array of the void type");
     }
 
     @Override
@@ -99,58 +100,8 @@ public class VoidType implements Type {
     }
 
     @Override
-    public Type unbox() {
-        return this;
-    }
-
-    @Override
-    public ClassType box() {
-        return ClassType.of(Void.class);
-    }
-
-    @Override
-    public boolean canNarrowFrom(int value) {
-        return false;
-    }
-
-    @Override
-    public PrimitiveType unaryWiden() {
-        throw new UnsupportedOperationException("Cannot unary widen the void type");
-    }
-
-    @Override
-    public PrimitiveType binaryWiden(Type with) {
-        throw new UnsupportedOperationException("Cannot unary widen the void type");
-    }
-
-    @Override
     public boolean convertibleTo(Type to) {
         throw new UnsupportedOperationException("Cannot convert the void type");
-    }
-
-    @Override
-    public Constructor<?> getConstructor(Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference void");
-    }
-
-    @Override
-    public Constructor<?> getVarargConstructor(Type[] arguments) {
-        return getConstructor(arguments);
-    }
-
-    @Override
-    public Field getField(String name) {
-        throw new UnsupportedOperationException("Cannot dereference void");
-    }
-
-    @Override
-    public Method getMethod(String name, Type[] arguments) {
-        throw new UnsupportedOperationException("Cannot dereference void");
-    }
-
-    @Override
-    public Method getVarargMethod(String name, Type[] arguments) {
-        return getMethod(name, arguments);
     }
 
     @Override

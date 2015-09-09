@@ -30,6 +30,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
@@ -42,9 +43,9 @@ public class BooleanNot implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type innerClass = inner.getType(environment).unbox();
-            if (!innerClass.isBoolean()) {
-                throw new EvaluatorException("Not a boolean: " + innerClass.getName(), inner);
+            final PrimitiveType innerType = ReflectionUtil.coerceToPrimitive(environment, inner);
+            if (!innerType.isBoolean()) {
+                throw new EvaluatorException("Not a boolean: " + innerType.getName(), inner);
             }
             type = PrimitiveType.THE_BOOLEAN;
         }

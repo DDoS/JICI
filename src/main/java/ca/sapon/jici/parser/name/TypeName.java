@@ -25,10 +25,10 @@ package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.ConcreteType;
 
 public interface TypeName extends SourceIndexed {
-    Type getType(Environment environment);
+    ConcreteType getType(Environment environment);
 
     @Override
     int getStart();

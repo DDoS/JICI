@@ -28,6 +28,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -76,15 +77,19 @@ public class MethodCall implements Expression, Statement {
                 arrayClone = true;
                 type = objectType;
             } else {
+                if (!(objectType instanceof ClassType)) {
+                    throw new EvaluatorException("Not a class type " + objectType.getName(), object);
+                }
+                final ClassType classType = (ClassType) objectType;
                 final Type[] argumentTypes = new Type[size];
                 for (int i = 0; i < size; i++) {
                     argumentTypes[i] = arguments.get(i).getType(environment);
                 }
                 try {
-                    callable = objectType.getMethod(name, argumentTypes);
+                    callable = classType.getMethod(name, argumentTypes);
                 } catch (UnsupportedOperationException ignored) {
                     try {
-                        callable = objectType.getVarargMethod(name, argumentTypes);
+                        callable = classType.getVarargMethod(name, argumentTypes);
                         final Class<?>[] parameters = callable.getParameterTypes();
                         varargIndex = parameters.length - 1;
                         varargType = parameters[varargIndex].getComponentType();

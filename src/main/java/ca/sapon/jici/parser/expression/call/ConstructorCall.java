@@ -28,12 +28,13 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
@@ -65,17 +66,21 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            type = typeName.getType(environment);
+            final Type type = typeName.getType(environment);
+            if (!(type instanceof ClassType)) {
+                throw new EvaluatorException("Not a class type " + type.getName(), typeName);
+            }
+            final ClassType classType = (ClassType) type;
             final int size = arguments.size();
             final Type[] argumentTypes = new Type[size];
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
             try {
-                constructor = type.getConstructor(argumentTypes);
+                constructor = classType.getConstructor(argumentTypes);
             } catch (UnsupportedOperationException ignored) {
                 try {
-                    constructor = type.getVarargConstructor(argumentTypes);
+                    constructor = classType.getVarargConstructor(argumentTypes);
                     final Class<?>[] parameters = constructor.getParameterTypes();
                     varargIndex = parameters.length - 1;
                     varargType = parameters[varargIndex].getComponentType();
@@ -83,6 +88,7 @@ public class ConstructorCall implements Statement, Expression {
                     throw new EvaluatorException(exception.getMessage(), this);
                 }
             }
+            this.type = type;
         }
         return type;
     }

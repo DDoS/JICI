@@ -23,35 +23,11 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import ca.sapon.jici.evaluator.value.ValueKind;
-
 /**
  *
  */
-public interface Type {
-    String getName();
+public interface ConcreteType extends Type {
+    Class<?> getTypeClass();
 
-    ValueKind getKind();
-
-    boolean is(Type type);
-
-    boolean isVoid();
-
-    boolean isNull();
-
-    boolean isPrimitive();
-
-    boolean isNumeric();
-
-    boolean isIntegral();
-
-    boolean isBoolean();
-
-    boolean isArray();
-
-    boolean isObject();
-
-    boolean convertibleTo(Type to);
-
-    String toString();
+    SingleClassType asArray(int dimensions);
 }

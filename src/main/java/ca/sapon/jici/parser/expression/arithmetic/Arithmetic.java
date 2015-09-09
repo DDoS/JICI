@@ -25,6 +25,9 @@ package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.FloatValue;
 import ca.sapon.jici.evaluator.value.IntValue;
@@ -32,17 +35,17 @@ import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.ReflectionUtil;
 
 public class Arithmetic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
     private boolean stringConcatenation = false;
+    private Type leftType = null;
     private Type type = null;
 
     public Arithmetic(Expression left, Expression right, Symbol operator) {
@@ -54,28 +57,36 @@ public class Arithmetic implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type leftType = left.getType(environment).unbox();
-            final Type rightType = right.getType(environment).unbox();
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(ClassType.THE_STRING) || rightType.is(ClassType.THE_STRING))) {
+            final Type leftType = left.getType(environment);
+            final Type rightType = right.getType(environment);
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(SingleClassType.THE_STRING) || rightType.is(SingleClassType.THE_STRING))) {
                 if (leftType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", left);
                 }
                 if (rightType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", right);
                 }
-                type = ClassType.THE_STRING;
+                type = SingleClassType.THE_STRING;
                 stringConcatenation = true;
+                this.leftType = leftType;
             } else {
-                if (!leftType.isNumeric()) {
-                    throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
+                final PrimitiveType leftPrimitiveType = ReflectionUtil.coerceToPrimitive(left, leftType);
+                final PrimitiveType rightPrimitiveType = ReflectionUtil.coerceToPrimitive(right, rightType);
+                if (!leftPrimitiveType.isNumeric()) {
+                    throw new EvaluatorException("Not a numeric type: " + leftPrimitiveType.getName(), left);
                 }
-                if (!rightType.isNumeric()) {
-                    throw new EvaluatorException("Not a numeric type: " + rightType.getName(), right);
+                if (!rightPrimitiveType.isNumeric()) {
+                    throw new EvaluatorException("Not a numeric type: " + rightPrimitiveType.getName(), right);
                 }
-                type = leftType.binaryWiden(rightType);
+                type = leftPrimitiveType.binaryWiden(rightPrimitiveType);
+                this.leftType = leftPrimitiveType;
             }
         }
         return type;
+    }
+
+    public Type getLeftType() {
+        return leftType;
     }
 
     @Override

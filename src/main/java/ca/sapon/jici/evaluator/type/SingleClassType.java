@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -197,20 +198,23 @@ public class SingleClassType implements ClassType, ConcreteType {
     }
 
     @Override
-    public Field getField(String name) {
-        Field field = null;
+    public Accessible getField(String name) {
+        if (isArray() && "length".equals(name)) {
+            return Accessible.forArrayLength();
+        }
+        Field field;
         try {
             field = type.getField(name);
             if (field.isSynthetic()) {
-                failGetField(name);
+                return failGetField(name);
             }
         } catch (NoSuchFieldException exception) {
-            failGetField(name);
+            return failGetField(name);
         }
-        return field;
+        return Accessible.forField(field);
     }
 
-    private void failGetField(String name) {
+    private Accessible failGetField(String name) {
         throw new UnsupportedOperationException("No field named " + name + " in " + getName());
     }
 

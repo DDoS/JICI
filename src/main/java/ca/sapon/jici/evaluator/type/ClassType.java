@@ -23,8 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Field;
-
+import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 
 /**
@@ -33,7 +32,7 @@ import ca.sapon.jici.evaluator.Callable;
 public interface ClassType extends Type {
     Callable getConstructor(Type[] arguments);
 
-    Field getField(String name);
+    Accessible getField(String name);
 
     Callable getMethod(String name, Type[] arguments);
 }

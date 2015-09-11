@@ -23,11 +23,11 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -172,7 +172,7 @@ public class ClassUnionType implements ClassType {
     }
 
     @Override
-    public Field getField(String name) {
+    public Accessible getField(String name) {
         for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);

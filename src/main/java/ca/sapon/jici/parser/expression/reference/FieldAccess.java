@@ -23,26 +23,19 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-
+import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
 
 public class FieldAccess implements Reference {
     private final Expression object;
     private final Identifier field;
-    private Type type = null;
-    private Field member = null;
-    private boolean arrayLength = false;
+    private Accessible accessible = null;
 
     public FieldAccess(Expression object, Identifier field) {
         this.object = object;
@@ -51,40 +44,26 @@ public class FieldAccess implements Reference {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
+        if (accessible == null) {
             final Type objectType = object.getType(environment);
             final String name = field.getSource();
-            if (objectType.isArray() && "length".equals(name)) {
-                arrayLength = true;
-                type = PrimitiveType.THE_INT;
-            } else {
-                if (!(objectType instanceof ClassType)) {
-                    throw new EvaluatorException("Not a class type " + objectType.getName(), object);
-                }
-                final ClassType classType = (ClassType) objectType;
-                try {
-                    member = classType.getField(name);
-                } catch (UnsupportedOperationException exception) {
-                    throw new EvaluatorException(exception.getMessage(), this);
-                }
-                type = ReflectionUtil.wrap(member.getType());
+            if (!(objectType instanceof ClassType)) {
+                throw new EvaluatorException("Not a class type " + objectType.getName(), object);
+            }
+            try {
+                accessible = ((ClassType) objectType).getField(name);
+            } catch (UnsupportedOperationException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
             }
         }
-        return type;
+        return accessible.getType();
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Object objectValue = object.getValue(environment).asObject();
-        if (arrayLength) {
-            try {
-                return IntValue.of(Array.getLength(objectValue));
-            } catch (Exception exception) {
-                throw new EvaluatorException("Could not access array length field", exception, field);
-            }
-        }
+        final Value target = object.getValue(environment);
         try {
-            return type.getKind().wrap(member.get(objectValue));
+            return accessible.getValue(target);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }
@@ -92,12 +71,9 @@ public class FieldAccess implements Reference {
 
     @Override
     public void setValue(Environment environment, Value value) {
-        if (arrayLength) {
-            throw new EvaluatorException("Array length field is read-only", field);
-        }
-        final Object objectValue = object.getValue(environment).asObject();
+        final Value target = object.getValue(environment);
         try {
-            member.set(objectValue, value.asObject());
+            accessible.setValue(target, value);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }

@@ -36,7 +36,15 @@ import ca.sapon.jici.util.ReflectionUtil;
  *
  */
 public abstract class Callable {
-    public abstract ConcreteType getReturnType();
+    protected final ConcreteType returnType;
+
+    protected Callable(ConcreteType returnType) {
+        this.returnType = returnType;
+    }
+
+    public ConcreteType getReturnType() {
+        return returnType;
+    }
 
     public abstract Value call(Value target, Value... arguments);
 
@@ -62,13 +70,12 @@ public abstract class Callable {
 
     private static class MethodCallable extends Callable {
         private final Method method;
-        private final ConcreteType returnType;
         private final Class<?> varargType;
         private final int varargIndex;
 
         private MethodCallable(Method method, boolean vararg) {
+            super(ReflectionUtil.wrap(method.getReturnType()));
             this.method = method;
-            returnType = ReflectionUtil.wrap(method.getReturnType());
             if (vararg) {
                 final Class<?>[] parameters = method.getParameterTypes();
                 varargIndex = parameters.length - 1;
@@ -77,11 +84,6 @@ public abstract class Callable {
                 varargIndex = -1;
                 varargType = null;
             }
-        }
-
-        @Override
-        public ConcreteType getReturnType() {
-            return returnType;
         }
 
         @Override
@@ -109,13 +111,12 @@ public abstract class Callable {
 
     private static class ConstructorCallable extends Callable {
         private final Constructor<?> constructor;
-        private final ConcreteType returnType;
         private final Class<?> varargType;
         private final int varargIndex;
 
         private ConstructorCallable(Constructor<?> constructor, boolean vararg) {
+            super(ReflectionUtil.wrap(constructor.getDeclaringClass()));
             this.constructor = constructor;
-            returnType = ReflectionUtil.wrap(constructor.getDeclaringClass());
             if (vararg) {
                 final Class<?>[] parameters = constructor.getParameterTypes();
                 varargIndex = parameters.length - 1;
@@ -124,11 +125,6 @@ public abstract class Callable {
                 varargIndex = -1;
                 varargType = null;
             }
-        }
-
-        @Override
-        public ConcreteType getReturnType() {
-            return returnType;
         }
 
         @Override
@@ -150,15 +146,8 @@ public abstract class Callable {
     }
 
     private static class ArrayCloneCallable extends Callable {
-        private final ConcreteType type;
-
         private ArrayCloneCallable(ConcreteType type) {
-            this.type = type;
-        }
-
-        @Override
-        public ConcreteType getReturnType() {
-            return type;
+            super(type);
         }
 
         @Override

@@ -75,7 +75,7 @@ public class MethodCall implements Expression, Statement {
             try {
                 callable = ((ClassType) objectType).getMethod(method.getSource(), argumentTypes);
             } catch (UnsupportedOperationException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
+                throw new EvaluatorException(exception.getMessage(), method);
             }
         }
         return callable.getReturnType();
@@ -92,7 +92,7 @@ public class MethodCall implements Expression, Statement {
         try {
             return callable.call(value, values);
         } catch (Exception exception) {
-            throw new EvaluatorException("Could not call method", exception, this);
+            throw new EvaluatorException("Could not call method", exception, method);
         }
     }
 

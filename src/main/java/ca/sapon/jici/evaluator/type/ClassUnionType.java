@@ -23,13 +23,12 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
@@ -161,28 +160,13 @@ public class ClassUnionType implements ClassType {
     }
 
     @Override
-    public Constructor<?> getConstructor(Type[] arguments) {
+    public Callable getConstructor(Type[] arguments) {
         for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }
-        return failGetConstructor(arguments);
-    }
-
-    @Override
-    public Constructor<?> getVarargConstructor(Type[] arguments) {
-        for (SingleClassType bound : lowestUpperBound) {
-            try {
-                return bound.getVarargConstructor(arguments);
-            } catch (UnsupportedOperationException ignored) {
-            }
-        }
-        return failGetConstructor(arguments);
-    }
-
-    private Constructor<?> failGetConstructor(Type[] arguments) {
         throw new UnsupportedOperationException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
@@ -199,28 +183,13 @@ public class ClassUnionType implements ClassType {
     }
 
     @Override
-    public Method getMethod(String name, Type[] arguments) {
+    public Callable getMethod(String name, Type[] arguments) {
         for (SingleClassType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }
-        return failGetMethod(name, arguments);
-    }
-
-    @Override
-    public Method getVarargMethod(String name, Type[] arguments) {
-        for (SingleClassType bound : lowestUpperBound) {
-            try {
-                return bound.getVarargMethod(name, arguments);
-            } catch (UnsupportedOperationException ignored) {
-            }
-        }
-        return failGetMethod(name, arguments);
-    }
-
-    private Method failGetMethod(String name, Type[] arguments) {
         throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }

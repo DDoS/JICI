@@ -23,31 +23,24 @@
  */
 package ca.sapon.jici.parser.expression.call;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
+import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall implements Expression, Statement {
     private final Expression object;
     private final Identifier method;
     private final List<Expression> arguments;
-    private Type type = null;
-    private Method callable = null;
-    private int varargIndex = -1;
-    private Class<?> varargType = null;
-    private boolean arrayClone = false;
+    private Callable callable = null;
 
     public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
         this.object = object;
@@ -69,65 +62,35 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
+        if (callable == null) {
             final Type objectType = object.getType(environment);
+            if (!(objectType instanceof ClassType)) {
+                throw new EvaluatorException("Not a class type " + objectType.getName(), object);
+            }
             final int size = arguments.size();
-            final String name = method.getSource();
-            if (objectType.isArray() && size == 0 && "clone".equals(name)) {
-                arrayClone = true;
-                type = objectType;
-            } else {
-                if (!(objectType instanceof ClassType)) {
-                    throw new EvaluatorException("Not a class type " + objectType.getName(), object);
-                }
-                final ClassType classType = (ClassType) objectType;
-                final Type[] argumentTypes = new Type[size];
-                for (int i = 0; i < size; i++) {
-                    argumentTypes[i] = arguments.get(i).getType(environment);
-                }
-                try {
-                    callable = classType.getMethod(name, argumentTypes);
-                } catch (UnsupportedOperationException ignored) {
-                    try {
-                        callable = classType.getVarargMethod(name, argumentTypes);
-                        final Class<?>[] parameters = callable.getParameterTypes();
-                        varargIndex = parameters.length - 1;
-                        varargType = parameters[varargIndex].getComponentType();
-                    } catch (UnsupportedOperationException exception) {
-                        throw new EvaluatorException(exception.getMessage(), this);
-                    }
-                }
-                final Class<?> returnType = callable.getReturnType();
-                type = ReflectionUtil.wrap(returnType);
+            final Type[] argumentTypes = new Type[size];
+            for (int i = 0; i < size; i++) {
+                argumentTypes[i] = arguments.get(i).getType(environment);
+            }
+            try {
+                callable = ((ClassType) objectType).getMethod(method.getSource(), argumentTypes);
+            } catch (UnsupportedOperationException exception) {
+                throw new EvaluatorException(exception.getMessage(), this);
             }
         }
-        return type;
+        return callable.getReturnType();
     }
 
     @Override
     public Value getValue(Environment environment) {
-        final Object value = object.getValue(environment).asObject();
-        if (arrayClone) {
-            try {
-                return ObjectValue.of(ReflectionUtil.cloneArray(value));
-            } catch (Exception exception) {
-                throw new EvaluatorException("Could not clone array", exception, this);
-            }
-        }
+        final Value value = object.getValue(environment);
         final int size = arguments.size();
-        Object[] values = new Object[size];
+        final Value[] values = new Value[size];
         for (int i = 0; i < size; i++) {
-            values[i] = arguments.get(i).getValue(environment).asObject();
-        }
-        if (varargIndex >= 0) {
-            values = ReflectionUtil.compactVarargs(varargType, varargIndex, values);
+            values[i] = arguments.get(i).getValue(environment);
         }
         try {
-            if (type.isVoid()) {
-                callable.invoke(value, values);
-                return VoidValue.THE_VOID;
-            }
-            return type.getKind().wrap(callable.invoke(value, values));
+            return callable.call(value, values);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not call method", exception, this);
         }

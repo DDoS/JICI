@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
@@ -162,53 +163,35 @@ public class SingleClassType implements ClassType, ConcreteType {
     }
 
     @Override
-    public Constructor<?> getConstructor(Type[] arguments) {
-        // try to find a matching constructor
+    public Callable getConstructor(Type[] arguments) {
         final Constructor<?>[] constructors = type.getConstructors();
-        // look for matches in length
         final int argumentCount = arguments.length;
         final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
+        final Map<Constructor<?>, Class<?>[]> varargCandidate = new HashMap<>();
         for (Constructor<?> candidate : constructors) {
             if (!candidate.isSynthetic()) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                // look for matches in length
                 if (parameterTypes.length == argumentCount) {
                     candidates.put(candidate, parameterTypes);
                 }
-            }
-        }
-        // try to resolve the overloads
-        final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (constructor == null) {
-            failGetConstructor(arguments);
-        }
-        return constructor;
-    }
-
-    @Override
-    public Constructor<?> getVarargConstructor(Type[] arguments) {
-        // try to find a matching constructor
-        final Constructor<?>[] constructors = type.getConstructors();
-        // look for varargs with match in length of non-varargs
-        final int argumentCount = arguments.length;
-        final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
-        for (Constructor<?> candidate : constructors) {
-            if (!candidate.isSynthetic() && candidate.isVarArgs()) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                if (parameterTypes.length - 1 <= argumentCount) {
+                // look for varargs with matches in name and length of non-varargs
+                if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count
-                    candidates.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
                 }
             }
         }
         // try to resolve the overloads
-        final Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (constructor == null) {
-            failGetConstructor(arguments);
+        Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (constructor != null) {
+            return Callable.forConstructor(constructor);
         }
-        return constructor;
-    }
-
-    private void failGetConstructor(Type[] arguments) {
+        // try vararg candidates
+        constructor = ReflectionUtil.resolveOverloads(varargCandidate, arguments);
+        if (constructor != null) {
+            return Callable.forVarargConstructor(constructor);
+        }
         throw new UnsupportedOperationException("No constructor for signature: "
                 + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
@@ -232,57 +215,41 @@ public class SingleClassType implements ClassType, ConcreteType {
     }
 
     @Override
-    public Method getMethod(String name, Type[] arguments) {
-        // try to find a matching method without varargs
+    public Callable getMethod(String name, Type[] arguments) {
+        if (isArray() && arguments.length == 0 && "clone".equals(name)) {
+            return Callable.forArrayClone(this);
+        }
         final Method[] methods = type.getMethods();
-        // look for matches in length and name
         final int argumentCount = arguments.length;
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
+        final Map<Method, Class<?>[]> varargCandidate = new HashMap<>();
         for (Method candidate : methods) {
             if (!candidate.isSynthetic() && candidate.getName().equals(name)) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
+                // look for matches in length and name
                 if (parameterTypes.length == argumentCount) {
                     candidates.put(candidate, parameterTypes);
                 }
-            }
-        }
-        // generics can cause methods to only differ by the return type, so fix that
-        ReflectionUtil.fixReturnTypeConflicts(candidates);
-        // try to resolve the overloads
-        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (method == null) {
-            failGetMethod(name, arguments);
-        }
-        return method;
-    }
-
-    @Override
-    public Method getVarargMethod(String name, Type[] arguments) {
-        // try to find a matching method with varargs
-        final Method[] methods = type.getMethods();
-        // look for varargs with matches in name and length of non-varargs
-        final int argumentCount = arguments.length;
-        final Map<Method, Class<?>[]> candidates = new HashMap<>();
-        for (Method candidate : methods) {
-            if (!candidate.isSynthetic() && candidate.isVarArgs() && candidate.getName().equals(name)) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                if (parameterTypes.length - 1 <= argumentCount) {
+                // look for varargs with matches in name and length of non-varargs
+                if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count
-                    candidates.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
                 }
             }
         }
         // generics can cause methods to only differ by the return type, so fix that
         ReflectionUtil.fixReturnTypeConflicts(candidates);
         // try to resolve the overloads
-        final Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (method == null) {
-            failGetMethod(name, arguments);
+        Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
+        if (method != null) {
+            return Callable.forMethod(method);
         }
-        return method;
-    }
-
-    private void failGetMethod(String name, Type[] arguments) {
+        // try vararg candidates
+        ReflectionUtil.fixReturnTypeConflicts(varargCandidate);
+        method = ReflectionUtil.resolveOverloads(varargCandidate, arguments);
+        if (method != null) {
+            return Callable.forVarargMethod(method);
+        }
         throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }

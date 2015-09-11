@@ -23,21 +23,17 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+
+import ca.sapon.jici.evaluator.Callable;
 
 /**
  *
  */
 public interface ClassType extends Type {
-    Constructor<?> getConstructor(Type[] arguments);
-
-    Constructor<?> getVarargConstructor(Type[] arguments);
+    Callable getConstructor(Type[] arguments);
 
     Field getField(String name);
 
-    Method getMethod(String name, Type[] arguments);
-
-    Method getVarargMethod(String name, Type[] arguments);
+    Callable getMethod(String name, Type[] arguments);
 }

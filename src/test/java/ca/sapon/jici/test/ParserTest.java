@@ -23,13 +23,12 @@
  */
 package ca.sapon.jici.test;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ParserTest {
     @Test
@@ -53,6 +52,11 @@ public class ParserTest {
 
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
+        testParseExpression("ConstructorCall(new Test<String>())", "new Test<String>()");
+        testParseExpression("ConstructorCall(new Test<String, Object>())", "new Test<String, Object>()");
+        testParseExpression("ConstructorCall(new Test<Test<String>, Test<Object>>())", "new Test<Test<String>, Test<Object>>()");
+        testParseExpression("ConstructorCall(new Test<Test<Test<Object>>>())", "new Test<Test<Test<Object>>>()");
+        testParseExpression("ConstructorCall(new Test<Test<Test<Test<Object>>>>())", "new Test<Test<Test<Test<Object>>>>()");
 
         testParseExpression("ArrayConstructor(new int[1])", "new int[1]");
         testParseExpression("ArrayConstructor(new Object[1])", "new Object[1]");
@@ -248,6 +252,10 @@ public class ParserTest {
     public void testParseDeclaration() {
         testParseStatement("Declaration(Object m)", "Object m;");
         testParseStatement("Declaration(Object m, k, j)", "Object m, k, j;");
+        testParseStatement("Declaration(Object<?> m)", "Object<?> m;");
+        testParseStatement("Declaration(Object<? extends String> m)", "Object<? extends String> m;");
+        testParseStatement("Declaration(Object<? super String> m)", "Object<? super String> m;");
+        testParseStatement("Declaration(Object<? super String, Double> m)", "Object<? super String, Double> m;");
 
         testParseStatement("Declaration(Object m = 1)", "Object m = 1;");
         testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");

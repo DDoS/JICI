@@ -67,6 +67,8 @@ import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.ClassTypeName;
 import ca.sapon.jici.parser.name.PrimitiveTypeName;
 import ca.sapon.jici.parser.name.TypeName;
+import ca.sapon.jici.parser.name.TypeParameterName;
+import ca.sapon.jici.parser.name.TypeParameterName.BoundKind;
 import ca.sapon.jici.parser.name.VoidTypeName;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;
@@ -140,14 +142,12 @@ public final class Parser {
     /*
         NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        CLASS_NAME:      NAME
+        CLASS_NAME:      NAME _ NAME<TYPE_PARAM_LIST>
         ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
         TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
-        VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION _ IDENTIFIER = ARRAY_INIT
-        VARIABLE_LIST:   VARIABLE, VARIABLE_LIST _ VARIABLE
-
-        DECLARATION:     TYPE VARIABLE_LIST;
+        TYPE_PARAM:      TYPE_NAME _ ? _ ? extends TYPE_NAME _ ? super TYPE_NAME
+        TYPE_PARAM_LIST: TYPE_PARAM, TYPE_PARAM_LIST _ TYPE_PARAM
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -175,7 +175,9 @@ public final class Parser {
     }
 
     private static ClassTypeName parseClassName(ListNavigator<Token> tokens) {
-        return new ClassTypeName(parseName(tokens));
+        final List<Identifier> name = parseName(tokens);
+        final List<TypeParameterName> parameters = parseTypeParameterNameList(tokens);
+        return new ClassTypeName(name, parameters);
     }
 
     private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {
@@ -209,6 +211,78 @@ public final class Parser {
         }
         throw new ParseError("Expected an identifier or a primitive type", tokens);
     }
+
+    private static TypeParameterName parseTypeParameterName(ListNavigator<Token> tokens) {
+        if (tokens.has()) {
+            if (tokens.get().getID() == TokenID.SYMBOL_QUESTION_MARK) {
+                tokens.advance();
+                if (tokens.has()) {
+                    switch (tokens.get().getID()) {
+                        case KEYWORD_EXTENDS: {
+                            tokens.advance();
+                            final TypeName type = parseTypeName(tokens);
+                            return new TypeParameterName(type, BoundKind.UPPER);
+                        }
+                        case KEYWORD_SUPER: {
+                            tokens.advance();
+                            final TypeName type = parseTypeName(tokens);
+                            return new TypeParameterName(type, BoundKind.LOWER);
+                        }
+                    }
+                }
+                return new TypeParameterName();
+            } else {
+                final TypeName type = parseTypeName(tokens);
+                return new TypeParameterName(type);
+            }
+        }
+        throw new ParseError("Expected a type name or '?'", tokens);
+    }
+
+    private static List<TypeParameterName> parseTypeParameterNameList(ListNavigator<Token> tokens) {
+        final List<TypeParameterName> typeParameterNames = new ArrayList<>();
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
+            tokens.advance();
+            parseTypeParameterNameList(tokens, typeParameterNames);
+            if (tokens.has()) {
+                switch (tokens.get().getID()) {
+                    case SYMBOL_GREATER:
+                        tokens.advance();
+                        return typeParameterNames;
+                    case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
+                        tokens.advanceFractional();
+                        if (tokens.fractional() == 2) {
+                            tokens.closeFractional();
+                        }
+                        return typeParameterNames;
+                    case SYMBOL_LOGICAL_RIGHT_SHIFT:
+                        tokens.advanceFractional();
+                        if (tokens.fractional() == 3) {
+                            tokens.closeFractional();
+                        }
+                        return typeParameterNames;
+                }
+            }
+            throw new ParseError("Expected '>'", tokens);
+        }
+        return typeParameterNames;
+    }
+
+    private static List<TypeParameterName> parseTypeParameterNameList(ListNavigator<Token> tokens, List<TypeParameterName> typeParameterNames) {
+        typeParameterNames.add(parseTypeParameterName(tokens));
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
+            tokens.advance();
+            return parseTypeParameterNameList(tokens, typeParameterNames);
+        }
+        return typeParameterNames;
+    }
+
+    /*
+        VARIABLE:        IDENTIFIER _ IDENTIFIER = EXPRESSION _ IDENTIFIER = ARRAY_INIT
+        VARIABLE_LIST:   VARIABLE, VARIABLE_LIST _ VARIABLE
+
+        DECLARATION:     TYPE VARIABLE_LIST;
+    */
 
     private static Variable parseVariable(ListNavigator<Token> tokens) {
         if (tokens.has()) {
@@ -357,7 +431,7 @@ public final class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ NAME _ NAME ARGUMENTS _ CONSTRUCTOR _ TYPE.class _ void.class _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME ARGUMENTS _ CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
 
         CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
 

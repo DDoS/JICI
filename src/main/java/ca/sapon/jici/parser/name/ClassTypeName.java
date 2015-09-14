@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.name;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
@@ -36,11 +37,17 @@ import ca.sapon.jici.util.StringUtil;
 
 public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
+    private final List<TypeParameterName> parameters;
     private SingleClassType hint = null;
     private SingleClassType type = null;
 
     public ClassTypeName(List<Identifier> name) {
+        this(name, Collections.<TypeParameterName>emptyList());
+    }
+
+    public ClassTypeName(List<Identifier> name, List<TypeParameterName> parameters) {
         this.name = name;
+        this.parameters = parameters;
     }
 
     @Override
@@ -111,6 +118,6 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
 
     @Override
     public String toString() {
-        return StringUtil.toString(name, ".");
+        return StringUtil.toString(name, ".") + (!parameters.isEmpty() ? "<" + StringUtil.toString(parameters, ", ") + ">" : "");
     }
 }

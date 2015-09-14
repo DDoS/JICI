@@ -31,6 +31,7 @@ public class ListNavigator<E> {
     private final List<E> list;
     private final Deque<Integer> positions = new ArrayDeque<>();
     private int topPosition = 0;
+    private int fractionalPosition = 0;
 
     public ListNavigator(List<E> list) {
         this.list = list;
@@ -90,5 +91,22 @@ public class ListNavigator<E> {
 
     public E get(int forward) {
         return list.get(topPosition + forward);
+    }
+
+    public int fractional() {
+        return fractionalPosition;
+    }
+
+    public int advanceFractional() {
+        return advanceFractional(1);
+    }
+
+    public int advanceFractional(int increment) {
+        return fractionalPosition += increment;
+    }
+
+    public void closeFractional() {
+        fractionalPosition = 0;
+        advance();
     }
 }

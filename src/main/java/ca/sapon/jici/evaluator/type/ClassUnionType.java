@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,17 +38,23 @@ import ca.sapon.jici.util.StringUtil;
  *
  */
 public class ClassUnionType implements ClassType {
-    private final ClassType[] types;
+    private final ClassType[] union;
+    private final Set<Class<?>> classes;
     private final Set<SingleClassType> lowestUpperBound;
 
-    public ClassUnionType(ClassType... types) {
-        if (types.length <= 1) {
+    public ClassUnionType(Collection<ClassType> union) {
+        this(union.toArray(new ClassType[union.size()]));
+    }
+
+    public ClassUnionType(ClassType... union) {
+        if (union.length <= 1) {
             throw new UnsupportedOperationException("Expected more than one type");
         }
-        final Set<Class<?>> classes = new HashSet<>(types.length);
+        this.union = union;
+        classes = new HashSet<>(union.length);
         boolean allEqual = true;
         Class<?> previous = null;
-        for (ClassType type : types) {
+        for (ClassType type : union) {
             if (type instanceof ClassUnionType) {
                 classes.addAll(((ClassUnionType) type).getTypeClasses());
                 allEqual = false;
@@ -64,24 +71,14 @@ public class ClassUnionType implements ClassType {
         if (allEqual) {
             throw new UnsupportedOperationException("Expected differing types in the union");
         }
-        this.types = types;
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            final SingleClassType type = SingleClassType.of(bound);
-            lowestUpperBound.add(type);
+            lowestUpperBound.add(SingleClassType.of(bound));
         }
     }
 
     public Set<Class<?>> getTypeClasses() {
-        final Set<Class<?>> classes = new HashSet<>(types.length);
-        for (ClassType type : types) {
-            if (type instanceof ClassUnionType) {
-                classes.addAll(((ClassUnionType) type).getTypeClasses());
-            } else {
-                classes.add(((SingleClassType) type).getTypeClass());
-            }
-        }
         return classes;
     }
 
@@ -91,7 +88,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public String getName() {
-        return StringUtil.toString(lowestUpperBound, " | ");
+        return '(' + StringUtil.toString(lowestUpperBound, " | ") + ')';
     }
 
     @Override
@@ -192,5 +189,10 @@ public class ClassUnionType implements ClassType {
         }
         throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

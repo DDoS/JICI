@@ -47,11 +47,14 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
+import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
 /**
@@ -375,6 +378,48 @@ public final class ReflectionUtil {
         }
     }
 
+    public static Class<?> findNameMatch(ClassType type, List<Identifier> name) {
+        if (type instanceof SingleClassType) {
+            final SingleClassType singleClass = (SingleClassType) type;
+            final Class<?> typeClass = singleClass.getTypeClass();
+            Class<?> currentClass = typeClass;
+            for (int i = name.size() - 1; i >= 0; i--) {
+                if (currentClass != null && name.get(i).getSource().equals(currentClass.getSimpleName())) {
+                    // partial name match, continue
+                    currentClass = currentClass.getEnclosingClass();
+                } else {
+                    // name match fail, check super class
+                    final Class<?> superClass = typeClass.getSuperclass();
+                    if (superClass != null) {
+                        final Class<?> match = findNameMatch(SingleClassType.of(superClass), name);
+                        if (match != null) {
+                            return match;
+                        }
+                    }
+                    // now check implemented interfaces
+                    for (Class<?> implemented : typeClass.getInterfaces()) {
+                        final Class<?> match = findNameMatch(SingleClassType.of(implemented), name);
+                        if (match != null) {
+                            return match;
+                        }
+                    }
+                    return null;
+                }
+            }
+            return typeClass;
+        }
+        if (type instanceof ClassUnionType) {
+            for (ClassType classType : ((ClassUnionType) type).getLowestUpperBound()) {
+                final Class<?> match = findNameMatch(classType, name);
+                if (match != null) {
+                    return match;
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
     public static PrimitiveType coerceToPrimitive(Environment environment, Expression expression) {
         return coerceToPrimitive(expression, expression.getType(environment));
     }
@@ -412,6 +457,14 @@ public final class ReflectionUtil {
         }
         compacted[varargIndex] = array;
         return compacted;
+    }
+
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    public static Object cloneArray(Object array) {
+        final int length = Array.getLength(array);
+        final Object clone = Array.newInstance(array.getClass().getComponentType(), length);
+        System.arraycopy(array, 0, clone, 0, length);
+        return clone;
     }
 
     public static Set<Class<?>> findClasses(List<?> packageName) {
@@ -471,13 +524,5 @@ public final class ReflectionUtil {
                 }
             }
         }
-    }
-
-    @SuppressWarnings("SuspiciousSystemArraycopy")
-    public static Object cloneArray(Object array) {
-        final int length = Array.getLength(array);
-        final Object clone = Array.newInstance(array.getClass().getComponentType(), length);
-        System.arraycopy(array, 0, clone, 0, length);
-        return clone;
     }
 }

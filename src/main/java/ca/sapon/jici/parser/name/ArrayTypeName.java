@@ -23,9 +23,12 @@
  */
 package ca.sapon.jici.parser.name;
 
+import java.util.ArrayList;
+
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.util.StringUtil;
@@ -57,21 +60,49 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
 
     @Override
     public void setTypeHint(ClassType hint) {
-        if (componentTypeName instanceof ImportedTypeName && hint instanceof SingleClassType && hint.isArray()) {
-            int dimensions = 0;
-            Class<?> componentType = ((SingleClassType) hint).getTypeClass();
-            while (true) {
-                final Class<?> nextComponentType = componentType.getComponentType();
-                if (nextComponentType == null) {
-                    break;
-                }
-                componentType = nextComponentType;
-                dimensions++;
+        if (!(componentTypeName instanceof ImportedTypeName)) {
+            return;
+        }
+        final ImportedTypeName typeName = (ImportedTypeName) this.componentTypeName;
+        if (hint instanceof SingleClassType) {
+            final Class<?> validated = validateTypeHint(((SingleClassType) hint).getTypeClass());
+            if (validated != null) {
+                typeName.setTypeHint(SingleClassType.of(validated));
             }
-            if (dimensions == this.dimensions && !componentType.isPrimitive()) {
-                ((ImportedTypeName) componentTypeName).setTypeHint(SingleClassType.of(componentType));
+        } else if (hint instanceof ClassUnionType) {
+            final ClassUnionType classUnion = (ClassUnionType) hint;
+            final ArrayList<ClassType> hints = new ArrayList<>();
+            for (Class<?> _class : classUnion.getTypeClasses()) {
+                final Class<?> validated = validateTypeHint(_class);
+                if (validated != null) {
+                    hints.add(SingleClassType.of(validated));
+                }
+            }
+            switch (hints.size()) {
+                case 0:
+                    break;
+                case 1:
+                    typeName.setTypeHint(hints.get(0));
+                    break;
+                default:
+                    typeName.setTypeHint(new ClassUnionType(hints));
+                    break;
             }
         }
+    }
+
+    private Class<?> validateTypeHint(Class<?> _class) {
+        int dimensions = 0;
+        Class<?> componentType = _class;
+        while (true) {
+            final Class<?> nextComponentType = componentType.getComponentType();
+            if (nextComponentType == null) {
+                break;
+            }
+            componentType = nextComponentType;
+            dimensions++;
+        }
+        return dimensions == this.dimensions && !componentType.isPrimitive() ? componentType : null;
     }
 
     public ConcreteType getComponentType() {

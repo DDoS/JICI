@@ -43,7 +43,7 @@ public class SingleClassType implements ClassType, ConcreteType {
     public static final SingleClassType THE_STRING = of(String.class);
     public static final SingleClassType THE_OBJECT = of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
-    private Class<?> type;
+    private final Class<?> type;
     private PrimitiveType unbox;
     private boolean unboxCached = false;
 
@@ -261,6 +261,16 @@ public class SingleClassType implements ClassType, ConcreteType {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o != null && getClass() == o.getClass() && type.equals(((SingleClassType) o).type);
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
     }
 
     public static Class<?> unbox(Class<?> type) {

@@ -38,7 +38,7 @@ import ca.sapon.jici.util.StringUtil;
 public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
     private final List<TypeParameterName> parameters;
-    private SingleClassType hint = null;
+    private ClassType hint = null;
     private SingleClassType type = null;
 
     public ClassTypeName(List<Identifier> name) {
@@ -69,11 +69,17 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
                 _class = ReflectionUtil.findClass(name);
             }
             // else try the hint
-            if (_class == null && hintNameMatches()) {
-                _class = hint.getTypeClass();
-                try {
-                    environment.importClass(_class);
-                } catch (UnsupportedOperationException ignored) {
+            if (_class == null && hint != null) {
+                final Class<?> match = ReflectionUtil.findNameMatch(hint, name);
+                if (match == null) {
+                    // failed, discard hint
+                    hint = null;
+                } else {
+                    _class = match;
+                    try {
+                        environment.importClass(_class);
+                    } catch (UnsupportedOperationException ignored) {
+                    }
                 }
             }
             // we tried everything, fail
@@ -85,25 +91,9 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
         return type;
     }
 
-    private boolean hintNameMatches() {
-        if (hint == null) {
-            return false;
-        }
-        Class<?> hintClass = hint.getTypeClass();
-        for (int i = name.size() - 1; i >= 0; i--) {
-            if (hintClass == null || !name.get(i).getSource().equals(hintClass.getSimpleName())) {
-                return false;
-            }
-            hintClass = hintClass.getEnclosingClass();
-        }
-        return true;
-    }
-
     @Override
     public void setTypeHint(ClassType hint) {
-        if (hint instanceof SingleClassType) {
-            this.hint = (SingleClassType) hint;
-        }
+        this.hint = hint;
     }
 
     @Override

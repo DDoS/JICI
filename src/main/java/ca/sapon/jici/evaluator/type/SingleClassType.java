@@ -39,7 +39,7 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class SingleClassType implements ClassType, ConcreteType {
+public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
     public static final SingleClassType THE_STRING = of(String.class);
     public static final SingleClassType THE_OBJECT = of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
@@ -265,7 +265,7 @@ public class SingleClassType implements ClassType, ConcreteType {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o != null && getClass() == o.getClass() && type.equals(((SingleClassType) o).type);
+        return this == o || o != null && type.equals(((SingleClassType) o).type);
     }
 
     @Override

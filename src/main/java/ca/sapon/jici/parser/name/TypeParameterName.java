@@ -23,63 +23,78 @@
  */
 package ca.sapon.jici.parser.name;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.TypeParameter;
+import ca.sapon.jici.evaluator.type.WildcardType;
 
 /**
  *
  */
-public class TypeParameterName implements TypeName {
-    private final TypeName type;
-    private final BoundKind bound;
-
-    public TypeParameterName() {
-        this(null, BoundKind.NONE);
-    }
-
-    public TypeParameterName(TypeName type) {
-        this.type = type;
-        this.bound = null;
-    }
+public class TypeParameterName implements SourceIndexed {
+    private final TypeName bound;
+    private final BoundKind kind;
+    private TypeParameter type = null;
 
     public TypeParameterName(TypeName bound, BoundKind kind) {
-        this.type = bound;
-        this.bound = kind;
+        this.bound = bound;
+        this.kind = kind;
     }
 
-    @Override
-    public ConcreteType getType(Environment environment) {
-        return null;
+    public TypeParameter getType(Environment environment) {
+        if (type == null) {
+            if (kind == BoundKind.NONE) {
+                type = new WildcardType(null, kind);
+            } else {
+                final ConcreteType bound = this.bound.getType(environment);
+                if (!(bound instanceof SingleClassType)) {
+                    throw new EvaluatorException("Type parameter must be a class type", this);
+                }
+                switch (kind) {
+                    case EXACT:
+                        type = (SingleClassType) bound;
+                        break;
+                    case LOWER:
+                    case UPPER:
+                        type = new WildcardType((SingleClassType) bound, kind);
+                        break;
+                }
+            }
+        }
+        return type;
     }
 
     @Override
     public int getStart() {
-        return 0;
+        return bound.getStart();
     }
 
     @Override
     public int getEnd() {
-        return 0;
+        return bound.getEnd();
     }
 
     @Override
     public String toString() {
-        if (bound == null) {
-            return type.toString();
-        }
-        switch (bound) {
+        switch (kind) {
+            case EXACT:
+                return bound.toString();
             case NONE:
                 return "?";
             case LOWER:
-                return "? super " + type.toString();
+                return "? super " + bound.toString();
             case UPPER:
-                return "? extends " + type.toString();
+                return "? extends " + bound.toString();
             default:
-                throw new UnsupportedOperationException(bound.name());
+                throw new UnsupportedOperationException(kind.name());
         }
     }
 
     public enum BoundKind {
+        EXACT,
         NONE,
         LOWER,
         UPPER

@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.name;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +31,9 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.TypeParameter;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
@@ -86,8 +89,17 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
-            type = SingleClassType.of(_class);
+            if (!parameters.isEmpty()) {
+                final List<TypeParameter> classes = new ArrayList<>(parameters.size());
+                for (TypeParameterName parameter : parameters) {
+                    classes.add(parameter.getType(environment));
+                }
+                type = ParametrizedType.of(_class, classes);
+            } else {
+                type = SingleClassType.of(_class);
+            }
         }
+        System.out.println(type);
         return type;
     }
 

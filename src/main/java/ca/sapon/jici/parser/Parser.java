@@ -230,10 +230,10 @@ public final class Parser {
                         }
                     }
                 }
-                return new TypeParameterName();
+                return new TypeParameterName(null, BoundKind.NONE);
             } else {
                 final TypeName type = parseTypeName(tokens);
-                return new TypeParameterName(type);
+                return new TypeParameterName(type, BoundKind.EXACT);
             }
         }
         throw new ParseError("Expected a type name or '?'", tokens);

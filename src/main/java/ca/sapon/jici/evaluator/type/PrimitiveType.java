@@ -127,11 +127,6 @@ public class PrimitiveType implements ConcreteType {
     }
 
     @Override
-    public boolean is(Type type) {
-        return type instanceof PrimitiveType && this.type == ((PrimitiveType) type).getTypeClass();
-    }
-
-    @Override
     public boolean isVoid() {
         return false;
     }
@@ -204,6 +199,16 @@ public class PrimitiveType implements ConcreteType {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof PrimitiveType && this.type == ((PrimitiveType) other).getTypeClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
     }
 
     public static SingleClassType box(Class<?> type) {

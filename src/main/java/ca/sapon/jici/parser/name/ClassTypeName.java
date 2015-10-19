@@ -99,7 +99,6 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
                 type = SingleClassType.of(_class);
             }
         }
-        System.out.println(type);
         return type;
     }
 

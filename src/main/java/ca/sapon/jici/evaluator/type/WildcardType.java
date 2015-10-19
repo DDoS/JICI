@@ -61,11 +61,6 @@ public class WildcardType implements TypeParameter {
     }
 
     @Override
-    public boolean is(Type type) {
-        return this.equals(type);
-    }
-
-    @Override
     public boolean isVoid() {
         return false;
     }
@@ -125,15 +120,15 @@ public class WildcardType implements TypeParameter {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
-        if (!(o instanceof WildcardType)) {
+        if (!(other instanceof WildcardType)) {
             return false;
         }
-        final WildcardType that = (WildcardType) o;
-        return !(bound != null ? !bound.equals(that.bound) : that.bound != null) && kind == that.kind;
+        final WildcardType that = (WildcardType) other;
+        return bound != null ? bound.equals(that.bound) : that.bound == null && kind == that.kind;
     }
 
     @Override

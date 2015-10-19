@@ -55,11 +55,6 @@ public class VoidType implements ConcreteType {
     }
 
     @Override
-    public boolean is(Type type) {
-        return type.isVoid();
-    }
-
-    @Override
     public boolean isVoid() {
         return true;
     }
@@ -107,5 +102,15 @@ public class VoidType implements ConcreteType {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof VoidType;
+    }
+
+    @Override
+    public int hashCode() {
+        return 2928319;
     }
 }

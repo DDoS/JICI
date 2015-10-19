@@ -59,7 +59,7 @@ public class Arithmetic implements Expression {
         if (type == null) {
             final Type leftType = left.getType(environment);
             final Type rightType = right.getType(environment);
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.is(SingleClassType.THE_STRING) || rightType.is(SingleClassType.THE_STRING))) {
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.equals(SingleClassType.THE_STRING) || rightType.equals(SingleClassType.THE_STRING))) {
                 if (leftType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", left);
                 }

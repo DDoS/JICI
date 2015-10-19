@@ -74,7 +74,7 @@ public abstract class Callable {
         private final int varargIndex;
 
         private MethodCallable(Method method, boolean vararg) {
-            super(ReflectionUtil.wrap(method.getReturnType()));
+            super(ReflectionUtil.wrap(method.getGenericReturnType()));
             this.method = method;
             if (vararg) {
                 final Class<?>[] parameters = method.getParameterTypes();

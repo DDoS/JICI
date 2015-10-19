@@ -33,8 +33,6 @@ public interface Type {
 
     ValueKind getKind();
 
-    boolean is(Type type);
-
     boolean isVoid();
 
     boolean isNull();
@@ -54,4 +52,10 @@ public interface Type {
     boolean convertibleTo(Type to);
 
     String toString();
+
+    @Override
+    boolean equals(Object other);
+
+    @Override
+    int hashCode();
 }

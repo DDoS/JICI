@@ -97,11 +97,6 @@ public class ClassUnionType implements ClassType {
     }
 
     @Override
-    public boolean is(Type type) {
-        return type instanceof ClassUnionType && this.lowestUpperBound.equals(((ClassUnionType) type).lowestUpperBound);
-    }
-
-    @Override
     public boolean isVoid() {
         return false;
     }
@@ -194,5 +189,15 @@ public class ClassUnionType implements ClassType {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof ClassUnionType && this.lowestUpperBound.equals(((ClassUnionType) other).lowestUpperBound);
+    }
+
+    @Override
+    public int hashCode() {
+        return lowestUpperBound.hashCode();
     }
 }

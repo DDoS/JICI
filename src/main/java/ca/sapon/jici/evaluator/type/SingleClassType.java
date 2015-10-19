@@ -78,11 +78,6 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
     }
 
     @Override
-    public boolean is(Type type) {
-        return (type instanceof SingleClassType) && this.type == ((SingleClassType) type).getTypeClass();
-    }
-
-    @Override
     public boolean isVoid() {
         return false;
     }
@@ -264,8 +259,8 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return this == o || o != null && type.equals(((SingleClassType) o).type);
+    public boolean equals(Object other) {
+        return this == other || (other instanceof SingleClassType) && this.type == ((SingleClassType) other).getTypeClass();
     }
 
     @Override

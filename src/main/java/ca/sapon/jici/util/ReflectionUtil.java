@@ -27,11 +27,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,9 +54,11 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeParameter;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
@@ -181,7 +187,7 @@ public final class ReflectionUtil {
                     continue candidates;
                 }
                 // look for a perfect match
-                allEqual &= argument.is(parameter);
+                allEqual &= argument.equals(parameter);
             }
             // fast track perfect matches
             if (allEqual) {
@@ -290,6 +296,35 @@ public final class ReflectionUtil {
             return PrimitiveType.of(type);
         }
         return SingleClassType.of(type);
+    }
+
+    public static ConcreteType wrap(java.lang.reflect.Type type) {
+        if (type instanceof Class<?>) {
+            return wrap((Class<?>) type);
+        }
+        if (type instanceof GenericArrayType) {
+
+        }
+        if (type instanceof ParameterizedType) {
+            final ParameterizedType paramType = (ParameterizedType) type;
+            final java.lang.reflect.Type[] params = paramType.getActualTypeArguments();
+            final List<TypeParameter> wrapped = new ArrayList<>(params.length);
+            for (java.lang.reflect.Type param : params) {
+                final ConcreteType wrap = wrap(param);
+                if (!(wrap instanceof TypeParameter)) {
+                    throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
+                }
+                wrapped.add(((TypeParameter) wrap));
+            }
+            return ParametrizedType.of((Class<?>) paramType.getRawType(), wrapped);
+        }
+        if (type instanceof TypeVariable<?>) {
+
+        }
+        if (type instanceof java.lang.reflect.WildcardType) {
+
+        }
+        throw new UnsupportedOperationException(type.getClass().getSimpleName());
     }
 
     // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla

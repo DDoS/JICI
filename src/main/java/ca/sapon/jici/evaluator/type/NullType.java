@@ -45,11 +45,6 @@ public class NullType implements Type {
     }
 
     @Override
-    public boolean is(Type type) {
-        return type.isNull();
-    }
-
-    @Override
     public boolean isVoid() {
         return false;
     }
@@ -97,5 +92,15 @@ public class NullType implements Type {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof NullType;
+    }
+
+    @Override
+    public int hashCode() {
+        return 9849851;
     }
 }

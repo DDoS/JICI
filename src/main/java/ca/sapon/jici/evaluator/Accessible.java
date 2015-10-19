@@ -62,7 +62,7 @@ public abstract class Accessible {
         private final Field field;
 
         private FieldAccessible(Field field) {
-            super(ReflectionUtil.wrap(field.getType()));
+            super(ReflectionUtil.wrap(field.getGenericType()));
             this.field = field;
         }
 

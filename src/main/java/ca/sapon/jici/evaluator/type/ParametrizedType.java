@@ -46,11 +46,6 @@ public class ParametrizedType extends SingleClassType {
     }
 
     @Override
-    public boolean is(Type type) {
-        return super.is(type);
-    }
-
-    @Override
     public boolean convertibleTo(Type to) {
         return super.convertibleTo(to);
     }

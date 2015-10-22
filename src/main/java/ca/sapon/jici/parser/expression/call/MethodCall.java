@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.call;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Callable;
@@ -33,18 +34,25 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.name.TypeParameterName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall implements Expression, Statement {
     private final Expression object;
     private final Identifier method;
+    private final List<TypeParameterName> typeParameters;
     private final List<Expression> arguments;
     private Callable callable = null;
 
     public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
+        this(object, method, Collections.<TypeParameterName>emptyList(), arguments);
+    }
+
+    public MethodCall(Expression object, Identifier method, List<TypeParameterName> typeParameters, List<Expression> arguments) {
         this.object = object;
         this.method = method;
+        this.typeParameters = typeParameters;
         this.arguments = arguments;
     }
 
@@ -108,6 +116,7 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public String toString() {
-        return "MethodCall(" + object + "." + method + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "MethodCall(" + object + "." + (!typeParameters.isEmpty() ? '<' + StringUtil.toString(typeParameters, ", ") + '>' : "")
+                + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

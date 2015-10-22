@@ -190,7 +190,7 @@ public class EvaluatorTest {
     public void testAmbiguousCall() {
         final Environment environment = new Environment();
         assertReturns(2, "java.lang.Integer.bitCount(3)", environment);
-        assertReturns(System.out.getClass(), "java.lang.System.out.getClass()", environment);
+        assertReturns(System.out.hashCode(), "java.lang.System.out.hashCode()", environment);
     }
 
     @Test

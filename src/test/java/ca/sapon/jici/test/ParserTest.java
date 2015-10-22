@@ -80,6 +80,7 @@ public class ParserTest {
 
         testParseExpression("MethodCall(\"f\".m())", "\"f\".m()");
         testParseExpression("MethodCall(\"f\".m(1))", "\"f\".m(1)");
+        testParseExpression("MethodCall(\"f\".<Test>m(1))", "\"f\".<Test>m(1)");
 
         testParseExpression("IndexAccess(test[m])", "test[m]");
 

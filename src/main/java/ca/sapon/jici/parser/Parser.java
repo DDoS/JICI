@@ -142,12 +142,12 @@ public final class Parser {
     /*
         NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        CLASS_NAME:      NAME _ NAME<TYPE_PARAM_LIST>
+        CLASS_NAME:      NAME _ NAME TYPE_PARAM_LIST
         ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
         TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
         TYPE_PARAM:      TYPE_NAME _ ? _ ? extends TYPE_NAME _ ? super TYPE_NAME
-        TYPE_PARAM_LIST: TYPE_PARAM, TYPE_PARAM_LIST _ TYPE_PARAM
+        TYPE_PARAM_LIST: <TYPE_PARAM, TYPE_PARAM_LIST> _ <TYPE_PARAM>
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -431,7 +431,8 @@ public final class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ NAME _ NAME ARGUMENTS _ CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
+        ATOM:            LITERAL _ NAME _ NAME.IDENTIFIER ARGUMENTS _ NAME.<TYPE_PARAM_LIST>IDENTIFIER ARGUMENTS
+                         CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
 
         CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
 
@@ -750,6 +751,7 @@ public final class Parser {
             switch (tokens.get().getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.advance();
+                    final List<TypeParameterName> typeParameters = parseTypeParameterNameList(tokens);
                     if (tokens.has()) {
                         final Token token = tokens.get();
                         if (token.getGroup() == TokenGroup.IDENTIFIER) {
@@ -757,9 +759,12 @@ public final class Parser {
                             final Expression access;
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
-                                final List<Expression> arguments = parseArguments(tokens);
-                                access = new MethodCall(object, (Identifier) token, arguments);
+                                final List<Expression> arguments = parseArgumentsRest(tokens);
+                                access = new MethodCall(object, (Identifier) token, typeParameters, arguments);
                             } else {
+                                if (!typeParameters.isEmpty()) {
+                                    throw new ParseError("Type parameters not accepted here", typeParameters.get(0));
+                                }
                                 access = new FieldAccess(object, (Identifier) token);
                             }
                             return parseAccess(tokens, access);
@@ -821,14 +826,32 @@ public final class Parser {
                         return new ClassAccess(type);
                     }
                     tokens.popPosition();
-                    // else this is just a regular member access
+                    // look for type arguments
+                    final List<TypeParameterName> typeParameters;
+                    if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.SYMBOL_LESSER) {
+                        tokens.advance(1);
+                        typeParameters = parseTypeParameterNameList(tokens);
+                    } else {
+                        typeParameters = Collections.emptyList();
+                    }
+                    if (!typeParameters.isEmpty()) {
+                        if (tokens.has() && tokens.get().getGroup() == TokenGroup.IDENTIFIER) {
+                            // add method identifier trailing type params to full name
+                            name.add((Identifier) tokens.get());
+                            tokens.advance();
+                        } else {
+                            throw new ParseError("Expected identifier", tokens);
+                        }
+                    }
+                    // check for a method call by looking for arguments
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                         tokens.advance();
-                        if (name.size() == 1) {
-                            throw new ParseError("Local methods are not supported", name.get(0));
-                        }
-                        final List<Expression> arguments = parseArguments(tokens);
-                        return new AmbiguousCall(name, arguments);
+                        final List<Expression> arguments = parseArgumentsRest(tokens);
+                        return new AmbiguousCall(name, typeParameters, arguments);
+                    }
+                    // this is a name access, either a variable of a field
+                    if (!typeParameters.isEmpty()) {
+                        throw new ParseError("Type parameters not accepted here", typeParameters.get(0));
                     }
                     if (name.size() == 1) {
                         return new VariableAccess(name.get(0));
@@ -866,7 +889,7 @@ public final class Parser {
         throw new ParseError("Expected either a literal, a type class access, an identifier, \"new\" or '('", tokens);
     }
 
-    private static List<Expression> parseArguments(ListNavigator<Token> tokens) {
+    private static List<Expression> parseArgumentsRest(ListNavigator<Token> tokens) {
         final List<Expression> arguments;
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
             tokens.advance();
@@ -897,7 +920,7 @@ public final class Parser {
                         throw new ParseError("Expected class type", type);
                     }
                     tokens.advance();
-                    return new ConstructorCall((ClassTypeName) type, parseArguments(tokens));
+                    return new ConstructorCall((ClassTypeName) type, parseArgumentsRest(tokens));
                 }
                 case SYMBOL_OPEN_BRACKET: {
                     tokens.advance();

@@ -23,26 +23,34 @@
  */
 package ca.sapon.jici.parser.expression.call;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
+import ca.sapon.jici.parser.name.TypeParameterName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
 public class AmbiguousCall implements Expression, Statement {
     private final List<Identifier> name;
+    private final List<TypeParameterName> typeParameters;
     private final List<Expression> arguments;
     private Type type = null;
     private MethodCall call = null;
 
     public AmbiguousCall(List<Identifier> name, List<Expression> arguments) {
+        this(name, Collections.<TypeParameterName>emptyList(), arguments);
+    }
+
+    public AmbiguousCall(List<Identifier> name, List<TypeParameterName> typeParameters, List<Expression> arguments) {
         this.name = name;
+        this.typeParameters = typeParameters;
         this.arguments = arguments;
     }
 
@@ -63,7 +71,7 @@ public class AmbiguousCall implements Expression, Statement {
         if (type == null) {
             final int lastIndex = name.size() - 1;
             final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
-            call = new MethodCall(resolved, name.get(lastIndex), arguments);
+            call = new MethodCall(resolved, name.get(lastIndex), typeParameters, arguments);
             type = call.getType(environment);
         }
         return type;
@@ -86,6 +94,9 @@ public class AmbiguousCall implements Expression, Statement {
 
     @Override
     public String toString() {
-        return "MethodCall(" + StringUtil.toString(name, ".") + "(" + StringUtil.toString(arguments, ", ") + "))";
+        final int lastNameIndex = name.size() - 1;
+        return "MethodCall(" + (lastNameIndex == 0 ? "" : StringUtil.toString(name.subList(0, lastNameIndex), ".") + '.')
+                + (!typeParameters.isEmpty() ? '<' + StringUtil.toString(typeParameters, ", ") + '>' : "")
+                + name.get(lastNameIndex) + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

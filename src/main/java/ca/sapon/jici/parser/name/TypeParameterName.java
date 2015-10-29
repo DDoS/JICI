@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.parser.name;
 
+import java.util.Collections;
+
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
@@ -47,7 +49,7 @@ public class TypeParameterName implements SourceIndexed {
     public TypeParameter getType(Environment environment) {
         if (type == null) {
             if (kind == BoundKind.NONE) {
-                type = new WildcardType(null, kind);
+                type = new WildcardType(Collections.<SingleClassType>emptyList(), Collections.<SingleClassType>emptyList());
             } else {
                 final ConcreteType bound = this.bound.getType(environment);
                 if (!(bound instanceof SingleClassType)) {
@@ -58,8 +60,10 @@ public class TypeParameterName implements SourceIndexed {
                         type = (SingleClassType) bound;
                         break;
                     case LOWER:
+                        type = new WildcardType(Collections.singletonList((SingleClassType) bound), Collections.<SingleClassType>emptyList());
+                        break;
                     case UPPER:
-                        type = new WildcardType((SingleClassType) bound, kind);
+                        type = new WildcardType(Collections.<SingleClassType>emptyList(), Collections.singletonList((SingleClassType) bound));
                         break;
                 }
             }

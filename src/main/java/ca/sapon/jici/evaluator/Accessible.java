@@ -26,8 +26,8 @@ package ca.sapon.jici.evaluator;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
-import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -36,13 +36,13 @@ import ca.sapon.jici.util.ReflectionUtil;
  *
  */
 public abstract class Accessible {
-    protected final ConcreteType type;
+    protected final Type type;
 
-    protected Accessible(ConcreteType type) {
+    protected Accessible(Type type) {
         this.type = type;
     }
 
-    public ConcreteType getType() {
+    public Type getType() {
         return type;
     }
 

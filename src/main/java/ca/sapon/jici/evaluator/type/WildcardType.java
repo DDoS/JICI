@@ -23,36 +23,33 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.List;
+
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.parser.name.TypeParameterName.BoundKind;
+import ca.sapon.jici.util.StringUtil;
 
 /**
  *
  */
 public class WildcardType implements TypeParameter {
-    private final SingleClassType bound;
-    private final BoundKind kind;
+    private final List<SingleClassType> lowerBound;
+    private final List<SingleClassType> upperBound;
 
-    public WildcardType(SingleClassType bound, BoundKind kind) {
-        if (kind == BoundKind.EXACT) {
-            throw new UnsupportedOperationException(kind.name());
-        }
-        this.bound = bound;
-        this.kind = kind;
+    public WildcardType(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     @Override
     public String getName() {
-        switch (kind) {
-            case NONE:
-                return "?";
-            case LOWER:
-                return "? super " + bound.toString();
-            case UPPER:
-                return "? extends " + bound.toString();
-            default:
-                throw new UnsupportedOperationException(kind.name());
+        String name = "?";
+        if (!lowerBound.isEmpty()) {
+            name += " super " + StringUtil.toString(lowerBound, " & ");
         }
+        if (!upperBound.isEmpty()) {
+            name += " extends " + StringUtil.toString(upperBound, " & ");
+        }
+        return name;
     }
 
     @Override
@@ -92,7 +89,12 @@ public class WildcardType implements TypeParameter {
 
     @Override
     public boolean isArray() {
-        return kind == BoundKind.UPPER && bound.isArray();
+        for (SingleClassType upper : upperBound) {
+            if (!upper.isArray()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -102,16 +104,20 @@ public class WildcardType implements TypeParameter {
 
     @Override
     public boolean convertibleTo(Type to) {
-        switch (kind) {
-            case NONE:
-                return false;
-            case LOWER:
-                return bound.convertibleTo(to);
-            case UPPER:
-                return to.convertibleTo(bound);
-            default:
-                return false;
+        if (lowerBound.isEmpty() && upperBound.isEmpty()) {
+            return false;
         }
+        for (SingleClassType lower : lowerBound) {
+            if (!lower.convertibleTo(to)) {
+                return false;
+            }
+        }
+        for (SingleClassType upper : upperBound) {
+            if (!to.convertibleTo(upper)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -128,13 +134,13 @@ public class WildcardType implements TypeParameter {
             return false;
         }
         final WildcardType that = (WildcardType) other;
-        return bound != null ? bound.equals(that.bound) : that.bound == null && kind == that.kind;
+        return this.lowerBound.equals(that.lowerBound) && this.upperBound.equals(that.upperBound);
     }
 
     @Override
     public int hashCode() {
-        int result = bound != null ? bound.hashCode() : 0;
-        result = 31 * result + kind.hashCode();
+        int result = lowerBound.hashCode();
+        result = 31 * result + upperBound.hashCode();
         return result;
     }
 }

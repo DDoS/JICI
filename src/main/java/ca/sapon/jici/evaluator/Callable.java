@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
@@ -36,13 +37,13 @@ import ca.sapon.jici.util.ReflectionUtil;
  *
  */
 public abstract class Callable {
-    protected final ConcreteType returnType;
+    protected final Type returnType;
 
-    protected Callable(ConcreteType returnType) {
+    protected Callable(Type returnType) {
         this.returnType = returnType;
     }
 
-    public ConcreteType getReturnType() {
+    public Type getReturnType() {
         return returnType;
     }
 

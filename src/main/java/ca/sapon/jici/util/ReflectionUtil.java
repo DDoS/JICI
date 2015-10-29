@@ -60,6 +60,7 @@ import ca.sapon.jici.evaluator.type.SingleClassType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeParameter;
 import ca.sapon.jici.evaluator.type.VoidType;
+import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
@@ -298,7 +299,7 @@ public final class ReflectionUtil {
         return SingleClassType.of(type);
     }
 
-    public static ConcreteType wrap(java.lang.reflect.Type type) {
+    public static Type wrap(java.lang.reflect.Type type) {
         if (type instanceof Class<?>) {
             return wrap((Class<?>) type);
         }
@@ -310,7 +311,7 @@ public final class ReflectionUtil {
             final java.lang.reflect.Type[] params = paramType.getActualTypeArguments();
             final List<TypeParameter> wrapped = new ArrayList<>(params.length);
             for (java.lang.reflect.Type param : params) {
-                final ConcreteType wrap = wrap(param);
+                final Type wrap = wrap(param);
                 if (!(wrap instanceof TypeParameter)) {
                     throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
                 }
@@ -322,7 +323,29 @@ public final class ReflectionUtil {
 
         }
         if (type instanceof java.lang.reflect.WildcardType) {
-
+            final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
+            final java.lang.reflect.Type[] lowers = wildcardType.getLowerBounds();
+            final List<SingleClassType> wrappedLower = new ArrayList<>(lowers.length);
+            for (java.lang.reflect.Type lower : lowers) {
+                final Type wrap = wrap(lower);
+                if (!(wrap instanceof SingleClassType)) {
+                    throw new UnsupportedOperationException("Invalid type for wildcard lower bound: " + wrap.getName());
+                }
+                wrappedLower.add((SingleClassType) wrap);
+            }
+            final java.lang.reflect.Type[] uppers = wildcardType.getUpperBounds();
+            final List<SingleClassType> wrappedUpper = new ArrayList<>(uppers.length);
+            for (java.lang.reflect.Type upper : uppers) {
+                if (upper == Object.class) {
+                    continue;
+                }
+                final Type wrap = wrap(upper);
+                if (!(wrap instanceof SingleClassType)) {
+                    throw new UnsupportedOperationException("Invalid type for wildcard upper bound: " + wrap.getName());
+                }
+                wrappedUpper.add((SingleClassType) wrap);
+            }
+            return new WildcardType(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getSimpleName());
     }

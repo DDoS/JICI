@@ -27,6 +27,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 /**
@@ -42,17 +43,23 @@ public class ParametrizedType extends SingleClassType {
 
     @Override
     public String getName() {
-        return super.getName() + '<' + StringUtil.toString(parameters, ", ") + '>';
+        Class<?> _class = getTypeClass();
+        int dimensions = 0;
+        while (_class.isArray()) {
+            _class = _class.getComponentType();
+            dimensions++;
+        }
+        return _class.getCanonicalName() + '<' + StringUtil.toString(parameters, ", ") + '>' + StringUtil.repeat("[]", dimensions);
+    }
+
+    @Override
+    public SingleClassType asArray(int dimensions) {
+        return of(ReflectionUtil.asArrayType(getTypeClass(), dimensions), parameters);
     }
 
     @Override
     public boolean convertibleTo(Type to) {
         return super.convertibleTo(to);
-    }
-
-    @Override
-    public Callable getConstructor(Type[] arguments) {
-        return super.getConstructor(arguments);
     }
 
     @Override
@@ -63,11 +70,6 @@ public class ParametrizedType extends SingleClassType {
     @Override
     public Callable getMethod(String name, Type[] arguments) {
         return super.getMethod(name, arguments);
-    }
-
-    @Override
-    public String toString() {
-        return getName();
     }
 
     @Override

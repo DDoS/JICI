@@ -304,7 +304,20 @@ public final class ReflectionUtil {
             return wrap((Class<?>) type);
         }
         if (type instanceof GenericArrayType) {
+            final GenericArrayType genericArrayType = (GenericArrayType) type;
+            java.lang.reflect.Type componentType = genericArrayType.getGenericComponentType();
+            int dimensions = 1;
+            while (componentType instanceof GenericArrayType) {
+                componentType = ((GenericArrayType) componentType).getGenericComponentType();
+                dimensions++;
+            }
+            final Type wrapped = wrap(componentType);
+            if (wrapped instanceof ParametrizedType) {
+                return ((ParametrizedType) wrapped).asArray(dimensions);
+            }
+            //if (wrapped instanceof TypeVariable) {
 
+            //}
         }
         if (type instanceof ParameterizedType) {
             final ParameterizedType paramType = (ParameterizedType) type;

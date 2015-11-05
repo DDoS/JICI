@@ -35,7 +35,7 @@ public class WildcardType implements TypeParameter {
     private final List<SingleClassType> lowerBound;
     private final List<SingleClassType> upperBound;
 
-    public WildcardType(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
+    private WildcardType(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
@@ -104,7 +104,8 @@ public class WildcardType implements TypeParameter {
 
     @Override
     public boolean convertibleTo(Type to) {
-        if (lowerBound.isEmpty() && upperBound.isEmpty()) {
+        throw new UnsupportedOperationException("Unimplemented");
+        /*if (lowerBound.isEmpty() && upperBound.isEmpty()) {
             return false;
         }
         for (SingleClassType lower : lowerBound) {
@@ -117,7 +118,7 @@ public class WildcardType implements TypeParameter {
                 return false;
             }
         }
-        return true;
+        return true;*/
     }
 
     @Override
@@ -142,5 +143,9 @@ public class WildcardType implements TypeParameter {
         int result = lowerBound.hashCode();
         result = 31 * result + upperBound.hashCode();
         return result;
+    }
+
+    public static WildcardType of(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
+        return new WildcardType(lowerBound, upperBound);
     }
 }

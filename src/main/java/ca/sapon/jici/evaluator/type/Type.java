@@ -51,6 +51,7 @@ public interface Type {
 
     boolean convertibleTo(Type to);
 
+    @Override
     String toString();
 
     @Override

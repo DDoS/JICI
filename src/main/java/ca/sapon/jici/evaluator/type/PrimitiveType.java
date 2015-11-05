@@ -96,14 +96,14 @@ public class PrimitiveType implements ConcreteType {
         VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
         VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
-        BOXING_CONVERSIONS.put(boolean.class, SingleClassType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, SingleClassType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, SingleClassType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, SingleClassType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, SingleClassType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, SingleClassType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, SingleClassType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, SingleClassType.of(Double.class));
+        BOXING_CONVERSIONS.put(boolean.class, SingleClassTypeLiteral.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, SingleClassTypeLiteral.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, SingleClassTypeLiteral.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, SingleClassTypeLiteral.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, SingleClassTypeLiteral.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, SingleClassTypeLiteral.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, SingleClassTypeLiteral.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, SingleClassTypeLiteral.of(Double.class));
     }
 
     private PrimitiveType(Class<?> type, ValueKind kind) {
@@ -168,7 +168,7 @@ public class PrimitiveType implements ConcreteType {
 
     @Override
     public SingleClassType asArray(int dimensions) {
-        return SingleClassType.of(ReflectionUtil.asArrayType(type, dimensions));
+        return SingleClassTypeLiteral.of(ReflectionUtil.asArrayType(type, dimensions));
     }
 
     public SingleClassType box() {

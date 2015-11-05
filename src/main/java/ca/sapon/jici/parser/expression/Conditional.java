@@ -89,7 +89,7 @@ public class Conditional implements Expression {
             }
             if (leftType.isObject() || rightType.isObject()) {
                 // for objects return a union
-                return type = new ClassUnionType(
+                return type = ClassUnionType.of(
                         leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ClassType) leftType,
                         rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ClassType) rightType
                 );

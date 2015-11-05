@@ -57,6 +57,8 @@ import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
+import ca.sapon.jici.evaluator.type.SingleClassTypeVariable;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeParameter;
 import ca.sapon.jici.evaluator.type.VoidType;
@@ -296,7 +298,7 @@ public final class ReflectionUtil {
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
         }
-        return SingleClassType.of(type);
+        return SingleClassTypeLiteral.of(type);
     }
 
     public static Type wrap(java.lang.reflect.Type type) {
@@ -312,12 +314,9 @@ public final class ReflectionUtil {
                 dimensions++;
             }
             final Type wrapped = wrap(componentType);
-            if (wrapped instanceof ParametrizedType) {
-                return ((ParametrizedType) wrapped).asArray(dimensions);
+            if (wrapped instanceof SingleClassType) {
+                return ((SingleClassType) wrapped).asArray(dimensions);
             }
-            //if (wrapped instanceof TypeVariable) {
-
-            //}
         }
         if (type instanceof ParameterizedType) {
             final ParameterizedType paramType = (ParameterizedType) type;
@@ -333,34 +332,32 @@ public final class ReflectionUtil {
             return ParametrizedType.of((Class<?>) paramType.getRawType(), wrapped);
         }
         if (type instanceof TypeVariable<?>) {
-
+            final TypeVariable<?> typeVariable = (TypeVariable) type;
+            final List<SingleClassType> wrappedUpper = wrapBounds(typeVariable.getBounds(), true);
+            return SingleClassTypeVariable.of(typeVariable.getName(), wrappedUpper);
         }
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final java.lang.reflect.Type[] lowers = wildcardType.getLowerBounds();
-            final List<SingleClassType> wrappedLower = new ArrayList<>(lowers.length);
-            for (java.lang.reflect.Type lower : lowers) {
-                final Type wrap = wrap(lower);
-                if (!(wrap instanceof SingleClassType)) {
-                    throw new UnsupportedOperationException("Invalid type for wildcard lower bound: " + wrap.getName());
-                }
-                wrappedLower.add((SingleClassType) wrap);
-            }
-            final java.lang.reflect.Type[] uppers = wildcardType.getUpperBounds();
-            final List<SingleClassType> wrappedUpper = new ArrayList<>(uppers.length);
-            for (java.lang.reflect.Type upper : uppers) {
-                if (upper == Object.class) {
-                    continue;
-                }
-                final Type wrap = wrap(upper);
-                if (!(wrap instanceof SingleClassType)) {
-                    throw new UnsupportedOperationException("Invalid type for wildcard upper bound: " + wrap.getName());
-                }
-                wrappedUpper.add((SingleClassType) wrap);
-            }
-            return new WildcardType(wrappedLower, wrappedUpper);
+            final List<SingleClassType> wrappedLower = wrapBounds(wildcardType.getLowerBounds(), false);
+            final List<SingleClassType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds(), true);
+            return WildcardType.of(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getSimpleName());
+    }
+
+    private static List<SingleClassType> wrapBounds(java.lang.reflect.Type[] types, boolean upper) {
+        final List<SingleClassType> wrapped = new ArrayList<>(types.length);
+        for (java.lang.reflect.Type type : types) {
+            if (upper && type == Object.class) {
+                continue;
+            }
+            final Type wrap = wrap(type);
+            if (!(wrap instanceof SingleClassType)) {
+                throw new UnsupportedOperationException("Invalid type for " + (upper ? "upper" : "lower") + " bound: " + wrap.getName());
+            }
+            wrapped.add((SingleClassType) wrap);
+        }
+        return wrapped;
     }
 
     // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla
@@ -462,14 +459,14 @@ public final class ReflectionUtil {
                     // name match fail, check super class
                     final Class<?> superClass = typeClass.getSuperclass();
                     if (superClass != null) {
-                        final Class<?> match = findNameMatch(SingleClassType.of(superClass), name);
+                        final Class<?> match = findNameMatch(SingleClassTypeLiteral.of(superClass), name);
                         if (match != null) {
                             return match;
                         }
                     }
                     // now check implemented interfaces
                     for (Class<?> implemented : typeClass.getInterfaces()) {
-                        final Class<?> match = findNameMatch(SingleClassType.of(implemented), name);
+                        final Class<?> match = findNameMatch(SingleClassTypeLiteral.of(implemented), name);
                         if (match != null) {
                             return match;
                         }

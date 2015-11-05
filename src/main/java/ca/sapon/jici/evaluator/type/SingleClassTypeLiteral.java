@@ -21,21 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.parser.name;
+package ca.sapon.jici.evaluator.type;
 
-import ca.sapon.jici.SourceIndexed;
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.util.ReflectionUtil;
 
-public interface TypeName extends SourceIndexed {
-    ConcreteType getType(Environment environment);
+/**
+ *
+ */
+public class SingleClassTypeLiteral extends SingleClassType {
+    private final Class<?> type;
+
+    private SingleClassTypeLiteral(Class<?> type) {
+        this.type = type;
+    }
 
     @Override
-    int getStart();
+    public String getName() {
+        return type.getCanonicalName();
+    }
 
     @Override
-    int getEnd();
+    public Class<?> getTypeClass() {
+        return type;
+    }
 
     @Override
-    String toString();
+    public SingleClassType asArray(int dimensions) {
+        return of(ReflectionUtil.asArrayType(type, dimensions));
+    }
+
+    @Override
+    public boolean convertibleTo(Type to) {
+        return to instanceof ConcreteType && convertibleTo(type, ((ConcreteType) to).getTypeClass());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || (other instanceof SingleClassType) && this.type == ((SingleClassType) other).getTypeClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+
+    public static SingleClassTypeLiteral of(Class<?> type) {
+        return new SingleClassTypeLiteral(type);
+    }
 }

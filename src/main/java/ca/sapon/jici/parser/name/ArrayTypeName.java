@@ -31,6 +31,7 @@ import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
 import ca.sapon.jici.util.StringUtil;
 
 public class ArrayTypeName implements TypeName, ImportedTypeName {
@@ -67,7 +68,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
         if (hint instanceof SingleClassType) {
             final Class<?> validated = validateTypeHint(((SingleClassType) hint).getTypeClass());
             if (validated != null) {
-                typeName.setTypeHint(SingleClassType.of(validated));
+                typeName.setTypeHint(SingleClassTypeLiteral.of(validated));
             }
         } else if (hint instanceof ClassUnionType) {
             final ClassUnionType classUnion = (ClassUnionType) hint;
@@ -75,7 +76,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
             for (Class<?> _class : classUnion.getTypeClasses()) {
                 final Class<?> validated = validateTypeHint(_class);
                 if (validated != null) {
-                    hints.add(SingleClassType.of(validated));
+                    hints.add(SingleClassTypeLiteral.of(validated));
                 }
             }
             switch (hints.size()) {
@@ -85,7 +86,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
                     typeName.setTypeHint(hints.get(0));
                     break;
                 default:
-                    typeName.setTypeHint(new ClassUnionType(hints));
+                    typeName.setTypeHint(ClassUnionType.of(hints));
                     break;
             }
         }

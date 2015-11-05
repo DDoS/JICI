@@ -32,6 +32,7 @@ import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ClassUnionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
@@ -63,9 +64,9 @@ public class IndexAccess implements Reference {
                 final ClassType[] componentUnionType = new ClassType[typeClasses.size()];
                 int i = 0;
                 for (Class<?> typeClass : typeClasses) {
-                    componentUnionType[i++] = SingleClassType.of(typeClass.getComponentType());
+                    componentUnionType[i++] = SingleClassTypeLiteral.of(typeClass.getComponentType());
                 }
-                type = new ClassUnionType(componentUnionType);
+                type = ClassUnionType.of(componentUnionType);
             } else {
                 type = ((SingleClassType) objectType).getComponentType();
             }

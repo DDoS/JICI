@@ -25,40 +25,39 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.List;
 
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 /**
  *
  */
-public class ParametrizedType extends SingleClassType {
-    private final Class<?> raw;
-    private final List<TypeParameter> parameters;
+public class SingleClassTypeVariable extends SingleClassType {
+    private final String name;
+    private final List<SingleClassType> upperBound;
+    private final int dimensions;
 
-    private ParametrizedType(Class<?> raw, List<TypeParameter> parameters) {
-        this.raw = raw;
-        this.parameters = parameters;
+    private SingleClassTypeVariable(String name, List<SingleClassType> upperBound, int dimensions) {
+        this.name = name;
+        this.dimensions = dimensions;
+        this.upperBound = upperBound;
     }
 
-    @Override
-    public String getName() {
-        Class<?> _class = raw;
-        int dimensions = 0;
-        while (_class.isArray()) {
-            _class = _class.getComponentType();
-            dimensions++;
-        }
-        return _class.getCanonicalName() + '<' + StringUtil.toString(parameters, ", ") + '>' + StringUtil.repeat("[]", dimensions);
+    public List<SingleClassType> getUpperBound() {
+        return upperBound;
     }
 
     @Override
     public Class<?> getTypeClass() {
-        return raw;
+        throw new UnsupportedOperationException("Type variable " + name + " is unsolved");
     }
 
     @Override
     public SingleClassType asArray(int dimensions) {
-        return of(ReflectionUtil.asArrayType(raw, dimensions), parameters);
+        return new SingleClassTypeVariable(name, upperBound, this.dimensions + dimensions);
+    }
+
+    @Override
+    public String getName() {
+        return name + (upperBound.isEmpty() ? "" : " extends " + StringUtil.toString(upperBound, " & "));
     }
 
     @Override
@@ -66,24 +65,7 @@ public class ParametrizedType extends SingleClassType {
         throw new UnsupportedOperationException("Unimplemented");
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other instanceof ParametrizedType) {
-            final ParametrizedType that = (ParametrizedType) other;
-            return raw.equals(that.raw) && parameters.equals(that.parameters);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return 31 * super.hashCode() + parameters.hashCode();
-    }
-
-    public static ParametrizedType of(Class<?> raw, List<TypeParameter> parameters) {
-        return new ParametrizedType(raw, parameters);
+    public static SingleClassTypeVariable of(String name, List<SingleClassType> upperBound) {
+        return new SingleClassTypeVariable(name, upperBound, 0);
     }
 }

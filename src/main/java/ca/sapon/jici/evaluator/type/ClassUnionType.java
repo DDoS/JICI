@@ -38,20 +38,14 @@ import ca.sapon.jici.util.StringUtil;
  *
  */
 public class ClassUnionType implements ClassType {
-    private final ClassType[] union;
     private final Set<Class<?>> classes;
     private final Set<SingleClassType> lowestUpperBound;
 
-    public ClassUnionType(Collection<ClassType> union) {
-        this(union.toArray(new ClassType[union.size()]));
-    }
-
-    public ClassUnionType(ClassType... union) {
-        if (union.length <= 1) {
+    private ClassUnionType(Collection<ClassType> union) {
+        if (union.size() <= 1) {
             throw new UnsupportedOperationException("Expected more than one type");
         }
-        this.union = union;
-        classes = new HashSet<>(union.length);
+        classes = new HashSet<>(union.size());
         boolean allEqual = true;
         Class<?> previous = null;
         for (ClassType type : union) {
@@ -74,7 +68,7 @@ public class ClassUnionType implements ClassType {
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            lowestUpperBound.add(SingleClassType.of(bound));
+            lowestUpperBound.add(SingleClassTypeLiteral.of(bound));
         }
     }
 
@@ -199,5 +193,13 @@ public class ClassUnionType implements ClassType {
     @Override
     public int hashCode() {
         return lowestUpperBound.hashCode();
+    }
+
+    public static ClassUnionType of(ClassType... union) {
+        return of(Arrays.asList(union));
+    }
+
+    public static ClassUnionType of(Collection<ClassType> union) {
+        return new ClassUnionType(union);
     }
 }

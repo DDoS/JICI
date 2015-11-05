@@ -39,11 +39,10 @@ import ca.sapon.jici.util.StringUtil;
 /**
  *
  */
-public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
-    public static final SingleClassType THE_STRING = of(String.class);
-    public static final SingleClassType THE_OBJECT = of(Object.class);
+public abstract class SingleClassType implements ClassType, ConcreteType, TypeParameter {
+    public static final SingleClassType THE_STRING = SingleClassTypeLiteral.of(String.class);
+    public static final SingleClassType THE_OBJECT = SingleClassTypeLiteral.of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
-    private final Class<?> type;
     private PrimitiveType unbox;
     private boolean unboxCached = false;
 
@@ -56,20 +55,6 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
         UNBOXED_TYPES.put(Long.class, long.class);
         UNBOXED_TYPES.put(Float.class, float.class);
         UNBOXED_TYPES.put(Double.class, double.class);
-    }
-
-    protected SingleClassType(Class<?> type) {
-        this.type = type;
-    }
-
-    @Override
-    public Class<?> getTypeClass() {
-        return type;
-    }
-
-    @Override
-    public String getName() {
-        return type.getCanonicalName();
     }
 
     @Override
@@ -109,7 +94,7 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
 
     @Override
     public boolean isArray() {
-        return type.isArray();
+        return getTypeClass().isArray();
     }
 
     @Override
@@ -118,17 +103,12 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
     }
 
     public ConcreteType getComponentType() {
-        return ReflectionUtil.wrap(type.getComponentType());
-    }
-
-    @Override
-    public SingleClassType asArray(int dimensions) {
-        return of(ReflectionUtil.asArrayType(type, dimensions));
+        return ReflectionUtil.wrap(getTypeClass().getComponentType());
     }
 
     public boolean isBox() {
         if (!unboxCached) {
-            final Class<?> unboxClass = unbox(type);
+            final Class<?> unboxClass = unbox(getTypeClass());
             if (unboxClass != null && unboxClass.isPrimitive()) {
                 unbox = PrimitiveType.of(unboxClass);
             } else {
@@ -143,7 +123,7 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
         if (isBox()) {
             return unbox;
         }
-        throw new UnsupportedOperationException(type.getCanonicalName() + " is not a box type");
+        throw new UnsupportedOperationException(getTypeClass().getCanonicalName() + " is not a box type");
     }
 
     public ConcreteType tryUnbox() {
@@ -154,13 +134,8 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
     }
 
     @Override
-    public boolean convertibleTo(Type to) {
-        return to instanceof ConcreteType && convertibleTo(type, ((ConcreteType) to).getTypeClass());
-    }
-
-    @Override
     public Callable getConstructor(Type[] arguments) {
-        final Constructor<?>[] constructors = type.getConstructors();
+        final Constructor<?>[] constructors = getTypeClass().getConstructors();
         final int argumentCount = arguments.length;
         final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
         final Map<Constructor<?>, Class<?>[]> varargCandidate = new HashMap<>();
@@ -199,7 +174,7 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
         }
         Field field;
         try {
-            field = type.getField(name);
+            field = getTypeClass().getField(name);
             if (field.isSynthetic()) {
                 return failGetField(name);
             }
@@ -218,7 +193,7 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
         if (isArray() && arguments.length == 0 && "clone".equals(name)) {
             return Callable.forArrayClone(this);
         }
-        final Method[] methods = type.getMethods();
+        final Method[] methods = getTypeClass().getMethods();
         final int argumentCount = arguments.length;
         final Map<Method, Class<?>[]> candidates = new HashMap<>();
         final Map<Method, Class<?>[]> varargCandidate = new HashMap<>();
@@ -258,16 +233,6 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
         return getName();
     }
 
-    @Override
-    public boolean equals(Object other) {
-        return this == other || (other instanceof SingleClassType) && this.type == ((SingleClassType) other).getTypeClass();
-    }
-
-    @Override
-    public int hashCode() {
-        return type.hashCode();
-    }
-
     public static Class<?> unbox(Class<?> type) {
         final Class<?> unboxed = UNBOXED_TYPES.get(type);
         return unboxed == null ? type : unboxed;
@@ -279,9 +244,5 @@ public class SingleClassType implements ClassType, ConcreteType, TypeParameter {
             return from.isPrimitive() && PrimitiveType.convertibleTo(from, to);
         }
         return to.isAssignableFrom(from);
-    }
-
-    public static SingleClassType of(Class<?> type) {
-        return new SingleClassType(type);
     }
 }

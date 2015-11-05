@@ -33,6 +33,7 @@ import ca.sapon.jici.evaluator.type.ClassType;
 import ca.sapon.jici.evaluator.type.ConcreteType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
 import ca.sapon.jici.evaluator.type.TypeParameter;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -96,7 +97,7 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
                 }
                 type = ParametrizedType.of(_class, classes);
             } else {
-                type = SingleClassType.of(_class);
+                type = SingleClassTypeLiteral.of(_class);
             }
         }
         return type;

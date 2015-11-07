@@ -49,7 +49,7 @@ public class TypeParameterName implements SourceIndexed {
     public TypeParameter getType(Environment environment) {
         if (type == null) {
             if (kind == BoundKind.NONE) {
-                type = WildcardType.of(Collections.<SingleClassType>emptyList(), Collections.<SingleClassType>emptyList());
+                type = WildcardType.of(Collections.<SingleClassType>emptySet(), Collections.<SingleClassType>emptySet());
             } else {
                 final ConcreteType bound = this.bound.getType(environment);
                 if (!(bound instanceof SingleClassType)) {
@@ -60,10 +60,10 @@ public class TypeParameterName implements SourceIndexed {
                         type = (SingleClassType) bound;
                         break;
                     case LOWER:
-                        type = WildcardType.of(Collections.singletonList((SingleClassType) bound), Collections.<SingleClassType>emptyList());
+                        type = WildcardType.of(Collections.singleton((SingleClassType) bound), Collections.<SingleClassType>emptySet());
                         break;
                     case UPPER:
-                        type = WildcardType.of(Collections.<SingleClassType>emptyList(), Collections.singletonList((SingleClassType) bound));
+                        type = WildcardType.of(Collections.<SingleClassType>emptySet(), Collections.singleton((SingleClassType) bound));
                         break;
                 }
             }

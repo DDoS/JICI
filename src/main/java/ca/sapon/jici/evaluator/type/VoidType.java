@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -40,7 +41,7 @@ public class VoidType implements ConcreteType {
     }
 
     @Override
-    public SingleClassType asArray(int dimensions) {
+    public SingleClassTypeLiteral asArray(int dimensions) {
         throw new UnsupportedOperationException("Cannot create an array of the void type");
     }
 
@@ -96,7 +97,7 @@ public class VoidType implements ConcreteType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        throw new UnsupportedOperationException("Cannot convert the void type");
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override

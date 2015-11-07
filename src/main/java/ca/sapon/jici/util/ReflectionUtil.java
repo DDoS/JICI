@@ -235,9 +235,9 @@ public final class ReflectionUtil {
         //   else
         //     A < B
         if (parameterA.isPrimitive()) {
-            return parameterB.isPrimitive() ? PrimitiveType.convertibleTo(parameterA, parameterB) : primitiveArgument;
+            return parameterB.isPrimitive() ? TypeUtil.convertibleTo(parameterA, parameterB) : primitiveArgument;
         }
-        return parameterB.isPrimitive() ? !primitiveArgument : SingleClassType.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !primitiveArgument : TypeUtil.convertibleTo(parameterA, parameterB);
     }
 
     public static void fixReturnTypeConflicts(Map<Method, Class<?>[]> candidates) {
@@ -283,9 +283,9 @@ public final class ReflectionUtil {
             return true;
         }
         if (parameterA.isPrimitive()) {
-            return !parameterB.isPrimitive() || PrimitiveType.convertibleTo(parameterA, parameterB);
+            return !parameterB.isPrimitive() || TypeUtil.convertibleTo(parameterA, parameterB);
         }
-        return !parameterB.isPrimitive() && SingleClassType.convertibleTo(parameterA, parameterB);
+        return !parameterB.isPrimitive() && TypeUtil.convertibleTo(parameterA, parameterB);
     }
 
     public static ConcreteType wrap(Class<?> type) {
@@ -333,27 +333,24 @@ public final class ReflectionUtil {
         }
         if (type instanceof TypeVariable<?>) {
             final TypeVariable<?> typeVariable = (TypeVariable) type;
-            final List<SingleClassType> wrappedUpper = wrapBounds(typeVariable.getBounds(), true);
+            final Set<SingleClassType> wrappedUpper = wrapBounds(typeVariable.getBounds());
             return SingleClassTypeVariable.of(typeVariable.getName(), wrappedUpper);
         }
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final List<SingleClassType> wrappedLower = wrapBounds(wildcardType.getLowerBounds(), false);
-            final List<SingleClassType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds(), true);
+            final Set<SingleClassType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
+            final Set<SingleClassType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
             return WildcardType.of(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getSimpleName());
     }
 
-    private static List<SingleClassType> wrapBounds(java.lang.reflect.Type[] types, boolean upper) {
-        final List<SingleClassType> wrapped = new ArrayList<>(types.length);
+    private static Set<SingleClassType> wrapBounds(java.lang.reflect.Type[] types) {
+        final Set<SingleClassType> wrapped = new HashSet<>(types.length);
         for (java.lang.reflect.Type type : types) {
-            if (upper && type == Object.class) {
-                continue;
-            }
             final Type wrap = wrap(type);
             if (!(wrap instanceof SingleClassType)) {
-                throw new UnsupportedOperationException("Invalid type for " + (upper ? "upper" : "lower") + " bound: " + wrap.getName());
+                throw new UnsupportedOperationException("Invalid type for bound: " + wrap.getName());
             }
             wrapped.add((SingleClassType) wrap);
         }

@@ -106,6 +106,11 @@ public abstract class SingleClassType implements ClassType, ConcreteType, TypePa
         return ReflectionUtil.wrap(getTypeClass().getComponentType());
     }
 
+    @Override
+    public boolean contains(TypeParameter other) {
+        return equals(other);
+    }
+
     public boolean isBox() {
         if (!unboxCached) {
             final Class<?> unboxClass = unbox(getTypeClass());
@@ -236,13 +241,5 @@ public abstract class SingleClassType implements ClassType, ConcreteType, TypePa
     public static Class<?> unbox(Class<?> type) {
         final Class<?> unboxed = UNBOXED_TYPES.get(type);
         return unboxed == null ? type : unboxed;
-    }
-
-    public static boolean convertibleTo(Class<?> from, Class<?> to) {
-        if (to.isPrimitive()) {
-            from = unbox(from);
-            return from.isPrimitive() && PrimitiveType.convertibleTo(from, to);
-        }
-        return to.isAssignableFrom(from);
     }
 }

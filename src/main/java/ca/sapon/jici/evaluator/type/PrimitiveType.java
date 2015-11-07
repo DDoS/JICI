@@ -31,6 +31,7 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -48,7 +49,6 @@ public class PrimitiveType implements ConcreteType {
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
-    private static final Map<Class<?>, Set<Class<?>>> VALID_CONVERSIONS = new HashMap<>();
     private static final Map<Class<?>, SingleClassType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
@@ -86,15 +86,6 @@ public class PrimitiveType implements ConcreteType {
         BINARY_WIDENERS.put(long.class, new Widener(long.class, byte.class, short.class, char.class, int.class));
         BINARY_WIDENERS.put(float.class, new Widener(float.class, byte.class, short.class, char.class, int.class, long.class));
         BINARY_WIDENERS.put(double.class, new Widener(double.class, byte.class, short.class, char.class, int.class, long.class, float.class));
-
-        VALID_CONVERSIONS.put(boolean.class, toSet(boolean.class));
-        VALID_CONVERSIONS.put(byte.class, toSet(byte.class, short.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(short.class, toSet(short.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(char.class, toSet(char.class, int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(int.class, toSet(int.class, long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(long.class, toSet(long.class, float.class, double.class));
-        VALID_CONVERSIONS.put(float.class, toSet(float.class, double.class));
-        VALID_CONVERSIONS.put(double.class, toSet(double.class));
 
         BOXING_CONVERSIONS.put(boolean.class, SingleClassTypeLiteral.of(Boolean.class));
         BOXING_CONVERSIONS.put(byte.class, SingleClassTypeLiteral.of(Byte.class));
@@ -167,7 +158,7 @@ public class PrimitiveType implements ConcreteType {
     }
 
     @Override
-    public SingleClassType asArray(int dimensions) {
+    public SingleClassTypeLiteral asArray(int dimensions) {
         return SingleClassTypeLiteral.of(ReflectionUtil.asArrayType(type, dimensions));
     }
 
@@ -190,10 +181,7 @@ public class PrimitiveType implements ConcreteType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        if (to instanceof ClassUnionType) {
-            throw new UnsupportedOperationException("Cannot convert to an object union type");
-        }
-        return convertibleTo(type, ((ConcreteType) to).getTypeClass());
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override
@@ -223,21 +211,8 @@ public class PrimitiveType implements ConcreteType {
         return BINARY_WIDENERS.get(type).widen(with);
     }
 
-    public static boolean convertibleTo(Class<?> from, Class<?> to) {
-        if (!to.isPrimitive()) {
-            return box(from).convertibleTo(ReflectionUtil.wrap(to));
-        }
-        return VALID_CONVERSIONS.get(from).contains(to);
-    }
-
     public static PrimitiveType of(Class<?> type) {
         return ALL_TYPES.get(type);
-    }
-
-    private static Set<Class<?>> toSet(Class<?>... values) {
-        final Set<Class<?>> set = new HashSet<>(values.length);
-        Collections.addAll(set, values);
-        return set;
     }
 
     private static class RangeChecker {

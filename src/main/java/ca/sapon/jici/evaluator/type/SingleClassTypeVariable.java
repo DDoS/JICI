@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.util.List;
+import java.util.Set;
 
 import ca.sapon.jici.util.StringUtil;
 
@@ -32,16 +32,16 @@ import ca.sapon.jici.util.StringUtil;
  */
 public class SingleClassTypeVariable extends SingleClassType {
     private final String name;
-    private final List<SingleClassType> upperBound;
     private final int dimensions;
+    private final Set<SingleClassType> upperBound;
 
-    private SingleClassTypeVariable(String name, List<SingleClassType> upperBound, int dimensions) {
+    private SingleClassTypeVariable(String name, Set<SingleClassType> upperBound, int dimensions) {
         this.name = name;
         this.dimensions = dimensions;
         this.upperBound = upperBound;
     }
 
-    public List<SingleClassType> getUpperBound() {
+    public Set<SingleClassType> getUpperBound() {
         return upperBound;
     }
 
@@ -57,7 +57,7 @@ public class SingleClassTypeVariable extends SingleClassType {
 
     @Override
     public String getName() {
-        return name + (upperBound.isEmpty() ? "" : " extends " + StringUtil.toString(upperBound, " & "));
+        return name + StringUtil.repeat("[]", dimensions);
     }
 
     @Override
@@ -65,7 +65,26 @@ public class SingleClassTypeVariable extends SingleClassType {
         throw new UnsupportedOperationException("Unimplemented");
     }
 
-    public static SingleClassTypeVariable of(String name, List<SingleClassType> upperBound) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SingleClassTypeVariable)) {
+            return false;
+        }
+        final SingleClassTypeVariable that = (SingleClassTypeVariable) o;
+        return dimensions == that.dimensions && name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + dimensions;
+        return result;
+    }
+
+    public static SingleClassTypeVariable of(String name, Set<SingleClassType> upperBound) {
         return new SingleClassTypeVariable(name, upperBound, 0);
     }
 }

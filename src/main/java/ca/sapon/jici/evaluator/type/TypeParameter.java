@@ -27,4 +27,5 @@ package ca.sapon.jici.evaluator.type;
  *
  */
 public interface TypeParameter extends Type {
+    boolean contains(TypeParameter other);
 }

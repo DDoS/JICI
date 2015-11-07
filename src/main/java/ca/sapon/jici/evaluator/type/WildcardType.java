@@ -23,31 +23,37 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
  */
 public class WildcardType implements TypeParameter {
-    private final List<SingleClassType> lowerBound;
-    private final List<SingleClassType> upperBound;
+    private final Set<SingleClassType> lowerBound;
+    private final Set<SingleClassType> upperBound;
 
-    private WildcardType(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
+    private WildcardType(Set<SingleClassType> lowerBound, Set<SingleClassType> upperBound) {
         this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
+        if (upperBound.size() == 1 && upperBound.contains(SingleClassType.THE_OBJECT)) {
+            this.upperBound = Collections.emptySet();
+        } else {
+            this.upperBound = upperBound;
+        }
     }
 
     @Override
     public String getName() {
         String name = "?";
-        if (!lowerBound.isEmpty()) {
-            name += " super " + StringUtil.toString(lowerBound, " & ");
-        }
         if (!upperBound.isEmpty()) {
             name += " extends " + StringUtil.toString(upperBound, " & ");
+        }
+        if (!lowerBound.isEmpty()) {
+            name += " super " + StringUtil.toString(lowerBound, " & ");
         }
         return name;
     }
@@ -104,21 +110,49 @@ public class WildcardType implements TypeParameter {
 
     @Override
     public boolean convertibleTo(Type to) {
-        throw new UnsupportedOperationException("Unimplemented");
-        /*if (lowerBound.isEmpty() && upperBound.isEmpty()) {
-            return false;
-        }
-        for (SingleClassType lower : lowerBound) {
-            if (!lower.convertibleTo(to)) {
+        return TypeUtil.convertibleTo(this, to);
+    }
+
+    @Override
+    public boolean contains(TypeParameter other) {
+        if (other instanceof WildcardType) {
+            final WildcardType otherWildcard = (WildcardType) other;
+            // Search for an upper bound of the other contained in one of this
+            boolean anyUpperContained = true;
+            thisBounds:
+            for (SingleClassType thisUpper : upperBound) {
+                anyUpperContained = false;
+                for (SingleClassType otherUpper : otherWildcard.upperBound) {
+                    if (!TypeUtil.convertibleTo(otherUpper, thisUpper)) {
+                        continue thisBounds;
+                    }
+                }
+                anyUpperContained = true;
+                break;
+            }
+            if (!anyUpperContained) {
                 return false;
             }
-        }
-        for (SingleClassType upper : upperBound) {
-            if (!to.convertibleTo(upper)) {
-                return false;
+            // Search for a lower bound of this contained in one of other
+            boolean anyLowerContained = true;
+            otherBounds:
+            for (SingleClassType otherLower : otherWildcard.lowerBound) {
+                anyLowerContained = false;
+                for (SingleClassType thisLower : lowerBound) {
+                    if (!TypeUtil.convertibleTo(thisLower, otherLower)) {
+                        continue otherBounds;
+                    }
+                }
+                anyLowerContained = true;
+                break;
             }
+            return anyLowerContained;
         }
-        return true;*/
+        if (other instanceof SingleClassType) {
+            final SingleClassType otherClass = (SingleClassType) other;
+            return upperBound.contains(otherClass) || lowerBound.contains(otherClass);
+        }
+        return false;
     }
 
     @Override
@@ -145,7 +179,7 @@ public class WildcardType implements TypeParameter {
         return result;
     }
 
-    public static WildcardType of(List<SingleClassType> lowerBound, List<SingleClassType> upperBound) {
+    public static WildcardType of(Set<SingleClassType> lowerBound, Set<SingleClassType> upperBound) {
         return new WildcardType(lowerBound, upperBound);
     }
 }

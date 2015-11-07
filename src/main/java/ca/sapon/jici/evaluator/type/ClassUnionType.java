@@ -33,6 +33,7 @@ import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -137,12 +138,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        for (SingleClassType bound : lowestUpperBound) {
-            if (bound.convertibleTo(to)) {
-                return true;
-            }
-        }
-        return false;
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override

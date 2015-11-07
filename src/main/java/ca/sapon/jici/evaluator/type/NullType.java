@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -86,7 +87,7 @@ public class NullType implements Type {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return !to.isPrimitive();
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override

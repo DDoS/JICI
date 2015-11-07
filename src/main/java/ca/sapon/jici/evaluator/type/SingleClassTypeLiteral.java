@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -46,13 +47,13 @@ public class SingleClassTypeLiteral extends SingleClassType {
     }
 
     @Override
-    public SingleClassType asArray(int dimensions) {
+    public SingleClassTypeLiteral asArray(int dimensions) {
         return of(ReflectionUtil.asArrayType(type, dimensions));
     }
 
     @Override
     public boolean convertibleTo(Type to) {
-        return to instanceof ConcreteType && convertibleTo(type, ((ConcreteType) to).getTypeClass());
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override

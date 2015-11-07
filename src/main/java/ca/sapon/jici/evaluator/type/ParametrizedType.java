@@ -25,24 +25,24 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.List;
 
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
  */
 public class ParametrizedType extends SingleClassType {
-    private final Class<?> raw;
+    private final SingleClassTypeLiteral raw;
     private final List<TypeParameter> parameters;
 
-    private ParametrizedType(Class<?> raw, List<TypeParameter> parameters) {
+    private ParametrizedType(SingleClassTypeLiteral raw, List<TypeParameter> parameters) {
         this.raw = raw;
         this.parameters = parameters;
     }
 
     @Override
     public String getName() {
-        Class<?> _class = raw;
+        Class<?> _class = raw.getTypeClass();
         int dimensions = 0;
         while (_class.isArray()) {
             _class = _class.getComponentType();
@@ -53,17 +53,25 @@ public class ParametrizedType extends SingleClassType {
 
     @Override
     public Class<?> getTypeClass() {
+        return raw.getTypeClass();
+    }
+
+    public SingleClassTypeLiteral getRaw() {
         return raw;
+    }
+
+    public List<TypeParameter> getParameters() {
+        return parameters;
     }
 
     @Override
     public SingleClassType asArray(int dimensions) {
-        return of(ReflectionUtil.asArrayType(raw, dimensions), parameters);
+        return new ParametrizedType(raw.asArray(dimensions), parameters);
     }
 
     @Override
     public boolean convertibleTo(Type to) {
-        throw new UnsupportedOperationException("Unimplemented");
+        return TypeUtil.convertibleTo(this, to);
     }
 
     @Override
@@ -84,6 +92,6 @@ public class ParametrizedType extends SingleClassType {
     }
 
     public static ParametrizedType of(Class<?> raw, List<TypeParameter> parameters) {
-        return new ParametrizedType(raw, parameters);
+        return new ParametrizedType(SingleClassTypeLiteral.of(raw), parameters);
     }
 }

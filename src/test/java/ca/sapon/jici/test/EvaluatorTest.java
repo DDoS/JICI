@@ -652,7 +652,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -667,7 +667,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -682,7 +682,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -697,7 +697,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -712,7 +712,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -727,7 +727,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -742,7 +742,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -757,7 +757,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -772,7 +772,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -787,7 +787,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -802,7 +802,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -821,7 +821,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -840,7 +840,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -864,7 +864,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
         return environment;
     }
@@ -873,7 +873,10 @@ public class EvaluatorTest {
         try {
             assertSucceeds(source, environment);
             Assert.fail("Expected evaluator exception");
-        } catch (EvaluatorException ignored) {
+        } catch (AssertionError expected) {
+            if (!(expected.getCause() instanceof EvaluatorException)) {
+                Assert.fail("Expected evaluator exception");
+            }
         }
         return environment;
     }
@@ -902,7 +905,7 @@ public class EvaluatorTest {
             if (exception instanceof SourceException) {
                 System.out.println(metadata.generateErrorInformation((SourceException) exception));
             }
-            throw exception;
+            throw new AssertionError(exception);
         }
     }
 

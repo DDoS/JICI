@@ -34,13 +34,17 @@ import ca.sapon.jici.util.TypeUtil;
  *
  */
 public class WildcardType implements TypeParameter {
-    private final Set<SingleClassType> lowerBound;
-    private final Set<SingleClassType> upperBound;
+    private final Set<? extends ClassType> lowerBound;
+    private final Set<? extends ClassType> upperBound;
 
     private WildcardType(Set<SingleClassType> lowerBound, Set<SingleClassType> upperBound) {
-        this.lowerBound = lowerBound;
-        if (upperBound.size() == 1 && upperBound.contains(SingleClassType.THE_OBJECT)) {
-            this.upperBound = Collections.emptySet();
+        if (lowerBound.isEmpty()) {
+            this.lowerBound = Collections.<ClassType>singleton(NullType.THE_NULL);
+        } else {
+            this.lowerBound = lowerBound;
+        }
+        if (upperBound.isEmpty()) {
+            this.upperBound = Collections.<ClassType>singleton(SingleClassType.THE_OBJECT);
         } else {
             this.upperBound = upperBound;
         }
@@ -49,10 +53,10 @@ public class WildcardType implements TypeParameter {
     @Override
     public String getName() {
         String name = "?";
-        if (!upperBound.isEmpty()) {
+        if (upperBound.size() != 1 || !upperBound.contains(SingleClassType.THE_OBJECT)) {
             name += " extends " + StringUtil.toString(upperBound, " & ");
         }
-        if (!lowerBound.isEmpty()) {
+        if (lowerBound.size() != 1 || !lowerBound.contains(NullType.THE_NULL)) {
             name += " super " + StringUtil.toString(lowerBound, " & ");
         }
         return name;
@@ -95,12 +99,12 @@ public class WildcardType implements TypeParameter {
 
     @Override
     public boolean isArray() {
-        for (SingleClassType upper : upperBound) {
-            if (!upper.isArray()) {
-                return false;
+        for (ClassType upper : upperBound) {
+            if (upper.isArray()) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -117,40 +121,39 @@ public class WildcardType implements TypeParameter {
     public boolean contains(TypeParameter other) {
         if (other instanceof WildcardType) {
             final WildcardType otherWildcard = (WildcardType) other;
-            // Search for an upper bound of the other contained in one of this
-            boolean anyUpperContained = true;
-            thisBounds:
-            for (SingleClassType thisUpper : upperBound) {
-                anyUpperContained = false;
-                for (SingleClassType otherUpper : otherWildcard.upperBound) {
+            // All upper bounds must be supertypes of other
+            for (ClassType thisUpper : upperBound) {
+                for (ClassType otherUpper : otherWildcard.upperBound) {
                     if (!TypeUtil.convertibleTo(otherUpper, thisUpper)) {
-                        continue thisBounds;
+                        return false;
                     }
                 }
-                anyUpperContained = true;
-                break;
             }
-            if (!anyUpperContained) {
-                return false;
-            }
-            // Search for a lower bound of this contained in one of other
-            boolean anyLowerContained = true;
-            otherBounds:
-            for (SingleClassType otherLower : otherWildcard.lowerBound) {
-                anyLowerContained = false;
-                for (SingleClassType thisLower : lowerBound) {
+            // All lower bounds must be subtypes of other
+            for (ClassType thisLower : lowerBound) {
+                for (ClassType otherLower : otherWildcard.lowerBound) {
                     if (!TypeUtil.convertibleTo(thisLower, otherLower)) {
-                        continue otherBounds;
+                        return false;
                     }
                 }
-                anyLowerContained = true;
-                break;
             }
-            return anyLowerContained;
+            return true;
         }
         if (other instanceof SingleClassType) {
             final SingleClassType otherClass = (SingleClassType) other;
-            return upperBound.contains(otherClass) || lowerBound.contains(otherClass);
+            // All upper bounds must be supertypes of other
+            for (ClassType upper : upperBound) {
+                if (!TypeUtil.convertibleTo(otherClass, upper)) {
+                    return false;
+                }
+            }
+            // All lower bounds must be subtypes of other
+            for (ClassType lower : lowerBound) {
+                if (!TypeUtil.convertibleTo(lower, otherClass)) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }

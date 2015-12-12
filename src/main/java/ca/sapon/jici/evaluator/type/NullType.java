@@ -23,13 +23,15 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
  */
-public class NullType implements Type {
+public class NullType implements ClassType {
     public static final NullType THE_NULL = new NullType();
 
     private NullType() {
@@ -103,5 +105,20 @@ public class NullType implements Type {
     @Override
     public int hashCode() {
         return 9849851;
+    }
+
+    @Override
+    public Callable getConstructor(Type[] arguments) {
+        throw new UnsupportedOperationException("Cannot dereference the null type");
+    }
+
+    @Override
+    public Accessible getField(String name) {
+        throw new UnsupportedOperationException("Cannot dereference the null type");
+    }
+
+    @Override
+    public Callable getMethod(String name, Type[] arguments) {
+        throw new UnsupportedOperationException("Cannot dereference the null type");
     }
 }

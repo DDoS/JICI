@@ -26,5 +26,13 @@ package ca.sapon.jici;
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         JICI.breakInto();
+        /*
+            TODO:
+            In types:
+                Union -> Intersection
+                Class -> Reference
+                Parameter -> Argument
+            Move type code from type classes and reflection util to TypeUtil
+        */
     }
 }

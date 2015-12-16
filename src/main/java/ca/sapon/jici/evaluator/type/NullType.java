@@ -29,9 +29,9 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * The null type, for the {@code null} literal.
  */
-public class NullType implements ClassType {
+public class NullType implements ReferenceType {
     public static final NullType THE_NULL = new NullType();
 
     private NullType() {

@@ -28,7 +28,7 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
@@ -62,7 +62,7 @@ public class ConstructorCall implements Statement, Expression {
     public Type getType(Environment environment) {
         if (callable == null) {
             final Type type = typeName.getType(environment);
-            if (!(type instanceof ClassType)) {
+            if (!(type instanceof ReferenceType)) {
                 throw new EvaluatorException("Not a class type " + type.getName(), typeName);
             }
             final int size = arguments.size();
@@ -71,7 +71,7 @@ public class ConstructorCall implements Statement, Expression {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
             try {
-                callable = ((ClassType) type).getConstructor(argumentTypes);
+                callable = ((ReferenceType) type).getConstructor(argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }

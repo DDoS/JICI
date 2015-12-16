@@ -67,8 +67,8 @@ import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.ClassTypeName;
 import ca.sapon.jici.parser.name.PrimitiveTypeName;
 import ca.sapon.jici.parser.name.TypeName;
-import ca.sapon.jici.parser.name.TypeParameterName;
-import ca.sapon.jici.parser.name.TypeParameterName.BoundKind;
+import ca.sapon.jici.parser.name.TypeArgumentName;
+import ca.sapon.jici.parser.name.TypeArgumentName.BoundKind;
 import ca.sapon.jici.parser.name.VoidTypeName;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;
@@ -142,12 +142,12 @@ public final class Parser {
     /*
         NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        CLASS_NAME:      NAME _ NAME TYPE_PARAM_LIST
+        CLASS_NAME:      NAME _ NAME TYPE_ARG_LIST
         ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
         TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
-        TYPE_PARAM:      TYPE_NAME _ ? _ ? extends TYPE_NAME _ ? super TYPE_NAME
-        TYPE_PARAM_LIST: <TYPE_PARAM, TYPE_PARAM_LIST> _ <TYPE_PARAM>
+        TYPE_ARG:        TYPE_NAME _ ? _ ? extends TYPE_NAME _ ? super TYPE_NAME
+        TYPE_ARG_LIST:   <TYPE_ARG, TYPE_ARG_LIST> _ <TYPE_ARG>
     */
 
     private static List<Identifier> parseName(ListNavigator<Token> tokens) {
@@ -176,8 +176,8 @@ public final class Parser {
 
     private static ClassTypeName parseClassName(ListNavigator<Token> tokens) {
         final List<Identifier> name = parseName(tokens);
-        final List<TypeParameterName> parameters = parseTypeParameterNameList(tokens);
-        return new ClassTypeName(name, parameters);
+        final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
+        return new ClassTypeName(name, typeArguments);
     }
 
     private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {
@@ -212,7 +212,7 @@ public final class Parser {
         throw new ParseError("Expected an identifier or a primitive type", tokens);
     }
 
-    private static TypeParameterName parseTypeParameterName(ListNavigator<Token> tokens) {
+    private static TypeArgumentName parseTypeArgumentName(ListNavigator<Token> tokens) {
         if (tokens.has()) {
             if (tokens.get().getID() == TokenID.SYMBOL_QUESTION_MARK) {
                 tokens.advance();
@@ -221,60 +221,60 @@ public final class Parser {
                         case KEYWORD_EXTENDS: {
                             tokens.advance();
                             final TypeName type = parseTypeName(tokens);
-                            return new TypeParameterName(type, BoundKind.UPPER);
+                            return new TypeArgumentName(type, BoundKind.UPPER);
                         }
                         case KEYWORD_SUPER: {
                             tokens.advance();
                             final TypeName type = parseTypeName(tokens);
-                            return new TypeParameterName(type, BoundKind.LOWER);
+                            return new TypeArgumentName(type, BoundKind.LOWER);
                         }
                     }
                 }
-                return new TypeParameterName(null, BoundKind.NONE);
+                return new TypeArgumentName(null, BoundKind.NONE);
             } else {
                 final TypeName type = parseTypeName(tokens);
-                return new TypeParameterName(type, BoundKind.EXACT);
+                return new TypeArgumentName(type, BoundKind.EXACT);
             }
         }
         throw new ParseError("Expected a type name or '?'", tokens);
     }
 
-    private static List<TypeParameterName> parseTypeParameterNameList(ListNavigator<Token> tokens) {
-        final List<TypeParameterName> typeParameterNames = new ArrayList<>();
+    private static List<TypeArgumentName> parseTypeArgumentNameList(ListNavigator<Token> tokens) {
+        final List<TypeArgumentName> typeArgumentNames = new ArrayList<>();
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
             tokens.advance();
-            parseTypeParameterNameList(tokens, typeParameterNames);
+            parseTypeArgumentNameList(tokens, typeArgumentNames);
             if (tokens.has()) {
                 switch (tokens.get().getID()) {
                     case SYMBOL_GREATER:
                         tokens.advance();
-                        return typeParameterNames;
+                        return typeArgumentNames;
                     case SYMBOL_ARITHMETIC_RIGHT_SHIFT:
                         tokens.advanceFractional();
                         if (tokens.fractional() == 2) {
                             tokens.closeFractional();
                         }
-                        return typeParameterNames;
+                        return typeArgumentNames;
                     case SYMBOL_LOGICAL_RIGHT_SHIFT:
                         tokens.advanceFractional();
                         if (tokens.fractional() == 3) {
                             tokens.closeFractional();
                         }
-                        return typeParameterNames;
+                        return typeArgumentNames;
                 }
             }
             throw new ParseError("Expected '>'", tokens);
         }
-        return typeParameterNames;
+        return typeArgumentNames;
     }
 
-    private static List<TypeParameterName> parseTypeParameterNameList(ListNavigator<Token> tokens, List<TypeParameterName> typeParameterNames) {
-        typeParameterNames.add(parseTypeParameterName(tokens));
+    private static List<TypeArgumentName> parseTypeArgumentNameList(ListNavigator<Token> tokens, List<TypeArgumentName> typeArgumentNames) {
+        typeArgumentNames.add(parseTypeArgumentName(tokens));
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_COMMA) {
             tokens.advance();
-            return parseTypeParameterNameList(tokens, typeParameterNames);
+            return parseTypeArgumentNameList(tokens, typeArgumentNames);
         }
-        return typeParameterNames;
+        return typeArgumentNames;
     }
 
     /*
@@ -431,7 +431,7 @@ public final class Parser {
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
         ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION] _ ATOM
 
-        ATOM:            LITERAL _ NAME _ NAME.IDENTIFIER ARGUMENTS _ NAME.<TYPE_PARAM_LIST>IDENTIFIER ARGUMENTS
+        ATOM:            LITERAL _ NAME _ NAME.IDENTIFIER ARGUMENTS _ NAME.<TYPE_ARG_LIST>IDENTIFIER ARGUMENTS
                          CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
 
         CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
@@ -751,7 +751,7 @@ public final class Parser {
             switch (tokens.get().getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.advance();
-                    final List<TypeParameterName> typeParameters = parseTypeParameterNameList(tokens);
+                    final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
                     if (tokens.has()) {
                         final Token token = tokens.get();
                         if (token.getGroup() == TokenGroup.IDENTIFIER) {
@@ -760,10 +760,10 @@ public final class Parser {
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArgumentsRest(tokens);
-                                access = new MethodCall(object, (Identifier) token, typeParameters, arguments);
+                                access = new MethodCall(object, (Identifier) token, typeArguments, arguments);
                             } else {
-                                if (!typeParameters.isEmpty()) {
-                                    throw new ParseError("Type parameters not accepted here", typeParameters.get(0));
+                                if (!typeArguments.isEmpty()) {
+                                    throw new ParseError("Type arguments not accepted here", typeArguments.get(0));
                                 }
                                 access = new FieldAccess(object, (Identifier) token);
                             }
@@ -827,14 +827,14 @@ public final class Parser {
                     }
                     tokens.popPosition();
                     // look for type arguments
-                    final List<TypeParameterName> typeParameters;
+                    final List<TypeArgumentName> typeArguments;
                     if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.SYMBOL_LESSER) {
                         tokens.advance(1);
-                        typeParameters = parseTypeParameterNameList(tokens);
+                        typeArguments = parseTypeArgumentNameList(tokens);
                     } else {
-                        typeParameters = Collections.emptyList();
+                        typeArguments = Collections.emptyList();
                     }
-                    if (!typeParameters.isEmpty()) {
+                    if (!typeArguments.isEmpty()) {
                         if (tokens.has() && tokens.get().getGroup() == TokenGroup.IDENTIFIER) {
                             // add method identifier trailing type params to full name
                             name.add((Identifier) tokens.get());
@@ -847,11 +847,11 @@ public final class Parser {
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                         tokens.advance();
                         final List<Expression> arguments = parseArgumentsRest(tokens);
-                        return new AmbiguousCall(name, typeParameters, arguments);
+                        return new AmbiguousCall(name, typeArguments, arguments);
                     }
                     // this is a name access, either a variable of a field
-                    if (!typeParameters.isEmpty()) {
-                        throw new ParseError("Type parameters not accepted here", typeParameters.get(0));
+                    if (!typeArguments.isEmpty()) {
+                        throw new ParseError("Type arguments not accepted here", typeArguments.get(0));
                     }
                     if (name.size() == 1) {
                         return new VariableAccess(name.get(0));

@@ -29,33 +29,33 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
-import ca.sapon.jici.evaluator.type.TypeParameter;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
-    private final List<TypeParameterName> parameters;
-    private ClassType hint = null;
-    private SingleClassType type = null;
+    private final List<TypeArgumentName> arguments;
+    private ReferenceType hint = null;
+    private SingleReferenceType type = null;
 
     public ClassTypeName(List<Identifier> name) {
-        this(name, Collections.<TypeParameterName>emptyList());
+        this(name, Collections.<TypeArgumentName>emptyList());
     }
 
-    public ClassTypeName(List<Identifier> name, List<TypeParameterName> parameters) {
+    public ClassTypeName(List<Identifier> name, List<TypeArgumentName> arguments) {
         this.name = name;
-        this.parameters = parameters;
+        this.arguments = arguments;
     }
 
     @Override
-    public ConcreteType getType(Environment environment) {
+    public LiteralType getType(Environment environment) {
         if (type == null) {
             // look for an imported class with possible inner classes
             Class<?> _class = environment.findClass(name.get(0));
@@ -90,21 +90,21 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
             if (_class == null) {
                 throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
             }
-            if (!parameters.isEmpty()) {
-                final List<TypeParameter> classes = new ArrayList<>(parameters.size());
-                for (TypeParameterName parameter : parameters) {
+            if (!arguments.isEmpty()) {
+                final List<TypeArgument> classes = new ArrayList<>(arguments.size());
+                for (TypeArgumentName parameter : arguments) {
                     classes.add(parameter.getType(environment));
                 }
                 type = ParametrizedType.of(_class, classes);
             } else {
-                type = SingleClassTypeLiteral.of(_class);
+                type = LiteralReferenceType.of(_class);
             }
         }
         return type;
     }
 
     @Override
-    public void setTypeHint(ClassType hint) {
+    public void setTypeHint(ReferenceType hint) {
         this.hint = hint;
     }
 
@@ -120,6 +120,6 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
 
     @Override
     public String toString() {
-        return StringUtil.toString(name, ".") + (!parameters.isEmpty() ? "<" + StringUtil.toString(parameters, ", ") + ">" : "");
+        return StringUtil.toString(name, ".") + (!arguments.isEmpty() ? "<" + StringUtil.toString(arguments, ", ") + ">" : "");
     }
 }

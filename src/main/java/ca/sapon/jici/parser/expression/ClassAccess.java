@@ -24,15 +24,15 @@
 package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.name.TypeName;
 
 public class ClassAccess implements Expression {
-    private static final SingleClassType TYPE = SingleClassTypeLiteral.of(Class.class);
+    private static final SingleReferenceType TYPE = LiteralReferenceType.of(Class.class);
     private final TypeName typeName;
     private Type type = null;
     private Class<?> typeClass = null;

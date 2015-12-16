@@ -25,21 +25,21 @@ package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveTypeName implements TypeName {
     private final Keyword name;
-    private ConcreteType type = null;
+    private LiteralType type = null;
 
     public PrimitiveTypeName(Keyword name) {
         this.name = name;
     }
 
     @Override
-    public ConcreteType getType(Environment environment) {
+    public LiteralType getType(Environment environment) {
         if (type == null) {
             final Class<?> _class;
             switch (name.getID()) {

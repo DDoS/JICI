@@ -27,9 +27,9 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * The void type.
  */
-public class VoidType implements ConcreteType {
+public class VoidType implements LiteralType {
     public static final VoidType THE_VOID = new VoidType();
 
     private VoidType() {
@@ -41,7 +41,7 @@ public class VoidType implements ConcreteType {
     }
 
     @Override
-    public SingleClassTypeLiteral asArray(int dimensions) {
+    public LiteralReferenceType asArray(int dimensions) {
         throw new UnsupportedOperationException("Cannot create an array of the void type");
     }
 

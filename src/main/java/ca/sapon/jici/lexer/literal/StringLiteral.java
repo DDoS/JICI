@@ -25,7 +25,7 @@ package ca.sapon.jici.lexer.literal;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -143,7 +143,7 @@ public class StringLiteral extends Literal {
 
     @Override
     public Type getType(Environment environment) {
-        return SingleClassType.THE_STRING;
+        return SingleReferenceType.THE_STRING;
     }
 
     @Override

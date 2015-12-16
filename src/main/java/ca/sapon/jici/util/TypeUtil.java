@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.type.ClassUnionType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.TypeParameter;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 
 /**
  *
@@ -43,7 +43,7 @@ public final class TypeUtil {
             return convertibleTo(PrimitiveType.box(from).getTypeClass(), to);
         }
         if (to.isPrimitive()) {
-            final Class<?> unbox = SingleClassType.unbox(from);
+            final Class<?> unbox = SingleReferenceType.unbox(from);
             return unbox != from && convertibleTo(unbox, to);
         }
         return to.isAssignableFrom(from);
@@ -77,13 +77,13 @@ public final class TypeUtil {
             if (!convertibleTo(source.getRaw(), target.getRaw())) {
                 return false;
             }
-            final List<TypeParameter> sourceParameters = source.getParameters();
-            final List<TypeParameter> targetParameters = target.getParameters();
-            if (sourceParameters.size() != targetParameters.size()) {
+            final List<TypeArgument> sourceArguments = source.getArguments();
+            final List<TypeArgument> targetArguments = target.getArguments();
+            if (sourceArguments.size() != targetArguments.size()) {
                 return false;
             }
-            for (int i = 0; i < sourceParameters.size(); i++) {
-                if (!targetParameters.get(i).contains(sourceParameters.get(i))) {
+            for (int i = 0; i < sourceArguments.size(); i++) {
+                if (!targetArguments.get(i).contains(sourceArguments.get(i))) {
                     return false;
                 }
             }
@@ -92,17 +92,17 @@ public final class TypeUtil {
         // Single class types might be convertible to a primitive if they can be unboxed
         // Else they can be cast to another single class if they are a subtype
         // They can also be converted to an intersection if they can be converted to each member
-        if (from instanceof SingleClassType) {
-            final SingleClassType source = (SingleClassType) from;
+        if (from instanceof SingleReferenceType) {
+            final SingleReferenceType source = (SingleReferenceType) from;
             if (to.isPrimitive()) {
                 return source.isBox() && convertibleTo(source.unbox(), to);
             }
-            if (to instanceof SingleClassType) {
-                final SingleClassType target = (SingleClassType) to;
+            if (to instanceof SingleReferenceType) {
+                final SingleReferenceType target = (SingleReferenceType) to;
                 return target.getTypeClass().isAssignableFrom(source.getTypeClass());
             }
-            if (to instanceof ClassUnionType) {
-                final ClassUnionType target = (ClassUnionType) to;
+            if (to instanceof ReferenceIntersectionType) {
+                final ReferenceIntersectionType target = (ReferenceIntersectionType) to;
                 for (Class<?> _class : target.getTypeClasses()) {
                     if (!_class.isAssignableFrom(source.getTypeClass())) {
                         return false;
@@ -113,9 +113,9 @@ public final class TypeUtil {
             return false;
         }
         // An intersection of class types can be treated as any of its bounds
-        if (from instanceof ClassUnionType) {
-            final ClassUnionType source = (ClassUnionType) from;
-            for (SingleClassType bound : source.getLowestUpperBound()) {
+        if (from instanceof ReferenceIntersectionType) {
+            final ReferenceIntersectionType source = (ReferenceIntersectionType) from;
+            for (SingleReferenceType bound : source.getLowestUpperBound()) {
                 if (convertibleTo(bound, to)) {
                     return true;
                 }

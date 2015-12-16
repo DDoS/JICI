@@ -25,12 +25,12 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.ClassUnionType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
@@ -81,17 +81,17 @@ public class Conditional implements Expression {
                 }
                 return type = leftType;
             }
-            if (leftType instanceof SingleClassType) {
-                leftType = ((SingleClassType) leftType).tryUnbox();
+            if (leftType instanceof SingleReferenceType) {
+                leftType = ((SingleReferenceType) leftType).tryUnbox();
             }
-            if (rightType instanceof SingleClassType) {
-                rightType = ((SingleClassType) rightType).tryUnbox();
+            if (rightType instanceof SingleReferenceType) {
+                rightType = ((SingleReferenceType) rightType).tryUnbox();
             }
             if (leftType.isObject() || rightType.isObject()) {
-                // for objects return a union
-                return type = ClassUnionType.of(
-                        leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ClassType) leftType,
-                        rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ClassType) rightType
+                // for objects return an intersection
+                return type = ReferenceIntersectionType.of(
+                        leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ReferenceType) leftType,
+                        rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ReferenceType) rightType
                 );
             }
             final PrimitiveType leftPrimitiveType = (PrimitiveType) leftType;

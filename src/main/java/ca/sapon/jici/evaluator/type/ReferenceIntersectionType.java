@@ -36,25 +36,25 @@ import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * An intersection of reference types, such as {@code String & Integer} or {@code Set<String> & Collection<CharSequence>}.
  */
-public class ClassUnionType implements ClassType {
+public class ReferenceIntersectionType implements ReferenceType {
     private final Set<Class<?>> classes;
-    private final Set<SingleClassType> lowestUpperBound;
+    private final Set<SingleReferenceType> lowestUpperBound;
 
-    private ClassUnionType(Collection<ClassType> union) {
-        if (union.size() <= 1) {
+    private ReferenceIntersectionType(Collection<ReferenceType> intersection) {
+        if (intersection.size() <= 1) {
             throw new UnsupportedOperationException("Expected more than one type");
         }
-        classes = new HashSet<>(union.size());
+        classes = new HashSet<>(intersection.size());
         boolean allEqual = true;
         Class<?> previous = null;
-        for (ClassType type : union) {
-            if (type instanceof ClassUnionType) {
-                classes.addAll(((ClassUnionType) type).getTypeClasses());
+        for (ReferenceType type : intersection) {
+            if (type instanceof ReferenceIntersectionType) {
+                classes.addAll(((ReferenceIntersectionType) type).getTypeClasses());
                 allEqual = false;
             } else {
-                final Class<?> _class = ((SingleClassType) type).getTypeClass();
+                final Class<?> _class = ((SingleReferenceType) type).getTypeClass();
                 classes.add(_class);
                 if (previous == null) {
                     previous = _class;
@@ -64,12 +64,12 @@ public class ClassUnionType implements ClassType {
             }
         }
         if (allEqual) {
-            throw new UnsupportedOperationException("Expected differing types in the union");
+            throw new UnsupportedOperationException("Expected differing types in the intersection");
         }
         final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
-            lowestUpperBound.add(SingleClassTypeLiteral.of(bound));
+            lowestUpperBound.add(LiteralReferenceType.of(bound));
         }
     }
 
@@ -77,7 +77,7 @@ public class ClassUnionType implements ClassType {
         return classes;
     }
 
-    public Set<SingleClassType> getLowestUpperBound() {
+    public Set<SingleReferenceType> getLowestUpperBound() {
         return lowestUpperBound;
     }
 
@@ -123,7 +123,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public boolean isArray() {
-        for (SingleClassType bound : lowestUpperBound) {
+        for (SingleReferenceType bound : lowestUpperBound) {
             if (bound.isArray()) {
                 return true;
             }
@@ -143,7 +143,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public Callable getConstructor(Type[] arguments) {
-        for (SingleClassType bound : lowestUpperBound) {
+        for (SingleReferenceType bound : lowestUpperBound) {
             try {
                 return bound.getConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -155,7 +155,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public Accessible getField(String name) {
-        for (SingleClassType bound : lowestUpperBound) {
+        for (SingleReferenceType bound : lowestUpperBound) {
             try {
                 return bound.getField(name);
             } catch (UnsupportedOperationException ignored) {
@@ -166,7 +166,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public Callable getMethod(String name, Type[] arguments) {
-        for (SingleClassType bound : lowestUpperBound) {
+        for (SingleReferenceType bound : lowestUpperBound) {
             try {
                 return bound.getMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -183,7 +183,7 @@ public class ClassUnionType implements ClassType {
 
     @Override
     public boolean equals(Object other) {
-        return this == other || other instanceof ClassUnionType && this.lowestUpperBound.equals(((ClassUnionType) other).lowestUpperBound);
+        return this == other || other instanceof ReferenceIntersectionType && this.lowestUpperBound.equals(((ReferenceIntersectionType) other).lowestUpperBound);
     }
 
     @Override
@@ -191,11 +191,11 @@ public class ClassUnionType implements ClassType {
         return lowestUpperBound.hashCode();
     }
 
-    public static ClassUnionType of(ClassType... union) {
-        return of(Arrays.asList(union));
+    public static ReferenceIntersectionType of(ReferenceType... intersection) {
+        return of(Arrays.asList(intersection));
     }
 
-    public static ClassUnionType of(Collection<ClassType> union) {
-        return new ClassUnionType(union);
+    public static ReferenceIntersectionType of(Collection<ReferenceType> intersection) {
+        return new ReferenceIntersectionType(intersection);
     }
 }

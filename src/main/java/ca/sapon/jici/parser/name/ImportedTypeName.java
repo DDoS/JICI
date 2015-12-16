@@ -23,11 +23,11 @@
  */
 package ca.sapon.jici.parser.name;
 
-import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 
 /**
  *
  */
 public interface ImportedTypeName {
-    void setTypeHint(ClassType hint);
+    void setTypeHint(ReferenceType hint);
 }

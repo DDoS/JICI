@@ -28,20 +28,20 @@ import java.util.Set;
 import ca.sapon.jici.util.StringUtil;
 
 /**
- *
+ * A type variable, such as {@code <T>}.
  */
-public class SingleClassTypeVariable extends SingleClassType {
+public class TypeVariable extends SingleReferenceType {
     private final String name;
     private final int dimensions;
-    private final Set<SingleClassType> upperBound;
+    private final Set<SingleReferenceType> upperBound;
 
-    private SingleClassTypeVariable(String name, Set<SingleClassType> upperBound, int dimensions) {
+    private TypeVariable(String name, Set<SingleReferenceType> upperBound, int dimensions) {
         this.name = name;
         this.dimensions = dimensions;
         this.upperBound = upperBound;
     }
 
-    public Set<SingleClassType> getUpperBound() {
+    public Set<SingleReferenceType> getUpperBound() {
         return upperBound;
     }
 
@@ -51,8 +51,8 @@ public class SingleClassTypeVariable extends SingleClassType {
     }
 
     @Override
-    public SingleClassType asArray(int dimensions) {
-        return new SingleClassTypeVariable(name, upperBound, this.dimensions + dimensions);
+    public SingleReferenceType asArray(int dimensions) {
+        return new TypeVariable(name, upperBound, this.dimensions + dimensions);
     }
 
     @Override
@@ -70,10 +70,10 @@ public class SingleClassTypeVariable extends SingleClassType {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SingleClassTypeVariable)) {
+        if (!(o instanceof TypeVariable)) {
             return false;
         }
-        final SingleClassTypeVariable that = (SingleClassTypeVariable) o;
+        final TypeVariable that = (TypeVariable) o;
         return dimensions == that.dimensions && name.equals(that.name);
     }
 
@@ -84,7 +84,7 @@ public class SingleClassTypeVariable extends SingleClassType {
         return result;
     }
 
-    public static SingleClassTypeVariable of(String name, Set<SingleClassType> upperBound) {
-        return new SingleClassTypeVariable(name, upperBound, 0);
+    public static TypeVariable of(String name, Set<SingleReferenceType> upperBound) {
+        return new TypeVariable(name, upperBound, 0);
     }
 }

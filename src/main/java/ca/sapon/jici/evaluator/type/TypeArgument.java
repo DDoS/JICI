@@ -24,8 +24,8 @@
 package ca.sapon.jici.evaluator.type;
 
 /**
- *
+ * A type that can be used as an argument for {@link ParametrizedType}.
  */
-public interface TypeParameter extends Type {
-    boolean contains(TypeParameter other);
+public interface TypeArgument extends Type {
+    boolean contains(TypeArgument other);
 }

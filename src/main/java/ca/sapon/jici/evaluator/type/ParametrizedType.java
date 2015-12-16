@@ -29,15 +29,15 @@ import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
  */
-public class ParametrizedType extends SingleClassType {
-    private final SingleClassTypeLiteral raw;
-    private final List<TypeParameter> parameters;
+public class ParametrizedType extends SingleReferenceType {
+    private final LiteralReferenceType raw;
+    private final List<TypeArgument> arguments;
 
-    private ParametrizedType(SingleClassTypeLiteral raw, List<TypeParameter> parameters) {
+    private ParametrizedType(LiteralReferenceType raw, List<TypeArgument> arguments) {
         this.raw = raw;
-        this.parameters = parameters;
+        this.arguments = arguments;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ParametrizedType extends SingleClassType {
             _class = _class.getComponentType();
             dimensions++;
         }
-        return _class.getCanonicalName() + '<' + StringUtil.toString(parameters, ", ") + '>' + StringUtil.repeat("[]", dimensions);
+        return _class.getCanonicalName() + '<' + StringUtil.toString(arguments, ", ") + '>' + StringUtil.repeat("[]", dimensions);
     }
 
     @Override
@@ -56,17 +56,17 @@ public class ParametrizedType extends SingleClassType {
         return raw.getTypeClass();
     }
 
-    public SingleClassTypeLiteral getRaw() {
+    public LiteralReferenceType getRaw() {
         return raw;
     }
 
-    public List<TypeParameter> getParameters() {
-        return parameters;
+    public List<TypeArgument> getArguments() {
+        return arguments;
     }
 
     @Override
-    public SingleClassType asArray(int dimensions) {
-        return new ParametrizedType(raw.asArray(dimensions), parameters);
+    public SingleReferenceType asArray(int dimensions) {
+        return new ParametrizedType(raw.asArray(dimensions), arguments);
     }
 
     @Override
@@ -81,17 +81,17 @@ public class ParametrizedType extends SingleClassType {
         }
         if (other instanceof ParametrizedType) {
             final ParametrizedType that = (ParametrizedType) other;
-            return raw.equals(that.raw) && parameters.equals(that.parameters);
+            return raw.equals(that.raw) && arguments.equals(that.arguments);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return 31 * super.hashCode() + parameters.hashCode();
+        return 31 * super.hashCode() + arguments.hashCode();
     }
 
-    public static ParametrizedType of(Class<?> raw, List<TypeParameter> parameters) {
-        return new ParametrizedType(SingleClassTypeLiteral.of(raw), parameters);
+    public static ParametrizedType of(Class<?> raw, List<TypeArgument> arguments) {
+        return new ParametrizedType(LiteralReferenceType.of(raw), arguments);
     }
 }

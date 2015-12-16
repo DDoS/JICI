@@ -23,16 +23,50 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import ca.sapon.jici.evaluator.Accessible;
-import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * A reference type literally used in the code, such as {@code String} or {@code int[]}.
  */
-public interface ClassType extends Type {
-    Callable getConstructor(Type[] arguments);
+public class LiteralReferenceType extends SingleReferenceType {
+    private final Class<?> type;
 
-    Accessible getField(String name);
+    private LiteralReferenceType(Class<?> type) {
+        this.type = type;
+    }
 
-    Callable getMethod(String name, Type[] arguments);
+    @Override
+    public String getName() {
+        return type.getCanonicalName();
+    }
+
+    @Override
+    public Class<?> getTypeClass() {
+        return type;
+    }
+
+    @Override
+    public LiteralReferenceType asArray(int dimensions) {
+        return of(ReflectionUtil.asArrayType(type, dimensions));
+    }
+
+    @Override
+    public boolean convertibleTo(Type to) {
+        return TypeUtil.convertibleTo(this, to);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || (other instanceof SingleReferenceType) && this.type == ((SingleReferenceType) other).getTypeClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+
+    public static LiteralReferenceType of(Class<?> type) {
+        return new LiteralReferenceType(type);
+    }
 }

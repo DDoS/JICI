@@ -26,7 +26,7 @@ package ca.sapon.jici.evaluator.type;
 import ca.sapon.jici.evaluator.value.ValueKind;
 
 /**
- *
+ * Any type used by JICI.
  */
 public interface Type {
     String getName();

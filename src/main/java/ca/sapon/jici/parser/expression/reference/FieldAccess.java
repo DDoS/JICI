@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression.reference;
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
@@ -47,11 +47,11 @@ public class FieldAccess implements Reference {
         if (accessible == null) {
             final Type objectType = object.getType(environment);
             final String name = field.getSource();
-            if (!(objectType instanceof ClassType)) {
+            if (!(objectType instanceof ReferenceType)) {
                 throw new EvaluatorException("Not a class type " + objectType.getName(), object);
             }
             try {
-                accessible = ((ClassType) objectType).getField(name);
+                accessible = ((ReferenceType) objectType).getField(name);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }

@@ -28,11 +28,11 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.ClassUnionType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
@@ -58,17 +58,17 @@ public class IndexAccess implements Reference {
             if (!indexType.convertibleTo(PrimitiveType.THE_INT)) {
                 throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
             }
-            if (objectType instanceof ClassUnionType) {
-                final ClassUnionType unionType = (ClassUnionType) objectType;
-                final Set<Class<?>> typeClasses = unionType.getTypeClasses();
-                final ClassType[] componentUnionType = new ClassType[typeClasses.size()];
+            if (objectType instanceof ReferenceIntersectionType) {
+                final ReferenceIntersectionType intersectionType = (ReferenceIntersectionType) objectType;
+                final Set<Class<?>> typeClasses = intersectionType.getTypeClasses();
+                final ReferenceType[] componentIntersectionType = new ReferenceType[typeClasses.size()];
                 int i = 0;
                 for (Class<?> typeClass : typeClasses) {
-                    componentUnionType[i++] = SingleClassTypeLiteral.of(typeClass.getComponentType());
+                    componentIntersectionType[i++] = LiteralReferenceType.of(typeClass.getComponentType());
                 }
-                type = ClassUnionType.of(componentUnionType);
+                type = ReferenceIntersectionType.of(componentIntersectionType);
             } else {
-                type = ((SingleClassType) objectType).getComponentType();
+                type = ((SingleReferenceType) objectType).getComponentType();
             }
         }
         return type;

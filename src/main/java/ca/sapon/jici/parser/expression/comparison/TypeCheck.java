@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression.comparison;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -37,7 +37,7 @@ public class TypeCheck implements Expression {
     private final Expression object;
     private final TypeName typeName;
     private Type type = null;
-    private SingleClassType checkType = null;
+    private SingleReferenceType checkType = null;
 
     public TypeCheck(Expression object, TypeName typeName) {
         this.object = object;
@@ -49,7 +49,7 @@ public class TypeCheck implements Expression {
         if (type == null) {
             final Type objectType = object.getType(environment);
             final Type checkType = typeName.getType(environment);
-            if (!(checkType instanceof SingleClassType)) {
+            if (!(checkType instanceof SingleReferenceType)) {
                 throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
             }
             if (objectType.isPrimitive()) {
@@ -59,7 +59,7 @@ public class TypeCheck implements Expression {
                 throw new EvaluatorException("Cannot type check void", object);
             }
             type = PrimitiveType.THE_BOOLEAN;
-            this.checkType = (SingleClassType) checkType;
+            this.checkType = (SingleReferenceType) checkType;
         }
         return type;
     }

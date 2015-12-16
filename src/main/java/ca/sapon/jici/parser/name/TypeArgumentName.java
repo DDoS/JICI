@@ -28,42 +28,42 @@ import java.util.Collections;
 import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ConcreteType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.TypeParameter;
+import ca.sapon.jici.evaluator.type.LiteralType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.WildcardType;
 
 /**
  *
  */
-public class TypeParameterName implements SourceIndexed {
+public class TypeArgumentName implements SourceIndexed {
     private final TypeName bound;
     private final BoundKind kind;
-    private TypeParameter type = null;
+    private TypeArgument type = null;
 
-    public TypeParameterName(TypeName bound, BoundKind kind) {
+    public TypeArgumentName(TypeName bound, BoundKind kind) {
         this.bound = bound;
         this.kind = kind;
     }
 
-    public TypeParameter getType(Environment environment) {
+    public TypeArgument getType(Environment environment) {
         if (type == null) {
             if (kind == BoundKind.NONE) {
-                type = WildcardType.of(Collections.<SingleClassType>emptySet(), Collections.<SingleClassType>emptySet());
+                type = WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet());
             } else {
-                final ConcreteType bound = this.bound.getType(environment);
-                if (!(bound instanceof SingleClassType)) {
-                    throw new EvaluatorException("Type parameter must be a class type", this);
+                final LiteralType bound = this.bound.getType(environment);
+                if (!(bound instanceof SingleReferenceType)) {
+                    throw new EvaluatorException("Type argument must be a class type", this);
                 }
                 switch (kind) {
                     case EXACT:
-                        type = (SingleClassType) bound;
+                        type = (SingleReferenceType) bound;
                         break;
                     case LOWER:
-                        type = WildcardType.of(Collections.singleton((SingleClassType) bound), Collections.<SingleClassType>emptySet());
+                        type = WildcardType.of(Collections.singleton((SingleReferenceType) bound), Collections.<SingleReferenceType>emptySet());
                         break;
                     case UPPER:
-                        type = WildcardType.of(Collections.<SingleClassType>emptySet(), Collections.singleton((SingleClassType) bound));
+                        type = WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.singleton((SingleReferenceType) bound));
                         break;
                 }
             }

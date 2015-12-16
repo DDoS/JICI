@@ -23,50 +23,16 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import ca.sapon.jici.util.ReflectionUtil;
-import ca.sapon.jici.util.TypeUtil;
+import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.Callable;
 
 /**
- *
+ * A type backed by a class other than the primitive ones. Includes the null type.
  */
-public class SingleClassTypeLiteral extends SingleClassType {
-    private final Class<?> type;
+public interface ReferenceType extends Type {
+    Callable getConstructor(Type[] arguments);
 
-    private SingleClassTypeLiteral(Class<?> type) {
-        this.type = type;
-    }
+    Accessible getField(String name);
 
-    @Override
-    public String getName() {
-        return type.getCanonicalName();
-    }
-
-    @Override
-    public Class<?> getTypeClass() {
-        return type;
-    }
-
-    @Override
-    public SingleClassTypeLiteral asArray(int dimensions) {
-        return of(ReflectionUtil.asArrayType(type, dimensions));
-    }
-
-    @Override
-    public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        return this == other || (other instanceof SingleClassType) && this.type == ((SingleClassType) other).getTypeClass();
-    }
-
-    @Override
-    public int hashCode() {
-        return type.hashCode();
-    }
-
-    public static SingleClassTypeLiteral of(Class<?> type) {
-        return new SingleClassTypeLiteral(type);
-    }
+    Callable getMethod(String name, Type[] arguments);
 }

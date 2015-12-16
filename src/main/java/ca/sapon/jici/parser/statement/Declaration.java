@@ -30,9 +30,9 @@ import java.util.Map.Entry;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.ConcreteType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
@@ -48,7 +48,7 @@ import ca.sapon.jici.util.StringUtil;
 public class Declaration implements Statement {
     private final TypeName typeName;
     private final List<Variable> variables;
-    private Map<Variable, ConcreteType> declaredTypes = null;
+    private Map<Variable, LiteralType> declaredTypes = null;
 
     public Declaration(TypeName typeName, List<Variable> variables) {
         this.typeName = typeName;
@@ -61,26 +61,26 @@ public class Declaration implements Statement {
             if (declaredTypes == null) {
                 // get the declaration type using the widest known variable type as a hint to infer it if not actually imported
                 if (typeName instanceof ImportedTypeName) {
-                    ClassType widestKnownType = null;
+                    ReferenceType widestKnownType = null;
                     for (Variable variable : variables) {
                         if (variable.hasKnownType()) {
                             final Type knownType = variable.getType(environment, null);
-                            if (!(knownType instanceof ClassType)) {
+                            if (!(knownType instanceof ReferenceType)) {
                                 continue;
                             }
-                            final ClassType classType = (ClassType) knownType;
+                            final ReferenceType referenceType = (ReferenceType) knownType;
                             if (widestKnownType == null) {
-                                widestKnownType = classType;
-                            } else if (widestKnownType.convertibleTo(classType)) {
-                                widestKnownType = classType;
+                                widestKnownType = referenceType;
+                            } else if (widestKnownType.convertibleTo(referenceType)) {
+                                widestKnownType = referenceType;
                             }
                         }
                     }
                     ((ImportedTypeName) typeName).setTypeHint(widestKnownType);
                 }
-                final ConcreteType declarationType = typeName.getType(environment);
+                final LiteralType declarationType = typeName.getType(environment);
                 // find the declared type of each variable, which can change by array dimensions
-                final Map<Variable, ConcreteType> declaredTypes = new HashMap<>();
+                final Map<Variable, LiteralType> declaredTypes = new HashMap<>();
                 for (Variable variable : variables) {
                     int dimensions = variable.getDimensions();
                     if (dimensions == 0) {
@@ -88,7 +88,7 @@ public class Declaration implements Statement {
                         declaredTypes.put(variable, declarationType);
                     } else {
                         // else add the dimensions and compute the new array type
-                        final ConcreteType componentType;
+                        final LiteralType componentType;
                         if (typeName instanceof ArrayTypeName) {
                             // ReflectionUtil.asArrayType doesn't support array types for component type, so get the base one
                             final ArrayTypeName arrayTypeName = ((ArrayTypeName) typeName);
@@ -97,12 +97,12 @@ public class Declaration implements Statement {
                         } else {
                             componentType = declarationType;
                         }
-                        final SingleClassType _class = componentType.asArray(dimensions);
+                        final SingleReferenceType _class = componentType.asArray(dimensions);
                         declaredTypes.put(variable, _class);
                     }
                 }
                 // validate that the variable value type can be converted to the declared type
-                for (Entry<Variable, ConcreteType> entry : declaredTypes.entrySet()) {
+                for (Entry<Variable, LiteralType> entry : declaredTypes.entrySet()) {
                     final Variable variable = entry.getKey();
                     final Type declaredType = entry.getValue();
                     final Type valueType = variable.getType(environment, declaredType);
@@ -119,9 +119,9 @@ public class Declaration implements Statement {
                 }
                 this.declaredTypes = declaredTypes;
             }
-            for (Entry<Variable, ConcreteType> entry : declaredTypes.entrySet()) {
+            for (Entry<Variable, LiteralType> entry : declaredTypes.entrySet()) {
                 final Variable variable = entry.getKey();
-                final ConcreteType declaredType = entry.getValue();
+                final LiteralType declaredType = entry.getValue();
                 final Identifier name = variable.getName();
                 try {
                     environment.declareVariable(name, declaredType, variable.getValue(environment));

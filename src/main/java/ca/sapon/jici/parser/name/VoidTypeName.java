@@ -24,7 +24,7 @@
 package ca.sapon.jici.parser.name;
 
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.VoidType;
 
 /**
@@ -38,7 +38,7 @@ public class VoidTypeName implements TypeName {
     }
 
     @Override
-    public ConcreteType getType(Environment environment) {
+    public LiteralType getType(Environment environment) {
         return VoidType.THE_VOID;
     }
 

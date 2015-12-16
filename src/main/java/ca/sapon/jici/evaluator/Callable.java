@@ -26,7 +26,7 @@ package ca.sapon.jici.evaluator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -57,7 +57,7 @@ public abstract class Callable {
         return new MethodCallable(method, true);
     }
 
-    public static Callable forArrayClone(ConcreteType type) {
+    public static Callable forArrayClone(LiteralType type) {
         return new ArrayCloneCallable(type);
     }
 
@@ -147,7 +147,7 @@ public abstract class Callable {
     }
 
     private static class ArrayCloneCallable extends Callable {
-        private ArrayCloneCallable(ConcreteType type) {
+        private ArrayCloneCallable(LiteralType type) {
             super(type);
         }
 

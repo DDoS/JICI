@@ -34,9 +34,9 @@ import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- *
+ * One of the eight primitive types: {@code boolean}, {@code byte}, {@code short}, {@code char}, {@code int}, {@code long}, {@code float} or {@code double}.
  */
-public class PrimitiveType implements ConcreteType {
+public class PrimitiveType implements LiteralType {
     public static final PrimitiveType THE_BOOLEAN;
     public static final PrimitiveType THE_BYTE;
     public static final PrimitiveType THE_SHORT;
@@ -49,7 +49,7 @@ public class PrimitiveType implements ConcreteType {
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
-    private static final Map<Class<?>, SingleClassType> BOXING_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, SingleReferenceType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
 
@@ -87,14 +87,14 @@ public class PrimitiveType implements ConcreteType {
         BINARY_WIDENERS.put(float.class, new Widener(float.class, byte.class, short.class, char.class, int.class, long.class));
         BINARY_WIDENERS.put(double.class, new Widener(double.class, byte.class, short.class, char.class, int.class, long.class, float.class));
 
-        BOXING_CONVERSIONS.put(boolean.class, SingleClassTypeLiteral.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, SingleClassTypeLiteral.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, SingleClassTypeLiteral.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, SingleClassTypeLiteral.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, SingleClassTypeLiteral.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, SingleClassTypeLiteral.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, SingleClassTypeLiteral.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, SingleClassTypeLiteral.of(Double.class));
+        BOXING_CONVERSIONS.put(boolean.class, LiteralReferenceType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, LiteralReferenceType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, LiteralReferenceType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, LiteralReferenceType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, LiteralReferenceType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, LiteralReferenceType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, LiteralReferenceType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, LiteralReferenceType.of(Double.class));
     }
 
     private PrimitiveType(Class<?> type, ValueKind kind) {
@@ -158,11 +158,11 @@ public class PrimitiveType implements ConcreteType {
     }
 
     @Override
-    public SingleClassTypeLiteral asArray(int dimensions) {
-        return SingleClassTypeLiteral.of(ReflectionUtil.asArrayType(type, dimensions));
+    public LiteralReferenceType asArray(int dimensions) {
+        return LiteralReferenceType.of(ReflectionUtil.asArrayType(type, dimensions));
     }
 
-    public SingleClassType box() {
+    public SingleReferenceType box() {
         return box(type);
     }
 
@@ -199,7 +199,7 @@ public class PrimitiveType implements ConcreteType {
         return type.hashCode();
     }
 
-    public static SingleClassType box(Class<?> type) {
+    public static SingleReferenceType box(Class<?> type) {
         return BOXING_CONVERSIONS.get(type);
     }
 

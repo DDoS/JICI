@@ -37,11 +37,11 @@ import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 
 /**
- *
+ * A reference type comprised of a single backing type. That is, a non-divisible type.
  */
-public abstract class SingleClassType implements ClassType, ConcreteType, TypeParameter {
-    public static final SingleClassType THE_STRING = SingleClassTypeLiteral.of(String.class);
-    public static final SingleClassType THE_OBJECT = SingleClassTypeLiteral.of(Object.class);
+public abstract class SingleReferenceType implements ReferenceType, LiteralType, TypeArgument {
+    public static final SingleReferenceType THE_STRING = LiteralReferenceType.of(String.class);
+    public static final SingleReferenceType THE_OBJECT = LiteralReferenceType.of(Object.class);
     private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
     private PrimitiveType unbox;
     private boolean unboxCached = false;
@@ -102,12 +102,12 @@ public abstract class SingleClassType implements ClassType, ConcreteType, TypePa
         return true;
     }
 
-    public ConcreteType getComponentType() {
+    public LiteralType getComponentType() {
         return ReflectionUtil.wrap(getTypeClass().getComponentType());
     }
 
     @Override
-    public boolean contains(TypeParameter other) {
+    public boolean contains(TypeArgument other) {
         return equals(other);
     }
 
@@ -131,7 +131,7 @@ public abstract class SingleClassType implements ClassType, ConcreteType, TypePa
         throw new UnsupportedOperationException(getTypeClass().getCanonicalName() + " is not a box type");
     }
 
-    public ConcreteType tryUnbox() {
+    public LiteralType tryUnbox() {
         if (isBox()) {
             return unbox;
         }

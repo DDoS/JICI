@@ -29,30 +29,30 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.name.TypeParameterName;
+import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
 public class MethodCall implements Expression, Statement {
     private final Expression object;
     private final Identifier method;
-    private final List<TypeParameterName> typeParameters;
+    private final List<TypeArgumentName> typeArguments;
     private final List<Expression> arguments;
     private Callable callable = null;
 
     public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
-        this(object, method, Collections.<TypeParameterName>emptyList(), arguments);
+        this(object, method, Collections.<TypeArgumentName>emptyList(), arguments);
     }
 
-    public MethodCall(Expression object, Identifier method, List<TypeParameterName> typeParameters, List<Expression> arguments) {
+    public MethodCall(Expression object, Identifier method, List<TypeArgumentName> typeArguments, List<Expression> arguments) {
         this.object = object;
         this.method = method;
-        this.typeParameters = typeParameters;
+        this.typeArguments = typeArguments;
         this.arguments = arguments;
     }
 
@@ -72,7 +72,7 @@ public class MethodCall implements Expression, Statement {
     public Type getType(Environment environment) {
         if (callable == null) {
             final Type objectType = object.getType(environment);
-            if (!(objectType instanceof ClassType)) {
+            if (!(objectType instanceof ReferenceType)) {
                 throw new EvaluatorException("Not a class type " + objectType.getName(), object);
             }
             final int size = arguments.size();
@@ -81,7 +81,7 @@ public class MethodCall implements Expression, Statement {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
             try {
-                callable = ((ClassType) objectType).getMethod(method.getSource(), argumentTypes);
+                callable = ((ReferenceType) objectType).getMethod(method.getSource(), argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), method);
             }
@@ -116,7 +116,7 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public String toString() {
-        return "MethodCall(" + object + "." + (!typeParameters.isEmpty() ? '<' + StringUtil.toString(typeParameters, ", ") + '>' : "")
+        return "MethodCall(" + object + "." + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "")
                 + method + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

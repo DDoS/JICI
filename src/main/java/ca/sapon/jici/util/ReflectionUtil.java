@@ -31,7 +31,6 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayDeque;
@@ -51,16 +50,16 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.ClassUnionType;
-import ca.sapon.jici.evaluator.type.ConcreteType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
-import ca.sapon.jici.evaluator.type.SingleClassTypeVariable;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.TypeParameter;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.lexer.Identifier;
@@ -288,7 +287,7 @@ public final class ReflectionUtil {
         return !parameterB.isPrimitive() && TypeUtil.convertibleTo(parameterA, parameterB);
     }
 
-    public static ConcreteType wrap(Class<?> type) {
+    public static LiteralType wrap(Class<?> type) {
         if (type == null) {
             throw new NullPointerException("type");
         }
@@ -298,7 +297,7 @@ public final class ReflectionUtil {
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
         }
-        return SingleClassTypeLiteral.of(type);
+        return LiteralReferenceType.of(type);
     }
 
     public static Type wrap(java.lang.reflect.Type type) {
@@ -314,45 +313,45 @@ public final class ReflectionUtil {
                 dimensions++;
             }
             final Type wrapped = wrap(componentType);
-            if (wrapped instanceof SingleClassType) {
-                return ((SingleClassType) wrapped).asArray(dimensions);
+            if (wrapped instanceof SingleReferenceType) {
+                return ((SingleReferenceType) wrapped).asArray(dimensions);
             }
         }
         if (type instanceof ParameterizedType) {
             final ParameterizedType paramType = (ParameterizedType) type;
             final java.lang.reflect.Type[] params = paramType.getActualTypeArguments();
-            final List<TypeParameter> wrapped = new ArrayList<>(params.length);
+            final List<TypeArgument> wrapped = new ArrayList<>(params.length);
             for (java.lang.reflect.Type param : params) {
                 final Type wrap = wrap(param);
-                if (!(wrap instanceof TypeParameter)) {
+                if (!(wrap instanceof TypeArgument)) {
                     throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
                 }
-                wrapped.add(((TypeParameter) wrap));
+                wrapped.add(((TypeArgument) wrap));
             }
             return ParametrizedType.of((Class<?>) paramType.getRawType(), wrapped);
         }
-        if (type instanceof TypeVariable<?>) {
-            final TypeVariable<?> typeVariable = (TypeVariable) type;
-            final Set<SingleClassType> wrappedUpper = wrapBounds(typeVariable.getBounds());
-            return SingleClassTypeVariable.of(typeVariable.getName(), wrappedUpper);
+        if (type instanceof java.lang.reflect.TypeVariable) {
+            final java.lang.reflect.TypeVariable typeVariable = (java.lang.reflect.TypeVariable) type;
+            final Set<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds());
+            return TypeVariable.of(typeVariable.getName(), wrappedUpper);
         }
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final Set<SingleClassType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
-            final Set<SingleClassType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
+            final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
+            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
             return WildcardType.of(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getSimpleName());
     }
 
-    private static Set<SingleClassType> wrapBounds(java.lang.reflect.Type[] types) {
-        final Set<SingleClassType> wrapped = new HashSet<>(types.length);
+    private static Set<SingleReferenceType> wrapBounds(java.lang.reflect.Type[] types) {
+        final Set<SingleReferenceType> wrapped = new HashSet<>(types.length);
         for (java.lang.reflect.Type type : types) {
             final Type wrap = wrap(type);
-            if (!(wrap instanceof SingleClassType)) {
+            if (!(wrap instanceof SingleReferenceType)) {
                 throw new UnsupportedOperationException("Invalid type for bound: " + wrap.getName());
             }
-            wrapped.add((SingleClassType) wrap);
+            wrapped.add((SingleReferenceType) wrap);
         }
         return wrapped;
     }
@@ -443,9 +442,9 @@ public final class ReflectionUtil {
         }
     }
 
-    public static Class<?> findNameMatch(ClassType type, List<Identifier> name) {
-        if (type instanceof SingleClassType) {
-            final SingleClassType singleClass = (SingleClassType) type;
+    public static Class<?> findNameMatch(ReferenceType type, List<Identifier> name) {
+        if (type instanceof SingleReferenceType) {
+            final SingleReferenceType singleClass = (SingleReferenceType) type;
             final Class<?> typeClass = singleClass.getTypeClass();
             Class<?> currentClass = typeClass;
             for (int i = name.size() - 1; i >= 0; i--) {
@@ -456,14 +455,14 @@ public final class ReflectionUtil {
                     // name match fail, check super class
                     final Class<?> superClass = typeClass.getSuperclass();
                     if (superClass != null) {
-                        final Class<?> match = findNameMatch(SingleClassTypeLiteral.of(superClass), name);
+                        final Class<?> match = findNameMatch(LiteralReferenceType.of(superClass), name);
                         if (match != null) {
                             return match;
                         }
                     }
                     // now check implemented interfaces
                     for (Class<?> implemented : typeClass.getInterfaces()) {
-                        final Class<?> match = findNameMatch(SingleClassTypeLiteral.of(implemented), name);
+                        final Class<?> match = findNameMatch(LiteralReferenceType.of(implemented), name);
                         if (match != null) {
                             return match;
                         }
@@ -473,9 +472,9 @@ public final class ReflectionUtil {
             }
             return typeClass;
         }
-        if (type instanceof ClassUnionType) {
-            for (ClassType classType : ((ClassUnionType) type).getLowestUpperBound()) {
-                final Class<?> match = findNameMatch(classType, name);
+        if (type instanceof ReferenceIntersectionType) {
+            for (ReferenceType referenceType : ((ReferenceIntersectionType) type).getLowestUpperBound()) {
+                final Class<?> match = findNameMatch(referenceType, name);
                 if (match != null) {
                     return match;
                 }
@@ -493,8 +492,8 @@ public final class ReflectionUtil {
         final PrimitiveType primitiveType;
         if (type instanceof PrimitiveType) {
             primitiveType = (PrimitiveType) type;
-        } else if (type instanceof SingleClassType && ((SingleClassType) type).isBox()) {
-            primitiveType = ((SingleClassType) type).unbox();
+        } else if (type instanceof SingleReferenceType && ((SingleReferenceType) type).isBox()) {
+            primitiveType = ((SingleReferenceType) type).unbox();
         } else {
             throw new EvaluatorException("Not a primitive type: " + type.getName(), expression);
         }

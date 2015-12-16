@@ -27,18 +27,18 @@ import java.util.ArrayList;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ClassType;
-import ca.sapon.jici.evaluator.type.ClassUnionType;
-import ca.sapon.jici.evaluator.type.ConcreteType;
-import ca.sapon.jici.evaluator.type.SingleClassType;
-import ca.sapon.jici.evaluator.type.SingleClassTypeLiteral;
+import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.LiteralType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.util.StringUtil;
 
 public class ArrayTypeName implements TypeName, ImportedTypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
-    private ConcreteType componentType = null;
-    private ConcreteType type = null;
+    private LiteralType componentType = null;
+    private LiteralType type = null;
 
     public ArrayTypeName(TypeName componentTypeName, int dimensions) {
         this.componentTypeName = componentTypeName;
@@ -46,10 +46,10 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
     }
 
     @Override
-    public ConcreteType getType(Environment environment) {
+    public LiteralType getType(Environment environment) {
         if (type == null) {
-            final ConcreteType componentType = componentTypeName.getType(environment);
-            final SingleClassType arrayType = componentType.asArray(dimensions);
+            final LiteralType componentType = componentTypeName.getType(environment);
+            final SingleReferenceType arrayType = componentType.asArray(dimensions);
             if (arrayType == null) {
                 throw new EvaluatorException("Class not found: array of " + componentType.getName() + " with dimensions " + dimensions, this);
             }
@@ -60,23 +60,23 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
     }
 
     @Override
-    public void setTypeHint(ClassType hint) {
+    public void setTypeHint(ReferenceType hint) {
         if (!(componentTypeName instanceof ImportedTypeName)) {
             return;
         }
         final ImportedTypeName typeName = (ImportedTypeName) this.componentTypeName;
-        if (hint instanceof SingleClassType) {
-            final Class<?> validated = validateTypeHint(((SingleClassType) hint).getTypeClass());
+        if (hint instanceof SingleReferenceType) {
+            final Class<?> validated = validateTypeHint(((SingleReferenceType) hint).getTypeClass());
             if (validated != null) {
-                typeName.setTypeHint(SingleClassTypeLiteral.of(validated));
+                typeName.setTypeHint(LiteralReferenceType.of(validated));
             }
-        } else if (hint instanceof ClassUnionType) {
-            final ClassUnionType classUnion = (ClassUnionType) hint;
-            final ArrayList<ClassType> hints = new ArrayList<>();
-            for (Class<?> _class : classUnion.getTypeClasses()) {
+        } else if (hint instanceof ReferenceIntersectionType) {
+            final ReferenceIntersectionType intersectionType = (ReferenceIntersectionType) hint;
+            final ArrayList<ReferenceType> hints = new ArrayList<>();
+            for (Class<?> _class : intersectionType.getTypeClasses()) {
                 final Class<?> validated = validateTypeHint(_class);
                 if (validated != null) {
-                    hints.add(SingleClassTypeLiteral.of(validated));
+                    hints.add(LiteralReferenceType.of(validated));
                 }
             }
             switch (hints.size()) {
@@ -86,7 +86,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
                     typeName.setTypeHint(hints.get(0));
                     break;
                 default:
-                    typeName.setTypeHint(ClassUnionType.of(hints));
+                    typeName.setTypeHint(ReferenceIntersectionType.of(hints));
                     break;
             }
         }
@@ -106,7 +106,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
         return dimensions == this.dimensions && !componentType.isPrimitive() ? componentType : null;
     }
 
-    public ConcreteType getComponentType() {
+    public LiteralType getComponentType() {
         return componentType;
     }
 

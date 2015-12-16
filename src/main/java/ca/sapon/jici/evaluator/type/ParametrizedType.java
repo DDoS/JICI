@@ -65,6 +65,15 @@ public class ParametrizedType extends SingleReferenceType {
     }
 
     @Override
+    public LiteralType getComponentType() {
+        final LiteralType componentType = raw.getComponentType();
+        if (!(componentType instanceof LiteralReferenceType)) {
+            throw new UnsupportedOperationException("Component type is not a literal reference type");
+        }
+        return new ParametrizedType((LiteralReferenceType) componentType, arguments);
+    }
+
+    @Override
     public SingleReferenceType asArray(int dimensions) {
         return new ParametrizedType(raw.asArray(dimensions), arguments);
     }

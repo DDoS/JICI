@@ -51,7 +51,15 @@ public class TypeVariable extends SingleReferenceType {
     }
 
     @Override
-    public SingleReferenceType asArray(int dimensions) {
+    public TypeVariable getComponentType() {
+        if (dimensions <= 0) {
+            throw new UnsupportedOperationException("Not an array type");
+        }
+        return new TypeVariable(name, upperBound, dimensions - 1);
+    }
+
+    @Override
+    public TypeVariable asArray(int dimensions) {
         return new TypeVariable(name, upperBound, this.dimensions + dimensions);
     }
 

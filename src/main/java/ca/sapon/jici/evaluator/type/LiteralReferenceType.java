@@ -47,6 +47,15 @@ public class LiteralReferenceType extends SingleReferenceType {
     }
 
     @Override
+    public LiteralType getComponentType() {
+        final Class<?> componentType = type.getComponentType();
+        if (componentType == null) {
+            throw new UnsupportedOperationException("Not an array type");
+        }
+        return ReflectionUtil.wrap(componentType);
+    }
+
+    @Override
     public LiteralReferenceType asArray(int dimensions) {
         return of(ReflectionUtil.asArrayType(type, dimensions));
     }

@@ -83,7 +83,7 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public String getName() {
-        return '(' + StringUtil.toString(lowestUpperBound, " | ") + ')';
+        return '(' + StringUtil.toString(lowestUpperBound, " & ") + ')';
     }
 
     @Override

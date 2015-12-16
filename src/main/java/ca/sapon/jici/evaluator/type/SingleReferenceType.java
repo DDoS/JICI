@@ -102,9 +102,7 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
         return true;
     }
 
-    public LiteralType getComponentType() {
-        return ReflectionUtil.wrap(getTypeClass().getComponentType());
-    }
+    public abstract LiteralType getComponentType();
 
     @Override
     public boolean contains(TypeArgument other) {

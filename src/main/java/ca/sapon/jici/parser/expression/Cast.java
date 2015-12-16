@@ -74,6 +74,7 @@ public class Cast implements Expression {
             } else if (objectType.isPrimitive()) {
                 failCast(castType, objectType);
             } else if (!castType.getTypeClass().isInterface()) {
+                // TODO: fix me for generics
                 // down or up casts only for regular classes
                 if (objectType instanceof ReferenceIntersectionType) {
                     final Class<?> cast = castType.getTypeClass();

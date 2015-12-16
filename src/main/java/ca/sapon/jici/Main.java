@@ -28,7 +28,6 @@ public class Main {
         JICI.breakInto();
         /*
             TODO:
-            Fix intersection type for parametrized types
             Move type code from type classes and reflection util to TypeUtil
         */
     }

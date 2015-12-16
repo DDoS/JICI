@@ -49,6 +49,7 @@ public class TypeCheck implements Expression {
         if (type == null) {
             final Type objectType = object.getType(environment);
             final Type checkType = typeName.getType(environment);
+            // TODO: fix me for generics
             if (!(checkType instanceof SingleReferenceType)) {
                 throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
             }

@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.name;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 
 /**
- *
+ * TODO: fix me for generics
  */
 public interface ImportedTypeName {
     void setTypeHint(ReferenceType hint);

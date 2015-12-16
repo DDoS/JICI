@@ -47,6 +47,7 @@ public class ReferenceIntersectionType implements ReferenceType {
             throw new UnsupportedOperationException("Expected more than one type");
         }
         classes = new HashSet<>(intersection.size());
+        // TODO: fix me for generics
         boolean allEqual = true;
         Class<?> previous = null;
         for (ReferenceType type : intersection) {

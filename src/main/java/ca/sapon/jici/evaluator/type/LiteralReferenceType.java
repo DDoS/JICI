@@ -61,11 +61,6 @@ public class LiteralReferenceType extends SingleReferenceType {
     }
 
     @Override
-    public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
-    }
-
-    @Override
     public boolean equals(Object other) {
         return this == other || (other instanceof SingleReferenceType) && this.type == ((SingleReferenceType) other).getTypeClass();
     }

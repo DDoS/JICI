@@ -26,9 +26,5 @@ package ca.sapon.jici;
 public class Main {
     public static void main(String[] args) {
         JICI.breakInto();
-        /*
-            TODO:
-            Move type code from type classes and reflection util to TypeUtil
-        */
     }
 }

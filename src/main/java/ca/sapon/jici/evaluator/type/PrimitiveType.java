@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ public class PrimitiveType implements LiteralType {
     public static final PrimitiveType THE_FLOAT;
     public static final PrimitiveType THE_DOUBLE;
     private static final Map<Class<?>, PrimitiveType> ALL_TYPES = new HashMap<>();
+    private static final Map<Class<?>, Set<Class<?>>> PRIMITIVE_CONVERSIONS = new HashMap<>();
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
@@ -70,6 +72,15 @@ public class PrimitiveType implements LiteralType {
         ALL_TYPES.put(long.class, THE_LONG);
         ALL_TYPES.put(float.class, THE_FLOAT);
         ALL_TYPES.put(double.class, THE_DOUBLE);
+
+        PRIMITIVE_CONVERSIONS.put(boolean.class, new HashSet<Class<?>>(Collections.singletonList(boolean.class)));
+        PRIMITIVE_CONVERSIONS.put(byte.class, new HashSet<Class<?>>(Arrays.asList(byte.class, short.class, int.class, long.class, float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(short.class, new HashSet<Class<?>>(Arrays.asList(short.class, int.class, long.class, float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(char.class, new HashSet<Class<?>>(Arrays.asList(char.class, int.class, long.class, float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(int.class, new HashSet<Class<?>>(Arrays.asList(int.class, long.class, float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(long.class, new HashSet<Class<?>>(Arrays.asList(long.class, float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(float.class, new HashSet<Class<?>>(Arrays.asList(float.class, double.class)));
+        PRIMITIVE_CONVERSIONS.put(double.class, new HashSet<Class<?>>(Collections.singletonList(double.class)));
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -171,7 +182,13 @@ public class PrimitiveType implements LiteralType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // Primitive types can be converted to certain primitive types
+        // If the target type isn't primitive, box the source and try again
+        if (to.isPrimitive()) {
+            final PrimitiveType target = (PrimitiveType) to;
+            return PRIMITIVE_CONVERSIONS.get(type).contains(target.getTypeClass());
+        }
+        return box().convertibleTo(to);
     }
 
     @Override

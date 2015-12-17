@@ -91,6 +91,30 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
         return true;
     }
 
+    @Override
+    public boolean convertibleTo(Type to) {
+        // Single class types might be convertible to a primitive if they can be unboxed
+        // Else they can be cast to another single class if they are a subtype
+        // They can also be converted to an intersection if they can be converted to each member
+        if (to.isPrimitive()) {
+            return isBox() && unbox().convertibleTo(to);
+        }
+        if (to instanceof SingleReferenceType) {
+            final SingleReferenceType target = (SingleReferenceType) to;
+            return target.getTypeClass().isAssignableFrom(getTypeClass());
+        }
+        if (to instanceof ReferenceIntersectionType) {
+            final ReferenceIntersectionType target = (ReferenceIntersectionType) to;
+            for (Class<?> _class : target.getTypeClasses()) {
+                if (!_class.isAssignableFrom(getTypeClass())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     public abstract LiteralType getComponentType();
 
     @Override
@@ -124,19 +148,19 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
     public Callable getConstructor(Type[] arguments) {
         final Constructor<?>[] constructors = getTypeClass().getConstructors();
         final int argumentCount = arguments.length;
-        final Map<Constructor<?>, Class<?>[]> candidates = new HashMap<>();
-        final Map<Constructor<?>, Class<?>[]> varargCandidate = new HashMap<>();
+        final Map<Constructor<?>, Type[]> candidates = new HashMap<>();
+        final Map<Constructor<?>, Type[]> varargCandidate = new HashMap<>();
         for (Constructor<?> candidate : constructors) {
             if (!candidate.isSynthetic()) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
                 // look for matches in length
                 if (parameterTypes.length == argumentCount) {
-                    candidates.put(candidate, parameterTypes);
+                    candidates.put(candidate, TypeUtil.wrap(parameterTypes));
                 }
                 // look for varargs with matches in name and length of non-varargs
                 if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count
-                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                    varargCandidate.put(candidate, TypeUtil.wrap(ReflectionUtil.expandsVarargs(parameterTypes, argumentCount)));
                 }
             }
         }
@@ -182,19 +206,19 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
         }
         final Method[] methods = getTypeClass().getMethods();
         final int argumentCount = arguments.length;
-        final Map<Method, Class<?>[]> candidates = new HashMap<>();
-        final Map<Method, Class<?>[]> varargCandidate = new HashMap<>();
+        final Map<Method, Type[]> candidates = new HashMap<>();
+        final Map<Method, Type[]> varargCandidate = new HashMap<>();
         for (Method candidate : methods) {
             if (!candidate.isSynthetic() && candidate.getName().equals(name)) {
                 final Class<?>[] parameterTypes = candidate.getParameterTypes();
                 // look for matches in length and name
                 if (parameterTypes.length == argumentCount) {
-                    candidates.put(candidate, parameterTypes);
+                    candidates.put(candidate, TypeUtil.wrap(parameterTypes));
                 }
                 // look for varargs with matches in name and length of non-varargs
                 if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
                     // expand the parameters through the vararg to match the argument count
-                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(parameterTypes, argumentCount));
+                    varargCandidate.put(candidate, TypeUtil.wrap(ReflectionUtil.expandsVarargs(parameterTypes, argumentCount)));
                 }
             }
         }

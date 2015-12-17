@@ -28,7 +28,6 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A wildcard type, such as {@code <?>}, {@code <? extends String>} or {@code <? super Integer>}.
@@ -114,7 +113,8 @@ public class WildcardType implements TypeArgument {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // Can only convert to another type argument containing this
+        return to instanceof TypeArgument && ((TypeArgument) to).contains(this);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class WildcardType implements TypeArgument {
             // All upper bounds must be supertypes of other
             for (ReferenceType thisUpper : upperBound) {
                 for (ReferenceType otherUpper : otherWildcard.upperBound) {
-                    if (!TypeUtil.convertibleTo(otherUpper, thisUpper)) {
+                    if (!otherUpper.convertibleTo(thisUpper)) {
                         return false;
                     }
                 }
@@ -132,7 +132,7 @@ public class WildcardType implements TypeArgument {
             // All lower bounds must be subtypes of other
             for (ReferenceType thisLower : lowerBound) {
                 for (ReferenceType otherLower : otherWildcard.lowerBound) {
-                    if (!TypeUtil.convertibleTo(thisLower, otherLower)) {
+                    if (!thisLower.convertibleTo(otherLower)) {
                         return false;
                     }
                 }
@@ -143,13 +143,13 @@ public class WildcardType implements TypeArgument {
             final SingleReferenceType otherClass = (SingleReferenceType) other;
             // All upper bounds must be supertypes of other
             for (ReferenceType upper : upperBound) {
-                if (!TypeUtil.convertibleTo(otherClass, upper)) {
+                if (!otherClass.convertibleTo(upper)) {
                     return false;
                 }
             }
             // All lower bounds must be subtypes of other
             for (ReferenceType lower : lowerBound) {
-                if (!TypeUtil.convertibleTo(lower, otherClass)) {
+                if (!lower.convertibleTo(otherClass)) {
                     return false;
                 }
             }

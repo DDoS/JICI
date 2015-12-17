@@ -147,20 +147,20 @@ public final class ReflectionUtil {
         return lookupClass(StringUtil.repeat("[", dimensions) + encodedName);
     }
 
-    public static <C> C resolveOverloads(Map<C, Class<?>[]> candidates, Type[] arguments) {
+    public static <C> C resolveOverloads(Map<C, Type[]> candidates, Type[] arguments) {
         // fast-track the lack of candidates
         if (candidates.isEmpty()) {
             return null;
         }
         // remove methods with un-applicable parameters
         candidates:
-        for (Iterator<Entry<C, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<C, Class<?>[]> entry = iterator.next();
-            final Class<?>[] parameters = entry.getValue();
+        for (Iterator<Entry<C, Type[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<C, Type[]> entry = iterator.next();
+            final Type[] parameters = entry.getValue();
             boolean allEqual = parameters.length != 0;
             for (int i = 0; i < parameters.length; i++) {
                 final Type argument = arguments[i];
-                final Type parameter = TypeUtil.wrap(parameters[i]);
+                final Type parameter = parameters[i];
                 if (!argument.convertibleTo(parameter)) {
                     iterator.remove();
                     continue candidates;
@@ -177,9 +177,9 @@ public final class ReflectionUtil {
         C callable = null;
         int candidateCount = candidates.size();
         candidates:
-        for (final Entry<C, Class<?>[]> entry : candidates.entrySet()) {
-            final Class<?>[] parameters = entry.getValue();
-            for (Class<?>[] challenges : candidates.values()) {
+        for (final Entry<C, Type[]> entry : candidates.entrySet()) {
+            final Type[] parameters = entry.getValue();
+            for (Type[] challenges : candidates.values()) {
                 // don't compare with itself
                 if (challenges == parameters) {
                     continue;
@@ -199,7 +199,7 @@ public final class ReflectionUtil {
         return candidateCount != 1 ? null : callable;
     }
 
-    private static boolean isNarrowerParameter(Class<?> parameterA, Class<?> parameterB, boolean primitiveArgument) {
+    private static boolean isNarrowerParameter(Type parameterA, Type parameterB, boolean primitiveArgument) {
         // if A is primitive
         //   if B is primitive
         //     A < B
@@ -211,22 +211,22 @@ public final class ReflectionUtil {
         //   else
         //     A < B
         if (parameterA.isPrimitive()) {
-            return parameterB.isPrimitive() ? TypeUtil.convertibleTo(parameterA, parameterB) : primitiveArgument;
+            return parameterB.isPrimitive() ? parameterA.convertibleTo(parameterB) : primitiveArgument;
         }
-        return parameterB.isPrimitive() ? !primitiveArgument : TypeUtil.convertibleTo(parameterA, parameterB);
+        return parameterB.isPrimitive() ? !primitiveArgument : parameterA.convertibleTo(parameterB);
     }
 
-    public static void fixReturnTypeConflicts(Map<Method, Class<?>[]> candidates) {
+    public static void fixReturnTypeConflicts(Map<Method, Type[]> candidates) {
         // no possible conflicts if less than 2 methods
         if (candidates.size() <= 1) {
             return;
         }
         // check if some methods have the same parameters
-        for (Iterator<Entry<Method, Class<?>[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Method, Class<?>[]> candidate = iterator.next();
+        for (Iterator<Entry<Method, Type[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
+            final Entry<Method, Type[]> candidate = iterator.next();
             final Method method = candidate.getKey();
             Method conflict = null;
-            for (Entry<Method, Class<?>[]> challenge : candidates.entrySet()) {
+            for (Entry<Method, Type[]> challenge : candidates.entrySet()) {
                 // don't compare with itself
                 if (challenge.getKey() == method) {
                     continue;
@@ -237,13 +237,13 @@ public final class ReflectionUtil {
                 }
             }
             // only keep the one with the narrowest return type
-            if (conflict != null && isNarrowerReturnType(conflict.getReturnType(), method.getReturnType())) {
+            if (conflict != null && isNarrowerReturnType(TypeUtil.wrap(conflict.getReturnType()), TypeUtil.wrap(method.getReturnType()))) {
                 iterator.remove();
             }
         }
     }
 
-    private static boolean isNarrowerReturnType(Class<?> parameterA, Class<?> parameterB) {
+    private static boolean isNarrowerReturnType(Type parameterA, Type parameterB) {
         // if A is void
         //   false
         // else if B is void
@@ -252,16 +252,16 @@ public final class ReflectionUtil {
         //   B !is primitive or A < B
         // else
         //   B !is primitive and A < B
-        if (parameterA == void.class) {
+        if (parameterA.isVoid()) {
             return false;
         }
-        if (parameterB == void.class) {
+        if (parameterB.isVoid()) {
             return true;
         }
         if (parameterA.isPrimitive()) {
-            return !parameterB.isPrimitive() || TypeUtil.convertibleTo(parameterA, parameterB);
+            return !parameterB.isPrimitive() || parameterA.convertibleTo(parameterB);
         }
-        return !parameterB.isPrimitive() && TypeUtil.convertibleTo(parameterA, parameterB);
+        return !parameterB.isPrimitive() && parameterA.convertibleTo(parameterB);
     }
 
     public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {

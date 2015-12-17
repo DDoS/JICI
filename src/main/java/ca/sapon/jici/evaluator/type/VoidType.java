@@ -24,7 +24,6 @@
 package ca.sapon.jici.evaluator.type;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * The void type.
@@ -97,7 +96,8 @@ public class VoidType implements LiteralType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // Void can't be converted to anything
+        return false;
     }
 
     @Override

@@ -26,7 +26,6 @@ package ca.sapon.jici.evaluator.type;
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * The null type, for the {@code null} literal.
@@ -89,7 +88,8 @@ public class NullType implements ReferenceType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // Null can be converted to any reference type (so anything that isn't a primitive type)
+        return !to.isPrimitive();
     }
 
     @Override

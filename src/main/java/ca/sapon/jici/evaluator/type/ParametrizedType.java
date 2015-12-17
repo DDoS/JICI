@@ -26,7 +26,6 @@ package ca.sapon.jici.evaluator.type;
 import java.util.List;
 
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
@@ -80,7 +79,26 @@ public class ParametrizedType extends SingleReferenceType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // Parametrized types are a special case of single class types
+        // They are only convertible between each other if the raw types are
+        // And the target parameter types contains the source ones
+        if (to instanceof ParametrizedType) {
+            final ParametrizedType target = (ParametrizedType) to;
+            if (!getRaw().convertibleTo(target.getRaw())) {
+                return false;
+            }
+            final List<TypeArgument> targetArguments = target.getArguments();
+            if (arguments.size() != targetArguments.size()) {
+                return false;
+            }
+            for (int i = 0; i < arguments.size(); i++) {
+                if (!targetArguments.get(i).contains(arguments.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.convertibleTo(to);
     }
 
     @Override

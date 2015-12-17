@@ -138,7 +138,13 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public boolean convertibleTo(Type to) {
-        return TypeUtil.convertibleTo(this, to);
+        // An intersection of class types can be treated as any of its bounds
+        for (SingleReferenceType bound : getLowestUpperBound()) {
+            if (bound.convertibleTo(to)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

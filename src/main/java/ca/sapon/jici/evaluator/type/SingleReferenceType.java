@@ -35,6 +35,7 @@ import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A reference type comprised of a single backing type. That is, a non-divisible type.
@@ -42,20 +43,8 @@ import ca.sapon.jici.util.StringUtil;
 public abstract class SingleReferenceType implements ReferenceType, LiteralType, TypeArgument {
     public static final SingleReferenceType THE_STRING = LiteralReferenceType.of(String.class);
     public static final SingleReferenceType THE_OBJECT = LiteralReferenceType.of(Object.class);
-    private static final Map<Class<?>, Class<?>> UNBOXED_TYPES = new HashMap<>();
     private PrimitiveType unbox;
     private boolean unboxCached = false;
-
-    static {
-        UNBOXED_TYPES.put(Boolean.class, boolean.class);
-        UNBOXED_TYPES.put(Byte.class, byte.class);
-        UNBOXED_TYPES.put(Short.class, short.class);
-        UNBOXED_TYPES.put(Character.class, char.class);
-        UNBOXED_TYPES.put(Integer.class, int.class);
-        UNBOXED_TYPES.put(Long.class, long.class);
-        UNBOXED_TYPES.put(Float.class, float.class);
-        UNBOXED_TYPES.put(Double.class, double.class);
-    }
 
     @Override
     public ValueKind getKind() {
@@ -111,12 +100,7 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
 
     public boolean isBox() {
         if (!unboxCached) {
-            final Class<?> unboxClass = unbox(getTypeClass());
-            if (unboxClass != null && unboxClass.isPrimitive()) {
-                unbox = PrimitiveType.of(unboxClass);
-            } else {
-                unbox = null;
-            }
+            unbox = TypeUtil.unbox(getTypeClass());
             unboxCached = true;
         }
         return unbox != null;
@@ -234,10 +218,5 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
     @Override
     public String toString() {
         return getName();
-    }
-
-    public static Class<?> unbox(Class<?> type) {
-        final Class<?> unboxed = UNBOXED_TYPES.get(type);
-        return unboxed == null ? type : unboxed;
     }
 }

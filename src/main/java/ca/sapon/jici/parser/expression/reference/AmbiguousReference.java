@@ -35,6 +35,7 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
@@ -128,7 +129,7 @@ public class AmbiguousReference implements Reference {
         @Override
         public Type getType(Environment environment) {
             if (type == null) {
-                type = ReflectionUtil.wrap(_class);
+                type = TypeUtil.wrap(_class);
             }
             return type;
         }

@@ -38,7 +38,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Arithmetic implements Expression {
     private final Expression left;
@@ -70,8 +70,8 @@ public class Arithmetic implements Expression {
                 stringConcatenation = true;
                 this.leftType = leftType;
             } else {
-                final PrimitiveType leftPrimitiveType = ReflectionUtil.coerceToPrimitive(left, leftType);
-                final PrimitiveType rightPrimitiveType = ReflectionUtil.coerceToPrimitive(right, rightType);
+                final PrimitiveType leftPrimitiveType = TypeUtil.coerceToPrimitive(left, leftType);
+                final PrimitiveType rightPrimitiveType = TypeUtil.coerceToPrimitive(right, rightType);
                 if (!leftPrimitiveType.isNumeric()) {
                     throw new EvaluatorException("Not a numeric type: " + leftPrimitiveType.getName(), left);
                 }

@@ -25,18 +25,12 @@ package ca.sapon.jici.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -45,51 +39,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceType;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
-import ca.sapon.jici.evaluator.type.LiteralType;
-import ca.sapon.jici.evaluator.type.ParametrizedType;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
-import ca.sapon.jici.evaluator.type.LiteralReferenceType;
-import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.TypeArgument;
-import ca.sapon.jici.evaluator.type.VoidType;
-import ca.sapon.jici.evaluator.type.WildcardType;
-import ca.sapon.jici.lexer.Identifier;
-import ca.sapon.jici.parser.expression.Expression;
 
 /**
  *
  */
 public final class ReflectionUtil {
     public static final Set<String> JAVA_LANG_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-                    "Appendable", "AutoCloseable", "CharSequence", "Cloneable", "Comparable", "Iterable", "Readable",
-                    "Runnable", "Boolean", "Byte", "Character", "Class", "ClassLoader", "ClassValue", "Compiler", "Double",
-                    "Enum", "Float", "InheritableThreadLocal", "Integer", "Long", "Math", "Number", "Object", "Package",
-                    "Process", "ProcessBuilder", "Runtime", "RuntimePermission", "SecurityManager", "Short", "StackTraceElement",
-                    "StrictMath", "String", "StringBuffer", "StringBuilder", "System", "Thread", "ThreadGroup", "ThreadLocal",
-                    "Throwable", "Void", "ArithmeticException", "ArrayIndexOutOfBoundsException", "ArrayStoreException",
-                    "ClassCastException", "ClassNotFoundException", "CloneNotSupportedException", "EnumConstantNotPresentException",
-                    "Exception", "IllegalAccessException", "IllegalArgumentException", "IllegalMonitorStateException",
-                    "IllegalStateException", "IllegalThreadStateException", "IndexOutOfBoundsException", "InstantiationException",
-                    "InterruptedException", "NegativeArraySizeException", "NoSuchFieldException", "NoSuchMethodException",
-                    "NullPointerException", "NumberFormatException", "ReflectiveOperationException", "RuntimeException",
-                    "SecurityException", "StringIndexOutOfBoundsException", "TypeNotPresentException", "UnsupportedOperationException",
-                    "AbstractMethodError", "AssertionError", "BootstrapMethodError", "ClassCircularityError", "ClassFormatError",
-                    "Error", "ExceptionInInitializerError", "IllegalAccessError", "IncompatibleClassChangeError", "InstantiationError",
-                    "InternalError", "LinkageError", "NoClassDefFoundError", "NoSuchFieldError", "NoSuchMethodError", "OutOfMemoryError",
-                    "StackOverflowError", "ThreadDeath", "UnknownError", "UnsatisfiedLinkError", "UnsupportedClassVersionError",
-                    "VerifyError", "VirtualMachineError", "Deprecated", "Override", "SafeVarargs", "SuppressWarnings"
-            ))
-    );
-    private static final Map<Class<?>, Character> ARRAY_NAME_PRIMITIVE_ENCODING = new HashMap<>();
+            "Appendable", "AutoCloseable", "CharSequence", "Cloneable", "Comparable", "Iterable", "Readable",
+            "Runnable", "Boolean", "Byte", "Character", "Class", "ClassLoader", "ClassValue", "Compiler", "Double",
+            "Enum", "Float", "InheritableThreadLocal", "Integer", "Long", "Math", "Number", "Object", "Package",
+            "Process", "ProcessBuilder", "Runtime", "RuntimePermission", "SecurityManager", "Short", "StackTraceElement",
+            "StrictMath", "String", "StringBuffer", "StringBuilder", "System", "Thread", "ThreadGroup", "ThreadLocal",
+            "Throwable", "Void", "ArithmeticException", "ArrayIndexOutOfBoundsException", "ArrayStoreException",
+            "ClassCastException", "ClassNotFoundException", "CloneNotSupportedException", "EnumConstantNotPresentException",
+            "Exception", "IllegalAccessException", "IllegalArgumentException", "IllegalMonitorStateException",
+            "IllegalStateException", "IllegalThreadStateException", "IndexOutOfBoundsException", "InstantiationException",
+            "InterruptedException", "NegativeArraySizeException", "NoSuchFieldException", "NoSuchMethodException",
+            "NullPointerException", "NumberFormatException", "ReflectiveOperationException", "RuntimeException",
+            "SecurityException", "StringIndexOutOfBoundsException", "TypeNotPresentException", "UnsupportedOperationException",
+            "AbstractMethodError", "AssertionError", "BootstrapMethodError", "ClassCircularityError", "ClassFormatError",
+            "Error", "ExceptionInInitializerError", "IllegalAccessError", "IncompatibleClassChangeError", "InstantiationError",
+            "InternalError", "LinkageError", "NoClassDefFoundError", "NoSuchFieldError", "NoSuchMethodError", "OutOfMemoryError",
+            "StackOverflowError", "ThreadDeath", "UnknownError", "UnsatisfiedLinkError", "UnsupportedClassVersionError",
+            "VerifyError", "VirtualMachineError", "Deprecated", "Override", "SafeVarargs", "SuppressWarnings"
+    )));
+    static final Map<Class<?>, Character> ARRAY_NAME_PRIMITIVE_ENCODING = new HashMap<>();
 
     static {
         ARRAY_NAME_PRIMITIVE_ENCODING.put(boolean.class, 'Z');
@@ -183,7 +160,7 @@ public final class ReflectionUtil {
             boolean allEqual = parameters.length != 0;
             for (int i = 0; i < parameters.length; i++) {
                 final Type argument = arguments[i];
-                final Type parameter = wrap(parameters[i]);
+                final Type parameter = TypeUtil.wrap(parameters[i]);
                 if (!argument.convertibleTo(parameter)) {
                     iterator.remove();
                     continue candidates;
@@ -285,219 +262,6 @@ public final class ReflectionUtil {
             return !parameterB.isPrimitive() || TypeUtil.convertibleTo(parameterA, parameterB);
         }
         return !parameterB.isPrimitive() && TypeUtil.convertibleTo(parameterA, parameterB);
-    }
-
-    public static LiteralType wrap(Class<?> type) {
-        if (type == null) {
-            throw new NullPointerException("type");
-        }
-        if (type == void.class) {
-            return VoidType.THE_VOID;
-        }
-        if (type.isPrimitive()) {
-            return PrimitiveType.of(type);
-        }
-        return LiteralReferenceType.of(type);
-    }
-
-    public static Type wrap(java.lang.reflect.Type type) {
-        if (type instanceof Class<?>) {
-            return wrap((Class<?>) type);
-        }
-        if (type instanceof GenericArrayType) {
-            final GenericArrayType genericArrayType = (GenericArrayType) type;
-            java.lang.reflect.Type componentType = genericArrayType.getGenericComponentType();
-            int dimensions = 1;
-            while (componentType instanceof GenericArrayType) {
-                componentType = ((GenericArrayType) componentType).getGenericComponentType();
-                dimensions++;
-            }
-            final Type wrapped = wrap(componentType);
-            if (wrapped instanceof SingleReferenceType) {
-                return ((SingleReferenceType) wrapped).asArray(dimensions);
-            }
-        }
-        if (type instanceof ParameterizedType) {
-            final ParameterizedType paramType = (ParameterizedType) type;
-            final java.lang.reflect.Type[] params = paramType.getActualTypeArguments();
-            final List<TypeArgument> wrapped = new ArrayList<>(params.length);
-            for (java.lang.reflect.Type param : params) {
-                final Type wrap = wrap(param);
-                if (!(wrap instanceof TypeArgument)) {
-                    throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
-                }
-                wrapped.add(((TypeArgument) wrap));
-            }
-            return ParametrizedType.of((Class<?>) paramType.getRawType(), wrapped);
-        }
-        if (type instanceof java.lang.reflect.TypeVariable) {
-            final java.lang.reflect.TypeVariable typeVariable = (java.lang.reflect.TypeVariable) type;
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds());
-            return TypeVariable.of(typeVariable.getName(), wrappedUpper);
-        }
-        if (type instanceof java.lang.reflect.WildcardType) {
-            final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
-            return WildcardType.of(wrappedLower, wrappedUpper);
-        }
-        throw new UnsupportedOperationException(type.getClass().getSimpleName());
-    }
-
-    private static Set<SingleReferenceType> wrapBounds(java.lang.reflect.Type[] types) {
-        final Set<SingleReferenceType> wrapped = new HashSet<>(types.length);
-        for (java.lang.reflect.Type type : types) {
-            final Type wrap = wrap(type);
-            if (!(wrap instanceof SingleReferenceType)) {
-                throw new UnsupportedOperationException("Invalid type for bound: " + wrap.getName());
-            }
-            wrapped.add((SingleReferenceType) wrap);
-        }
-        return wrapped;
-    }
-
-    // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla
-    public static Set<Class<?>> getLowestUpperBound(Iterable<Class<?>> classes) {
-        final Set<Class<?>> common = getCommonSuperClasses(classes);
-        final Set<Class<?>> lowest = new HashSet<>(common.size());
-        while (!common.isEmpty()) {
-            final Iterator<Class<?>> iterator = common.iterator();
-            Class<?> _class = iterator.next();
-            iterator.remove();
-            while (iterator.hasNext()) {
-                Class<?> candidate = iterator.next();
-                if (candidate.isAssignableFrom(_class)) {
-                    iterator.remove();
-                } else if (_class.isAssignableFrom(candidate)) {
-                    _class = candidate;
-                    iterator.remove();
-                }
-            }
-            lowest.add(_class);
-        }
-        return lowest;
-    }
-
-    public static Set<Class<?>> getCommonSuperClasses(Iterable<Class<?>> classes) {
-        final Iterator<Class<?>> iterator = classes.iterator();
-        if (!iterator.hasNext()) {
-            return Collections.emptySet();
-        }
-        final Set<Class<?>> superClasses = getSuperClasses(iterator.next());
-        while (iterator.hasNext()) {
-            final Class<?> _class = iterator.next();
-            final Iterator<Class<?>> candidates = superClasses.iterator();
-            while (candidates.hasNext()) {
-                final Class<?> superClass = candidates.next();
-                if (!superClass.isAssignableFrom(_class)) {
-                    candidates.remove();
-                }
-            }
-        }
-        return superClasses;
-    }
-
-    public static Set<Class<?>> getSuperClasses(Class<?> _class) {
-        final Set<Class<?>> result = new HashSet<>();
-        final Queue<Class<?>> queue = new ArrayDeque<>();
-        queue.add(_class);
-        if (_class.isInterface()) {
-            queue.add(Object.class);
-        }
-        while (!queue.isEmpty()) {
-            final Class<?> child = queue.remove();
-            if (result.add(child)) {
-                if (child.isArray()) {
-                    addArraySuperClasses(child, queue);
-                } else {
-                    final Class<?> superClass = child.getSuperclass();
-                    if (superClass != null) {
-                        queue.add(superClass);
-                    }
-                    queue.addAll(Arrays.asList(child.getInterfaces()));
-                }
-            }
-        }
-        return result;
-    }
-
-    private static void addArraySuperClasses(Class<?> arrayType, Collection<Class<?>> to) {
-        int dimensions = 0;
-        Class<?> componentType = arrayType;
-        do {
-            componentType = componentType.getComponentType();
-            to.add(asArrayType(Object.class, dimensions));
-            to.add(asArrayType(Cloneable.class, dimensions));
-            to.add(asArrayType(Serializable.class, dimensions));
-            dimensions++;
-        } while (componentType.isArray());
-        if (!componentType.isPrimitive()) {
-            final Class<?> superClass = componentType.getSuperclass();
-            if (superClass != null) {
-                to.add(asArrayType(superClass, dimensions));
-            }
-            for (Class<?> _interface : componentType.getInterfaces()) {
-                to.add(asArrayType(_interface, dimensions));
-            }
-        }
-    }
-
-    public static Class<?> findNameMatch(ReferenceType type, List<Identifier> name) {
-        if (type instanceof SingleReferenceType) {
-            final SingleReferenceType singleClass = (SingleReferenceType) type;
-            final Class<?> typeClass = singleClass.getTypeClass();
-            Class<?> currentClass = typeClass;
-            for (int i = name.size() - 1; i >= 0; i--) {
-                if (currentClass != null && name.get(i).getSource().equals(currentClass.getSimpleName())) {
-                    // partial name match, continue
-                    currentClass = currentClass.getEnclosingClass();
-                } else {
-                    // name match fail, check super class
-                    final Class<?> superClass = typeClass.getSuperclass();
-                    if (superClass != null) {
-                        final Class<?> match = findNameMatch(LiteralReferenceType.of(superClass), name);
-                        if (match != null) {
-                            return match;
-                        }
-                    }
-                    // now check implemented interfaces
-                    for (Class<?> implemented : typeClass.getInterfaces()) {
-                        final Class<?> match = findNameMatch(LiteralReferenceType.of(implemented), name);
-                        if (match != null) {
-                            return match;
-                        }
-                    }
-                    return null;
-                }
-            }
-            return typeClass;
-        }
-        if (type instanceof ReferenceIntersectionType) {
-            for (ReferenceType referenceType : ((ReferenceIntersectionType) type).getLowestUpperBound()) {
-                final Class<?> match = findNameMatch(referenceType, name);
-                if (match != null) {
-                    return match;
-                }
-            }
-            return null;
-        }
-        return null;
-    }
-
-    public static PrimitiveType coerceToPrimitive(Environment environment, Expression expression) {
-        return coerceToPrimitive(expression, expression.getType(environment));
-    }
-
-    public static PrimitiveType coerceToPrimitive(Expression expression, Type type) {
-        final PrimitiveType primitiveType;
-        if (type instanceof PrimitiveType) {
-            primitiveType = (PrimitiveType) type;
-        } else if (type instanceof SingleReferenceType && ((SingleReferenceType) type).isBox()) {
-            primitiveType = ((SingleReferenceType) type).unbox();
-        } else {
-            throw new EvaluatorException("Not a primitive type: " + type.getName(), expression);
-        }
-        return primitiveType;
     }
 
     public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {

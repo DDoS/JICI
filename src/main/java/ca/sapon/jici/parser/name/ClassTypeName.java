@@ -38,6 +38,7 @@ import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class ClassTypeName implements TypeName, ImportedTypeName {
     private final List<Identifier> name;
@@ -74,7 +75,7 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
             }
             // else try the hint
             if (_class == null && hint != null) {
-                final Class<?> match = ReflectionUtil.findNameMatch(hint, name);
+                final Class<?> match = TypeUtil.findNameMatch(hint, name);
                 if (match == null) {
                     // failed, discard hint
                     hint = null;

@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class BitwiseNot implements Expression {
     private final Expression inner;
@@ -45,7 +45,7 @@ public class BitwiseNot implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final PrimitiveType innerType = ReflectionUtil.coerceToPrimitive(environment, inner);
+            final PrimitiveType innerType = TypeUtil.coerceToPrimitive(environment, inner);
             if (!innerType.isIntegral()) {
                 throw new EvaluatorException("Not an integral type: " + innerType.getName(), inner);
             }

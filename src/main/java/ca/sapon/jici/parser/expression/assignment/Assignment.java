@@ -35,7 +35,7 @@ import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
 import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.statement.Statement;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Assignment implements Expression, Statement {
     private final Reference assignee;
@@ -92,7 +92,7 @@ public class Assignment implements Expression, Statement {
             if ((simpleAssign || !valueType.isNumeric() || !assigneeType.isNumeric()) && !valueType.convertibleTo(assigneeType)) {
                 if (value instanceof IntLiteral) {
                     final IntLiteral intLiteral = (IntLiteral) value;
-                    if (!ReflectionUtil.coerceToPrimitive(assignee, assigneeType).canNarrowFrom(intLiteral.asInt())) {
+                    if (!TypeUtil.coerceToPrimitive(assignee, assigneeType).canNarrowFrom(intLiteral.asInt())) {
                         throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + assigneeType.getName(), intLiteral);
                     }
                 } else {

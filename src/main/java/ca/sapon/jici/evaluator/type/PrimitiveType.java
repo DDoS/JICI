@@ -49,7 +49,6 @@ public class PrimitiveType implements LiteralType {
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
-    private static final Map<Class<?>, SingleReferenceType> BOXING_CONVERSIONS = new HashMap<>();
     private final Class<?> type;
     private final ValueKind kind;
 
@@ -86,15 +85,6 @@ public class PrimitiveType implements LiteralType {
         BINARY_WIDENERS.put(long.class, new Widener(long.class, byte.class, short.class, char.class, int.class));
         BINARY_WIDENERS.put(float.class, new Widener(float.class, byte.class, short.class, char.class, int.class, long.class));
         BINARY_WIDENERS.put(double.class, new Widener(double.class, byte.class, short.class, char.class, int.class, long.class, float.class));
-
-        BOXING_CONVERSIONS.put(boolean.class, LiteralReferenceType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, LiteralReferenceType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, LiteralReferenceType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, LiteralReferenceType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, LiteralReferenceType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, LiteralReferenceType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, LiteralReferenceType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, LiteralReferenceType.of(Double.class));
     }
 
     private PrimitiveType(Class<?> type, ValueKind kind) {
@@ -163,7 +153,7 @@ public class PrimitiveType implements LiteralType {
     }
 
     public SingleReferenceType box() {
-        return box(type);
+        return TypeUtil.box(type);
     }
 
     public boolean canNarrowFrom(int value) {
@@ -172,11 +162,11 @@ public class PrimitiveType implements LiteralType {
     }
 
     public PrimitiveType unaryWiden() {
-        return of(unaryWiden(type));
+        return of(UNARY_WIDENS_INT.contains(type) ? int.class : type);
     }
 
     public PrimitiveType binaryWiden(PrimitiveType with) {
-        return of(binaryWiden(type, with.getTypeClass()));
+        return of(BINARY_WIDENERS.get(type).widen(with.getTypeClass()));
     }
 
     @Override
@@ -197,18 +187,6 @@ public class PrimitiveType implements LiteralType {
     @Override
     public int hashCode() {
         return type.hashCode();
-    }
-
-    public static SingleReferenceType box(Class<?> type) {
-        return BOXING_CONVERSIONS.get(type);
-    }
-
-    public static Class<?> unaryWiden(Class<?> type) {
-        return UNARY_WIDENS_INT.contains(type) ? int.class : type;
-    }
-
-    public static Class<?> binaryWiden(Class<?> type, Class<?> with) {
-        return BINARY_WIDENERS.get(type).widen(with);
     }
 
     public static PrimitiveType of(Class<?> type) {

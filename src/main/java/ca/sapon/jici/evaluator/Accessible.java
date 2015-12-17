@@ -30,7 +30,7 @@ import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -62,7 +62,7 @@ public abstract class Accessible {
         private final Field field;
 
         private FieldAccessible(Field field) {
-            super(ReflectionUtil.wrap(field.getGenericType()));
+            super(TypeUtil.wrap(field.getGenericType()));
             this.field = field;
         }
 

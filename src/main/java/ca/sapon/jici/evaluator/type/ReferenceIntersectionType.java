@@ -31,7 +31,6 @@ import java.util.Set;
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
@@ -67,7 +66,7 @@ public class ReferenceIntersectionType implements ReferenceType {
         if (allEqual) {
             throw new UnsupportedOperationException("Expected differing types in the intersection");
         }
-        final Set<Class<?>> bounds = ReflectionUtil.getLowestUpperBound(classes);
+        final Set<Class<?>> bounds = TypeUtil.getLowestUpperBound(classes);
         lowestUpperBound = new HashSet<>(bounds.size());
         for (Class<?> bound : bounds) {
             lowestUpperBound.add(LiteralReferenceType.of(bound));

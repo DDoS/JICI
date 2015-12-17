@@ -35,7 +35,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Sign implements Expression {
     private final Expression inner;
@@ -50,7 +50,7 @@ public class Sign implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final PrimitiveType innerType = ReflectionUtil.coerceToPrimitive(environment, inner);
+            final PrimitiveType innerType = TypeUtil.coerceToPrimitive(environment, inner);
             if (!innerType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
             }

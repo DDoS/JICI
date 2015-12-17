@@ -42,8 +42,8 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.ImportedTypeName;
 import ca.sapon.jici.parser.name.TypeName;
-import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Declaration implements Statement {
     private final TypeName typeName;
@@ -109,7 +109,7 @@ public class Declaration implements Statement {
                     if (!valueType.convertibleTo(declaredType)) {
                         if (variable.getValueExpression() instanceof IntLiteral) {
                             final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();
-                            if (!ReflectionUtil.coerceToPrimitive(variable.getValueExpression(), declaredType).canNarrowFrom(intLiteral.asInt())) {
+                            if (!TypeUtil.coerceToPrimitive(variable.getValueExpression(), declaredType).canNarrowFrom(intLiteral.asInt())) {
                                 throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + declaredType.getName(), intLiteral);
                             }
                         } else {

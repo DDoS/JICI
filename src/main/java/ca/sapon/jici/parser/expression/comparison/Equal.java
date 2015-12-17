@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Equal implements Expression {
     private final Expression left;
@@ -55,8 +55,8 @@ public class Equal implements Expression {
                 widenKind = ValueKind.OBJECT;
                 return PrimitiveType.THE_BOOLEAN;
             }
-            final PrimitiveType primitiveLeftType = ReflectionUtil.coerceToPrimitive(left, leftType);
-            final PrimitiveType primitiveRightType = ReflectionUtil.coerceToPrimitive(right, rightType);
+            final PrimitiveType primitiveLeftType = TypeUtil.coerceToPrimitive(left, leftType);
+            final PrimitiveType primitiveRightType = TypeUtil.coerceToPrimitive(right, rightType);
             if (primitiveLeftType.isBoolean() && primitiveRightType.isBoolean()) {
                 widenKind = ValueKind.BOOLEAN;
                 return PrimitiveType.THE_BOOLEAN;

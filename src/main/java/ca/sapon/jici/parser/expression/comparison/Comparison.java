@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Comparison implements Expression {
     private final Expression left;
@@ -50,8 +50,8 @@ public class Comparison implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final PrimitiveType leftType = ReflectionUtil.coerceToPrimitive(environment, left);
-            final PrimitiveType rightType = ReflectionUtil.coerceToPrimitive(environment, right);
+            final PrimitiveType leftType = TypeUtil.coerceToPrimitive(environment, left);
+            final PrimitiveType rightType = TypeUtil.coerceToPrimitive(environment, right);
             if (!leftType.isNumeric()) {
                 throw new EvaluatorException("Not a numeric type: " + leftType.getName(), left);
             }

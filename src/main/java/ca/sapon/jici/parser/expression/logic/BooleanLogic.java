@@ -31,7 +31,7 @@ import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class BooleanLogic implements Expression {
     private final Expression left;
@@ -48,8 +48,8 @@ public class BooleanLogic implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final PrimitiveType leftType = ReflectionUtil.coerceToPrimitive(environment, left);
-            final PrimitiveType rightType = ReflectionUtil.coerceToPrimitive(environment, right);
+            final PrimitiveType leftType = TypeUtil.coerceToPrimitive(environment, left);
+            final PrimitiveType rightType = TypeUtil.coerceToPrimitive(environment, right);
             if (!leftType.isBoolean()) {
                 throw new EvaluatorException("Not a boolean: " + leftType.getName(), left);
             }

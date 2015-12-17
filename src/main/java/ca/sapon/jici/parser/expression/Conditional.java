@@ -34,7 +34,7 @@ import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
-import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Conditional implements Expression {
     private final Expression test;
@@ -51,7 +51,7 @@ public class Conditional implements Expression {
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            final Type testType = ReflectionUtil.coerceToPrimitive(environment, test);
+            final Type testType = TypeUtil.coerceToPrimitive(environment, test);
             Type leftType = left.getType(environment);
             Type rightType = right.getType(environment);
             if (!testType.isBoolean()) {

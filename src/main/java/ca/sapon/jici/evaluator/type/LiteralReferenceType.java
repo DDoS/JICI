@@ -52,7 +52,7 @@ public class LiteralReferenceType extends SingleReferenceType {
         if (componentType == null) {
             throw new UnsupportedOperationException("Not an array type");
         }
-        return ReflectionUtil.wrap(componentType);
+        return TypeUtil.wrap(componentType);
     }
 
     @Override

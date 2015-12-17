@@ -32,6 +32,7 @@ import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.util.ReflectionUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -75,7 +76,7 @@ public abstract class Callable {
         private final int varargIndex;
 
         private MethodCallable(Method method, boolean vararg) {
-            super(ReflectionUtil.wrap(method.getGenericReturnType()));
+            super(TypeUtil.wrap(method.getGenericReturnType()));
             this.method = method;
             if (vararg) {
                 final Class<?>[] parameters = method.getParameterTypes();
@@ -116,7 +117,7 @@ public abstract class Callable {
         private final int varargIndex;
 
         private ConstructorCallable(Constructor<?> constructor, boolean vararg) {
-            super(ReflectionUtil.wrap(constructor.getDeclaringClass()));
+            super(TypeUtil.wrap(constructor.getDeclaringClass()));
             this.constructor = constructor;
             if (vararg) {
                 final Class<?>[] parameters = constructor.getParameterTypes();

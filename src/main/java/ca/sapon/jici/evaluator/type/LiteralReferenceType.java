@@ -29,7 +29,7 @@ import ca.sapon.jici.util.TypeUtil;
 /**
  * A reference type literally used in the code, such as {@code String} or {@code int[]}.
  */
-public class LiteralReferenceType extends SingleReferenceType {
+public class LiteralReferenceType extends SingleReferenceType implements TypeArgument {
     private final Class<?> type;
 
     private LiteralReferenceType(Class<?> type) {
@@ -39,6 +39,11 @@ public class LiteralReferenceType extends SingleReferenceType {
     @Override
     public String getName() {
         return type.getCanonicalName();
+    }
+
+    @Override
+    public boolean isArray() {
+        return type.isArray();
     }
 
     @Override
@@ -58,6 +63,27 @@ public class LiteralReferenceType extends SingleReferenceType {
     @Override
     public LiteralReferenceType asArray(int dimensions) {
         return of(ReflectionUtil.asArrayType(type, dimensions));
+    }
+
+    @Override
+    public boolean contains(TypeArgument other) {
+        return equals(other);
+    }
+
+    @Override
+    public SingleReferenceType getSuperType() {
+        final java.lang.reflect.Type superClass = type.getGenericSuperclass();
+        return superClass != null ? (SingleReferenceType) TypeUtil.wrap(superClass) : null;
+    }
+
+    @Override
+    public SingleReferenceType[] getInterfaces() {
+        final java.lang.reflect.Type[] interfaces = type.getGenericInterfaces();
+        final SingleReferenceType[] wrapped = new SingleReferenceType[interfaces.length];
+        for (int i = 0; i < interfaces.length; i++) {
+            wrapped[i] = (SingleReferenceType) TypeUtil.wrap(interfaces[i]);
+        }
+        return wrapped;
     }
 
     @Override

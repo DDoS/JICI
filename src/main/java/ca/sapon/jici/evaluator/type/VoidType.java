@@ -35,16 +35,6 @@ public class VoidType implements LiteralType {
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        return void.class;
-    }
-
-    @Override
-    public LiteralReferenceType asArray(int dimensions) {
-        throw new UnsupportedOperationException("Cannot create an array of the void type");
-    }
-
-    @Override
     public String getName() {
         return "void";
     }
@@ -92,6 +82,16 @@ public class VoidType implements LiteralType {
     @Override
     public boolean isObject() {
         return false;
+    }
+
+    @Override
+    public Class<?> getTypeClass() {
+        return void.class;
+    }
+
+    @Override
+    public LiteralReferenceType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot create an array of the void type");
     }
 
     @Override

@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -40,9 +41,11 @@ import ca.sapon.jici.util.TypeUtil;
 /**
  * A reference type comprised of a single backing type. That is, a non-divisible type.
  */
-public abstract class SingleReferenceType implements ReferenceType, LiteralType, TypeArgument {
-    public static final SingleReferenceType THE_STRING = LiteralReferenceType.of(String.class);
-    public static final SingleReferenceType THE_OBJECT = LiteralReferenceType.of(Object.class);
+public abstract class SingleReferenceType implements ReferenceType, LiteralType {
+    public static final LiteralReferenceType THE_STRING = LiteralReferenceType.of(String.class);
+    public static final LiteralReferenceType THE_OBJECT = LiteralReferenceType.of(Object.class);
+    public static final LiteralReferenceType THE_CLONEABLE = LiteralReferenceType.of(Cloneable.class);
+    public static final LiteralReferenceType THE_SERIALIZABLE = LiteralReferenceType.of(Serializable.class);
     private PrimitiveType unbox;
     private boolean unboxCached = false;
 
@@ -82,11 +85,6 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
     }
 
     @Override
-    public boolean isArray() {
-        return getTypeClass().isArray();
-    }
-
-    @Override
     public boolean isObject() {
         return true;
     }
@@ -105,8 +103,8 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
         }
         if (to instanceof ReferenceIntersectionType) {
             final ReferenceIntersectionType target = (ReferenceIntersectionType) to;
-            for (Class<?> _class : target.getTypeClasses()) {
-                if (!_class.isAssignableFrom(getTypeClass())) {
+            for (SingleReferenceType type : target.getTypes()) {
+                if (!type.getTypeClass().isAssignableFrom(getTypeClass())) {
                     return false;
                 }
             }
@@ -115,12 +113,9 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType,
         return false;
     }
 
-    public abstract LiteralType getComponentType();
+    public abstract SingleReferenceType getSuperType();
 
-    @Override
-    public boolean contains(TypeArgument other) {
-        return equals(other);
-    }
+    public abstract SingleReferenceType[] getInterfaces();
 
     public boolean isBox() {
         if (!unboxCached) {

@@ -30,17 +30,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
-import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.evaluator.value.BooleanValue;
@@ -56,8 +59,6 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class EvaluatorTest {
     @Test
@@ -452,6 +453,7 @@ public class EvaluatorTest {
         assertReturns('c', "c[2]", environment);
         assertReturns('d', "c[3]", environment);
         assertReturns('d', "c[(byte) 3]", environment);
+        assertReturns(null, "(true ? new Integer[1] : new Float[2])[0]", environment, Number.class, Comparable.class);
         assertFails("c[-1]", environment);
         assertFails("c[4]", environment);
         assertFails("c[0.0]", environment);
@@ -883,7 +885,7 @@ public class EvaluatorTest {
 
     private void assertTypeEquals(Type type, Class<?>... expected) {
         if (type instanceof ReferenceIntersectionType) {
-            final Set<SingleReferenceType> lowestUpperBound = ((ReferenceIntersectionType) type).getLowestUpperBound();
+            final Set<SingleReferenceType> lowestUpperBound = ((ReferenceIntersectionType) type).getTypes();
             final Set<Class<?>> actualSet = new HashSet<>();
             for (SingleReferenceType bound : lowestUpperBound) {
                 actualSet.add(bound.getTypeClass());

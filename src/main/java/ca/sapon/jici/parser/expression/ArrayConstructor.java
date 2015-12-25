@@ -28,10 +28,9 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -166,7 +165,7 @@ public class ArrayConstructor implements Expression {
                 if (!type.isArray()) {
                     throw new EvaluatorException("Cannot convert array type to " + type.getName(), this);
                 }
-                final LiteralType componentType = ((SingleReferenceType) type).getComponentType();
+                final LiteralType componentType = (LiteralType) ((ReferenceType) type).getComponentType();
                 for (final Expression element : elements) {
                     if (element instanceof ArrayInitializer) {
                         ((ArrayInitializer) element).setType(environment, componentType);

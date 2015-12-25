@@ -25,12 +25,11 @@ package ca.sapon.jici.evaluator.type;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
-import ca.sapon.jici.evaluator.value.ValueKind;
 
 /**
  * The null type, for the {@code null} literal.
  */
-public class NullType implements ReferenceType {
+public class NullType extends SingleReferenceType {
     public static final NullType THE_NULL = new NullType();
 
     private NullType() {
@@ -42,48 +41,8 @@ public class NullType implements ReferenceType {
     }
 
     @Override
-    public ValueKind getKind() {
-        return ValueKind.OBJECT;
-    }
-
-    @Override
-    public boolean isVoid() {
-        return false;
-    }
-
-    @Override
-    public boolean isNull() {
-        return true;
-    }
-
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumeric() {
-        return false;
-    }
-
-    @Override
-    public boolean isIntegral() {
-        return false;
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return false;
-    }
-
-    @Override
     public boolean isArray() {
         return false;
-    }
-
-    @Override
-    public boolean isObject() {
-        return true;
     }
 
     @Override
@@ -93,18 +52,33 @@ public class NullType implements ReferenceType {
     }
 
     @Override
-    public String toString() {
-        return getName();
+    public Class<?> getTypeClass() {
+        throw new UnsupportedOperationException("No type class for null type");
     }
 
     @Override
-    public boolean equals(Object other) {
-        return this == other || other instanceof NullType;
+    public SingleReferenceType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot create an array of the void type");
     }
 
     @Override
-    public int hashCode() {
-        return 9849851;
+    public SingleReferenceType getSuperType() {
+        return null;
+    }
+
+    @Override
+    public SingleReferenceType[] getInterfaces() {
+        return new SingleReferenceType[0];
+    }
+
+    @Override
+    public boolean isBox() {
+        return false;
+    }
+
+    @Override
+    public Type getComponentType() {
+        throw new UnsupportedOperationException("Not an array type");
     }
 
     @Override
@@ -120,5 +94,20 @@ public class NullType implements ReferenceType {
     @Override
     public Callable getMethod(String name, Type[] arguments) {
         throw new UnsupportedOperationException("Cannot dereference the null type");
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return this == other || other instanceof NullType;
+    }
+
+    @Override
+    public int hashCode() {
+        return 9849851;
     }
 }

@@ -30,7 +30,7 @@ import ca.sapon.jici.util.StringUtil;
 /**
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
  */
-public class ParametrizedType extends SingleReferenceType {
+public class ParametrizedType extends SingleReferenceType implements TypeArgument {
     private final LiteralReferenceType raw;
     private final List<TypeArgument> arguments;
 
@@ -51,6 +51,11 @@ public class ParametrizedType extends SingleReferenceType {
     }
 
     @Override
+    public boolean isArray() {
+        return raw.isArray();
+    }
+
+    @Override
     public Class<?> getTypeClass() {
         return raw.getTypeClass();
     }
@@ -64,8 +69,11 @@ public class ParametrizedType extends SingleReferenceType {
     }
 
     @Override
-    public LiteralType getComponentType() {
+    public ParametrizedType getComponentType() {
         final LiteralType componentType = raw.getComponentType();
+        if (componentType == null) {
+            throw new UnsupportedOperationException("Not an array type");
+        }
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }
@@ -75,6 +83,11 @@ public class ParametrizedType extends SingleReferenceType {
     @Override
     public SingleReferenceType asArray(int dimensions) {
         return new ParametrizedType(raw.asArray(dimensions), arguments);
+    }
+
+    @Override
+    public boolean contains(TypeArgument other) {
+        return equals(other);
     }
 
     @Override
@@ -102,6 +115,49 @@ public class ParametrizedType extends SingleReferenceType {
     }
 
     @Override
+    public SingleReferenceType getSuperType() {
+        final SingleReferenceType superType = raw.getSuperType();
+        if (superType instanceof ParametrizedType) {
+            return substituteTypeVariables((ParametrizedType) superType);
+        }
+        return superType;
+    }
+
+    @Override
+    public SingleReferenceType[] getInterfaces() {
+        final SingleReferenceType[] interfaces = raw.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            final SingleReferenceType _interface = interfaces[i];
+            if (_interface instanceof ParametrizedType) {
+                interfaces[i] = substituteTypeVariables((ParametrizedType) _interface);
+            }
+        }
+        return interfaces;
+    }
+
+    private SingleReferenceType substituteTypeVariables(ParametrizedType parametrizedType) {
+        // Substitute type variables in the super type by the proper arguments
+        final java.lang.reflect.TypeVariable<?>[] parameters = raw.getTypeClass().getTypeParameters();
+        for (int i = 0; i < parametrizedType.arguments.size(); i++) {
+            final TypeArgument argument = parametrizedType.arguments.get(i);
+            if (argument instanceof TypeVariable) {
+                // Find index of type variable by name in the parameters, use it to substitute for the argument
+                parametrizedType.arguments.set(i, arguments.get(indexOf(parameters, (TypeVariable) argument)));
+            }
+        }
+        return parametrizedType;
+    }
+
+    private int indexOf(java.lang.reflect.TypeVariable<?>[] parameters, TypeVariable variable) {
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i].getName().equals(variable.getName())) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Couldn't find " + variable + " in parameters");
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
@@ -119,6 +175,10 @@ public class ParametrizedType extends SingleReferenceType {
     }
 
     public static ParametrizedType of(Class<?> raw, List<TypeArgument> arguments) {
-        return new ParametrizedType(LiteralReferenceType.of(raw), arguments);
+        return of(LiteralReferenceType.of(raw), arguments);
+    }
+
+    public static ParametrizedType of(LiteralReferenceType raw, List<TypeArgument> arguments) {
+        return new ParametrizedType(raw, arguments);
     }
 }

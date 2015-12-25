@@ -25,6 +25,9 @@ package ca.sapon.jici.test;
 
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
@@ -33,9 +36,8 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
+import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *
@@ -44,66 +46,101 @@ public class GenericsTest {
     @Test
     public void testWildcards() {
         // Subtype assignable to upper-bound
-        assertSucceeds("import java.util.List;" +
-                "List<String> l1 = null;" +
-                "List<? extends CharSequence> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<CharSequence> l1 = null;" +
-                "List<? extends String> l2;" +
-                "l2 = l1;");
-        // Supertype assignable to lower-bound
-        assertSucceeds("import java.util.List;" +
-                "List<CharSequence> l1 = null;" +
-                "List<? super String> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<String> l1 = null;" +
-                "List<? super CharSequence> l2;" +
-                "l2 = l1;");
+        assertAssignSucceeds(
+                "List<String>",
+                "List<? extends CharSequence>"
+        );
+        assertLUB(
+                "java.util.List<? extends java.lang.CharSequence>",
+                "List<String>",
+                "List<? extends CharSequence>"
+        );
+        assertAssignFails(
+                "List<CharSequence>",
+                "List<? extends String>"
+        );
+        // Super type assignable to lower-bound
+        assertAssignSucceeds(
+                "List<CharSequence>",
+                "List<? super String>"
+        );
+        assertLUB(
+                "java.util.List<? super java.lang.String>",
+                "List<CharSequence>",
+                "List<? super String>"
+        );
+        assertAssignFails(
+                "List<String>",
+                "List<? super CharSequence>"
+        );
         // Unbounded assignable to unbounded
-        assertSucceeds("import java.util.List;" +
-                "List<?> l1 = null;" +
-                "List<?> l2;" +
-                "l2 = l1;");
+        assertAssignSucceeds(
+                "List<?>",
+                "List<?>"
+        );
+        assertLUB(
+                "java.util.List<?>",
+                "List<?>",
+                "List<?>"
+        );
         // Upper-bounded assignable to higher upper-bounded
-        assertSucceeds("import java.util.List;" +
-                "List<? extends String> l1 = null;" +
-                "List<? extends CharSequence> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<? extends CharSequence> l1 = null;" +
-                "List<? extends String> l2;" +
-                "l2 = l1;");
+        assertAssignSucceeds(
+                "List<? extends String>",
+                "List<? extends CharSequence>"
+        );
+        assertLUB(
+                "java.util.List<? extends java.lang.CharSequence>",
+                "List<? extends String>",
+                "List<? extends CharSequence>"
+        );
+        assertAssignFails(
+                "List<? extends CharSequence>",
+                "List<? extends String>"
+        );
         // Lower-bounded assignable to lower lower-bounded
-        assertSucceeds("import java.util.List;" +
-                "List<? super CharSequence> l1 = null;" +
-                "List<? super String> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<? super String> l1 = null;" +
-                "List<? super CharSequence> l2;" +
-                "l2 = l1;");
+        assertAssignSucceeds(
+                "List<? super CharSequence>",
+                "List<? super String>"
+        );
+        assertLUB(
+                "java.util.List<? super java.lang.String>",
+                "List<? super CharSequence>",
+                "List<? super String>"
+        );
+        assertAssignFails(
+                "List<? super String>",
+                "List<? super CharSequence>"
+        );
         // Similar as a above but with bounded and unbounded
-        assertSucceeds("import java.util.List;" +
-                "List<? extends String> l1 = null;" +
-                "List<?> l2;" +
-                "l2 = l1;");
-        assertSucceeds("import java.util.List;" +
-                "List<? super String> l1 = null;" +
-                "List<?> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<?> l1 = null;" +
-                "List<? extends String> l2;" +
-                "l2 = l1;");
-        assertFails("import java.util.List;" +
-                "List<?> l1 = null;" +
-                "List<? super String> l2;" +
-                "l2 = l1;");
+        assertAssignSucceeds(
+                "List<? extends String>",
+                "List<?>"
+        );
+        assertLUB(
+                "java.util.List<?>",
+                "List<? extends String>",
+                "List<?>"
+        );
+        assertAssignSucceeds(
+                "List<? super String>",
+                "List<?>"
+        );
+        assertLUB(
+                "java.util.List<?>",
+                "List<? super String>",
+                "List<?>"
+        );
+        assertAssignFails(
+                "List<?>",
+                "List<? extends String>"
+        );
+        assertAssignFails(
+                "List<?>",
+                "List<? super String>"
+        );
     }
 
-    private static void assertSucceeds(String source) {
+    private static Environment assertSucceeds(String source) {
         final Environment environment = new Environment();
         final SourceMetadata metadata = new SourceMetadata(source);
         try {
@@ -119,6 +156,7 @@ public class GenericsTest {
             }
             throw new AssertionError(exception);
         }
+        return environment;
     }
 
     private static void assertFails(String source) {
@@ -130,5 +168,36 @@ public class GenericsTest {
                 Assert.fail("Expected evaluator exception");
             }
         }
+    }
+
+    private static void assertAssignSucceeds(String leftType, String rightType) {
+        assertSucceeds(generateDeclarationSource(leftType, rightType) + "l2 = l1;");
+    }
+
+    private static void assertAssignFails(String leftType, String rightType) {
+        assertFails(generateDeclarationSource(leftType, rightType) + "l2 = l1;");
+    }
+
+    private static void assertLUB(String expectedType, String leftType, String rightType) {
+        final Environment environment = assertSucceeds(generateDeclarationSource(leftType, rightType));
+        String source = "true ? l1 : l2";
+        final SourceMetadata metadata = new SourceMetadata(source);
+        try {
+            source = Decoder.decode(source, metadata);
+            final List<Token> tokens = Lexer.lex(source);
+            final Expression expression = Parser.parseExpression(tokens);
+            Assert.assertEquals(expectedType, expression.getType(environment).toString());
+        } catch (Exception exception) {
+            if (exception instanceof SourceException) {
+                System.out.println(metadata.generateErrorInformation((SourceException) exception));
+            }
+            throw new AssertionError(exception);
+        }
+    }
+
+    private static String generateDeclarationSource(String leftType, String rightType) {
+        return "import java.util.List;"
+                + leftType + " l1 = null;"
+                + rightType + " l2;";
     }
 }

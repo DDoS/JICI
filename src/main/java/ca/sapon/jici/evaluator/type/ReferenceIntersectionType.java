@@ -37,53 +37,36 @@ import ca.sapon.jici.util.TypeUtil;
 /**
  * An intersection of reference types, such as {@code String & Integer} or {@code Set<String> & Collection<CharSequence>}.
  */
-public class ReferenceIntersectionType implements ReferenceType {
-    private final Set<Class<?>> classes;
-    private final Set<SingleReferenceType> lowestUpperBound;
+public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
+    public static final ReferenceIntersectionType NOTHING = of(SingleReferenceType.THE_OBJECT);
+    public static final ReferenceIntersectionType EVERYTHING = of(NullType.THE_NULL);
+    private final Set<SingleReferenceType> types;
 
-    private ReferenceIntersectionType(Collection<ReferenceType> intersection) {
-        if (intersection.size() <= 1) {
-            throw new UnsupportedOperationException("Expected more than one type");
+    private ReferenceIntersectionType(Collection<? extends ReferenceType> intersection) {
+        if (intersection.size() < 1) {
+            throw new UnsupportedOperationException("Expected at least one type");
         }
-        classes = new HashSet<>(intersection.size());
-        // TODO: fix me for generics
-        boolean allEqual = true;
-        Class<?> previous = null;
+        final HashSet<SingleReferenceType> expandedTypes = new HashSet<>(intersection.size());
         for (ReferenceType type : intersection) {
             if (type instanceof ReferenceIntersectionType) {
-                classes.addAll(((ReferenceIntersectionType) type).getTypeClasses());
-                allEqual = false;
+                expandedTypes.addAll(((ReferenceIntersectionType) type).getTypes());
             } else {
-                final Class<?> _class = ((SingleReferenceType) type).getTypeClass();
-                classes.add(_class);
-                if (previous == null) {
-                    previous = _class;
-                } else {
-                    allEqual &= previous == _class;
-                }
+                expandedTypes.add((SingleReferenceType) type);
             }
         }
-        if (allEqual) {
-            throw new UnsupportedOperationException("Expected differing types in the intersection");
-        }
-        final Set<Class<?>> bounds = TypeUtil.getLowestUpperBound(classes);
-        lowestUpperBound = new HashSet<>(bounds.size());
-        for (Class<?> bound : bounds) {
-            lowestUpperBound.add(LiteralReferenceType.of(bound));
-        }
+        types = TypeUtil.greatestLowerBound(expandedTypes);
     }
 
-    public Set<Class<?>> getTypeClasses() {
-        return classes;
-    }
-
-    public Set<SingleReferenceType> getLowestUpperBound() {
-        return lowestUpperBound;
+    public Set<SingleReferenceType> getTypes() {
+        return types;
     }
 
     @Override
     public String getName() {
-        return '(' + StringUtil.toString(lowestUpperBound, " & ") + ')';
+        if (types.size() == 1) {
+            return types.iterator().next().toString();
+        }
+        return '(' + StringUtil.toString(types, " & ") + ')';
     }
 
     @Override
@@ -123,12 +106,12 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public boolean isArray() {
-        for (SingleReferenceType bound : lowestUpperBound) {
-            if (bound.isArray()) {
-                return true;
+        for (SingleReferenceType type : types) {
+            if (!type.isArray()) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -137,9 +120,13 @@ public class ReferenceIntersectionType implements ReferenceType {
     }
 
     @Override
+    public boolean contains(TypeArgument other) {
+        return equals(other);
+    }
+
+    @Override
     public boolean convertibleTo(Type to) {
-        // An intersection of class types can be treated as any of its bounds
-        for (SingleReferenceType bound : getLowestUpperBound()) {
+        for (SingleReferenceType bound : types) {
             if (bound.convertibleTo(to)) {
                 return true;
             }
@@ -148,10 +135,22 @@ public class ReferenceIntersectionType implements ReferenceType {
     }
 
     @Override
+    public ReferenceIntersectionType getComponentType() {
+        if (!isArray()) {
+            throw new UnsupportedOperationException("Not an array type");
+        }
+        final Set<SingleReferenceType> componentTypes = new HashSet<>();
+        for (SingleReferenceType type : types) {
+            componentTypes.add((SingleReferenceType) type.getComponentType());
+        }
+        return of(componentTypes);
+    }
+
+    @Override
     public Callable getConstructor(Type[] arguments) {
-        for (SingleReferenceType bound : lowestUpperBound) {
+        for (SingleReferenceType type : types) {
             try {
-                return bound.getConstructor(arguments);
+                return type.getConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }
@@ -161,9 +160,9 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public Accessible getField(String name) {
-        for (SingleReferenceType bound : lowestUpperBound) {
+        for (SingleReferenceType type : types) {
             try {
-                return bound.getField(name);
+                return type.getField(name);
             } catch (UnsupportedOperationException ignored) {
             }
         }
@@ -172,9 +171,9 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public Callable getMethod(String name, Type[] arguments) {
-        for (SingleReferenceType bound : lowestUpperBound) {
+        for (SingleReferenceType type : types) {
             try {
-                return bound.getMethod(name, arguments);
+                return type.getMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }
@@ -189,19 +188,19 @@ public class ReferenceIntersectionType implements ReferenceType {
 
     @Override
     public boolean equals(Object other) {
-        return this == other || other instanceof ReferenceIntersectionType && this.lowestUpperBound.equals(((ReferenceIntersectionType) other).lowestUpperBound);
+        return this == other || other instanceof ReferenceIntersectionType && types.equals(((ReferenceIntersectionType) other).types);
     }
 
     @Override
     public int hashCode() {
-        return lowestUpperBound.hashCode();
+        return types.hashCode();
     }
 
     public static ReferenceIntersectionType of(ReferenceType... intersection) {
         return of(Arrays.asList(intersection));
     }
 
-    public static ReferenceIntersectionType of(Collection<ReferenceType> intersection) {
+    public static ReferenceIntersectionType of(Collection<? extends ReferenceType> intersection) {
         return new ReferenceIntersectionType(intersection);
     }
 }

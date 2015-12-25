@@ -23,7 +23,6 @@
  */
 package ca.sapon.jici.util;
 
-import java.io.Serializable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayDeque;
@@ -43,6 +42,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
+import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
@@ -115,6 +115,14 @@ public final class TypeUtil {
         return LiteralReferenceType.of(type);
     }
 
+    public static Type[] wrap(java.lang.reflect.Type[] types) {
+        final Type[] wrapped = new Type[types.length];
+        for (int i = 0; i < types.length; i++) {
+            wrapped[i] = wrap(types[i]);
+        }
+        return wrapped;
+    }
+
     public static Type wrap(java.lang.reflect.Type type) {
         if (type instanceof Class<?>) {
             return wrap((Class<?>) type);
@@ -171,88 +179,243 @@ public final class TypeUtil {
         return wrapped;
     }
 
-    // based on https://stackoverflow.com/questions/9797212/finding-the-nearest-common-superclass-or-superinterface-of-a-collection-of-cla
-    public static Set<Class<?>> getLowestUpperBound(Iterable<Class<?>> classes) {
-        final Set<Class<?>> common = getCommonSuperClasses(classes);
-        final Set<Class<?>> lowest = new HashSet<>(common.size());
-        while (!common.isEmpty()) {
-            final Iterator<Class<?>> iterator = common.iterator();
-            Class<?> _class = iterator.next();
-            iterator.remove();
-            while (iterator.hasNext()) {
-                Class<?> candidate = iterator.next();
-                if (candidate.isAssignableFrom(_class)) {
-                    iterator.remove();
-                } else if (_class.isAssignableFrom(candidate)) {
-                    _class = candidate;
-                    iterator.remove();
-                }
-            }
-            lowest.add(_class);
-        }
-        return lowest;
-    }
-
-    public static Set<Class<?>> getCommonSuperClasses(Iterable<Class<?>> classes) {
-        final Iterator<Class<?>> iterator = classes.iterator();
-        if (!iterator.hasNext()) {
+    public static <T extends Type> Set<T> greatestLowerBound(Collection<T> types) {
+        if (types.isEmpty()) {
+            // Fast track trivial cases
             return Collections.emptySet();
         }
-        final Set<Class<?>> superClasses = getSuperClasses(iterator.next());
-        while (iterator.hasNext()) {
-            final Class<?> _class = iterator.next();
-            final Iterator<Class<?>> candidates = superClasses.iterator();
-            while (candidates.hasNext()) {
-                final Class<?> superClass = candidates.next();
-                if (!superClass.isAssignableFrom(_class)) {
-                    candidates.remove();
+        if (types.size() == 1) {
+            // Fast track trivial cases
+            return Collections.singleton(types.iterator().next());
+        }
+        // Discard any member that is a super type of another
+        final Set<T> minimalTypes = new HashSet<>();
+        potentialCandidates:
+        for (T potentialCandidate : types) {
+            for (Iterator<T> iterator = minimalTypes.iterator(); iterator.hasNext(); ) {
+                final T existingCandidate = iterator.next();
+                if (existingCandidate.convertibleTo(potentialCandidate)) {
+                    // potential candidate is a super type of existing one, don't add
+                    continue potentialCandidates;
+                } else if (potentialCandidate.convertibleTo(existingCandidate)) {
+                    // existing candidate is a super type of potential one, remove it
+                    iterator.remove();
+                }
+            }
+            minimalTypes.add(potentialCandidate);
+        }
+        return minimalTypes;
+    }
+
+    public static ReferenceIntersectionType lowestUpperBound(ReferenceType... types) {
+        return lowestUpperBound(Arrays.asList(types));
+    }
+
+    private static ReferenceIntersectionType lowestUpperBound(Set<Collection<? extends ReferenceType>> recursions, ReferenceType... types) {
+        return lowestUpperBound(Arrays.asList(types), recursions);
+    }
+
+    public static ReferenceIntersectionType lowestUpperBound(Collection<? extends ReferenceType> types) {
+        return lowestUpperBound(types, new HashSet<Collection<? extends ReferenceType>>());
+    }
+
+    private static ReferenceIntersectionType lowestUpperBound(Collection<? extends ReferenceType> types, Set<Collection<? extends ReferenceType>> recursions) {
+        if (types.size() == 1) {
+            // Fast track trivial cases
+            return ReferenceIntersectionType.of(types.iterator().next());
+        }
+        if (types.isEmpty() || !recursions.add(types)) {
+            // Recursive lowest upper bound calls can lead to infinite types, don't compute a bound for these (like javac does)
+            return ReferenceIntersectionType.NOTHING;
+        }
+        // Get the super type sets ST(U)
+        final Map<ReferenceType, Set<SingleReferenceType>> superTypeSets = new HashMap<>();
+        final Collection<Set<SingleReferenceType>> superTypes = superTypeSets.values();
+        for (ReferenceType type : types) {
+            if (type instanceof NullType) {
+                // The null type has a universal set of super types, we can skip it
+                continue;
+            }
+            superTypeSets.put(type, getSuperTypes(type));
+        }
+        // Intersect the erased super type sets EST(U) to generate the erased candidate set EC
+        final Set<LiteralReferenceType> erasedCandidates = new HashSet<>();
+        final Iterator<Set<SingleReferenceType>> superTypesIterator = superTypes.iterator();
+        erasedCandidates.addAll(getErasedTypes(superTypesIterator.next()));
+        while (superTypesIterator.hasNext()) {
+            erasedCandidates.retainAll(getErasedTypes(superTypesIterator.next()));
+        }
+        // Get the minimal erased candidate set MEC
+        final Set<LiteralReferenceType> minimalErasedCandidates = greatestLowerBound(erasedCandidates);
+        // For generic candidates (those with relevant invocations) compute the least containing invocation
+        final Set<SingleReferenceType> lowestUpperBound = new HashSet<>();
+        for (LiteralReferenceType candidate : minimalErasedCandidates) {
+            final Set<ParametrizedType> invocations = relevantInvocations(superTypes, candidate);
+            if (invocations.isEmpty()) {
+                lowestUpperBound.add(candidate);
+            } else {
+                lowestUpperBound.add(leastContainingInvocation(invocations, recursions));
+            }
+        }
+        return ReferenceIntersectionType.of(lowestUpperBound);
+    }
+
+    private static Set<ParametrizedType> relevantInvocations(Collection<Set<SingleReferenceType>> superTypeSets, LiteralReferenceType type) {
+        // Search for an invocation of the erased type in any of the super type sets
+        final Set<ParametrizedType> invocations = new HashSet<>();
+        for (Set<SingleReferenceType> superTypes : superTypeSets) {
+            for (SingleReferenceType superType : superTypes) {
+                if (superType instanceof ParametrizedType) {
+                    final ParametrizedType parametrizedType = (ParametrizedType) superType;
+                    if (parametrizedType.getRaw().equals(type)) {
+                        invocations.add(parametrizedType);
+                    }
                 }
             }
         }
-        return superClasses;
+        return invocations;
     }
 
-    public static Set<Class<?>> getSuperClasses(Class<?> _class) {
-        final Set<Class<?>> result = new HashSet<>();
-        final Queue<Class<?>> queue = new ArrayDeque<>();
-        queue.add(_class);
-        if (_class.isInterface()) {
-            queue.add(Object.class);
+    private static ParametrizedType leastContainingInvocation(Set<ParametrizedType> invocations, Set<Collection<? extends ReferenceType>> recursions) {
+        final Iterator<ParametrizedType> iterator = invocations.iterator();
+        ParametrizedType left = iterator.next();
+        if (invocations.size() == 1) {
+            // For a single invocation we get the least containing type argument of each invocation argument
+            final List<TypeArgument> arguments = left.getArguments();
+            final List<TypeArgument> leastArguments = new ArrayList<>(arguments.size());
+            for (TypeArgument argument : arguments) {
+                leastArguments.add(leastContainingTypeArgument(argument, recursions));
+            }
+            return ParametrizedType.of(left.getRaw().getTypeClass(), leastArguments);
+        }
+        // For many invocation we reduce pairwise, left with right
+        while (iterator.hasNext()) {
+            // The least containing type argument is done pairwise on the arguments of the left and right type
+            final ParametrizedType right = iterator.next();
+            final List<TypeArgument> leftArguments = left.getArguments();
+            final List<TypeArgument> rightArguments = right.getArguments();
+            final List<TypeArgument> leastArguments = new ArrayList<>(leftArguments.size());
+            for (int i = 0; i < leftArguments.size(); i++) {
+                leastArguments.add(leastContainingTypeArgument(leftArguments.get(i), rightArguments.get(i), recursions));
+            }
+            left = ParametrizedType.of(left.getRaw().getTypeClass(), leastArguments);
+        }
+        return left;
+    }
+
+    private static TypeArgument leastContainingTypeArgument(TypeArgument left, TypeArgument right, Set<Collection<? extends ReferenceType>> recursions) {
+        // In the case where one argument isn't a wildcard type, ensure the non-wildcard is on the left
+        if (!(right instanceof WildcardType)) {
+            final TypeArgument swap = left;
+            left = right;
+            right = swap;
+        }
+        if (left instanceof WildcardType) {
+            // Pair of wildcards
+            return leastContainingTypeArgument((WildcardType) left, (WildcardType) right, recursions);
+        }
+        if (right instanceof WildcardType) {
+            // Only one wildcard
+            return leastContainingTypeArgument(left, (WildcardType) right, recursions);
+        }
+        // No wildcards
+        return left.equals(right) ? left : WildcardType.of(
+                ReferenceIntersectionType.NOTHING,
+                lowestUpperBound(recursions, (SingleReferenceType) left, (SingleReferenceType) right)
+        );
+    }
+
+    private static TypeArgument leastContainingTypeArgument(WildcardType left, WildcardType right, Set<Collection<? extends ReferenceType>> recursions) {
+        final Set<SingleReferenceType> combinedUpperBound = new HashSet<>(left.getUpperBound().getTypes());
+        final Set<SingleReferenceType> combinedLowerBound = new HashSet<>(left.getLowerBound().getTypes());
+        combinedUpperBound.addAll(right.getUpperBound().getTypes());
+        combinedLowerBound.addAll(right.getLowerBound().getTypes());
+        return combinedUpperBound.equals(combinedLowerBound) ? ReferenceIntersectionType.of(combinedUpperBound)
+                : WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+    }
+
+    private static TypeArgument leastContainingTypeArgument(TypeArgument left, WildcardType right, Set<Collection<? extends ReferenceType>> recursions) {
+        final Set<SingleReferenceType> combinedUpperBound = new HashSet<>(right.getUpperBound().getTypes());
+        final Set<SingleReferenceType> combinedLowerBound = new HashSet<>(right.getLowerBound().getTypes());
+        combinedUpperBound.add((SingleReferenceType) left);
+        combinedLowerBound.add((SingleReferenceType) left);
+        return WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+    }
+
+    private static TypeArgument leastContainingTypeArgument(TypeArgument argument, Set<Collection<? extends ReferenceType>> recursions) {
+        final Set<SingleReferenceType> combinedUpperBound = new HashSet<>();
+        final Set<SingleReferenceType> combinedLowerBound = new HashSet<>();
+        // Left type is argument
+        if (argument instanceof WildcardType) {
+            final WildcardType wildcard = (WildcardType) argument;
+            combinedUpperBound.addAll(wildcard.getUpperBound().getTypes());
+            combinedLowerBound.addAll(wildcard.getLowerBound().getTypes());
+        } else {
+            combinedUpperBound.add((SingleReferenceType) argument);
+            combinedLowerBound.add((SingleReferenceType) argument);
+        }
+        // Right type is ?
+        combinedUpperBound.add(SingleReferenceType.THE_OBJECT);
+        combinedLowerBound.add(NullType.THE_NULL);
+        return WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+    }
+
+    private static Set<LiteralReferenceType> getErasedTypes(Set<SingleReferenceType> types) {
+        final Set<LiteralReferenceType> erased = new HashSet<>();
+        for (SingleReferenceType type : types) {
+            if (type instanceof ParametrizedType) {
+                erased.add(((ParametrizedType) type).getRaw());
+            } else {
+                erased.add(((LiteralReferenceType) type));
+            }
+        }
+        return erased;
+    }
+
+    private static Set<SingleReferenceType> getSuperTypes(ReferenceType type) {
+        final Set<SingleReferenceType> result = new HashSet<>();
+        final Queue<SingleReferenceType> queue = new ArrayDeque<>();
+        if (type instanceof ReferenceIntersectionType) {
+            queue.addAll(((ReferenceIntersectionType) type).getTypes());
+        } else {
+            queue.add((SingleReferenceType) type);
         }
         while (!queue.isEmpty()) {
-            final Class<?> child = queue.remove();
+            final SingleReferenceType child = queue.remove();
             if (result.add(child)) {
                 if (child.isArray()) {
                     addArraySuperClasses(child, queue);
                 } else {
-                    final Class<?> superClass = child.getSuperclass();
+                    final SingleReferenceType superClass = child.getSuperType();
                     if (superClass != null) {
                         queue.add(superClass);
                     }
-                    queue.addAll(Arrays.asList(child.getInterfaces()));
+                    Collections.addAll(queue, child.getInterfaces());
                 }
             }
         }
+        result.add(SingleReferenceType.THE_OBJECT);
         return result;
     }
 
-    private static void addArraySuperClasses(Class<?> arrayType, Collection<Class<?>> to) {
+    private static void addArraySuperClasses(SingleReferenceType arrayType, Queue<SingleReferenceType> to) {
         int dimensions = 0;
-        Class<?> componentType = arrayType;
+        Type componentType = arrayType;
         do {
-            componentType = componentType.getComponentType();
-            to.add(ReflectionUtil.asArrayType(Object.class, dimensions));
-            to.add(ReflectionUtil.asArrayType(Cloneable.class, dimensions));
-            to.add(ReflectionUtil.asArrayType(Serializable.class, dimensions));
+            componentType = ((SingleReferenceType) componentType).getComponentType();
+            to.add(SingleReferenceType.THE_OBJECT.asArray(dimensions));
+            to.add(SingleReferenceType.THE_CLONEABLE.asArray(dimensions));
+            to.add(SingleReferenceType.THE_SERIALIZABLE.asArray(dimensions));
             dimensions++;
         } while (componentType.isArray());
         if (!componentType.isPrimitive()) {
-            final Class<?> superClass = componentType.getSuperclass();
+            final SingleReferenceType referenceType = (SingleReferenceType) componentType;
+            final SingleReferenceType superClass = referenceType.getSuperType();
             if (superClass != null) {
-                to.add(ReflectionUtil.asArrayType(superClass, dimensions));
+                to.add(superClass.asArray(dimensions));
             }
-            for (Class<?> _interface : componentType.getInterfaces()) {
-                to.add(ReflectionUtil.asArrayType(_interface, dimensions));
+            for (SingleReferenceType _interface : referenceType.getInterfaces()) {
+                to.add(_interface.asArray(dimensions));
             }
         }
     }
@@ -304,7 +467,7 @@ public final class TypeUtil {
             return typeClass;
         }
         if (type instanceof ReferenceIntersectionType) {
-            for (ReferenceType referenceType : ((ReferenceIntersectionType) type).getLowestUpperBound()) {
+            for (ReferenceType referenceType : ((ReferenceIntersectionType) type).getTypes()) {
                 final Class<?> match = findNameMatch(referenceType, name);
                 if (match != null) {
                     return match;

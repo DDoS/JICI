@@ -30,6 +30,8 @@ import ca.sapon.jici.evaluator.Callable;
  * A type backed by a class other than the primitive ones. Includes the null type.
  */
 public interface ReferenceType extends Type {
+    Type getComponentType();
+
     Callable getConstructor(Type[] arguments);
 
     Accessible getField(String name);

@@ -79,7 +79,7 @@ public class Cast implements Expression {
                 if (objectType instanceof ReferenceIntersectionType) {
                     final Class<?> cast = castType.getTypeClass();
                     boolean oneValid = false;
-                    for (SingleReferenceType bound : ((ReferenceIntersectionType) objectType).getLowestUpperBound()) {
+                    for (SingleReferenceType bound : ((ReferenceIntersectionType) objectType).getTypes()) {
                         final Class<?> object = bound.getTypeClass();
                         if (cast.isAssignableFrom(object) || object.isAssignableFrom(cast)) {
                             oneValid = true;

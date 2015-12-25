@@ -24,7 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 /**
- * A type literally used in the code, such as {@code String}, {@code List<Integer>}, {@code int}, {@code int[]}, {@code <T>} or {@code void}.
+ * A type literally used in the code, such as {@code String}, {@code List<Integer>}, {@code int}, {@code int[]}, {@code <T>}, {@code null} or {@code void}.
  */
 public interface LiteralType extends Type {
     Class<?> getTypeClass();

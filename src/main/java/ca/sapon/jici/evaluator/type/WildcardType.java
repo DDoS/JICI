@@ -27,36 +27,36 @@ import java.util.Collections;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.util.StringUtil;
 
 /**
  * A wildcard type, such as {@code <?>}, {@code <? extends String>} or {@code <? super Integer>}.
  */
 public class WildcardType implements TypeArgument {
-    private final Set<? extends ReferenceType> lowerBound;
-    private final Set<? extends ReferenceType> upperBound;
+    public static final WildcardType THE_UNBOUNDED = of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet());
+    private final ReferenceIntersectionType lowerBound;
+    private final ReferenceIntersectionType upperBound;
 
-    private WildcardType(Set<SingleReferenceType> lowerBound, Set<SingleReferenceType> upperBound) {
-        if (lowerBound.isEmpty()) {
-            this.lowerBound = Collections.<ReferenceType>singleton(NullType.THE_NULL);
-        } else {
-            this.lowerBound = lowerBound;
-        }
-        if (upperBound.isEmpty()) {
-            this.upperBound = Collections.<ReferenceType>singleton(SingleReferenceType.THE_OBJECT);
-        } else {
-            this.upperBound = upperBound;
-        }
+    private WildcardType(ReferenceIntersectionType lowerBound, ReferenceIntersectionType upperBound) {
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+    }
+
+    public ReferenceIntersectionType getLowerBound() {
+        return lowerBound;
+    }
+
+    public ReferenceIntersectionType getUpperBound() {
+        return upperBound;
     }
 
     @Override
     public String getName() {
         String name = "?";
-        if (upperBound.size() != 1 || !upperBound.contains(SingleReferenceType.THE_OBJECT)) {
-            name += " extends " + StringUtil.toString(upperBound, " & ");
+        if (!upperBound.getTypes().contains(SingleReferenceType.THE_OBJECT)) {
+            name += " extends " + upperBound;
         }
-        if (lowerBound.size() != 1 || !lowerBound.contains(NullType.THE_NULL)) {
-            name += " super " + StringUtil.toString(lowerBound, " & ");
+        if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
+            name += " super " + lowerBound;
         }
         return name;
     }
@@ -98,12 +98,7 @@ public class WildcardType implements TypeArgument {
 
     @Override
     public boolean isArray() {
-        for (ReferenceType upper : upperBound) {
-            if (upper.isArray()) {
-                return true;
-            }
-        }
-        return false;
+        return upperBound.isArray();
     }
 
     @Override
@@ -121,39 +116,11 @@ public class WildcardType implements TypeArgument {
     public boolean contains(TypeArgument other) {
         if (other instanceof WildcardType) {
             final WildcardType otherWildcard = (WildcardType) other;
-            // All upper bounds must be supertypes of other
-            for (ReferenceType thisUpper : upperBound) {
-                for (ReferenceType otherUpper : otherWildcard.upperBound) {
-                    if (!otherUpper.convertibleTo(thisUpper)) {
-                        return false;
-                    }
-                }
-            }
-            // All lower bounds must be subtypes of other
-            for (ReferenceType thisLower : lowerBound) {
-                for (ReferenceType otherLower : otherWildcard.lowerBound) {
-                    if (!thisLower.convertibleTo(otherLower)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
+            return otherWildcard.upperBound.convertibleTo(upperBound) && lowerBound.convertibleTo(otherWildcard.lowerBound);
         }
         if (other instanceof SingleReferenceType) {
-            final SingleReferenceType otherClass = (SingleReferenceType) other;
-            // All upper bounds must be supertypes of other
-            for (ReferenceType upper : upperBound) {
-                if (!otherClass.convertibleTo(upper)) {
-                    return false;
-                }
-            }
-            // All lower bounds must be subtypes of other
-            for (ReferenceType lower : lowerBound) {
-                if (!lower.convertibleTo(otherClass)) {
-                    return false;
-                }
-            }
-            return true;
+            final SingleReferenceType otherType = (SingleReferenceType) other;
+            return otherType.convertibleTo(upperBound) && lowerBound.convertibleTo(otherType);
         }
         return false;
     }
@@ -183,6 +150,12 @@ public class WildcardType implements TypeArgument {
     }
 
     public static WildcardType of(Set<SingleReferenceType> lowerBound, Set<SingleReferenceType> upperBound) {
+        final ReferenceIntersectionType lower = lowerBound.isEmpty() ? ReferenceIntersectionType.EVERYTHING : ReferenceIntersectionType.of(lowerBound);
+        final ReferenceIntersectionType upper = upperBound.isEmpty() ? ReferenceIntersectionType.NOTHING : ReferenceIntersectionType.of(upperBound);
+        return of(lower, upper);
+    }
+
+    public static WildcardType of(ReferenceIntersectionType lowerBound, ReferenceIntersectionType upperBound) {
         return new WildcardType(lowerBound, upperBound);
     }
 }

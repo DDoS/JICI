@@ -25,15 +25,16 @@ package ca.sapon.jici.test;
 
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.lexer.Keyword;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.LexerException;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.Token;
-import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.TokenGroup;
-import org.junit.Assert;
-import org.junit.Test;
+import ca.sapon.jici.lexer.TokenID;
 
 public class LexerTest {
     @Test
@@ -243,6 +244,7 @@ public class LexerTest {
     @Test
     public void testLexComments() {
         Assert.assertEquals(0, Lexer.lex("//abcd").size());
+        Assert.assertEquals(0, Lexer.lex("///abcd").size());
         Assert.assertEquals(0, Lexer.lex("//abcd\n").size());
         Assert.assertEquals(0, Lexer.lex("//abcd\r").size());
         Assert.assertEquals(0, Lexer.lex("//abcd\r\n").size());

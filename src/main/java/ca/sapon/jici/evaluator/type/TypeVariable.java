@@ -30,19 +30,29 @@ import ca.sapon.jici.util.StringUtil;
 /**
  * A type variable, such as {@code <T>}.
  */
-public class TypeVariable extends SingleReferenceType {
+public class TypeVariable extends SingleReferenceType implements TypeArgument {
     private final String name;
     private final int dimensions;
-    private final Set<SingleReferenceType> upperBound;
+    private final ReferenceIntersectionType upperBound;
 
-    private TypeVariable(String name, Set<SingleReferenceType> upperBound, int dimensions) {
+    private TypeVariable(String name, ReferenceIntersectionType upperBound, int dimensions) {
         this.name = name;
         this.dimensions = dimensions;
         this.upperBound = upperBound;
     }
 
-    public Set<SingleReferenceType> getUpperBound() {
+    public ReferenceIntersectionType getUpperBound() {
         return upperBound;
+    }
+
+    @Override
+    public String getName() {
+        return name + StringUtil.repeat("[]", dimensions);
+    }
+
+    @Override
+    public boolean isArray() {
+        return dimensions > 0;
     }
 
     @Override
@@ -64,12 +74,22 @@ public class TypeVariable extends SingleReferenceType {
     }
 
     @Override
-    public String getName() {
-        return name + StringUtil.repeat("[]", dimensions);
+    public boolean contains(TypeArgument other) {
+        return equals(other);
     }
 
     @Override
     public boolean convertibleTo(Type to) {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
+    public SingleReferenceType getSuperType() {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
+    public SingleReferenceType[] getInterfaces() {
         throw new UnsupportedOperationException("Unimplemented");
     }
 
@@ -93,6 +113,6 @@ public class TypeVariable extends SingleReferenceType {
     }
 
     public static TypeVariable of(String name, Set<SingleReferenceType> upperBound) {
-        return new TypeVariable(name, upperBound, 0);
+        return new TypeVariable(name, ReferenceIntersectionType.of(upperBound), 0);
     }
 }

@@ -73,8 +73,8 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
         } else if (hint instanceof ReferenceIntersectionType) {
             final ReferenceIntersectionType intersectionType = (ReferenceIntersectionType) hint;
             final ArrayList<ReferenceType> hints = new ArrayList<>();
-            for (Class<?> _class : intersectionType.getTypeClasses()) {
-                final Class<?> validated = validateTypeHint(_class);
+            for (SingleReferenceType type : intersectionType.getTypes()) {
+                final Class<?> validated = validateTypeHint(type.getTypeClass());
                 if (validated != null) {
                     hints.add(LiteralReferenceType.of(validated));
                 }

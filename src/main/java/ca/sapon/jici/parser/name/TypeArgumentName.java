@@ -49,15 +49,15 @@ public class TypeArgumentName implements SourceIndexed {
     public TypeArgument getType(Environment environment) {
         if (type == null) {
             if (kind == BoundKind.NONE) {
-                type = WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet());
+                type = WildcardType.THE_UNBOUNDED;
             } else {
                 final LiteralType bound = this.bound.getType(environment);
-                if (!(bound instanceof SingleReferenceType)) {
-                    throw new EvaluatorException("Type argument must be a class type", this);
+                if (!(bound instanceof TypeArgument)) {
+                    throw new EvaluatorException("Name must be a type argument", this);
                 }
                 switch (kind) {
                     case EXACT:
-                        type = (SingleReferenceType) bound;
+                        type = (TypeArgument) bound;
                         break;
                     case LOWER:
                         type = WildcardType.of(Collections.singleton((SingleReferenceType) bound), Collections.<SingleReferenceType>emptySet());

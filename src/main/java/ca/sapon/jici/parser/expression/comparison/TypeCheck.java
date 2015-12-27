@@ -25,19 +25,21 @@ package ca.sapon.jici.parser.expression.comparison;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.TypeName;
+import ca.sapon.jici.util.TypeUtil;
 
 public class TypeCheck implements Expression {
     private final Expression object;
     private final TypeName typeName;
     private Type type = null;
-    private SingleReferenceType checkType = null;
+    private LiteralReferenceType checkType = null;
 
     public TypeCheck(Expression object, TypeName typeName) {
         this.object = object;
@@ -49,18 +51,20 @@ public class TypeCheck implements Expression {
         if (type == null) {
             final Type objectType = object.getType(environment);
             final Type checkType = typeName.getType(environment);
-            // TODO: fix me for generics
-            if (!(checkType instanceof SingleReferenceType)) {
-                throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
-            }
-            if (objectType.isPrimitive()) {
+            // Left operand must be a reference type
+            if (!(objectType instanceof ReferenceType)) {
                 throw new EvaluatorException("Cannot type check " + objectType.getName(), object);
             }
-            if (objectType.isVoid()) {
-                throw new EvaluatorException("Cannot type check void", object);
+            // Right operand must also be a reference, and also reifiable
+            if (!(checkType instanceof ReferenceType) || !checkType.isReifiable()) {
+                throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
+            }
+            // Cast from left operand to right operand must be valid
+            if (!TypeUtil.isValidReferenceCast((ReferenceType) objectType, (ReferenceType) checkType)) {
+                throw new EvaluatorException("Cannot check type " + checkType.getName(), typeName);
             }
             type = PrimitiveType.THE_BOOLEAN;
-            this.checkType = (SingleReferenceType) checkType;
+            this.checkType = (LiteralReferenceType) checkType;
         }
         return type;
     }

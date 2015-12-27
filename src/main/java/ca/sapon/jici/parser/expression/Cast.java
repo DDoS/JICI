@@ -25,14 +25,14 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
-import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.name.TypeName;
+import ca.sapon.jici.util.TypeUtil;
 
 public class Cast implements Expression {
     private final TypeName typeName;
@@ -49,21 +49,21 @@ public class Cast implements Expression {
         if (type == null) {
             final LiteralType castType = typeName.getType(environment);
             Type objectType = object.getType(environment);
-            if (objectType.isVoid()) {
+            if (objectType.isVoid() || castType.isVoid()) {
                 failCast(castType, objectType);
             }
             // apply boxing or unboxing if possible to have
             // a pair primitive-primitive or object-object
             if (castType.isPrimitive()) {
-                if (objectType instanceof SingleReferenceType) {
-                    objectType = ((SingleReferenceType) objectType).tryUnbox();
+                if (objectType instanceof LiteralReferenceType) {
+                    objectType = ((LiteralReferenceType) objectType).tryUnbox();
                 }
             } else if (objectType instanceof PrimitiveType) {
                 objectType = ((PrimitiveType) objectType).box();
             }
             // cast primitive to primitive
             // cast boolean to boolean
-            // cast object or null to object
+            // more complicated rules for reference types
             if (castType.isPrimitive()) {
                 if (!objectType.isPrimitive()) {
                     failCast(castType, objectType);
@@ -73,31 +73,8 @@ public class Cast implements Expression {
                 }
             } else if (objectType.isPrimitive()) {
                 failCast(castType, objectType);
-            } else if (!castType.getTypeClass().isInterface()) {
-                // TODO: fix me for generics
-                // down or up casts only for regular classes
-                if (objectType instanceof ReferenceIntersectionType) {
-                    final Class<?> cast = castType.getTypeClass();
-                    boolean oneValid = false;
-                    for (SingleReferenceType bound : ((ReferenceIntersectionType) objectType).getTypes()) {
-                        final Class<?> object = bound.getTypeClass();
-                        if (cast.isAssignableFrom(object) || object.isAssignableFrom(cast)) {
-                            oneValid = true;
-                            break;
-                        }
-                    }
-                    if (!oneValid) {
-                        failCast(castType, objectType);
-                    }
-                } else {
-                    if (!(objectType instanceof NullType)) {
-                        final Class<?> object = ((SingleReferenceType) objectType).getTypeClass();
-                        final Class<?> cast = castType.getTypeClass();
-                        if (!cast.isAssignableFrom(object) && !object.isAssignableFrom(cast)) {
-                            failCast(castType, objectType);
-                        }
-                    }
-                }
+            } else if (!TypeUtil.isValidReferenceCast((ReferenceType) objectType, (ReferenceType) castType)) {
+                failCast(castType, objectType);
             }
             type = castType;
         }

@@ -407,6 +407,155 @@ public final class TypeUtil {
         return primitiveType;
     }
 
+    public static boolean isValidReferenceCast(ReferenceType sourceType, ReferenceType targetType) {
+        if (sourceType.isNull()) {
+            // source type is null, can always cast to anything
+            return true;
+        }
+        if (sourceType instanceof LiteralReferenceType) {
+            // source is a literal reference type, which has sub-cases
+            final LiteralReferenceType source = (LiteralReferenceType) sourceType;
+            if (source.isArray()) {
+                // source is an array type, which has sub-cases
+                if (targetType instanceof LiteralReferenceType) {
+                    // target is a literal reference type, which has sub-cases
+                    final LiteralReferenceType target = (LiteralReferenceType) targetType;
+                    if (target.isArray()) {
+                        // target is an array type, allow if same primitive type else apply recursively on components
+                        final LiteralType sourceComponent = source.getComponentType();
+                        final LiteralType targetComponent = target.getComponentType();
+                        return sourceComponent.isPrimitive() && targetComponent.isPrimitive() && sourceComponent.equals(targetComponent)
+                                || isValidReferenceCast((ReferenceType) sourceComponent, (ReferenceType) targetComponent);
+                    }
+                    // target is a class or interface type, only allow object, serializable and cloneable
+                    return target.equals(LiteralReferenceType.THE_OBJECT) || target.equals(LiteralReferenceType.THE_SERIALIZABLE)
+                            || target.equals(LiteralReferenceType.THE_CLONEABLE);
+                }
+                if (targetType instanceof TypeVariable) {
+                    // target is a type variable, apply recursively to upper bound
+                    final TypeVariable target = (TypeVariable) targetType;
+                    return isValidReferenceCast(source, target.getUpperBound());
+                }
+                // any other target type is undefined
+                return false;
+            }
+            if (source.getTypeClass().isInterface()) {
+                // source is an interface type, which has sub-cases
+                if (targetType instanceof LiteralReferenceType) {
+                    // target is a literal reference type, which has sub-cases
+                    final LiteralReferenceType target = (LiteralReferenceType) targetType;
+                    if (target.isArray()) {
+                        // target is an array type, source must be serializable or cloneable
+                        return source.equals(LiteralReferenceType.THE_SERIALIZABLE) || source.equals(LiteralReferenceType.THE_CLONEABLE);
+                    }
+                    if (Modifier.isFinal(target.getTypeClass().getModifiers())) {
+                        // target is final, which has sub-cases
+                        if (target instanceof ParametrizedType || target.isRaw()) {
+                            // target is parametrized or raw, target must be an invocation of source generic declaration
+                            return hasInvocationParent(target, source);
+                        }
+                        // target is neither parametrized nor raw, target must implement source
+                        return target.convertibleTo(source);
+                    }
+                    // target is not final, generic parents cannot conflict
+                    return !haveGenericallyDistinctParents(source, target);
+                }
+                // any other target type is always valid
+                return true;
+            }
+            // source is a class type, which has sub-cases
+            if (targetType instanceof LiteralReferenceType) {
+                // target is a literal reference type, which has sub-cases
+                final LiteralReferenceType target = (LiteralReferenceType) targetType;
+                if (target.isArray()) {
+                    // target is an array type, source must be object
+                    return source.equals(LiteralReferenceType.THE_OBJECT);
+                }
+                if (target.getTypeClass().isInterface()) {
+                    // target is an interface type, which has sub-cases
+                    if (Modifier.isFinal(source.getTypeClass().getModifiers())) {
+                        // source is final, source must implement target
+                        return source.convertibleTo(target);
+                    }
+                    // source is not final, generic parents cannot conflict
+                    return !haveGenericallyDistinctParents(source, target);
+                }
+                // target is a class type, erasures must be super or sub types and generic parents cannot conflict
+                final LiteralReferenceType sourceErasure = source.getErasure();
+                final LiteralReferenceType targetErasure = target.getErasure();
+                return (sourceErasure.convertibleTo(targetErasure) || targetErasure.convertibleTo(targetErasure))
+                        && !haveGenericallyDistinctParents(source, target);
+            }
+            if (targetType instanceof TypeVariable) {
+                // target is a type variable, apply recursively to upper bound
+                final TypeVariable target = (TypeVariable) targetType;
+                return isValidReferenceCast(source, target.getUpperBound());
+            }
+        }
+        if (sourceType instanceof TypeVariable) {
+            // source is a type variable, apply recursively to upper bound
+            final TypeVariable source = (TypeVariable) sourceType;
+            return isValidReferenceCast(source.getUpperBound(), targetType);
+        }
+        if (sourceType instanceof ReferenceIntersectionType) {
+            // source is an intersection type, apply to each member individually
+            final ReferenceIntersectionType source = (ReferenceIntersectionType) sourceType;
+            for (SingleReferenceType type : source.getTypes()) {
+                if (!isValidReferenceCast(type, targetType)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // any other source type is undefined
+        return false;
+    }
+
+    private static boolean haveGenericallyDistinctParents(LiteralReferenceType left, LiteralReferenceType right) {
+        final Map<LiteralReferenceType, LiteralReferenceType> leftSuperTypes = new HashMap<>();
+        final Map<LiteralReferenceType, LiteralReferenceType> rightSuperTypes = new HashMap<>();
+        // Get maps of erased types to full ones for left and right types
+        for (LiteralReferenceType superType : getSuperTypes(left)) {
+            leftSuperTypes.put(superType.getErasure(), superType);
+        }
+        for (LiteralReferenceType superType : getSuperTypes(right)) {
+            rightSuperTypes.put(superType.getErasure(), superType);
+        }
+        // Intersect the erased super types to get all common between left and right
+        leftSuperTypes.keySet().retainAll(rightSuperTypes.keySet());
+        // Left and right can have super types with the same erasures, but not with the same type arguments
+        for (Map.Entry<LiteralReferenceType, LiteralReferenceType> leftEntry : leftSuperTypes.entrySet()) {
+            if (leftEntry.getValue().equals(rightSuperTypes.get(leftEntry.getKey()))) {
+                return false;
+            }
+        }
+/*
+        final Set<LiteralReferenceType> leftSuperTypes = getSuperTypes(left);
+        final Set<LiteralReferenceType> rightSuperTypes = getSuperTypes(right);
+        for (LiteralReferenceType leftSuperType : leftSuperTypes) {
+            for (LiteralReferenceType rightSuperType : rightSuperTypes) {
+                // Left and right have super types with the same erasures, but not the same type arguments
+                if (leftSuperType.getErasure().equals(rightSuperType.getErasure())
+                        && !leftSuperType.equals(rightSuperType)) {
+                    return false;
+                }
+            }
+        }
+*/
+        return true;
+    }
+
+    private static boolean hasInvocationParent(LiteralReferenceType type, LiteralReferenceType invocation) {
+        // We need an invocation of the same declaration in the super types (that is, same erasures) with the same arguments
+        final LiteralReferenceType declaration = invocation.getErasure();
+        for (LiteralReferenceType superType : getSuperTypes(type)) {
+            if (superType.getErasure().equals(declaration)) {
+                return superType.equals(invocation);
+            }
+        }
+        return false;
+    }
+
     public static Class<?> findNameMatch(ReferenceType type, List<Identifier> name) {
         if (type instanceof LiteralReferenceType) {
             final LiteralReferenceType singleClass = (LiteralReferenceType) type;

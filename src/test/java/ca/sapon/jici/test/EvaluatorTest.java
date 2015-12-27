@@ -318,18 +318,19 @@ public class EvaluatorTest {
         environment.declareVariable(Identifier.from("io", 0), LiteralReferenceType.of(Integer.class), ObjectValue.of(5));
         environment.declareVariable(Identifier.from("c", 0), LiteralReferenceType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         environment.declareVariable(Identifier.from("f", 0), LiteralReferenceType.of(Float[].class), ObjectValue.of(new Float[]{1f, 2f, 3f, 4f}));
+        environment.declareVariable(Identifier.from("v", 0), LiteralReferenceType.of(Varargs.class), ObjectValue.of(new Varargs()));
         assertReturns(true, "io instanceof Integer", environment);
         assertReturns(true, "io instanceof Number", environment);
         assertReturns(true, "io instanceof Comparable", environment);
-        assertReturns(false, "io instanceof CharSequence", environment);
         assertReturns(false, "io instanceof Float", environment);
         assertReturns(true, "c instanceof char[]", environment);
         assertReturns(true, "c instanceof Object", environment);
-        assertReturns(false, "c instanceof CharSequence", environment);
         assertReturns(true, "f instanceof Float[]", environment);
         assertReturns(true, "f instanceof Number[]", environment);
         assertReturns(true, "f instanceof Object", environment);
 
+        assertFails("io instanceof CharSequence", environment);
+        assertFails("c instanceof CharSequence", environment);
         assertFails("i instanceof Object", environment);
         assertFails("io instanceof int", environment);
         assertFails("v.varargs(1f) instanceof Object", environment);

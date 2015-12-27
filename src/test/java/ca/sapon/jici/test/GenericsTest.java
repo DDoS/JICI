@@ -32,12 +32,10 @@ import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.statement.Statement;
 
 /**
  *
@@ -140,34 +138,71 @@ public class GenericsTest {
         );
     }
 
-    private static Environment assertSucceeds(String source) {
+    @Test
+    public void testParametrizedConversions() {
         final Environment environment = new Environment();
-        final SourceMetadata metadata = new SourceMetadata(source);
-        try {
-            source = Decoder.decode(source, metadata);
-            final List<Token> tokens = Lexer.lex(source);
-            final List<Statement> statements = Parser.parse(tokens);
-            for (Statement statement : statements) {
-                statement.execute(environment);
-            }
-        } catch (Exception exception) {
-            if (exception instanceof SourceException) {
-                System.out.println(metadata.generateErrorInformation((SourceException) exception));
-            }
-            throw new AssertionError(exception);
-        }
-        return environment;
+        environment.importClass(M.class);
+        environment.importClass(L.class);
+        environment.importClass(K.class);
+        EvaluatorTest.assertSucceeds(
+                "M<String> m; L<Integer> l = null; m = l;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "M<String> n; K k = null; n = k;",
+                environment
+        );
     }
 
-    private static void assertFails(String source) {
-        try {
-            assertSucceeds(source);
-            Assert.fail("Expected evaluator exception");
-        } catch (AssertionError expected) {
-            if (!(expected.getCause() instanceof EvaluatorException)) {
-                Assert.fail("Expected evaluator exception");
-            }
-        }
+    public static class M<T> {
+    }
+
+    public static class N<T> extends M<T> {
+    }
+
+    public static class L<T> extends N<String> {
+    }
+
+    public static class K extends N<Integer> {
+    }
+
+    @Test
+    public void testCasts() {
+        final Environment environment = new Environment();
+        environment.importClass(S.class);
+        environment.importClass(J.class);
+        environment.importClass(X.class);
+        EvaluatorTest.assertSucceeds(
+                "J<String> j = null; Object o = (S<String>) j;",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "S<String> s = null; Object w = (X) s;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "S<Integer> t = null; Object l = (X) t;",
+                environment
+        );
+    }
+
+    interface S<A> {
+    }
+
+    public static class J<A> implements S<A> {
+    }
+
+    public static final class X implements S<String> {
+    }
+
+    private static Environment assertSucceeds(String source) {
+        final Environment environment = new Environment();
+        return EvaluatorTest.assertSucceeds(source, environment);
+    }
+
+    private static Environment assertFails(String source) {
+        final Environment environment = new Environment();
+        return EvaluatorTest.assertFails(source, environment);
     }
 
     private static void assertAssignSucceeds(String leftType, String rightType) {

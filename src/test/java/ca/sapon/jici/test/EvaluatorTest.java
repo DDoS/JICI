@@ -845,7 +845,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertSucceeds(String source, Environment environment) {
+    public static Environment assertSucceeds(String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         try {
             source = Decoder.decode(source, metadata);
@@ -869,7 +869,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertFails(String source, Environment environment) {
+    public static Environment assertFails(String source, Environment environment) {
         try {
             assertSucceeds(source, environment);
             Assert.fail("Expected evaluator exception");

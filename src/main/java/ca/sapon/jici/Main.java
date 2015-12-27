@@ -26,14 +26,5 @@ package ca.sapon.jici;
 public class Main {
     public static void main(String[] args) {
         JICI.breakInto();
-
-
     }
-    public static class M<T> {}
-    public static class N<T> extends M<T> {}
-    public static class L<T> extends N<String> {}
-    public static class K extends N<Integer> {}
-    //M<String> m = new L<Integer>();
-    //M<String> m = K();
-
 }

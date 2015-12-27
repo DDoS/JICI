@@ -149,6 +149,14 @@ public class GenericsTest {
                 environment
         );
         EvaluatorTest.assertFails(
+                "M<M<? extends CharSequence>> l1; M<M<? extends String>> l2 = null; l1 = l2;",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "M<? extends M<? extends CharSequence>> l3; M<M<? extends String>> l4 = null; l3 = l4;",
+                environment
+        );
+        EvaluatorTest.assertFails(
                 "M<String> n; K k = null; n = k;",
                 environment
         );

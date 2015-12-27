@@ -62,7 +62,12 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public LiteralReferenceType getSuperType() {
+    public NullType getErasure() {
+        return this;
+    }
+
+    @Override
+    public NullType getSuperType() {
         return null;
     }
 
@@ -72,7 +77,22 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public Type getComponentType() {
+    public SingleReferenceType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot have an array of the null type");
+    }
+
+    @Override
+    public Object newArray(int length) {
+        throw new UnsupportedOperationException("Cannot have an array of the null type");
+    }
+
+    @Override
+    public Object newArray(int[] lengths) {
+        throw new UnsupportedOperationException("Cannot have an array of the null type");
+    }
+
+    @Override
+    public ComponentType getComponentType() {
         throw new UnsupportedOperationException("Not an array type");
     }
 

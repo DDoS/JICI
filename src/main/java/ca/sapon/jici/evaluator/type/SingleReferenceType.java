@@ -28,7 +28,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  * A reference type comprised of a single backing type. That is, a non-divisible type.
  */
-public abstract class SingleReferenceType implements ReferenceType {
+public abstract class SingleReferenceType implements ReferenceType, ComponentType {
     @Override
     public ValueKind getKind() {
         return ValueKind.OBJECT;
@@ -69,7 +69,9 @@ public abstract class SingleReferenceType implements ReferenceType {
         return true;
     }
 
-    public abstract LiteralReferenceType getSuperType();
+    public abstract SingleReferenceType getErasure();
+
+    public abstract SingleReferenceType getSuperType();
 
     public abstract LiteralReferenceType[] getInterfaces();
 

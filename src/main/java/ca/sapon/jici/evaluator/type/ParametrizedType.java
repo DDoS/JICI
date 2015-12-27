@@ -80,7 +80,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType getComponentType() {
-        final LiteralType componentType = erased.getComponentType();
+        final ComponentType componentType = erased.getComponentType();
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }

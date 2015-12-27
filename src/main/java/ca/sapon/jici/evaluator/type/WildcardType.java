@@ -23,8 +23,8 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 
@@ -158,7 +158,7 @@ public class WildcardType implements TypeArgument {
         return result;
     }
 
-    public static WildcardType of(Set<SingleReferenceType> lowerBound, Set<SingleReferenceType> upperBound) {
+    public static WildcardType of(Collection<SingleReferenceType> lowerBound, Collection<SingleReferenceType> upperBound) {
         final IntersectionType lower = lowerBound.isEmpty() ? IntersectionType.EVERYTHING : IntersectionType.of(lowerBound);
         final IntersectionType upper = upperBound.isEmpty() ? IntersectionType.NOTHING : IntersectionType.of(upperBound);
         return of(lower, upper);

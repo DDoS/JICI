@@ -70,7 +70,7 @@ public class Declaration implements Statement {
                         final LiteralType componentType;
                         if (typeName instanceof ArrayTypeName) {
                             // ReflectionUtil.asArrayType doesn't support array types for component type, so get the base one
-                            final ArrayTypeName arrayTypeName = ((ArrayTypeName) typeName);
+                            final ArrayTypeName arrayTypeName = (ArrayTypeName) typeName;
                             componentType = arrayTypeName.getComponentType();
                             dimensions += arrayTypeName.getDimensions();
                         } else {
@@ -160,10 +160,6 @@ public class Declaration implements Statement {
 
         private Value getValue(Environment environment) {
             return value == null ? null : value.getValue(environment);
-        }
-
-        private boolean hasKnownType() {
-            return value != null && !(value instanceof ArrayInitializer);
         }
 
         private Type getType(Environment environment, Type declaredType) {

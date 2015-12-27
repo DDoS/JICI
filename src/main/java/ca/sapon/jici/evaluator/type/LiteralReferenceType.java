@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -84,6 +85,10 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return type.getTypeParameters().length > 0;
     }
 
+    public boolean isInterface() {
+        return type.isInterface();
+    }
+
     @Override
     public Class<?> getTypeClass() {
         return type;
@@ -111,12 +116,13 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return this;
     }
 
+    @Override
     public LiteralReferenceType getErasure() {
         return this;
     }
 
     @Override
-    public LiteralType getComponentType() {
+    public ComponentType getComponentType() {
         final Class<?> componentType = type.getComponentType();
         if (componentType == null) {
             throw new UnsupportedOperationException("Not an array type");
@@ -127,6 +133,16 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     @Override
     public LiteralReferenceType asArray(int dimensions) {
         return of(ReflectionUtil.asArrayType(type, dimensions));
+    }
+
+    @Override
+    public Object newArray(int length) {
+        return Array.newInstance(type, length);
+    }
+
+    @Override
+    public Object newArray(int[] lengths) {
+        return Array.newInstance(type, lengths);
     }
 
     @Override

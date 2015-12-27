@@ -28,6 +28,7 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ComponentType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
@@ -46,7 +47,7 @@ public class ArrayConstructor implements Expression {
     private final ArrayInitializer initializer;
     private final List<Expression> sizes;
     private final int end;
-    private LiteralType componentType = null;
+    private ComponentType componentType = null;
     private int sizedDimensions = 0;
     private Type type = null;
 
@@ -83,7 +84,7 @@ public class ArrayConstructor implements Expression {
                 final int dimensions = sizes.size();
                 final int unsizedDimensions = dimensions - sizedDimensions;
                 final LiteralType baseType = typeName.getType(environment);
-                final LiteralType componentType;
+                final ComponentType componentType;
                 if (unsizedDimensions != 0) {
                     componentType = baseType.asArray(unsizedDimensions);
                     if (componentType == null) {
@@ -115,7 +116,7 @@ public class ArrayConstructor implements Expression {
             for (int i = 0; i < sizedDimensions; i++) {
                 dimensionSizes[i] = sizes.get(i).getValue(environment).asInt();
             }
-            return ObjectValue.of(Array.newInstance(componentType.getTypeClass(), dimensionSizes));
+            return ObjectValue.of(componentType.newArray(dimensionSizes));
         }
         return initializer.getValue(environment);
     }
@@ -152,7 +153,7 @@ public class ArrayConstructor implements Expression {
         private final int start;
         private final int end;
         private Type type = null;
-        private LiteralType componentType = null;
+        private ComponentType componentType = null;
 
         public ArrayInitializer(List<Expression> elements, int start, int end) {
             this.elements = elements;
@@ -165,7 +166,7 @@ public class ArrayConstructor implements Expression {
                 if (!type.isArray()) {
                     throw new EvaluatorException("Cannot convert array type to " + type.getName(), this);
                 }
-                final LiteralType componentType = (LiteralType) ((ReferenceType) type).getComponentType();
+                final ComponentType componentType =  ((ReferenceType) type).getComponentType();
                 for (final Expression element : elements) {
                     if (element instanceof ArrayInitializer) {
                         ((ArrayInitializer) element).setType(environment, componentType);
@@ -194,7 +195,7 @@ public class ArrayConstructor implements Expression {
         @Override
         public Value getValue(Environment environment) {
             final int size = elements.size();
-            final Object array = Array.newInstance(componentType.getTypeClass(), size);
+            final Object array = componentType.newArray(size);
             for (int i = 0; i < size; i++) {
                 Array.set(array, i, elements.get(i).getValue(environment).asObject());
             }

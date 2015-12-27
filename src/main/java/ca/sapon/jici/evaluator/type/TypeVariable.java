@@ -23,7 +23,8 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.util.Set;
+import java.lang.reflect.Array;
+import java.util.List;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
@@ -32,15 +33,21 @@ import ca.sapon.jici.util.StringUtil;
 /**
  * A type variable, such as {@code <T>}.
  */
-public class TypeVariable extends SingleReferenceType implements LiteralType, TypeArgument {
+public class TypeVariable extends SingleReferenceType implements TypeArgument {
     private final String name;
     private final int dimensions;
     private final IntersectionType upperBound;
+    private final SingleReferenceType firstBound;
+    private final SingleReferenceType upperBoundClass;
+    private final LiteralReferenceType[] upperBoundInterfaces;
 
-    private TypeVariable(String name, IntersectionType upperBound, int dimensions) {
+    private TypeVariable(String name, SingleReferenceType firstBound, SingleReferenceType upperBoundClass, LiteralReferenceType[] upperBoundInterfaces, IntersectionType upperBound, int dimensions) {
         this.name = name;
         this.dimensions = dimensions;
         this.upperBound = upperBound;
+        this.firstBound = firstBound;
+        this.upperBoundClass = upperBoundClass;
+        this.upperBoundInterfaces = upperBoundInterfaces;
     }
 
     public IntersectionType getUpperBound() {
@@ -49,7 +56,11 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
 
     @Override
     public String getName() {
-        return name + StringUtil.repeat("[]", dimensions);
+        String fullName = name + StringUtil.repeat("[]", dimensions);
+        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
+            fullName += " extends " + upperBound;
+        }
+        return fullName;
     }
 
     @Override
@@ -63,8 +74,18 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        throw new UnsupportedOperationException("Type variable " + name + " is unsolved");
+    public TypeVariable asArray(int dimensions) {
+        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, upperBound, this.dimensions + dimensions);
+    }
+
+    @Override
+    public Object newArray(int length) {
+        return Array.newInstance(getErasure().getTypeClass(), length);
+    }
+
+    @Override
+    public Object newArray(int[] lengths) {
+        return Array.newInstance(getErasure().getTypeClass(), lengths);
     }
 
     @Override
@@ -72,27 +93,22 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
         if (dimensions <= 0) {
             throw new UnsupportedOperationException("Not an array type");
         }
-        return new TypeVariable(name, upperBound, dimensions - 1);
+        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, upperBound, dimensions - 1);
     }
 
     @Override
     public Callable getConstructor(Type[] arguments) {
-        throw new UnsupportedOperationException("Unimplemented");
+        return upperBound.getConstructor(arguments);
     }
 
     @Override
     public Accessible getField(String name) {
-        throw new UnsupportedOperationException("Unimplemented");
+        return upperBound.getField(name);
     }
 
     @Override
     public Callable getMethod(String name, Type[] arguments) {
-        throw new UnsupportedOperationException("Unimplemented");
-    }
-
-    @Override
-    public LiteralReferenceType asArray(int dimensions) {
-        throw new UnsupportedOperationException("Cannot create an array from a type variable");
+        return upperBound.getMethod(name, arguments);
     }
 
     @Override
@@ -102,17 +118,23 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
 
     @Override
     public boolean convertibleTo(Type to) {
-        throw new UnsupportedOperationException("Unimplemented");
+        return upperBound.convertibleTo(to);
     }
 
     @Override
-    public LiteralReferenceType getSuperType() {
-        throw new UnsupportedOperationException("Unimplemented");
+    public LiteralReferenceType getErasure() {
+        // The upper bound class cannot be null so the erasure must be a literal reference
+        return (LiteralReferenceType) firstBound.getErasure();
+    }
+
+    @Override
+    public SingleReferenceType getSuperType() {
+        return upperBoundClass;
     }
 
     @Override
     public LiteralReferenceType[] getInterfaces() {
-        throw new UnsupportedOperationException("Unimplemented");
+        return upperBoundInterfaces;
     }
 
     @Override
@@ -134,7 +156,49 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
         return result;
     }
 
-    public static TypeVariable of(String name, Set<SingleReferenceType> upperBound) {
-        return new TypeVariable(name, IntersectionType.of(upperBound), 0);
+    public static TypeVariable of(String name, List<SingleReferenceType> upperBound) {
+        if (upperBound.isEmpty()) {
+            // Empty implies object
+            upperBound.add(LiteralReferenceType.THE_OBJECT);
+        }
+        // Ensure the following holds for the upper bound, in order: a single type variable, or a class or an interface and zero or more interfaces
+        final SingleReferenceType firstBound = upperBound.get(0);
+        final SingleReferenceType upperBoundClass;
+        final LiteralReferenceType[] upperBoundInterfaces;
+        if (firstBound instanceof TypeVariable) {
+            if (upperBound.size() > 1) {
+                throw new UnsupportedOperationException("Cannot have more than one type in the upper bound: " + upperBound);
+            }
+            upperBoundClass = firstBound;
+            upperBoundInterfaces = new LiteralReferenceType[0];
+        } else if (firstBound instanceof LiteralReferenceType) {
+            final LiteralReferenceType firstBoundLiteral = (LiteralReferenceType) firstBound;
+            if (firstBoundLiteral.isArray()) {
+                throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstBoundLiteral);
+            }
+            int j = 0;
+            if (firstBoundLiteral.isInterface()) {
+                upperBoundClass = LiteralReferenceType.THE_OBJECT;
+                upperBoundInterfaces = new LiteralReferenceType[upperBound.size()];
+                upperBoundInterfaces[j++] = firstBoundLiteral;
+            } else {
+                upperBoundClass = firstBoundLiteral;
+                upperBoundInterfaces = new LiteralReferenceType[upperBound.size() - 1];
+            }
+            for (int i = 1; i < upperBound.size(); i++) {
+                final SingleReferenceType bound = upperBound.get(i);
+                if (bound instanceof LiteralReferenceType) {
+                    final LiteralReferenceType literalReferenceType = (LiteralReferenceType) bound;
+                    if (literalReferenceType.isInterface()) {
+                        upperBoundInterfaces[j++] = literalReferenceType;
+                        continue;
+                    }
+                }
+                throw new UnsupportedOperationException("Only the first bound can be anything other than an interface: " + bound);
+            }
+        } else {
+            throw new UnsupportedOperationException("The first bound must be a type variable, class or interface: " + firstBound);
+        }
+        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, IntersectionType.of(upperBound), 0);
     }
 }

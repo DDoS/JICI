@@ -41,12 +41,13 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.ComponentType;
+import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
@@ -109,9 +110,10 @@ public final class TypeUtil {
                 dimensions++;
             }
             final Type wrapped = wrap(componentType);
-            if (wrapped instanceof LiteralReferenceType) {
-                return ((LiteralReferenceType) wrapped).asArray(dimensions);
+            if (wrapped instanceof ComponentType) {
+                return ((ComponentType) wrapped).asArray(dimensions);
             }
+            throw new UnsupportedOperationException("Invalid component type: " + wrapped.getName());
         }
         if (type instanceof ParameterizedType) {
             final ParameterizedType paramType = (ParameterizedType) type;
@@ -128,20 +130,20 @@ public final class TypeUtil {
         }
         if (type instanceof java.lang.reflect.TypeVariable) {
             final java.lang.reflect.TypeVariable<?> typeVariable = (java.lang.reflect.TypeVariable<?>) type;
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds());
+            final List<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds());
             return TypeVariable.of(typeVariable.getName(), wrappedUpper);
         }
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
+            final List<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds());
+            final List<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds());
             return WildcardType.of(wrappedLower, wrappedUpper);
         }
-        throw new UnsupportedOperationException(type.getClass().getSimpleName());
+        throw new UnsupportedOperationException(type.getClass().getCanonicalName());
     }
 
-    private static Set<SingleReferenceType> wrapBounds(java.lang.reflect.Type[] types) {
-        final Set<SingleReferenceType> wrapped = new HashSet<>(types.length);
+    private static List<SingleReferenceType> wrapBounds(java.lang.reflect.Type[] types) {
+        final List<SingleReferenceType> wrapped = new ArrayList<>(types.length);
         for (java.lang.reflect.Type type : types) {
             final Type wrap = wrap(type);
             if (!(wrap instanceof SingleReferenceType)) {
@@ -193,11 +195,15 @@ public final class TypeUtil {
     }
 
     private static IntersectionType lowestUpperBound(Collection<? extends ReferenceType> types, Set<Collection<? extends ReferenceType>> recursions) {
+        if (types.isEmpty()) {
+            // Fast track trivial cases
+            return IntersectionType.NOTHING;
+        }
         if (types.size() == 1) {
             // Fast track trivial cases
             return IntersectionType.of(types.iterator().next());
         }
-        if (types.isEmpty() || !recursions.add(types)) {
+        if (!recursions.add(types)) {
             // Recursive lowest upper bound calls can lead to infinite types, don't compute a bound for these (like javac does)
             return IntersectionType.NOTHING;
         }
@@ -293,7 +299,7 @@ public final class TypeUtil {
         }
         // No wildcards
         return left.equals(right) ? left : WildcardType.of(
-                IntersectionType.NOTHING,
+                IntersectionType.EVERYTHING,
                 lowestUpperBound(recursions, (SingleReferenceType) left, (SingleReferenceType) right)
         );
     }
@@ -357,7 +363,7 @@ public final class TypeUtil {
                 if (child.isArray()) {
                     addArraySuperTypes(literalChild, queue);
                 } else {
-                    final LiteralReferenceType superClass = child.getSuperType();
+                    final SingleReferenceType superClass = child.getSuperType();
                     if (superClass != null) {
                         queue.add(superClass);
                     }
@@ -371,7 +377,7 @@ public final class TypeUtil {
 
     private static void addArraySuperTypes(LiteralReferenceType arrayType, Queue<SingleReferenceType> to) {
         int dimensions = 0;
-        Type componentType = arrayType;
+        ComponentType componentType = arrayType;
         do {
             componentType = ((LiteralReferenceType) componentType).getComponentType();
             to.add(LiteralReferenceType.THE_OBJECT.asArray(dimensions));
@@ -422,8 +428,8 @@ public final class TypeUtil {
                     final LiteralReferenceType target = (LiteralReferenceType) targetType;
                     if (target.isArray()) {
                         // target is an array type, allow if same primitive type else apply recursively on components
-                        final LiteralType sourceComponent = source.getComponentType();
-                        final LiteralType targetComponent = target.getComponentType();
+                        final ComponentType sourceComponent = source.getComponentType();
+                        final ComponentType targetComponent = target.getComponentType();
                         return sourceComponent.isPrimitive() && targetComponent.isPrimitive() && sourceComponent.equals(targetComponent)
                                 || isValidReferenceCast((ReferenceType) sourceComponent, (ReferenceType) targetComponent);
                     }
@@ -439,7 +445,7 @@ public final class TypeUtil {
                 // any other target type is undefined
                 return false;
             }
-            if (source.getTypeClass().isInterface()) {
+            if (source.isInterface()) {
                 // source is an interface type, which has sub-cases
                 if (targetType instanceof LiteralReferenceType) {
                     // target is a literal reference type, which has sub-cases
@@ -471,7 +477,7 @@ public final class TypeUtil {
                     // target is an array type, source must be object
                     return source.equals(LiteralReferenceType.THE_OBJECT);
                 }
-                if (target.getTypeClass().isInterface()) {
+                if (target.isInterface()) {
                     // target is an interface type, which has sub-cases
                     if (Modifier.isFinal(source.getTypeClass().getModifiers())) {
                         // source is final, source must implement target

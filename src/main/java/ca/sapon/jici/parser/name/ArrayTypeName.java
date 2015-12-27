@@ -54,20 +54,6 @@ public class ArrayTypeName implements TypeName {
         return type;
     }
 
-    private Class<?> validateTypeHint(Class<?> _class) {
-        int dimensions = 0;
-        Class<?> componentType = _class;
-        while (true) {
-            final Class<?> nextComponentType = componentType.getComponentType();
-            if (nextComponentType == null) {
-                break;
-            }
-            componentType = nextComponentType;
-            dimensions++;
-        }
-        return dimensions == this.dimensions && !componentType.isPrimitive() ? componentType : null;
-    }
-
     public LiteralType getComponentType() {
         return componentType;
     }

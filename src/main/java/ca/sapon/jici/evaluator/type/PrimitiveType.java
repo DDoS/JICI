@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -175,6 +176,16 @@ public class PrimitiveType implements LiteralType {
     @Override
     public LiteralReferenceType asArray(int dimensions) {
         return LiteralReferenceType.of(ReflectionUtil.asArrayType(type, dimensions));
+    }
+
+    @Override
+    public Object newArray(int length) {
+        return Array.newInstance(type, length);
+    }
+
+    @Override
+    public Object newArray(int[] lengths) {
+        return Array.newInstance(type, lengths);
     }
 
     public SingleReferenceType box() {

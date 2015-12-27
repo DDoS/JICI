@@ -26,8 +26,9 @@ package ca.sapon.jici.evaluator.type;
 /**
  * A type literally declared in the code, such as {@code String}, {@code List<Integer>}, {@code int}, {@code int[]} or {@code <T>}.
  */
-public interface LiteralType extends Type {
+public interface LiteralType extends Type, ComponentType {
     Class<?> getTypeClass();
 
+    @Override
     LiteralReferenceType asArray(int dimensions);
 }

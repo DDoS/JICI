@@ -24,7 +24,7 @@
 package ca.sapon.jici;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         JICI.breakInto();
     }
 }

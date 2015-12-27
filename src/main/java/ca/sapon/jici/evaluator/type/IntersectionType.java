@@ -37,7 +37,7 @@ import ca.sapon.jici.util.TypeUtil;
 /**
  * An intersection of reference types, such as {@code String & Integer} or {@code Set<String> & Collection<CharSequence>}.
  */
-public class IntersectionType implements ReferenceType, TypeArgument {
+public class IntersectionType implements ReferenceType, ComponentType, TypeArgument {
     public static final IntersectionType NOTHING = of(LiteralReferenceType.THE_OBJECT);
     public static final IntersectionType EVERYTHING = of(NullType.THE_NULL);
     private final Set<SingleReferenceType> types;
@@ -140,13 +140,32 @@ public class IntersectionType implements ReferenceType, TypeArgument {
     }
 
     @Override
-    public IntersectionType getComponentType() {
+    public SingleReferenceType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+    }
+
+    @Override
+    public Object newArray(int length) {
+        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+    }
+
+    @Override
+    public Object newArray(int[] lengths) {
+        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+    }
+
+    @Override
+    public ComponentType getComponentType() {
         if (!isArray()) {
             throw new UnsupportedOperationException("Not an array type");
         }
         final Set<SingleReferenceType> componentTypes = new HashSet<>();
         for (SingleReferenceType type : types) {
-            componentTypes.add((SingleReferenceType) type.getComponentType());
+            final ComponentType componentType = type.getComponentType();
+            if (!(componentType instanceof SingleReferenceType)) {
+                throw new UnsupportedOperationException("Cannot have an intersection with a primitive type");
+            }
+            componentTypes.add((SingleReferenceType) componentType);
         }
         return of(componentTypes);
     }

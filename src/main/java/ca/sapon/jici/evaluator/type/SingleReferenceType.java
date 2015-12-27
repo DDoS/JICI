@@ -23,32 +23,12 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import ca.sapon.jici.evaluator.Accessible;
-import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.util.ReflectionUtil;
-import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A reference type comprised of a single backing type. That is, a non-divisible type.
  */
-public abstract class SingleReferenceType implements ReferenceType, LiteralType {
-    public static final LiteralReferenceType THE_STRING = LiteralReferenceType.of(String.class);
-    public static final LiteralReferenceType THE_OBJECT = LiteralReferenceType.of(Object.class);
-    public static final LiteralReferenceType THE_CLONEABLE = LiteralReferenceType.of(Cloneable.class);
-    public static final LiteralReferenceType THE_SERIALIZABLE = LiteralReferenceType.of(Serializable.class);
-    private PrimitiveType unbox;
-    private boolean unboxCached = false;
-
+public abstract class SingleReferenceType implements ReferenceType {
     @Override
     public ValueKind getKind() {
         return ValueKind.OBJECT;
@@ -85,154 +65,13 @@ public abstract class SingleReferenceType implements ReferenceType, LiteralType 
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isReference() {
         return true;
     }
 
-    @Override
-    public boolean convertibleTo(Type to) {
-        // Single class types might be convertible to a primitive if they can be unboxed
-        // Else they can be cast to another single class if they are a subtype
-        // They can also be converted to an intersection if they can be converted to each member
-        if (to.isPrimitive()) {
-            return isBox() && unbox().convertibleTo(to);
-        }
-        if (to instanceof SingleReferenceType) {
-            final SingleReferenceType target = (SingleReferenceType) to;
-            return target.getTypeClass().isAssignableFrom(getTypeClass());
-        }
-        if (to instanceof ReferenceIntersectionType) {
-            final ReferenceIntersectionType target = (ReferenceIntersectionType) to;
-            for (SingleReferenceType type : target.getTypes()) {
-                if (!type.getTypeClass().isAssignableFrom(getTypeClass())) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
+    public abstract LiteralReferenceType getSuperType();
 
-    public abstract SingleReferenceType getSuperType();
-
-    public abstract SingleReferenceType[] getInterfaces();
-
-    public boolean isBox() {
-        if (!unboxCached) {
-            unbox = TypeUtil.unbox(getTypeClass());
-            unboxCached = true;
-        }
-        return unbox != null;
-    }
-
-    public PrimitiveType unbox() {
-        if (isBox()) {
-            return unbox;
-        }
-        throw new UnsupportedOperationException(getTypeClass().getCanonicalName() + " is not a box type");
-    }
-
-    public LiteralType tryUnbox() {
-        if (isBox()) {
-            return unbox;
-        }
-        return this;
-    }
-
-    @Override
-    public Callable getConstructor(Type[] arguments) {
-        final Constructor<?>[] constructors = getTypeClass().getConstructors();
-        final int argumentCount = arguments.length;
-        final Map<Constructor<?>, Type[]> candidates = new HashMap<>();
-        final Map<Constructor<?>, Type[]> varargCandidate = new HashMap<>();
-        for (Constructor<?> candidate : constructors) {
-            if (!candidate.isSynthetic()) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                // look for matches in length
-                if (parameterTypes.length == argumentCount) {
-                    candidates.put(candidate, TypeUtil.wrap(parameterTypes));
-                }
-                // look for varargs with matches in name and length of non-varargs
-                if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
-                    // expand the parameters through the vararg to match the argument count
-                    varargCandidate.put(candidate, TypeUtil.wrap(ReflectionUtil.expandsVarargs(parameterTypes, argumentCount)));
-                }
-            }
-        }
-        // try to resolve the overloads
-        Constructor<?> constructor = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (constructor != null) {
-            return Callable.forConstructor(constructor);
-        }
-        // try vararg candidates
-        constructor = ReflectionUtil.resolveOverloads(varargCandidate, arguments);
-        if (constructor != null) {
-            return Callable.forVarargConstructor(constructor);
-        }
-        throw new UnsupportedOperationException("No constructor for signature: "
-                + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
-    }
-
-    @Override
-    public Accessible getField(String name) {
-        if (isArray() && "length".equals(name)) {
-            return Accessible.forArrayLength();
-        }
-        Field field;
-        try {
-            field = getTypeClass().getField(name);
-            if (field.isSynthetic()) {
-                return failGetField(name);
-            }
-        } catch (NoSuchFieldException exception) {
-            return failGetField(name);
-        }
-        return Accessible.forField(field);
-    }
-
-    private Accessible failGetField(String name) {
-        throw new UnsupportedOperationException("No field named " + name + " in " + getName());
-    }
-
-    @Override
-    public Callable getMethod(String name, Type[] arguments) {
-        if (isArray() && arguments.length == 0 && "clone".equals(name)) {
-            return Callable.forArrayClone(this);
-        }
-        final Method[] methods = getTypeClass().getMethods();
-        final int argumentCount = arguments.length;
-        final Map<Method, Type[]> candidates = new HashMap<>();
-        final Map<Method, Type[]> varargCandidate = new HashMap<>();
-        for (Method candidate : methods) {
-            if (!candidate.isSynthetic() && candidate.getName().equals(name)) {
-                final Class<?>[] parameterTypes = candidate.getParameterTypes();
-                // look for matches in length and name
-                if (parameterTypes.length == argumentCount) {
-                    candidates.put(candidate, TypeUtil.wrap(parameterTypes));
-                }
-                // look for varargs with matches in name and length of non-varargs
-                if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
-                    // expand the parameters through the vararg to match the argument count
-                    varargCandidate.put(candidate, TypeUtil.wrap(ReflectionUtil.expandsVarargs(parameterTypes, argumentCount)));
-                }
-            }
-        }
-        // generics can cause methods to only differ by the return type, so fix that
-        ReflectionUtil.fixReturnTypeConflicts(candidates);
-        // try to resolve the overloads
-        Method method = ReflectionUtil.resolveOverloads(candidates, arguments);
-        if (method != null) {
-            return Callable.forMethod(method);
-        }
-        // try vararg candidates
-        ReflectionUtil.fixReturnTypeConflicts(varargCandidate);
-        method = ReflectionUtil.resolveOverloads(varargCandidate, arguments);
-        if (method != null) {
-            return Callable.forVarargMethod(method);
-        }
-        throw new UnsupportedOperationException("No method for signature: "
-                + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
-    }
+    public abstract LiteralReferenceType[] getInterfaces();
 
     @Override
     public String toString() {

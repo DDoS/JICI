@@ -32,7 +32,6 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.ReflectionUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * One of the eight primitive types: {@code boolean}, {@code byte}, {@code short}, {@code char}, {@code int}, {@code long}, {@code float} or {@code double}.
@@ -48,6 +47,7 @@ public class PrimitiveType implements LiteralType {
     public static final PrimitiveType THE_DOUBLE;
     private static final Map<Class<?>, PrimitiveType> ALL_TYPES = new HashMap<>();
     private static final Map<Class<?>, Set<Class<?>>> PRIMITIVE_CONVERSIONS = new HashMap<>();
+    private static final Map<Class<?>, LiteralReferenceType> BOXING_CONVERSIONS = new HashMap<>();
     private static final Map<Class<?>, RangeChecker> NARROW_CHECKERS = new HashMap<>();
     private static final Set<Class<?>> UNARY_WIDENS_INT = new HashSet<>();
     private static final Map<Class<?>, Widener> BINARY_WIDENERS = new HashMap<>();
@@ -81,6 +81,15 @@ public class PrimitiveType implements LiteralType {
         PRIMITIVE_CONVERSIONS.put(long.class, new HashSet<Class<?>>(Arrays.asList(long.class, float.class, double.class)));
         PRIMITIVE_CONVERSIONS.put(float.class, new HashSet<Class<?>>(Arrays.asList(float.class, double.class)));
         PRIMITIVE_CONVERSIONS.put(double.class, new HashSet<Class<?>>(Collections.singletonList(double.class)));
+
+        BOXING_CONVERSIONS.put(boolean.class, LiteralReferenceType.of(Boolean.class));
+        BOXING_CONVERSIONS.put(byte.class, LiteralReferenceType.of(Byte.class));
+        BOXING_CONVERSIONS.put(short.class, LiteralReferenceType.of(Short.class));
+        BOXING_CONVERSIONS.put(char.class, LiteralReferenceType.of(Character.class));
+        BOXING_CONVERSIONS.put(int.class, LiteralReferenceType.of(Integer.class));
+        BOXING_CONVERSIONS.put(long.class, LiteralReferenceType.of(Long.class));
+        BOXING_CONVERSIONS.put(float.class, LiteralReferenceType.of(Float.class));
+        BOXING_CONVERSIONS.put(double.class, LiteralReferenceType.of(Double.class));
 
         NARROW_CHECKERS.put(byte.class, new RangeChecker(-128, 0xFF));
         NARROW_CHECKERS.put(short.class, new RangeChecker(-32768, 0xFFFF));
@@ -154,8 +163,13 @@ public class PrimitiveType implements LiteralType {
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isReference() {
         return false;
+    }
+
+    @Override
+    public boolean isReifiable() {
+        return true;
     }
 
     @Override
@@ -164,7 +178,7 @@ public class PrimitiveType implements LiteralType {
     }
 
     public SingleReferenceType box() {
-        return TypeUtil.box(type);
+        return BOXING_CONVERSIONS.get(type);
     }
 
     public boolean canNarrowFrom(int value) {

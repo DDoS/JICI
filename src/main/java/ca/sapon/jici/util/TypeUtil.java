@@ -24,6 +24,7 @@
 package ca.sapon.jici.util;
 
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -60,38 +61,7 @@ import ca.sapon.jici.parser.expression.Expression;
  *
  */
 public final class TypeUtil {
-    private static final Map<Class<?>, LiteralReferenceType> BOXING_CONVERSIONS = new HashMap<>();
-    private static final Map<Class<?>, PrimitiveType> UNBOXING_CONVERSIONS = new HashMap<>();
-
-    static {
-        BOXING_CONVERSIONS.put(boolean.class, LiteralReferenceType.of(Boolean.class));
-        BOXING_CONVERSIONS.put(byte.class, LiteralReferenceType.of(Byte.class));
-        BOXING_CONVERSIONS.put(short.class, LiteralReferenceType.of(Short.class));
-        BOXING_CONVERSIONS.put(char.class, LiteralReferenceType.of(Character.class));
-        BOXING_CONVERSIONS.put(int.class, LiteralReferenceType.of(Integer.class));
-        BOXING_CONVERSIONS.put(long.class, LiteralReferenceType.of(Long.class));
-        BOXING_CONVERSIONS.put(float.class, LiteralReferenceType.of(Float.class));
-        BOXING_CONVERSIONS.put(double.class, LiteralReferenceType.of(Double.class));
-
-        UNBOXING_CONVERSIONS.put(Boolean.class, PrimitiveType.THE_BOOLEAN);
-        UNBOXING_CONVERSIONS.put(Byte.class, PrimitiveType.THE_BYTE);
-        UNBOXING_CONVERSIONS.put(Short.class, PrimitiveType.THE_SHORT);
-        UNBOXING_CONVERSIONS.put(Character.class, PrimitiveType.THE_CHAR);
-        UNBOXING_CONVERSIONS.put(Integer.class, PrimitiveType.THE_INT);
-        UNBOXING_CONVERSIONS.put(Long.class, PrimitiveType.THE_LONG);
-        UNBOXING_CONVERSIONS.put(Float.class, PrimitiveType.THE_FLOAT);
-        UNBOXING_CONVERSIONS.put(Double.class, PrimitiveType.THE_DOUBLE);
-    }
-
     private TypeUtil() {
-    }
-
-    public static LiteralReferenceType box(Class<?> type) {
-        return BOXING_CONVERSIONS.get(type);
-    }
-
-    public static PrimitiveType unbox(Class<?> type) {
-        return UNBOXING_CONVERSIONS.get(type);
     }
 
     public static LiteralType[] wrap(Class<?>[] types) {
@@ -107,7 +77,7 @@ public final class TypeUtil {
             throw new NullPointerException("type");
         }
         if (type == void.class) {
-            return VoidType.THE_VOID;
+            throw new IllegalArgumentException("void");
         }
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
@@ -124,6 +94,9 @@ public final class TypeUtil {
     }
 
     public static Type wrap(java.lang.reflect.Type type) {
+        if (type == void.class) {
+            return VoidType.THE_VOID;
+        }
         if (type instanceof Class<?>) {
             return wrap((Class<?>) type);
         }
@@ -136,8 +109,8 @@ public final class TypeUtil {
                 dimensions++;
             }
             final Type wrapped = wrap(componentType);
-            if (wrapped instanceof SingleReferenceType) {
-                return ((SingleReferenceType) wrapped).asArray(dimensions);
+            if (wrapped instanceof LiteralReferenceType) {
+                return ((LiteralReferenceType) wrapped).asArray(dimensions);
             }
         }
         if (type instanceof ParameterizedType) {
@@ -229,10 +202,10 @@ public final class TypeUtil {
             return ReferenceIntersectionType.NOTHING;
         }
         // Get the super type sets ST(U)
-        final Map<ReferenceType, Set<SingleReferenceType>> superTypeSets = new HashMap<>();
-        final Collection<Set<SingleReferenceType>> superTypes = superTypeSets.values();
+        final Map<ReferenceType, Set<LiteralReferenceType>> superTypeSets = new HashMap<>();
+        final Collection<Set<LiteralReferenceType>> superTypes = superTypeSets.values();
         for (ReferenceType type : types) {
-            if (type instanceof NullType) {
+            if (type.convertibleTo(NullType.THE_NULL)) {
                 // The null type has a universal set of super types, we can skip it
                 continue;
             }
@@ -240,7 +213,7 @@ public final class TypeUtil {
         }
         // Intersect the erased super type sets EST(U) to generate the erased candidate set EC
         final Set<LiteralReferenceType> erasedCandidates = new HashSet<>();
-        final Iterator<Set<SingleReferenceType>> superTypesIterator = superTypes.iterator();
+        final Iterator<Set<LiteralReferenceType>> superTypesIterator = superTypes.iterator();
         erasedCandidates.addAll(getErasedTypes(superTypesIterator.next()));
         while (superTypesIterator.hasNext()) {
             erasedCandidates.retainAll(getErasedTypes(superTypesIterator.next()));
@@ -260,14 +233,14 @@ public final class TypeUtil {
         return ReferenceIntersectionType.of(lowestUpperBound);
     }
 
-    private static Set<ParametrizedType> relevantInvocations(Collection<Set<SingleReferenceType>> superTypeSets, LiteralReferenceType type) {
+    private static Set<ParametrizedType> relevantInvocations(Collection<Set<LiteralReferenceType>> superTypeSets, LiteralReferenceType type) {
         // Search for an invocation of the erased type in any of the super type sets
         final Set<ParametrizedType> invocations = new HashSet<>();
-        for (Set<SingleReferenceType> superTypes : superTypeSets) {
-            for (SingleReferenceType superType : superTypes) {
+        for (Set<LiteralReferenceType> superTypes : superTypeSets) {
+            for (LiteralReferenceType superType : superTypes) {
                 if (superType instanceof ParametrizedType) {
                     final ParametrizedType parametrizedType = (ParametrizedType) superType;
-                    if (parametrizedType.getRaw().equals(type)) {
+                    if (parametrizedType.getErasure().equals(type)) {
                         invocations.add(parametrizedType);
                     }
                 }
@@ -286,7 +259,7 @@ public final class TypeUtil {
             for (TypeArgument argument : arguments) {
                 leastArguments.add(leastContainingTypeArgument(argument, recursions));
             }
-            return ParametrizedType.of(left.getRaw().getTypeClass(), leastArguments);
+            return ParametrizedType.of(left.getErasure(), leastArguments);
         }
         // For many invocation we reduce pairwise, left with right
         while (iterator.hasNext()) {
@@ -298,7 +271,7 @@ public final class TypeUtil {
             for (int i = 0; i < leftArguments.size(); i++) {
                 leastArguments.add(leastContainingTypeArgument(leftArguments.get(i), rightArguments.get(i), recursions));
             }
-            left = ParametrizedType.of(left.getRaw().getTypeClass(), leastArguments);
+            left = ParametrizedType.of(left.getErasure(), leastArguments);
         }
         return left;
     }
@@ -355,25 +328,21 @@ public final class TypeUtil {
             combinedLowerBound.add((SingleReferenceType) argument);
         }
         // Right type is ?
-        combinedUpperBound.add(SingleReferenceType.THE_OBJECT);
+        combinedUpperBound.add(LiteralReferenceType.THE_OBJECT);
         combinedLowerBound.add(NullType.THE_NULL);
         return WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
     }
 
-    private static Set<LiteralReferenceType> getErasedTypes(Set<SingleReferenceType> types) {
+    private static Set<LiteralReferenceType> getErasedTypes(Set<LiteralReferenceType> types) {
         final Set<LiteralReferenceType> erased = new HashSet<>();
-        for (SingleReferenceType type : types) {
-            if (type instanceof ParametrizedType) {
-                erased.add(((ParametrizedType) type).getRaw());
-            } else {
-                erased.add(((LiteralReferenceType) type));
-            }
+        for (LiteralReferenceType type : types) {
+            erased.add(type.getErasure());
         }
         return erased;
     }
 
-    private static Set<SingleReferenceType> getSuperTypes(ReferenceType type) {
-        final Set<SingleReferenceType> result = new HashSet<>();
+    public static Set<LiteralReferenceType> getSuperTypes(ReferenceType type) {
+        final Set<LiteralReferenceType> result = new HashSet<>();
         final Queue<SingleReferenceType> queue = new ArrayDeque<>();
         if (type instanceof ReferenceIntersectionType) {
             queue.addAll(((ReferenceIntersectionType) type).getTypes());
@@ -382,11 +351,13 @@ public final class TypeUtil {
         }
         while (!queue.isEmpty()) {
             final SingleReferenceType child = queue.remove();
-            if (result.add(child)) {
+            final LiteralReferenceType literalChild = child instanceof LiteralReferenceType ? (LiteralReferenceType) child : null;
+            // Non literal types are always scanned because they cannot be in the super type set (since it only contains literals)
+            if (literalChild == null || result.add(literalChild)) {
                 if (child.isArray()) {
-                    addArraySuperClasses(child, queue);
+                    addArraySuperTypes(literalChild, queue);
                 } else {
-                    final SingleReferenceType superClass = child.getSuperType();
+                    final LiteralReferenceType superClass = child.getSuperType();
                     if (superClass != null) {
                         queue.add(superClass);
                     }
@@ -394,27 +365,27 @@ public final class TypeUtil {
                 }
             }
         }
-        result.add(SingleReferenceType.THE_OBJECT);
+        result.add(LiteralReferenceType.THE_OBJECT);
         return result;
     }
 
-    private static void addArraySuperClasses(SingleReferenceType arrayType, Queue<SingleReferenceType> to) {
+    private static void addArraySuperTypes(LiteralReferenceType arrayType, Queue<SingleReferenceType> to) {
         int dimensions = 0;
         Type componentType = arrayType;
         do {
-            componentType = ((SingleReferenceType) componentType).getComponentType();
-            to.add(SingleReferenceType.THE_OBJECT.asArray(dimensions));
-            to.add(SingleReferenceType.THE_CLONEABLE.asArray(dimensions));
-            to.add(SingleReferenceType.THE_SERIALIZABLE.asArray(dimensions));
+            componentType = ((LiteralReferenceType) componentType).getComponentType();
+            to.add(LiteralReferenceType.THE_OBJECT.asArray(dimensions));
+            to.add(LiteralReferenceType.THE_CLONEABLE.asArray(dimensions));
+            to.add(LiteralReferenceType.THE_SERIALIZABLE.asArray(dimensions));
             dimensions++;
         } while (componentType.isArray());
         if (!componentType.isPrimitive()) {
-            final SingleReferenceType referenceType = (SingleReferenceType) componentType;
-            final SingleReferenceType superClass = referenceType.getSuperType();
+            final LiteralReferenceType referenceType = (LiteralReferenceType) componentType;
+            final LiteralReferenceType superClass = referenceType.getSuperType();
             if (superClass != null) {
                 to.add(superClass.asArray(dimensions));
             }
-            for (SingleReferenceType _interface : referenceType.getInterfaces()) {
+            for (LiteralReferenceType _interface : referenceType.getInterfaces()) {
                 to.add(_interface.asArray(dimensions));
             }
         }
@@ -428,8 +399,8 @@ public final class TypeUtil {
         final PrimitiveType primitiveType;
         if (type instanceof PrimitiveType) {
             primitiveType = (PrimitiveType) type;
-        } else if (type instanceof SingleReferenceType && ((SingleReferenceType) type).isBox()) {
-            primitiveType = ((SingleReferenceType) type).unbox();
+        } else if (type instanceof LiteralReferenceType && ((LiteralReferenceType) type).isBox()) {
+            primitiveType = ((LiteralReferenceType) type).unbox();
         } else {
             throw new EvaluatorException("Not a primitive type: " + type.getName(), expression);
         }
@@ -437,8 +408,8 @@ public final class TypeUtil {
     }
 
     public static Class<?> findNameMatch(ReferenceType type, List<Identifier> name) {
-        if (type instanceof SingleReferenceType) {
-            final SingleReferenceType singleClass = (SingleReferenceType) type;
+        if (type instanceof LiteralReferenceType) {
+            final LiteralReferenceType singleClass = (LiteralReferenceType) type;
             final Class<?> typeClass = singleClass.getTypeClass();
             Class<?> currentClass = typeClass;
             for (int i = name.size() - 1; i >= 0; i--) {

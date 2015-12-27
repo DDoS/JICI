@@ -38,7 +38,7 @@ import ca.sapon.jici.util.TypeUtil;
  * An intersection of reference types, such as {@code String & Integer} or {@code Set<String> & Collection<CharSequence>}.
  */
 public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
-    public static final ReferenceIntersectionType NOTHING = of(SingleReferenceType.THE_OBJECT);
+    public static final ReferenceIntersectionType NOTHING = of(LiteralReferenceType.THE_OBJECT);
     public static final ReferenceIntersectionType EVERYTHING = of(NullType.THE_NULL);
     private final Set<SingleReferenceType> types;
 
@@ -115,8 +115,13 @@ public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isReference() {
         return true;
+    }
+
+    @Override
+    public boolean isReifiable() {
+        return false;
     }
 
     @Override

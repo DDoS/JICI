@@ -23,28 +23,44 @@
  */
 package ca.sapon.jici.parser.expression;
 
+import ca.sapon.jici.SourceIndexed;
 import ca.sapon.jici.evaluator.Environment;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.lexer.Token;
+import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.name.TypeName;
 
 public class ClassAccess implements Expression {
-    private static final SingleReferenceType TYPE = LiteralReferenceType.of(Class.class);
+    private static final LiteralReferenceType TYPE = LiteralReferenceType.of(Class.class);
     private final TypeName typeName;
+    private final SourceIndexed source;
     private Type type = null;
     private Class<?> typeClass = null;
 
+    public ClassAccess(Token voidToken) {
+        if (voidToken.getID() != TokenID.KEYWORD_VOID) {
+            throw new IllegalArgumentException("Not a void token " + voidToken);
+        }
+        typeName = null;
+        source = voidToken;
+    }
+
     public ClassAccess(TypeName typeName) {
         this.typeName = typeName;
+        source = typeName;
     }
 
     @Override
     public Type getType(Environment environment) {
         if (type == null) {
-            typeClass = typeName.getType(environment).getTypeClass();
+            if (typeName == null) {
+                typeClass = void.class;
+            } else {
+                typeClass = typeName.getType(environment).getTypeClass();
+            }
             type = TYPE;
         }
         return type;
@@ -57,16 +73,16 @@ public class ClassAccess implements Expression {
 
     @Override
     public int getStart() {
-        return typeName.getStart();
+        return source.getStart();
     }
 
     @Override
     public int getEnd() {
-        return typeName.getEnd();
+        return source.getEnd();
     }
 
     @Override
     public String toString() {
-        return "ClassAccess(" + typeName + ".class" + ")";
+        return "ClassAccess(" + source + ".class" + ")";
     }
 }

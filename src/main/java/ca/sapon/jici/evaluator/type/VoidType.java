@@ -28,7 +28,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  * The void type.
  */
-public class VoidType implements LiteralType {
+public class VoidType implements Type {
     public static final VoidType THE_VOID = new VoidType();
 
     private VoidType() {
@@ -80,18 +80,13 @@ public class VoidType implements LiteralType {
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isReference() {
         return false;
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        return void.class;
-    }
-
-    @Override
-    public LiteralReferenceType asArray(int dimensions) {
-        throw new UnsupportedOperationException("Cannot create an array of the void type");
+    public boolean isReifiable() {
+        return true;
     }
 
     @Override

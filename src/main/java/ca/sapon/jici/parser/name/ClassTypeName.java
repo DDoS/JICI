@@ -29,22 +29,21 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
-import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
-public class ClassTypeName implements TypeName, ImportedTypeName {
+public class ClassTypeName implements TypeName {
     private final List<Identifier> name;
     private final List<TypeArgumentName> arguments;
     private ReferenceType hint = null;
-    private SingleReferenceType type = null;
+    private LiteralReferenceType type = null;
 
     public ClassTypeName(List<Identifier> name) {
         this(name, Collections.<TypeArgumentName>emptyList());
@@ -102,11 +101,6 @@ public class ClassTypeName implements TypeName, ImportedTypeName {
             }
         }
         return type;
-    }
-
-    @Override
-    public void setTypeHint(ReferenceType hint) {
-        this.hint = hint;
     }
 
     @Override

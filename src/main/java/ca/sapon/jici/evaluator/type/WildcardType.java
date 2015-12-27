@@ -49,10 +49,14 @@ public class WildcardType implements TypeArgument {
         return upperBound;
     }
 
+    public boolean isUnbounded() {
+        return lowerBound.getTypes().contains(LiteralReferenceType.THE_OBJECT) && lowerBound.getTypes().contains(NullType.THE_NULL);
+    }
+
     @Override
     public String getName() {
         String name = "?";
-        if (!upperBound.getTypes().contains(SingleReferenceType.THE_OBJECT)) {
+        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
             name += " extends " + upperBound;
         }
         if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
@@ -102,8 +106,13 @@ public class WildcardType implements TypeArgument {
     }
 
     @Override
-    public boolean isObject() {
+    public boolean isReference() {
         return true;
+    }
+
+    @Override
+    public boolean isReifiable() {
+        return isUnbounded();
     }
 
     @Override

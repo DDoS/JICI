@@ -30,18 +30,26 @@ import ca.sapon.jici.util.StringUtil;
 /**
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
  */
-public class ParametrizedType extends SingleReferenceType implements TypeArgument {
-    private final LiteralReferenceType raw;
+public class ParametrizedType extends LiteralReferenceType {
+    private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
 
-    private ParametrizedType(LiteralReferenceType raw, List<TypeArgument> arguments) {
-        this.raw = raw;
+    private ParametrizedType(LiteralReferenceType erased, List<TypeArgument> arguments) {
+        super(erased.getTypeClass());
+        if (arguments.size() <= 0) {
+            throw new IllegalArgumentException("Expected at least one type argument");
+        }
+        this.erased = erased;
         this.arguments = arguments;
+    }
+
+    public List<TypeArgument> getArguments() {
+        return arguments;
     }
 
     @Override
     public String getName() {
-        Class<?> _class = raw.getTypeClass();
+        Class<?> _class = erased.getTypeClass();
         int dimensions = 0;
         while (_class.isArray()) {
             _class = _class.getComponentType();
@@ -51,29 +59,28 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
     }
 
     @Override
-    public boolean isArray() {
-        return raw.isArray();
+    public boolean isReifiable() {
+        for (TypeArgument argument : arguments) {
+            if (!(argument instanceof WildcardType) || !((WildcardType) argument).isUnbounded()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        return raw.getTypeClass();
+    public boolean isRaw() {
+        return false;
     }
 
-    public LiteralReferenceType getRaw() {
-        return raw;
-    }
-
-    public List<TypeArgument> getArguments() {
-        return arguments;
+    @Override
+    public LiteralReferenceType getErasure() {
+        return erased;
     }
 
     @Override
     public ParametrizedType getComponentType() {
-        final LiteralType componentType = raw.getComponentType();
-        if (componentType == null) {
-            throw new UnsupportedOperationException("Not an array type");
-        }
+        final LiteralType componentType = erased.getComponentType();
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }
@@ -81,8 +88,8 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
     }
 
     @Override
-    public SingleReferenceType asArray(int dimensions) {
-        return new ParametrizedType(raw.asArray(dimensions), arguments);
+    public ParametrizedType asArray(int dimensions) {
+        return new ParametrizedType(erased.asArray(dimensions), arguments);
     }
 
     @Override
@@ -90,33 +97,21 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
         return equals(other);
     }
 
-    @Override
-    public boolean convertibleTo(Type to) {
-        // Parametrized types are a special case of single class types
-        // They are only convertible between each other if the raw types are
-        // And the target parameter types contains the source ones
-        if (to instanceof ParametrizedType) {
-            final ParametrizedType target = (ParametrizedType) to;
-            if (!getRaw().convertibleTo(target.getRaw())) {
-                return false;
-            }
-            final List<TypeArgument> targetArguments = target.getArguments();
-            if (arguments.size() != targetArguments.size()) {
-                return false;
-            }
-            for (int i = 0; i < arguments.size(); i++) {
-                if (!targetArguments.get(i).contains(arguments.get(i))) {
-                    return false;
-                }
-            }
-            return true;
+    public boolean argumentsContain(List<TypeArgument> otherArguments) {
+        if (arguments.size() != otherArguments.size()) {
+            return false;
         }
-        return super.convertibleTo(to);
+        for (int i = 0; i < arguments.size(); i++) {
+            if (!arguments.get(i).contains(otherArguments.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
-    public SingleReferenceType getSuperType() {
-        final SingleReferenceType superType = raw.getSuperType();
+    public LiteralReferenceType getSuperType() {
+        final LiteralReferenceType superType = erased.getSuperType();
         if (superType instanceof ParametrizedType) {
             return substituteTypeVariables((ParametrizedType) superType);
         }
@@ -124,10 +119,10 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
     }
 
     @Override
-    public SingleReferenceType[] getInterfaces() {
-        final SingleReferenceType[] interfaces = raw.getInterfaces();
+    public LiteralReferenceType[] getInterfaces() {
+        final LiteralReferenceType[] interfaces = erased.getInterfaces();
         for (int i = 0; i < interfaces.length; i++) {
-            final SingleReferenceType _interface = interfaces[i];
+            final LiteralReferenceType _interface = interfaces[i];
             if (_interface instanceof ParametrizedType) {
                 interfaces[i] = substituteTypeVariables((ParametrizedType) _interface);
             }
@@ -135,9 +130,9 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
         return interfaces;
     }
 
-    private SingleReferenceType substituteTypeVariables(ParametrizedType parametrizedType) {
+    private LiteralReferenceType substituteTypeVariables(ParametrizedType parametrizedType) {
         // Substitute type variables in the super type by the proper arguments
-        final java.lang.reflect.TypeVariable<?>[] parameters = raw.getTypeClass().getTypeParameters();
+        final java.lang.reflect.TypeVariable<?>[] parameters = erased.getTypeClass().getTypeParameters();
         for (int i = 0; i < parametrizedType.arguments.size(); i++) {
             final TypeArgument argument = parametrizedType.arguments.get(i);
             if (argument instanceof TypeVariable) {
@@ -164,7 +159,7 @@ public class ParametrizedType extends SingleReferenceType implements TypeArgumen
         }
         if (other instanceof ParametrizedType) {
             final ParametrizedType that = (ParametrizedType) other;
-            return raw.equals(that.raw) && arguments.equals(that.arguments);
+            return erased.equals(that.erased) && arguments.equals(that.arguments);
         }
         return false;
     }

@@ -47,7 +47,9 @@ public interface Type {
 
     boolean isArray();
 
-    boolean isObject();
+    boolean isReference();
+
+    boolean isReifiable();
 
     boolean convertibleTo(Type to);
 

@@ -27,7 +27,6 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.lexer.Keyword;
 
 public class PrimitiveTypeName implements TypeName {
@@ -67,13 +66,10 @@ public class PrimitiveTypeName implements TypeName {
                 case KEYWORD_DOUBLE:
                     _class = double.class;
                     break;
-                case KEYWORD_VOID:
-                    _class = void.class;
-                    break;
                 default:
                     throw new EvaluatorException("Not a primitive type: " + name, getStart(), getEnd());
             }
-            type = _class == void.class ? VoidType.THE_VOID : PrimitiveType.of(_class);
+            type = PrimitiveType.of(_class);
         }
         return type;
     }

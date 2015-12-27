@@ -45,13 +45,11 @@ import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.DoubleValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.ShortValue;
-import ca.sapon.jici.evaluator.value.VoidValue;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
@@ -318,7 +316,6 @@ public class EvaluatorTest {
         final Environment environment = new Environment();
         environment.declareVariable(Identifier.from("i", 0), PrimitiveType.THE_INT, IntValue.of(5));
         environment.declareVariable(Identifier.from("io", 0), LiteralReferenceType.of(Integer.class), ObjectValue.of(5));
-        environment.declareVariable(Identifier.from("v", 0), VoidType.THE_VOID, VoidValue.THE_VOID);
         environment.declareVariable(Identifier.from("c", 0), LiteralReferenceType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         environment.declareVariable(Identifier.from("f", 0), LiteralReferenceType.of(Float[].class), ObjectValue.of(new Float[]{1f, 2f, 3f, 4f}));
         assertReturns(true, "io instanceof Integer", environment);
@@ -335,7 +332,7 @@ public class EvaluatorTest {
 
         assertFails("i instanceof Object", environment);
         assertFails("io instanceof int", environment);
-        assertFails("v instanceof Object", environment);
+        assertFails("v.varargs(1f) instanceof Object", environment);
     }
 
     @Test
@@ -888,7 +885,7 @@ public class EvaluatorTest {
             final Set<SingleReferenceType> lowestUpperBound = ((ReferenceIntersectionType) type).getTypes();
             final Set<Class<?>> actualSet = new HashSet<>();
             for (SingleReferenceType bound : lowestUpperBound) {
-                actualSet.add(bound.getTypeClass());
+                actualSet.add(((LiteralReferenceType) bound).getTypeClass());
             }
             final Set<Class<?>> expectedSet = new HashSet<>(Arrays.asList(expected));
             Assert.assertEquals(expectedSet, actualSet);

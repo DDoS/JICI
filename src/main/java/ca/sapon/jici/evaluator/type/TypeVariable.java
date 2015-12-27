@@ -25,12 +25,14 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.util.StringUtil;
 
 /**
  * A type variable, such as {@code <T>}.
  */
-public class TypeVariable extends SingleReferenceType implements TypeArgument {
+public class TypeVariable extends SingleReferenceType implements LiteralType, TypeArgument {
     private final String name;
     private final int dimensions;
     private final ReferenceIntersectionType upperBound;
@@ -56,6 +58,11 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
+    public boolean isReifiable() {
+        return false;
+    }
+
+    @Override
     public Class<?> getTypeClass() {
         throw new UnsupportedOperationException("Type variable " + name + " is unsolved");
     }
@@ -69,8 +76,23 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
-    public TypeVariable asArray(int dimensions) {
-        return new TypeVariable(name, upperBound, this.dimensions + dimensions);
+    public Callable getConstructor(Type[] arguments) {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
+    public Accessible getField(String name) {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
+    public Callable getMethod(String name, Type[] arguments) {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
+    public LiteralReferenceType asArray(int dimensions) {
+        throw new UnsupportedOperationException("Cannot create an array from a type variable");
     }
 
     @Override
@@ -84,12 +106,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
-    public SingleReferenceType getSuperType() {
+    public LiteralReferenceType getSuperType() {
         throw new UnsupportedOperationException("Unimplemented");
     }
 
     @Override
-    public SingleReferenceType[] getInterfaces() {
+    public LiteralReferenceType[] getInterfaces() {
         throw new UnsupportedOperationException("Unimplemented");
     }
 

@@ -24,10 +24,10 @@
 package ca.sapon.jici.evaluator.type;
 
 /**
- * A type literally used in the code, such as {@code String}, {@code List<Integer>}, {@code int}, {@code int[]}, {@code <T>}, {@code null} or {@code void}.
+ * A type literally declared in the code, such as {@code String}, {@code List<Integer>}, {@code int}, {@code int[]} or {@code <T>}.
  */
 public interface LiteralType extends Type {
     Class<?> getTypeClass();
 
-    SingleReferenceType asArray(int dimensions);
+    LiteralReferenceType asArray(int dimensions);
 }

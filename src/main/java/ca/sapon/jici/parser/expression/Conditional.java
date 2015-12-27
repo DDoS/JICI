@@ -25,9 +25,9 @@ package ca.sapon.jici.parser.expression;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
@@ -80,13 +80,13 @@ public class Conditional implements Expression {
                 }
                 return type = leftType;
             }
-            if (leftType instanceof SingleReferenceType) {
-                leftType = ((SingleReferenceType) leftType).tryUnbox();
+            if (leftType instanceof LiteralReferenceType) {
+                leftType = ((LiteralReferenceType) leftType).tryUnbox();
             }
-            if (rightType instanceof SingleReferenceType) {
-                rightType = ((SingleReferenceType) rightType).tryUnbox();
+            if (rightType instanceof LiteralReferenceType) {
+                rightType = ((LiteralReferenceType) rightType).tryUnbox();
             }
-            if (leftType.isObject() || rightType.isObject()) {
+            if (leftType.isReference() || rightType.isReference()) {
                 // for objects the lowest upper bound
                 return type = TypeUtil.lowestUpperBound(
                         leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ReferenceType) leftType,

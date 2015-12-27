@@ -66,10 +66,9 @@ import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.ClassTypeName;
 import ca.sapon.jici.parser.name.PrimitiveTypeName;
-import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.name.TypeArgumentName.BoundKind;
-import ca.sapon.jici.parser.name.VoidTypeName;
+import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.parser.statement.Declaration;
 import ca.sapon.jici.parser.statement.Declaration.Variable;
 import ca.sapon.jici.parser.statement.Empty;
@@ -877,7 +876,7 @@ public final class Parser {
                             tokens.advance();
                             if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
                                 tokens.advance(2);
-                                return new ClassAccess(new VoidTypeName(token.getIndex()));
+                                return new ClassAccess(token);
                             }
                             tokens.retreat();
                             break;

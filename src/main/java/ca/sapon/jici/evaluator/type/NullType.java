@@ -46,34 +46,29 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
+    public boolean isReifiable() {
+        return true;
+    }
+
+    @Override
     public boolean convertibleTo(Type to) {
         // Null can be converted to any reference type (so anything that isn't a primitive type)
         return !to.isPrimitive();
     }
 
     @Override
-    public Class<?> getTypeClass() {
-        throw new UnsupportedOperationException("No type class for null type");
+    public boolean isNull() {
+        return true;
     }
 
     @Override
-    public SingleReferenceType asArray(int dimensions) {
-        throw new UnsupportedOperationException("Cannot create an array of the void type");
-    }
-
-    @Override
-    public SingleReferenceType getSuperType() {
+    public LiteralReferenceType getSuperType() {
         return null;
     }
 
     @Override
-    public SingleReferenceType[] getInterfaces() {
-        return new SingleReferenceType[0];
-    }
-
-    @Override
-    public boolean isBox() {
-        return false;
+    public LiteralReferenceType[] getInterfaces() {
+        return new LiteralReferenceType[0];
     }
 
     @Override
@@ -94,11 +89,6 @@ public class NullType extends SingleReferenceType {
     @Override
     public Callable getMethod(String name, Type[] arguments) {
         throw new UnsupportedOperationException("Cannot dereference the null type");
-    }
-
-    @Override
-    public String toString() {
-        return getName();
     }
 
     @Override

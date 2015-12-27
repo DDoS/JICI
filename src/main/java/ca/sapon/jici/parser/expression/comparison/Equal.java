@@ -51,7 +51,7 @@ public class Equal implements Expression {
         if (widenKind == null) {
             final Type leftType = left.getType(environment);
             final Type rightType = right.getType(environment);
-            if (leftType.isObject() && rightType.isObject()) {
+            if (leftType.isReference() && rightType.isReference()) {
                 widenKind = ValueKind.OBJECT;
                 return PrimitiveType.THE_BOOLEAN;
             }

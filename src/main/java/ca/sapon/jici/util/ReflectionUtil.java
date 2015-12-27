@@ -237,7 +237,7 @@ public final class ReflectionUtil {
                 }
             }
             // only keep the one with the narrowest return type
-            if (conflict != null && isNarrowerReturnType(TypeUtil.wrap(conflict.getReturnType()), TypeUtil.wrap(method.getReturnType()))) {
+            if (conflict != null && isNarrowerReturnType(TypeUtil.wrap(conflict.getGenericReturnType()), TypeUtil.wrap(method.getGenericReturnType()))) {
                 iterator.remove();
             }
         }

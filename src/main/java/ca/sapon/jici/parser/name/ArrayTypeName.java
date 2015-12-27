@@ -23,18 +23,13 @@
  */
 package ca.sapon.jici.parser.name;
 
-import java.util.ArrayList;
-
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceType;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
-import ca.sapon.jici.evaluator.type.LiteralType;
-import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.util.StringUtil;
 
-public class ArrayTypeName implements TypeName, ImportedTypeName {
+public class ArrayTypeName implements TypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
     private LiteralType componentType = null;
@@ -49,7 +44,7 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
     public LiteralType getType(Environment environment) {
         if (type == null) {
             final LiteralType componentType = componentTypeName.getType(environment);
-            final SingleReferenceType arrayType = componentType.asArray(dimensions);
+            final LiteralReferenceType arrayType = componentType.asArray(dimensions);
             if (arrayType == null) {
                 throw new EvaluatorException("Class not found: array of " + componentType.getName() + " with dimensions " + dimensions, this);
             }
@@ -57,39 +52,6 @@ public class ArrayTypeName implements TypeName, ImportedTypeName {
             type = arrayType;
         }
         return type;
-    }
-
-    @Override
-    public void setTypeHint(ReferenceType hint) {
-        if (!(componentTypeName instanceof ImportedTypeName)) {
-            return;
-        }
-        final ImportedTypeName typeName = (ImportedTypeName) this.componentTypeName;
-        if (hint instanceof SingleReferenceType) {
-            final Class<?> validated = validateTypeHint(((SingleReferenceType) hint).getTypeClass());
-            if (validated != null) {
-                typeName.setTypeHint(LiteralReferenceType.of(validated));
-            }
-        } else if (hint instanceof ReferenceIntersectionType) {
-            final ReferenceIntersectionType intersectionType = (ReferenceIntersectionType) hint;
-            final ArrayList<ReferenceType> hints = new ArrayList<>();
-            for (SingleReferenceType type : intersectionType.getTypes()) {
-                final Class<?> validated = validateTypeHint(type.getTypeClass());
-                if (validated != null) {
-                    hints.add(LiteralReferenceType.of(validated));
-                }
-            }
-            switch (hints.size()) {
-                case 0:
-                    break;
-                case 1:
-                    typeName.setTypeHint(hints.get(0));
-                    break;
-                default:
-                    typeName.setTypeHint(ReferenceIntersectionType.of(hints));
-                    break;
-            }
-        }
     }
 
     private Class<?> validateTypeHint(Class<?> _class) {

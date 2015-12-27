@@ -25,6 +25,7 @@ package ca.sapon.jici.parser.expression.arithmetic;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
@@ -59,14 +60,14 @@ public class Arithmetic implements Expression {
         if (type == null) {
             final Type leftType = left.getType(environment);
             final Type rightType = right.getType(environment);
-            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.equals(SingleReferenceType.THE_STRING) || rightType.equals(SingleReferenceType.THE_STRING))) {
+            if (operator.getID() == TokenID.SYMBOL_PLUS && (leftType.equals(LiteralReferenceType.THE_STRING) || rightType.equals(LiteralReferenceType.THE_STRING))) {
                 if (leftType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", left);
                 }
                 if (rightType.isVoid()) {
                     throw new EvaluatorException("Cannot convert void to java.lang.String", right);
                 }
-                type = SingleReferenceType.THE_STRING;
+                type = LiteralReferenceType.THE_STRING;
                 stringConcatenation = true;
                 this.leftType = leftType;
             } else {

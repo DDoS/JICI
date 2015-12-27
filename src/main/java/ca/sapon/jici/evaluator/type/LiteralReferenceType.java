@@ -159,8 +159,8 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             final LiteralReferenceType target = (LiteralReferenceType) to;
             return target.type.isAssignableFrom(type);
         }
-        if (to instanceof ReferenceIntersectionType) {
-            final ReferenceIntersectionType target = (ReferenceIntersectionType) to;
+        if (to instanceof IntersectionType) {
+            final IntersectionType target = (IntersectionType) to;
             for (SingleReferenceType type : target.getTypes()) {
                 if (!convertibleTo(type)) {
                     return false;

@@ -33,19 +33,19 @@ import ca.sapon.jici.evaluator.value.ValueKind;
  */
 public class WildcardType implements TypeArgument {
     public static final WildcardType THE_UNBOUNDED = of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet());
-    private final ReferenceIntersectionType lowerBound;
-    private final ReferenceIntersectionType upperBound;
+    private final IntersectionType lowerBound;
+    private final IntersectionType upperBound;
 
-    private WildcardType(ReferenceIntersectionType lowerBound, ReferenceIntersectionType upperBound) {
+    private WildcardType(IntersectionType lowerBound, IntersectionType upperBound) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
 
-    public ReferenceIntersectionType getLowerBound() {
+    public IntersectionType getLowerBound() {
         return lowerBound;
     }
 
-    public ReferenceIntersectionType getUpperBound() {
+    public IntersectionType getUpperBound() {
         return upperBound;
     }
 
@@ -159,12 +159,12 @@ public class WildcardType implements TypeArgument {
     }
 
     public static WildcardType of(Set<SingleReferenceType> lowerBound, Set<SingleReferenceType> upperBound) {
-        final ReferenceIntersectionType lower = lowerBound.isEmpty() ? ReferenceIntersectionType.EVERYTHING : ReferenceIntersectionType.of(lowerBound);
-        final ReferenceIntersectionType upper = upperBound.isEmpty() ? ReferenceIntersectionType.NOTHING : ReferenceIntersectionType.of(upperBound);
+        final IntersectionType lower = lowerBound.isEmpty() ? IntersectionType.EVERYTHING : IntersectionType.of(lowerBound);
+        final IntersectionType upper = upperBound.isEmpty() ? IntersectionType.NOTHING : IntersectionType.of(upperBound);
         return of(lower, upper);
     }
 
-    public static WildcardType of(ReferenceIntersectionType lowerBound, ReferenceIntersectionType upperBound) {
+    public static WildcardType of(IntersectionType lowerBound, IntersectionType upperBound) {
         return new WildcardType(lowerBound, upperBound);
     }
 }

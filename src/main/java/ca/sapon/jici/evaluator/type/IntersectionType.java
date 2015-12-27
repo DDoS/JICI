@@ -37,19 +37,19 @@ import ca.sapon.jici.util.TypeUtil;
 /**
  * An intersection of reference types, such as {@code String & Integer} or {@code Set<String> & Collection<CharSequence>}.
  */
-public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
-    public static final ReferenceIntersectionType NOTHING = of(LiteralReferenceType.THE_OBJECT);
-    public static final ReferenceIntersectionType EVERYTHING = of(NullType.THE_NULL);
+public class IntersectionType implements ReferenceType, TypeArgument {
+    public static final IntersectionType NOTHING = of(LiteralReferenceType.THE_OBJECT);
+    public static final IntersectionType EVERYTHING = of(NullType.THE_NULL);
     private final Set<SingleReferenceType> types;
 
-    private ReferenceIntersectionType(Collection<? extends ReferenceType> intersection) {
+    private IntersectionType(Collection<? extends ReferenceType> intersection) {
         if (intersection.size() < 1) {
             throw new UnsupportedOperationException("Expected at least one type");
         }
         final HashSet<SingleReferenceType> expandedTypes = new HashSet<>(intersection.size());
         for (ReferenceType type : intersection) {
-            if (type instanceof ReferenceIntersectionType) {
-                expandedTypes.addAll(((ReferenceIntersectionType) type).getTypes());
+            if (type instanceof IntersectionType) {
+                expandedTypes.addAll(((IntersectionType) type).getTypes());
             } else {
                 expandedTypes.add((SingleReferenceType) type);
             }
@@ -140,7 +140,7 @@ public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
     }
 
     @Override
-    public ReferenceIntersectionType getComponentType() {
+    public IntersectionType getComponentType() {
         if (!isArray()) {
             throw new UnsupportedOperationException("Not an array type");
         }
@@ -193,7 +193,7 @@ public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
 
     @Override
     public boolean equals(Object other) {
-        return this == other || other instanceof ReferenceIntersectionType && types.equals(((ReferenceIntersectionType) other).types);
+        return this == other || other instanceof IntersectionType && types.equals(((IntersectionType) other).types);
     }
 
     @Override
@@ -201,11 +201,11 @@ public class ReferenceIntersectionType implements ReferenceType, TypeArgument {
         return types.hashCode();
     }
 
-    public static ReferenceIntersectionType of(ReferenceType... intersection) {
+    public static IntersectionType of(ReferenceType... intersection) {
         return of(Arrays.asList(intersection));
     }
 
-    public static ReferenceIntersectionType of(Collection<? extends ReferenceType> intersection) {
-        return new ReferenceIntersectionType(intersection);
+    public static IntersectionType of(Collection<? extends ReferenceType> intersection) {
+        return new IntersectionType(intersection);
     }
 }

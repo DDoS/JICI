@@ -42,7 +42,7 @@ import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
@@ -882,8 +882,8 @@ public class EvaluatorTest {
     }
 
     private void assertTypeEquals(Type type, Class<?>... expected) {
-        if (type instanceof ReferenceIntersectionType) {
-            final Set<SingleReferenceType> lowestUpperBound = ((ReferenceIntersectionType) type).getTypes();
+        if (type instanceof IntersectionType) {
+            final Set<SingleReferenceType> lowestUpperBound = ((IntersectionType) type).getTypes();
             final Set<Class<?>> actualSet = new HashSet<>();
             for (SingleReferenceType bound : lowestUpperBound) {
                 actualSet.add(((LiteralReferenceType) bound).getTypeClass());

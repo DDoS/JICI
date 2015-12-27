@@ -46,7 +46,7 @@ import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.ReferenceIntersectionType;
+import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
@@ -180,26 +180,26 @@ public final class TypeUtil {
         return minimalTypes;
     }
 
-    public static ReferenceIntersectionType lowestUpperBound(ReferenceType... types) {
+    public static IntersectionType lowestUpperBound(ReferenceType... types) {
         return lowestUpperBound(Arrays.asList(types));
     }
 
-    private static ReferenceIntersectionType lowestUpperBound(Set<Collection<? extends ReferenceType>> recursions, ReferenceType... types) {
+    private static IntersectionType lowestUpperBound(Set<Collection<? extends ReferenceType>> recursions, ReferenceType... types) {
         return lowestUpperBound(Arrays.asList(types), recursions);
     }
 
-    public static ReferenceIntersectionType lowestUpperBound(Collection<? extends ReferenceType> types) {
+    public static IntersectionType lowestUpperBound(Collection<? extends ReferenceType> types) {
         return lowestUpperBound(types, new HashSet<Collection<? extends ReferenceType>>());
     }
 
-    private static ReferenceIntersectionType lowestUpperBound(Collection<? extends ReferenceType> types, Set<Collection<? extends ReferenceType>> recursions) {
+    private static IntersectionType lowestUpperBound(Collection<? extends ReferenceType> types, Set<Collection<? extends ReferenceType>> recursions) {
         if (types.size() == 1) {
             // Fast track trivial cases
-            return ReferenceIntersectionType.of(types.iterator().next());
+            return IntersectionType.of(types.iterator().next());
         }
         if (types.isEmpty() || !recursions.add(types)) {
             // Recursive lowest upper bound calls can lead to infinite types, don't compute a bound for these (like javac does)
-            return ReferenceIntersectionType.NOTHING;
+            return IntersectionType.NOTHING;
         }
         // Get the super type sets ST(U)
         final Map<ReferenceType, Set<LiteralReferenceType>> superTypeSets = new HashMap<>();
@@ -230,7 +230,7 @@ public final class TypeUtil {
                 lowestUpperBound.add(leastContainingInvocation(invocations, recursions));
             }
         }
-        return ReferenceIntersectionType.of(lowestUpperBound);
+        return IntersectionType.of(lowestUpperBound);
     }
 
     private static Set<ParametrizedType> relevantInvocations(Collection<Set<LiteralReferenceType>> superTypeSets, LiteralReferenceType type) {
@@ -293,7 +293,7 @@ public final class TypeUtil {
         }
         // No wildcards
         return left.equals(right) ? left : WildcardType.of(
-                ReferenceIntersectionType.NOTHING,
+                IntersectionType.NOTHING,
                 lowestUpperBound(recursions, (SingleReferenceType) left, (SingleReferenceType) right)
         );
     }
@@ -303,8 +303,8 @@ public final class TypeUtil {
         final Set<SingleReferenceType> combinedLowerBound = new HashSet<>(left.getLowerBound().getTypes());
         combinedUpperBound.addAll(right.getUpperBound().getTypes());
         combinedLowerBound.addAll(right.getLowerBound().getTypes());
-        return combinedUpperBound.equals(combinedLowerBound) ? ReferenceIntersectionType.of(combinedUpperBound)
-                : WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+        return combinedUpperBound.equals(combinedLowerBound) ? IntersectionType.of(combinedUpperBound)
+                : WildcardType.of(IntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
     }
 
     private static TypeArgument leastContainingTypeArgument(TypeArgument left, WildcardType right, Set<Collection<? extends ReferenceType>> recursions) {
@@ -312,7 +312,7 @@ public final class TypeUtil {
         final Set<SingleReferenceType> combinedLowerBound = new HashSet<>(right.getLowerBound().getTypes());
         combinedUpperBound.add((SingleReferenceType) left);
         combinedLowerBound.add((SingleReferenceType) left);
-        return WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+        return WildcardType.of(IntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
     }
 
     private static TypeArgument leastContainingTypeArgument(TypeArgument argument, Set<Collection<? extends ReferenceType>> recursions) {
@@ -330,7 +330,7 @@ public final class TypeUtil {
         // Right type is ?
         combinedUpperBound.add(LiteralReferenceType.THE_OBJECT);
         combinedLowerBound.add(NullType.THE_NULL);
-        return WildcardType.of(ReferenceIntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
+        return WildcardType.of(IntersectionType.of(combinedLowerBound), lowestUpperBound(combinedUpperBound, recursions));
     }
 
     private static Set<LiteralReferenceType> getErasedTypes(Set<LiteralReferenceType> types) {
@@ -344,8 +344,8 @@ public final class TypeUtil {
     public static Set<LiteralReferenceType> getSuperTypes(ReferenceType type) {
         final Set<LiteralReferenceType> result = new HashSet<>();
         final Queue<SingleReferenceType> queue = new ArrayDeque<>();
-        if (type instanceof ReferenceIntersectionType) {
-            queue.addAll(((ReferenceIntersectionType) type).getTypes());
+        if (type instanceof IntersectionType) {
+            queue.addAll(((IntersectionType) type).getTypes());
         } else {
             queue.add((SingleReferenceType) type);
         }
@@ -497,9 +497,9 @@ public final class TypeUtil {
             final TypeVariable source = (TypeVariable) sourceType;
             return isValidReferenceCast(source.getUpperBound(), targetType);
         }
-        if (sourceType instanceof ReferenceIntersectionType) {
+        if (sourceType instanceof IntersectionType) {
             // source is an intersection type, apply to each member individually
-            final ReferenceIntersectionType source = (ReferenceIntersectionType) sourceType;
+            final IntersectionType source = (IntersectionType) sourceType;
             for (SingleReferenceType type : source.getTypes()) {
                 if (!isValidReferenceCast(type, targetType)) {
                     return false;
@@ -573,8 +573,8 @@ public final class TypeUtil {
             }
             return typeClass;
         }
-        if (type instanceof ReferenceIntersectionType) {
-            for (ReferenceType referenceType : ((ReferenceIntersectionType) type).getTypes()) {
+        if (type instanceof IntersectionType) {
+            for (ReferenceType referenceType : ((IntersectionType) type).getTypes()) {
                 final Class<?> match = findNameMatch(referenceType, name);
                 if (match != null) {
                     return match;

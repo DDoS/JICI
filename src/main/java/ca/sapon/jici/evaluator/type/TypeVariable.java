@@ -35,15 +35,15 @@ import ca.sapon.jici.util.StringUtil;
 public class TypeVariable extends SingleReferenceType implements LiteralType, TypeArgument {
     private final String name;
     private final int dimensions;
-    private final ReferenceIntersectionType upperBound;
+    private final IntersectionType upperBound;
 
-    private TypeVariable(String name, ReferenceIntersectionType upperBound, int dimensions) {
+    private TypeVariable(String name, IntersectionType upperBound, int dimensions) {
         this.name = name;
         this.dimensions = dimensions;
         this.upperBound = upperBound;
     }
 
-    public ReferenceIntersectionType getUpperBound() {
+    public IntersectionType getUpperBound() {
         return upperBound;
     }
 
@@ -135,6 +135,6 @@ public class TypeVariable extends SingleReferenceType implements LiteralType, Ty
     }
 
     public static TypeVariable of(String name, Set<SingleReferenceType> upperBound) {
-        return new TypeVariable(name, ReferenceIntersectionType.of(upperBound), 0);
+        return new TypeVariable(name, IntersectionType.of(upperBound), 0);
     }
 }

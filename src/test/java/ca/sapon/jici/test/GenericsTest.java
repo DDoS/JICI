@@ -154,26 +154,19 @@ public class GenericsTest {
         );
     }
 
-    public static class M<T> {
-    }
-
-    public static class N<T> extends M<T> {
-    }
-
-    public static class L<T> extends N<String> {
-    }
-
-    public static class K extends N<Integer> {
-    }
-
     @Test
     public void testCasts() {
         final Environment environment = new Environment();
         environment.importClass(S.class);
         environment.importClass(J.class);
         environment.importClass(X.class);
+        environment.importClass(N.class);
         EvaluatorTest.assertSucceeds(
                 "J<String> j = null; Object o = (S<String>) j;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "N<Integer> u = null; Object k = (N<String>) u;",
                 environment
         );
         EvaluatorTest.assertSucceeds(
@@ -184,6 +177,18 @@ public class GenericsTest {
                 "S<Integer> t = null; Object l = (X) t;",
                 environment
         );
+    }
+
+    public static class M<T> {
+    }
+
+    public static class N<T> extends M<T> {
+    }
+
+    public static class L<T> extends N<String> {
+    }
+
+    public static class K extends N<Integer> {
     }
 
     interface S<A> {

@@ -525,24 +525,11 @@ public final class TypeUtil {
         leftSuperTypes.keySet().retainAll(rightSuperTypes.keySet());
         // Left and right can have super types with the same erasures, but not with the same type arguments
         for (Map.Entry<LiteralReferenceType, LiteralReferenceType> leftEntry : leftSuperTypes.entrySet()) {
-            if (leftEntry.getValue().equals(rightSuperTypes.get(leftEntry.getKey()))) {
-                return false;
+            if (!leftEntry.getValue().equals(rightSuperTypes.get(leftEntry.getKey()))) {
+                return true;
             }
         }
-/*
-        final Set<LiteralReferenceType> leftSuperTypes = getSuperTypes(left);
-        final Set<LiteralReferenceType> rightSuperTypes = getSuperTypes(right);
-        for (LiteralReferenceType leftSuperType : leftSuperTypes) {
-            for (LiteralReferenceType rightSuperType : rightSuperTypes) {
-                // Left and right have super types with the same erasures, but not the same type arguments
-                if (leftSuperType.getErasure().equals(rightSuperType.getErasure())
-                        && !leftSuperType.equals(rightSuperType)) {
-                    return false;
-                }
-            }
-        }
-*/
-        return true;
+        return false;
     }
 
     private static boolean hasInvocationParent(LiteralReferenceType type, LiteralReferenceType invocation) {

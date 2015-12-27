@@ -322,13 +322,13 @@ public class EvaluatorTest {
         assertReturns(true, "io instanceof Integer", environment);
         assertReturns(true, "io instanceof Number", environment);
         assertReturns(true, "io instanceof Comparable", environment);
-        assertReturns(false, "io instanceof Float", environment);
         assertReturns(true, "c instanceof char[]", environment);
         assertReturns(true, "c instanceof Object", environment);
         assertReturns(true, "f instanceof Float[]", environment);
         assertReturns(true, "f instanceof Number[]", environment);
         assertReturns(true, "f instanceof Object", environment);
 
+        assertFails("io instanceof Float", environment);
         assertFails("io instanceof CharSequence", environment);
         assertFails("c instanceof CharSequence", environment);
         assertFails("i instanceof Object", environment);

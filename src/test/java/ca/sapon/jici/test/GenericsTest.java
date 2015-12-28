@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.test;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -32,6 +33,9 @@ import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.ParametrizedType;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
@@ -187,6 +191,32 @@ public class GenericsTest {
         );
     }
 
+    @Test
+    public void testTypeArgumentSubstitution() {
+        Assert.assertEquals(
+                Collections.singleton(
+                        ParametrizedType.of(M.class,
+                                Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)
+                        )
+                ),
+                ParametrizedType.of(N.class,
+                        Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING))
+                        .getDirectSuperTypes()
+        );
+        Assert.assertEquals(
+                Collections.singleton(
+                        ParametrizedType.of(M.class,
+                                Collections.<TypeArgument>singletonList(ParametrizedType.of(M.class,
+                                        Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)
+                                ))
+                        )
+                ),
+                ParametrizedType.of(Q.class,
+                        Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING))
+                        .getDirectSuperTypes()
+        );
+    }
+
     public static class M<T> {
     }
 
@@ -197,6 +227,9 @@ public class GenericsTest {
     }
 
     public static class K extends N<Integer> {
+    }
+
+    public class Q<T> extends M<M<T>> {
     }
 
     interface S<A> {

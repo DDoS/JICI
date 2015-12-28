@@ -33,6 +33,8 @@ import ca.sapon.jici.util.StringUtil;
 public class ParametrizedType extends LiteralReferenceType {
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
+    // Cache these to prevent a new array from being created every time
+    private java.lang.reflect.TypeVariable<?>[] parameters = null;
 
     private ParametrizedType(LiteralReferenceType erased, List<TypeArgument> arguments) {
         super(erased.getTypeClass());
@@ -132,24 +134,34 @@ public class ParametrizedType extends LiteralReferenceType {
 
     private LiteralReferenceType substituteTypeVariables(ParametrizedType parametrizedType) {
         // Substitute type variables in the super type by the proper arguments
-        final java.lang.reflect.TypeVariable<?>[] parameters = erased.getTypeClass().getTypeParameters();
         for (int i = 0; i < parametrizedType.arguments.size(); i++) {
             final TypeArgument argument = parametrizedType.arguments.get(i);
             if (argument instanceof TypeVariable) {
                 // Find index of type variable by name in the parameters, use it to substitute for the argument
-                parametrizedType.arguments.set(i, arguments.get(indexOf(parameters, (TypeVariable) argument)));
+                parametrizedType.arguments.set(i, arguments.get(indexOf((TypeVariable) argument)));
+            } else if (argument instanceof ParametrizedType) {
+                // Apply recursively since a type variable can be nested into an argument's arguments
+                substituteTypeVariables((ParametrizedType) argument);
             }
         }
         return parametrizedType;
     }
 
-    private int indexOf(java.lang.reflect.TypeVariable<?>[] parameters, TypeVariable variable) {
+    private int indexOf(TypeVariable variable) {
+        final java.lang.reflect.TypeVariable<?>[] parameters = getParameters();
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i].getName().equals(variable.getName())) {
                 return i;
             }
         }
         throw new IllegalArgumentException("Couldn't find " + variable + " in parameters");
+    }
+
+    private java.lang.reflect.TypeVariable<?>[] getParameters() {
+        if (parameters == null) {
+            parameters = erased.getTypeClass().getTypeParameters();
+        }
+        return parameters;
     }
 
     @Override

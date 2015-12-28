@@ -110,8 +110,8 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     @Override
-    public LiteralReferenceType getSuperType() {
-        final LiteralReferenceType superType = erased.getSuperType();
+    public LiteralReferenceType getDirectSuperClass() {
+        final LiteralReferenceType superType = erased.getDirectSuperClass();
         if (superType instanceof ParametrizedType) {
             return substituteTypeVariables((ParametrizedType) superType);
         }
@@ -119,8 +119,8 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     @Override
-    public LiteralReferenceType[] getInterfaces() {
-        final LiteralReferenceType[] interfaces = erased.getInterfaces();
+    public LiteralReferenceType[] getDirectlyImplementedInterfaces() {
+        final LiteralReferenceType[] interfaces = erased.getDirectlyImplementedInterfaces();
         for (int i = 0; i < interfaces.length; i++) {
             final LiteralReferenceType _interface = interfaces[i];
             if (_interface instanceof ParametrizedType) {

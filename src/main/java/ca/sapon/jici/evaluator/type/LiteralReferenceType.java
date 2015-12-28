@@ -29,8 +29,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
@@ -122,6 +125,59 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     @Override
+    public Set<SingleReferenceType> getDirectSuperTypes() {
+        final Set<SingleReferenceType> superTypes = new HashSet<>();
+        if (isArray()) {
+            // Find the number of dimensions of the array and the base component type
+            int dimensions = 0;
+            LiteralReferenceType componentType = this;
+            do {
+                componentType = (LiteralReferenceType) componentType.getComponentType();
+                dimensions++;
+            } while (componentType.isArray());
+            if (componentType.equals(LiteralReferenceType.THE_OBJECT)) {
+                // For an object component type we use the actual array direct super types
+                superTypes.add(LiteralReferenceType.THE_OBJECT.asArray(dimensions - 1));
+                superTypes.add(LiteralReferenceType.THE_SERIALIZABLE.asArray(dimensions - 1));
+                superTypes.add(LiteralReferenceType.THE_CLONEABLE.asArray(dimensions - 1));
+            } else {
+                // Add all the component direct super types as arrays of the same dimension
+                for (SingleReferenceType superType : componentType.getDirectSuperTypes()) {
+                    superTypes.add(superType.asArray(dimensions));
+                }
+            }
+        } else {
+            // Add the direct super class and the directly implemented interfaces
+            if (isInterface()) {
+                // Interfaces have object as an implicit direct super class
+                superTypes.add(LiteralReferenceType.THE_OBJECT);
+            } else {
+                // This will always return something unless this class is object
+                final LiteralReferenceType superClass = getDirectSuperClass();
+                if (superClass != null) {
+                    superTypes.add(superClass);
+                }
+            }
+            Collections.addAll(superTypes, getDirectlyImplementedInterfaces());
+        }
+        return superTypes;
+    }
+
+    public LiteralReferenceType getDirectSuperClass() {
+        final java.lang.reflect.Type superClass = type.getGenericSuperclass();
+        return superClass != null ? (LiteralReferenceType) TypeUtil.wrap(superClass) : null;
+    }
+
+    public LiteralReferenceType[] getDirectlyImplementedInterfaces() {
+        final java.lang.reflect.Type[] interfaces = type.getGenericInterfaces();
+        final LiteralReferenceType[] wrapped = new LiteralReferenceType[interfaces.length];
+        for (int i = 0; i < interfaces.length; i++) {
+            wrapped[i] = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
+        }
+        return wrapped;
+    }
+
+    @Override
     public ComponentType getComponentType() {
         final Class<?> componentType = type.getComponentType();
         if (componentType == null) {
@@ -185,22 +241,6 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             return true;
         }
         return false;
-    }
-
-    @Override
-    public LiteralReferenceType getSuperType() {
-        final java.lang.reflect.Type superClass = type.getGenericSuperclass();
-        return superClass != null ? (LiteralReferenceType) TypeUtil.wrap(superClass) : null;
-    }
-
-    @Override
-    public LiteralReferenceType[] getInterfaces() {
-        final java.lang.reflect.Type[] interfaces = type.getGenericInterfaces();
-        final LiteralReferenceType[] wrapped = new LiteralReferenceType[interfaces.length];
-        for (int i = 0; i < interfaces.length; i++) {
-            wrapped[i] = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
-        }
-        return wrapped;
     }
 
     @Override

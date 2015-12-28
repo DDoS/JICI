@@ -140,22 +140,26 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public SingleReferenceType asArray(int dimensions) {
-        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+    public IntersectionType asArray(int dimensions) {
+        final Set<SingleReferenceType> componentTypes = new HashSet<>();
+        for (SingleReferenceType type : types) {
+            componentTypes.add(type.asArray(dimensions));
+        }
+        return of(componentTypes);
     }
 
     @Override
     public Object newArray(int length) {
-        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+        throw new UnsupportedOperationException("Cannot instantiate an array from an intersection type");
     }
 
     @Override
     public Object newArray(int[] lengths) {
-        throw new UnsupportedOperationException("Cannot create an array from an intersection type");
+        throw new UnsupportedOperationException("Cannot instantiate an array from an intersection type");
     }
 
     @Override
-    public ComponentType getComponentType() {
+    public IntersectionType getComponentType() {
         if (!isArray()) {
             throw new UnsupportedOperationException("Not an array type");
         }
@@ -203,6 +207,11 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
         }
         throw new UnsupportedOperationException("No method for signature: "
                 + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+    }
+
+    @Override
+    public Set<SingleReferenceType> getDirectSuperTypes() {
+        return types;
     }
 
     @Override

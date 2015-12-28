@@ -23,6 +23,8 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.Set;
+
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 
@@ -67,13 +69,8 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public NullType getSuperType() {
-        return null;
-    }
-
-    @Override
-    public LiteralReferenceType[] getInterfaces() {
-        return new LiteralReferenceType[0];
+    public Set<SingleReferenceType> getDirectSuperTypes() {
+        throw new UnsupportedOperationException("Can't list the direct super types of the null types as it is the universal set");
     }
 
     @Override
@@ -83,12 +80,12 @@ public class NullType extends SingleReferenceType {
 
     @Override
     public Object newArray(int length) {
-        throw new UnsupportedOperationException("Cannot have an array of the null type");
+        throw new UnsupportedOperationException("Cannot instantiate an array of the null type");
     }
 
     @Override
     public Object newArray(int[] lengths) {
-        throw new UnsupportedOperationException("Cannot have an array of the null type");
+        throw new UnsupportedOperationException("Cannot instantiate an array of the null type");
     }
 
     @Override

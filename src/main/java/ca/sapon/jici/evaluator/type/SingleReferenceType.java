@@ -69,11 +69,10 @@ public abstract class SingleReferenceType implements ReferenceType, ComponentTyp
         return true;
     }
 
+    @Override
+    public abstract SingleReferenceType asArray(int dimensions);
+
     public abstract SingleReferenceType getErasure();
-
-    public abstract SingleReferenceType getSuperType();
-
-    public abstract LiteralReferenceType[] getInterfaces();
 
     @Override
     public String toString() {

@@ -62,14 +62,15 @@ public final class StringUtil {
     }
 
     public static String repeat(String string, int number) {
-        if (number == 0) {
-            return "";
-        }
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < number; i++) {
-            builder.append(string);
-        }
+        repeat(string, number, builder);
         return builder.toString();
+    }
+
+    public static void repeat(String string, int number, StringBuilder to) {
+        for (int i = 0; i < number; i++) {
+            to.append(string);
+        }
     }
 
     public static String removeAll(String string, char remove) {

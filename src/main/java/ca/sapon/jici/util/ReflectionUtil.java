@@ -142,9 +142,15 @@ public final class ReflectionUtil {
         if (dimensions == 0) {
             return componentType;
         }
+        final StringBuilder encodedName = new StringBuilder();
+        StringUtil.repeat("[", dimensions, encodedName);
         final Character character = ARRAY_NAME_PRIMITIVE_ENCODING.get(componentType);
-        final String encodedName = character != null ? character.toString() : 'L' + componentType.getName() + ';';
-        return lookupClass(StringUtil.repeat("[", dimensions) + encodedName);
+        if (character == null) {
+            encodedName.append('L').append(componentType.getName()).append(';');
+        } else {
+            encodedName.append(character);
+        }
+        return lookupClass(encodedName.toString());
     }
 
     public static <C> C resolveOverloads(Map<C, Type[]> candidates, Type[] arguments) {

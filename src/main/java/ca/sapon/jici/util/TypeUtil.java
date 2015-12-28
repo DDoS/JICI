@@ -349,52 +349,17 @@ public final class TypeUtil {
 
     public static Set<LiteralReferenceType> getSuperTypes(ReferenceType type) {
         final Set<LiteralReferenceType> result = new HashSet<>();
-        final Queue<SingleReferenceType> queue = new ArrayDeque<>();
-        if (type instanceof IntersectionType) {
-            queue.addAll(((IntersectionType) type).getTypes());
-        } else {
-            queue.add((SingleReferenceType) type);
-        }
+        final Queue<ReferenceType> queue = new ArrayDeque<>();
+        queue.add(type);
         while (!queue.isEmpty()) {
-            final SingleReferenceType child = queue.remove();
+            final ReferenceType child = queue.remove();
             final LiteralReferenceType literalChild = child instanceof LiteralReferenceType ? (LiteralReferenceType) child : null;
             // Non literal types are always scanned because they cannot be in the super type set (since it only contains literals)
             if (literalChild == null || result.add(literalChild)) {
-                if (child.isArray()) {
-                    addArraySuperTypes(literalChild, queue);
-                } else {
-                    final SingleReferenceType superClass = child.getSuperType();
-                    if (superClass != null) {
-                        queue.add(superClass);
-                    }
-                    Collections.addAll(queue, child.getInterfaces());
-                }
+                queue.addAll(child.getDirectSuperTypes());
             }
         }
-        result.add(LiteralReferenceType.THE_OBJECT);
         return result;
-    }
-
-    private static void addArraySuperTypes(LiteralReferenceType arrayType, Queue<SingleReferenceType> to) {
-        int dimensions = 0;
-        ComponentType componentType = arrayType;
-        do {
-            componentType = ((LiteralReferenceType) componentType).getComponentType();
-            to.add(LiteralReferenceType.THE_OBJECT.asArray(dimensions));
-            to.add(LiteralReferenceType.THE_CLONEABLE.asArray(dimensions));
-            to.add(LiteralReferenceType.THE_SERIALIZABLE.asArray(dimensions));
-            dimensions++;
-        } while (componentType.isArray());
-        if (!componentType.isPrimitive()) {
-            final LiteralReferenceType referenceType = (LiteralReferenceType) componentType;
-            final LiteralReferenceType superClass = referenceType.getSuperType();
-            if (superClass != null) {
-                to.add(superClass.asArray(dimensions));
-            }
-            for (LiteralReferenceType _interface : referenceType.getInterfaces()) {
-                to.add(_interface.asArray(dimensions));
-            }
-        }
     }
 
     public static PrimitiveType coerceToPrimitive(Environment environment, Expression expression) {

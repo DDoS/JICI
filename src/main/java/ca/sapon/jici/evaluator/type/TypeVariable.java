@@ -25,29 +25,23 @@ package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Array;
 import java.util.List;
+import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
-import ca.sapon.jici.util.StringUtil;
 
 /**
  * A type variable, such as {@code <T>}.
  */
 public class TypeVariable extends SingleReferenceType implements TypeArgument {
     private final String name;
-    private final int dimensions;
     private final IntersectionType upperBound;
     private final SingleReferenceType firstBound;
-    private final SingleReferenceType upperBoundClass;
-    private final LiteralReferenceType[] upperBoundInterfaces;
 
-    private TypeVariable(String name, SingleReferenceType firstBound, SingleReferenceType upperBoundClass, LiteralReferenceType[] upperBoundInterfaces, IntersectionType upperBound, int dimensions) {
+    private TypeVariable(String name, SingleReferenceType firstBound, IntersectionType upperBound) {
         this.name = name;
-        this.dimensions = dimensions;
         this.upperBound = upperBound;
         this.firstBound = firstBound;
-        this.upperBoundClass = upperBoundClass;
-        this.upperBoundInterfaces = upperBoundInterfaces;
     }
 
     public IntersectionType getUpperBound() {
@@ -56,7 +50,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public String getName() {
-        String fullName = name + StringUtil.repeat("[]", dimensions);
+        String fullName = name;
         if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
             fullName += " extends " + upperBound;
         }
@@ -65,7 +59,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public boolean isArray() {
-        return dimensions > 0;
+        return upperBound.isArray();
     }
 
     @Override
@@ -75,7 +69,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public TypeVariable asArray(int dimensions) {
-        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, upperBound, this.dimensions + dimensions);
+        return new TypeVariable(name, firstBound, upperBound.asArray(dimensions));
     }
 
     @Override
@@ -90,10 +84,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public TypeVariable getComponentType() {
-        if (dimensions <= 0) {
-            throw new UnsupportedOperationException("Not an array type");
-        }
-        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, upperBound, dimensions - 1);
+        return new TypeVariable(name, firstBound, upperBound.getComponentType());
     }
 
     @Override
@@ -128,31 +119,28 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
-    public SingleReferenceType getSuperType() {
-        return upperBoundClass;
+    public Set<SingleReferenceType> getDirectSuperTypes() {
+        // The direct super types of a type variable are listed in its upper bound
+        return upperBound.getTypes();
     }
 
     @Override
-    public LiteralReferenceType[] getInterfaces() {
-        return upperBoundInterfaces;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
-        if (!(o instanceof TypeVariable)) {
+        if (!(other instanceof TypeVariable)) {
             return false;
         }
-        final TypeVariable that = (TypeVariable) o;
-        return dimensions == that.dimensions && name.equals(that.name);
+        final TypeVariable that = (TypeVariable) other;
+        return name.equals(that.name) && upperBound.equals(that.upperBound) && firstBound.equals(that.firstBound);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + dimensions;
+        result = 31 * result + upperBound.hashCode();
+        result = 31 * result + firstBound.hashCode();
         return result;
     }
 
@@ -161,36 +149,25 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
             // Empty implies object
             upperBound.add(LiteralReferenceType.THE_OBJECT);
         }
-        // Ensure the following holds for the upper bound, in order: a single type variable, or a class or an interface and zero or more interfaces
+        // Ensure the following holds for the upper bound, in order:
         final SingleReferenceType firstBound = upperBound.get(0);
-        final SingleReferenceType upperBoundClass;
-        final LiteralReferenceType[] upperBoundInterfaces;
         if (firstBound instanceof TypeVariable) {
+            // a single type variable
             if (upperBound.size() > 1) {
                 throw new UnsupportedOperationException("Cannot have more than one type in the upper bound: " + upperBound);
             }
-            upperBoundClass = firstBound;
-            upperBoundInterfaces = new LiteralReferenceType[0];
         } else if (firstBound instanceof LiteralReferenceType) {
+            // or a class or an interface
             final LiteralReferenceType firstBoundLiteral = (LiteralReferenceType) firstBound;
             if (firstBoundLiteral.isArray()) {
                 throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstBoundLiteral);
             }
-            int j = 0;
-            if (firstBoundLiteral.isInterface()) {
-                upperBoundClass = LiteralReferenceType.THE_OBJECT;
-                upperBoundInterfaces = new LiteralReferenceType[upperBound.size()];
-                upperBoundInterfaces[j++] = firstBoundLiteral;
-            } else {
-                upperBoundClass = firstBoundLiteral;
-                upperBoundInterfaces = new LiteralReferenceType[upperBound.size() - 1];
-            }
+            // with zero or more interfaces
             for (int i = 1; i < upperBound.size(); i++) {
                 final SingleReferenceType bound = upperBound.get(i);
                 if (bound instanceof LiteralReferenceType) {
                     final LiteralReferenceType literalReferenceType = (LiteralReferenceType) bound;
                     if (literalReferenceType.isInterface()) {
-                        upperBoundInterfaces[j++] = literalReferenceType;
                         continue;
                     }
                 }
@@ -199,6 +176,6 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
         } else {
             throw new UnsupportedOperationException("The first bound must be a type variable, class or interface: " + firstBound);
         }
-        return new TypeVariable(name, firstBound, upperBoundClass, upperBoundInterfaces, IntersectionType.of(upperBound), 0);
+        return new TypeVariable(name, firstBound, IntersectionType.of(upperBound));
     }
 }

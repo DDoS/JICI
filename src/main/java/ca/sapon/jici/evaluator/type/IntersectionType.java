@@ -42,19 +42,11 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     public static final IntersectionType EVERYTHING = of(NullType.THE_NULL);
     private final Set<SingleReferenceType> types;
 
-    private IntersectionType(Collection<? extends ReferenceType> intersection) {
+    private IntersectionType(Set<SingleReferenceType> intersection) {
         if (intersection.size() < 1) {
             throw new UnsupportedOperationException("Expected at least one type");
         }
-        final HashSet<SingleReferenceType> expandedTypes = new HashSet<>(intersection.size());
-        for (ReferenceType type : intersection) {
-            if (type instanceof IntersectionType) {
-                expandedTypes.addAll(((IntersectionType) type).getTypes());
-            } else {
-                expandedTypes.add((SingleReferenceType) type);
-            }
-        }
-        types = TypeUtil.greatestLowerBound(expandedTypes);
+        types = TypeUtil.removeSuperTypes(intersection);
     }
 
     public Set<SingleReferenceType> getTypes() {
@@ -234,6 +226,10 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     public static IntersectionType of(Collection<? extends ReferenceType> intersection) {
+        return of(TypeUtil.expandIntersectionTypes(intersection));
+    }
+
+    public static IntersectionType of(Set<SingleReferenceType> intersection) {
         return new IntersectionType(intersection);
     }
 }

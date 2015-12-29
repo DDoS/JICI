@@ -560,6 +560,7 @@ public class EvaluatorTest {
         assertReturns("1", "true ? \"1\" : \"1\"", environment);
         assertReturns(1f, "true ? 1f : 1", environment);
         assertReturns(1f, "true ? new Float(1f) : new Integer(1)", environment);
+        assertReturns("1", "true ? \"1\" : (CharSequence) \"2\"", environment, CharSequence.class);
         assertReturns((Object) 1f, "true ? 1f : null", environment);
         assertReturns((Object) null, "true ? null : null", environment);
         assertReturns("1", "true ? \"1\" : new StringBuilder(\"2\")", environment, CharSequence.class, Serializable.class);

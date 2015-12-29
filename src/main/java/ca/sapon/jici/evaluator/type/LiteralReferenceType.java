@@ -183,7 +183,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (componentType == null) {
             throw new UnsupportedOperationException("Not an array type");
         }
-        return TypeUtil.wrap(componentType);
+        return (ComponentType) TypeUtil.wrap(componentType);
     }
 
     @Override

@@ -44,7 +44,6 @@ import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ComponentType;
 import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
-import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
@@ -65,20 +64,20 @@ public final class TypeUtil {
     private TypeUtil() {
     }
 
-    public static LiteralType[] wrap(Class<?>[] types) {
-        final LiteralType[] wrapped = new LiteralType[types.length];
+    public static Type[] wrap(Class<?>[] types) {
+        final Type[] wrapped = new Type[types.length];
         for (int i = 0; i < types.length; i++) {
             wrapped[i] = wrap(types[i]);
         }
         return wrapped;
     }
 
-    public static LiteralType wrap(Class<?> type) {
+    public static Type wrap(Class<?> type) {
         if (type == null) {
             throw new NullPointerException("type");
         }
         if (type == void.class) {
-            throw new IllegalArgumentException("void");
+            return VoidType.THE_VOID;
         }
         if (type.isPrimitive()) {
             return PrimitiveType.of(type);
@@ -95,8 +94,8 @@ public final class TypeUtil {
     }
 
     public static Type wrap(java.lang.reflect.Type type) {
-        if (type == void.class) {
-            return VoidType.THE_VOID;
+        if (type == null) {
+            throw new NullPointerException("type");
         }
         if (type instanceof Class<?>) {
             return wrap((Class<?>) type);
@@ -220,6 +219,7 @@ public final class TypeUtil {
             // Fast track trivial cases
             return IntersectionType.NOTHING;
         }
+        // Get the number of recursive calls so far with the same arguments
         Integer count = recursions.get(types);
         if (count == null) {
             count = 0;

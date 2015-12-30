@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -37,6 +38,7 @@ import ca.sapon.jici.util.TypeUtil;
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
  */
 public class ParametrizedType extends LiteralReferenceType {
+    private static final AtomicInteger CAPTURE_COUNTER = new AtomicInteger(1);
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
     // Cache these to prevent them from being created every time
@@ -160,6 +162,39 @@ public class ParametrizedType extends LiteralReferenceType {
         return interfaces;
     }
 
+    @Override
+    public LiteralReferenceType capture() {
+        return capture(CAPTURE_COUNTER);
+    }
+
+    @Override
+    public ParametrizedType capture(AtomicInteger idCounter) {
+        final List<TypeArgument> capturedArguments = new ArrayList<>();
+        final Set<TypeArgument> newTypeVariables = new HashSet<>();
+        final TypeVariable[] parameters = getParameters();
+        for (int i = 0; i < arguments.size(); i++) {
+            final TypeArgument argument = arguments.get(i);
+            if (argument instanceof WildcardType) {
+                // Capture of a wildcard type replaces it with a unique type variable and merges the bounds from the declaration
+                final WildcardType wildcard = (WildcardType) argument;
+                final List<SingleReferenceType> upperBound = new ArrayList<>(parameters[i].getOrderedUpperBound());
+                upperBound.addAll(wildcard.getUpperBound().getTypes());
+                final TypeVariable typeVariable = TypeVariable.of("CAP#" + idCounter.getAndIncrement(), wildcard.getLowerBound(), upperBound);
+                capturedArguments.add(typeVariable);
+                newTypeVariables.add(typeVariable);
+            } else {
+                // Capture of any other type does nothing
+                capturedArguments.add(argument);
+            }
+        }
+        // Create a new parametrized type with the new arguments
+        final ParametrizedType parametrizedType = new ParametrizedType(erased, capturedArguments);
+        // Apply substitution on the upper bounds of the newly created type variables
+        final Map<String, TypeArgument> namesToArguments = parametrizedType.getNamesToArgumentsMap();
+        for (int i = 0; i < capturedArguments.size(); i++) {
+            final TypeArgument argument = capturedArguments.get(i);
+            if (newTypeVariables.contains(argument)) {
+                capturedArguments.set(i, argument.substituteTypeVariables(namesToArguments));
             }
         }
         return parametrizedType;

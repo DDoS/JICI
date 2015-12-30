@@ -23,8 +23,11 @@
  */
 package ca.sapon.jici.test;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +38,9 @@ import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
+import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
@@ -169,12 +174,12 @@ public class GenericsTest {
     @Test
     public void testCasts() {
         final Environment environment = new Environment();
-        environment.importClass(S.class);
+        environment.importClass(I.class);
         environment.importClass(J.class);
         environment.importClass(X.class);
         environment.importClass(N.class);
         EvaluatorTest.assertSucceeds(
-                "J<String> j = null; Object o = (S<String>) j;",
+                "J<String> j = null; Object o = (I<String>) j;",
                 environment
         );
         EvaluatorTest.assertFails(
@@ -182,11 +187,11 @@ public class GenericsTest {
                 environment
         );
         EvaluatorTest.assertSucceeds(
-                "S<String> s = null; Object w = (X) s;",
+                "I<String> s = null; Object w = (X) s;",
                 environment
         );
         EvaluatorTest.assertFails(
-                "S<Integer> t = null; Object l = (X) t;",
+                "I<Integer> t = null; Object l = (X) t;",
                 environment
         );
     }
@@ -217,6 +222,27 @@ public class GenericsTest {
         );
     }
 
+    @Test
+    public void testCaptureConversion() {
+        final ParametrizedType type1 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class))),
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class)))
+        ));
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.Comparable, CAP#2 extends (java.io.Serializable & CAP#1 extends java.lang.Comparable)>",
+                type1.capture(new AtomicInteger(1)).getName()
+        );
+        final ParametrizedType type2 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class))),
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class)))
+        ));
+        try {
+            type2.capture();
+            Assert.fail("Expected type error");
+        } catch (UnsupportedOperationException ignored) {
+        }
+    }
+
     public static class M<T> {
     }
 
@@ -232,14 +258,16 @@ public class GenericsTest {
     public class Q<T> extends M<M<T>> {
     }
 
-    interface S<A> {
+    interface I<A> {
     }
 
-    public static class J<A> implements S<A> {
+    public static class J<A> implements I<A> {
     }
 
-    public static final class X implements S<String> {
+    public static final class X implements I<String> {
     }
+
+    public class Y<S, T extends S> {}
 
     private static Environment assertSucceeds(String source) {
         final Environment environment = new Environment();

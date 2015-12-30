@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
@@ -180,6 +181,14 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             wrapped[i] = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
         }
         return wrapped;
+    }
+
+    public LiteralReferenceType capture(AtomicInteger idCounter) {
+        return this;
+    }
+
+    public LiteralReferenceType capture() {
+        return this;
     }
 
     @Override

@@ -26,6 +26,7 @@ package ca.sapon.jici.evaluator.type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
@@ -204,6 +205,33 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     @Override
     public Set<SingleReferenceType> getDirectSuperTypes() {
         return types;
+    }
+
+    @Override
+    public IntersectionType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+        final Set<ReferenceType> newIntersection = new HashSet<>();
+        for (SingleReferenceType type : types) {
+            if (type instanceof TypeVariable) {
+                // For type variables, substitute if the name matches, else apply recursively and add
+                final TypeVariable typeVariable = (TypeVariable) type;
+                final TypeArgument substitution = namesToValues.get(typeVariable.getDeclaredName());
+                if (substitution != null) {
+                    if (!(substitution instanceof ReferenceType)) {
+                        throw new UnsupportedOperationException("Substitution is not a reference type: " + typeVariable + " -> " + substitution);
+                    }
+                    newIntersection.add((ReferenceType) substitution);
+                } else {
+                    newIntersection.add(typeVariable.substituteTypeVariables(namesToValues));
+                }
+            } else if (type instanceof LiteralReferenceType) {
+                // Apply recursively to other reference type members
+                newIntersection.add(((LiteralReferenceType) type).substituteTypeVariables(namesToValues));
+            } else {
+                // Any other member gets no substitution
+                newIntersection.add(type);
+            }
+        }
+        return of(newIntersection);
     }
 
     @Override

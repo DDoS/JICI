@@ -23,9 +23,13 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.Map;
+
 /**
  * A type that can be used as an argument for {@link ParametrizedType}.
  */
 public interface TypeArgument extends Type {
+    TypeArgument substituteTypeVariables(Map<String, TypeArgument> namesToValues);
+
     boolean contains(TypeArgument other);
 }

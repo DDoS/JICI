@@ -24,7 +24,9 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
@@ -35,13 +37,25 @@ import ca.sapon.jici.evaluator.Callable;
  */
 public class TypeVariable extends SingleReferenceType implements TypeArgument {
     private final String name;
+    private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
-    private final SingleReferenceType firstBound;
+    private final SingleReferenceType firstUpperBound;
+    // Cache the ordered upper bound to prevent creation every time
+    private List<SingleReferenceType> orderedUpperBound = null;
 
-    private TypeVariable(String name, SingleReferenceType firstBound, IntersectionType upperBound) {
+    private TypeVariable(String name, IntersectionType lowerBound, IntersectionType upperBound, SingleReferenceType firstUpperBound) {
         this.name = name;
+        this.lowerBound = lowerBound;
         this.upperBound = upperBound;
-        this.firstBound = firstBound;
+        this.firstUpperBound = firstUpperBound;
+    }
+
+    public String getDeclaredName() {
+        return name;
+    }
+
+    public IntersectionType getLowerBound() {
+        return lowerBound;
     }
 
     public IntersectionType getUpperBound() {
@@ -51,6 +65,9 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     @Override
     public String getName() {
         String fullName = name;
+        if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
+            fullName += " super " + lowerBound;
+        }
         if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
             fullName += " extends " + upperBound;
         }
@@ -69,7 +86,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public TypeVariable asArray(int dimensions) {
-        return new TypeVariable(name, firstBound, upperBound.asArray(dimensions));
+        return new TypeVariable(name, lowerBound, upperBound.asArray(dimensions), firstUpperBound);
     }
 
     @Override
@@ -84,7 +101,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public TypeVariable getComponentType() {
-        return new TypeVariable(name, firstBound, upperBound.getComponentType());
+        return new TypeVariable(name, lowerBound, upperBound.getComponentType(), firstUpperBound);
     }
 
     @Override
@@ -103,6 +120,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
+    public TypeVariable substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+        // Apply recursively on lower and upper bound
+        return new TypeVariable(name, lowerBound.substituteTypeVariables(namesToValues), upperBound.substituteTypeVariables(namesToValues), firstUpperBound);
+    }
+
+    @Override
     public boolean contains(TypeArgument other) {
         return equals(other);
     }
@@ -115,13 +138,30 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     @Override
     public LiteralReferenceType getErasure() {
         // The upper bound class cannot be null so the erasure must be a literal reference
-        return (LiteralReferenceType) firstBound.getErasure();
+        return (LiteralReferenceType) firstUpperBound.getErasure();
     }
 
     @Override
     public Set<SingleReferenceType> getDirectSuperTypes() {
         // The direct super types of a type variable are listed in its upper bound
         return upperBound.getTypes();
+    }
+
+    public List<SingleReferenceType> getOrderedUpperBound() {
+        if (orderedUpperBound == null) {
+            orderedUpperBound = new ArrayList<>();
+            // First bound followed by the full bound
+            orderedUpperBound.add(firstUpperBound);
+            orderedUpperBound.addAll(upperBound.getTypes());
+            // The full bound needs to have the first bound removed
+            for (int i = 1; i < orderedUpperBound.size(); i++) {
+                if (orderedUpperBound.get(i) == firstUpperBound) {
+                    orderedUpperBound.remove(i);
+                    break;
+                }
+            }
+        }
+        return orderedUpperBound;
     }
 
     @Override
@@ -133,49 +173,52 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
             return false;
         }
         final TypeVariable that = (TypeVariable) other;
-        return name.equals(that.name) && upperBound.equals(that.upperBound) && firstBound.equals(that.firstBound);
+        return name.equals(that.name) && lowerBound.equals(that.lowerBound) && upperBound.equals(that.upperBound) && firstUpperBound.equals(that.firstUpperBound);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
+        result = 31 * result + lowerBound.hashCode();
         result = 31 * result + upperBound.hashCode();
-        result = 31 * result + firstBound.hashCode();
+        result = 31 * result + firstUpperBound.hashCode();
         return result;
     }
 
     public static TypeVariable of(String name, List<SingleReferenceType> upperBound) {
+        return of(name, IntersectionType.EVERYTHING, upperBound);
+    }
+
+    public static TypeVariable of(String name, IntersectionType lowerBound, List<SingleReferenceType> upperBound) {
         if (upperBound.isEmpty()) {
             // Empty implies object
             upperBound.add(LiteralReferenceType.THE_OBJECT);
         }
-        // Ensure the following holds for the upper bound, in order:
-        final SingleReferenceType firstBound = upperBound.get(0);
-        if (firstBound instanceof TypeVariable) {
-            // a single type variable
-            if (upperBound.size() > 1) {
-                throw new UnsupportedOperationException("Cannot have more than one type in the upper bound: " + upperBound);
+        // Ensure the following holds for the first upper bound: a type variable, a class or an interface
+        final SingleReferenceType firstUpperBound = upperBound.get(0);
+        if (firstUpperBound instanceof LiteralReferenceType) {
+            if (firstUpperBound.isArray()) {
+                throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstUpperBound);
             }
-        } else if (firstBound instanceof LiteralReferenceType) {
-            // or a class or an interface
-            final LiteralReferenceType firstBoundLiteral = (LiteralReferenceType) firstBound;
-            if (firstBoundLiteral.isArray()) {
-                throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstBoundLiteral);
-            }
-            // with zero or more interfaces
-            for (int i = 1; i < upperBound.size(); i++) {
-                final SingleReferenceType bound = upperBound.get(i);
-                if (bound instanceof LiteralReferenceType) {
-                    final LiteralReferenceType literalReferenceType = (LiteralReferenceType) bound;
-                    if (literalReferenceType.isInterface()) {
-                        continue;
-                    }
-                }
-                throw new UnsupportedOperationException("Only the first bound can be anything other than an interface: " + bound);
-            }
-        } else {
-            throw new UnsupportedOperationException("The first bound must be a type variable, class or interface: " + firstBound);
+        } else if (!(firstUpperBound instanceof TypeVariable)) {
+            throw new UnsupportedOperationException("The first upper bound must be a type variable, class or interface: " + firstUpperBound);
         }
-        return new TypeVariable(name, firstBound, IntersectionType.of(upperBound));
+        final IntersectionType reducedUpperBound = IntersectionType.of(upperBound);
+        // The reduced upper bound should have on class type or type variable with zero or more interfaces
+        boolean foundNonInterface = false;
+        for (SingleReferenceType bound : reducedUpperBound.getTypes()) {
+            if (bound instanceof LiteralReferenceType) {
+                final LiteralReferenceType literalReferenceType = (LiteralReferenceType) bound;
+                if (literalReferenceType.isInterface()) {
+                    continue;
+                }
+            }
+            if (!foundNonInterface) {
+                foundNonInterface = true;
+            } else {
+                throw new UnsupportedOperationException("Only the first upper bound can be anything other than an interface, found: " + bound);
+            }
+        }
+        return new TypeVariable(name, lowerBound, reducedUpperBound, upperBound.get(0));
     }
 }

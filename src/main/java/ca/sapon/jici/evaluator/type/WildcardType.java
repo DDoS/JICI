@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.value.ValueKind;
@@ -56,11 +57,11 @@ public class WildcardType implements TypeArgument {
     @Override
     public String getName() {
         String name = "?";
-        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
-            name += " extends " + upperBound;
-        }
         if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
             name += " super " + lowerBound;
+        }
+        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
+            name += " extends " + upperBound;
         }
         return name;
     }
@@ -119,6 +120,12 @@ public class WildcardType implements TypeArgument {
     public boolean convertibleTo(Type to) {
         // Can only convert to another type argument containing this
         return to instanceof TypeArgument && ((TypeArgument) to).contains(this);
+    }
+
+    @Override
+    public WildcardType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+        // Apply recursively on lower and upper bounds
+        return new WildcardType(lowerBound.substituteTypeVariables(namesToValues), upperBound.substituteTypeVariables(namesToValues));
     }
 
     @Override

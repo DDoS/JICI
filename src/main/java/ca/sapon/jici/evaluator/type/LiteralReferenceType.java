@@ -163,6 +163,11 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return superTypes;
     }
 
+    @Override
+    public LiteralReferenceType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+        return this;
+    }
+
     public LiteralReferenceType getDirectSuperClass() {
         final java.lang.reflect.Type superClass = type.getGenericSuperclass();
         return superClass != null ? (LiteralReferenceType) TypeUtil.wrap(superClass) : null;

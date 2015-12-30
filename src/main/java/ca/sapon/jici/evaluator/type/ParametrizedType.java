@@ -23,9 +23,15 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ca.sapon.jici.util.StringUtil;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
@@ -33,8 +39,9 @@ import ca.sapon.jici.util.StringUtil;
 public class ParametrizedType extends LiteralReferenceType {
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
-    // Cache these to prevent a new array from being created every time
-    private java.lang.reflect.TypeVariable<?>[] parameters = null;
+    // Cache these to prevent them from being created every time
+    private TypeVariable[] parameters = null;
+    private Map<String, TypeArgument> namesToArguments = null;
 
     private ParametrizedType(LiteralReferenceType erased, List<TypeArgument> arguments) {
         super(erased.getTypeClass());
@@ -90,6 +97,27 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     @Override
+    public ParametrizedType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+        final List<TypeArgument> newArguments = new ArrayList<>();
+        for (TypeArgument type : arguments) {
+            if (type instanceof TypeVariable) {
+                // For type variables, substitute if the name matches, else apply recursively and add
+                final TypeVariable typeVariable = (TypeVariable) type;
+                final TypeArgument substitution = namesToValues.get(typeVariable.getDeclaredName());
+                if (substitution != null) {
+                    newArguments.add(substitution);
+                } else {
+                    newArguments.add(typeVariable.substituteTypeVariables(namesToValues));
+                }
+            } else {
+                // Apply recursively to other members
+                newArguments.add(type.substituteTypeVariables(namesToValues));
+            }
+        }
+        return new ParametrizedType(erased, newArguments);
+    }
+
+    @Override
     public ParametrizedType asArray(int dimensions) {
         return new ParametrizedType(erased.asArray(dimensions), arguments);
     }
@@ -115,7 +143,7 @@ public class ParametrizedType extends LiteralReferenceType {
     public LiteralReferenceType getDirectSuperClass() {
         final LiteralReferenceType superType = erased.getDirectSuperClass();
         if (superType instanceof ParametrizedType) {
-            return substituteTypeVariables((ParametrizedType) superType);
+            return ((ParametrizedType) superType).substituteTypeVariables(getNamesToArgumentsMap());
         }
         return superType;
     }
@@ -126,42 +154,37 @@ public class ParametrizedType extends LiteralReferenceType {
         for (int i = 0; i < interfaces.length; i++) {
             final LiteralReferenceType _interface = interfaces[i];
             if (_interface instanceof ParametrizedType) {
-                interfaces[i] = substituteTypeVariables((ParametrizedType) _interface);
+                interfaces[i] = ((ParametrizedType) _interface).substituteTypeVariables(getNamesToArgumentsMap());
             }
         }
         return interfaces;
     }
 
-    private LiteralReferenceType substituteTypeVariables(ParametrizedType parametrizedType) {
-        // Substitute type variables in the super type by the proper arguments
-        for (int i = 0; i < parametrizedType.arguments.size(); i++) {
-            final TypeArgument argument = parametrizedType.arguments.get(i);
-            if (argument instanceof TypeVariable) {
-                // Find index of type variable by name in the parameters, use it to substitute for the argument
-                parametrizedType.arguments.set(i, arguments.get(indexOf((TypeVariable) argument)));
-            } else if (argument instanceof ParametrizedType) {
-                // Apply recursively since a type variable can be nested into an argument's arguments
-                substituteTypeVariables((ParametrizedType) argument);
             }
         }
         return parametrizedType;
     }
 
-    private int indexOf(TypeVariable variable) {
-        final java.lang.reflect.TypeVariable<?>[] parameters = getParameters();
-        for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i].getName().equals(variable.getName())) {
-                return i;
+    private TypeVariable[] getParameters() {
+        if (this.parameters == null) {
+            final java.lang.reflect.TypeVariable<?>[] parameters = erased.getTypeClass().getTypeParameters();
+            this.parameters = new TypeVariable[parameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+                this.parameters[i] = (TypeVariable) TypeUtil.wrap(parameters[i]);
             }
         }
-        throw new IllegalArgumentException("Couldn't find " + variable + " in parameters");
+        return this.parameters;
     }
 
-    private java.lang.reflect.TypeVariable<?>[] getParameters() {
-        if (parameters == null) {
-            parameters = erased.getTypeClass().getTypeParameters();
+    private Map<String, TypeArgument> getNamesToArgumentsMap() {
+        if (this.namesToArguments == null) {
+            this.namesToArguments = new HashMap<>();
+            final TypeVariable[] parameters = getParameters();
+            for (int i = 0; i < parameters.length; i++) {
+                namesToArguments.put(parameters[i].getDeclaredName(), arguments.get(i));
+            }
         }
-        return parameters;
+        return this.namesToArguments;
     }
 
     @Override

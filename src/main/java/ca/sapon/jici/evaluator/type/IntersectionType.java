@@ -26,11 +26,11 @@ package ca.sapon.jici.evaluator.type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -41,21 +41,27 @@ import ca.sapon.jici.util.TypeUtil;
 public class IntersectionType implements ReferenceType, ComponentType, TypeArgument {
     public static final IntersectionType NOTHING = of(LiteralReferenceType.THE_OBJECT);
     public static final IntersectionType EVERYTHING = of(NullType.THE_NULL);
-    private final Set<SingleReferenceType> types;
+    private Set<SingleReferenceType> types;
+    private boolean reduced = false;
 
-    private IntersectionType(Set<SingleReferenceType> intersection) {
-        if (intersection.size() < 1) {
+    private IntersectionType(Set<SingleReferenceType> types) {
+        if (types.size() < 1) {
             throw new UnsupportedOperationException("Expected at least one type");
         }
-        types = TypeUtil.removeSuperTypes(intersection);
+        this.types = types;
     }
 
     public Set<SingleReferenceType> getTypes() {
+        if (!reduced) {
+            types = TypeUtil.removeSuperTypes(types);
+            reduced = true;
+        }
         return types;
     }
 
     @Override
     public String getName() {
+        final Set<SingleReferenceType> types = getTypes();
         if (types.size() == 1) {
             return types.iterator().next().toString();
         }
@@ -99,7 +105,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public boolean isArray() {
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             if (!type.isArray()) {
                 return false;
             }
@@ -124,7 +130,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public boolean convertibleTo(Type to) {
-        for (SingleReferenceType bound : types) {
+        for (SingleReferenceType bound : getTypes()) {
             if (bound.convertibleTo(to)) {
                 return true;
             }
@@ -135,7 +141,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     @Override
     public IntersectionType asArray(int dimensions) {
         final Set<SingleReferenceType> componentTypes = new HashSet<>();
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             componentTypes.add(type.asArray(dimensions));
         }
         return of(componentTypes);
@@ -157,7 +163,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
             throw new UnsupportedOperationException("Not an array type");
         }
         final Set<SingleReferenceType> componentTypes = new HashSet<>();
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             final ComponentType componentType = type.getComponentType();
             if (!(componentType instanceof SingleReferenceType)) {
                 throw new UnsupportedOperationException("Cannot have an intersection with a primitive type");
@@ -169,7 +175,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public Callable getConstructor(Type[] arguments) {
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             try {
                 return type.getConstructor(arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -181,7 +187,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public Accessible getField(String name) {
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             try {
                 return type.getField(name);
             } catch (UnsupportedOperationException ignored) {
@@ -192,7 +198,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public Callable getMethod(String name, Type[] arguments) {
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             try {
                 return type.getMethod(name, arguments);
             } catch (UnsupportedOperationException ignored) {
@@ -204,28 +210,28 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public Set<SingleReferenceType> getDirectSuperTypes() {
-        return types;
+        return getTypes();
     }
 
     @Override
-    public IntersectionType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+    public IntersectionType substituteTypeVariables(Substitutions substitution) {
         final Set<ReferenceType> newIntersection = new HashSet<>();
         for (SingleReferenceType type : types) {
             if (type instanceof TypeVariable) {
                 // For type variables, substitute if the name matches, else apply recursively and add
                 final TypeVariable typeVariable = (TypeVariable) type;
-                final TypeArgument substitution = namesToValues.get(typeVariable.getDeclaredName());
-                if (substitution != null) {
-                    if (!(substitution instanceof ReferenceType)) {
-                        throw new UnsupportedOperationException("Substitution is not a reference type: " + typeVariable + " -> " + substitution);
+                final TypeArgument typeArgument = substitution.forVariable(typeVariable);
+                if (typeArgument != null) {
+                    if (!(typeArgument instanceof ReferenceType)) {
+                        throw new UnsupportedOperationException("Substitution is not a reference type: " + typeVariable + " -> " + typeArgument);
                     }
-                    newIntersection.add((ReferenceType) substitution);
+                    newIntersection.add((ReferenceType) typeArgument);
                 } else {
-                    newIntersection.add(typeVariable.substituteTypeVariables(namesToValues));
+                    newIntersection.add(typeVariable.substituteTypeVariables(substitution));
                 }
             } else if (type instanceof LiteralReferenceType) {
                 // Apply recursively to other reference type members
-                newIntersection.add(((LiteralReferenceType) type).substituteTypeVariables(namesToValues));
+                newIntersection.add(((LiteralReferenceType) type).substituteTypeVariables(substitution));
             } else {
                 // Any other member gets no substitution
                 newIntersection.add(type);
@@ -235,29 +241,40 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
+    public Set<TypeVariable> getTypeVariables() {
+        final Set<TypeVariable> typeVariables = new HashSet<>();
+        for (SingleReferenceType type : getTypes()) {
+            if ((type instanceof TypeArgument)) {
+                typeVariables.addAll(((TypeArgument) type).getTypeVariables());
+            }
+        }
+        return typeVariables;
+    }
+
+    @Override
     public String toString() {
         return getName();
     }
 
     @Override
     public boolean equals(Object other) {
-        return this == other || other instanceof IntersectionType && types.equals(((IntersectionType) other).types);
+        return this == other || other instanceof IntersectionType && getTypes().equals(((IntersectionType) other).getTypes());
     }
 
     @Override
     public int hashCode() {
-        return types.hashCode();
+        return getTypes().hashCode();
     }
 
-    public static IntersectionType of(ReferenceType... intersection) {
-        return of(Arrays.asList(intersection));
+    public static IntersectionType of(ReferenceType... types) {
+        return of(Arrays.asList(types));
     }
 
-    public static IntersectionType of(Collection<? extends ReferenceType> intersection) {
-        return of(TypeUtil.expandIntersectionTypes(intersection));
+    public static IntersectionType of(Collection<? extends ReferenceType> types) {
+        return of(TypeUtil.expandIntersectionTypes(types));
     }
 
-    public static IntersectionType of(Set<SingleReferenceType> intersection) {
-        return new IntersectionType(intersection);
+    public static IntersectionType of(Set<SingleReferenceType> types) {
+        return new IntersectionType(types);
     }
 }

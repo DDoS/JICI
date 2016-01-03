@@ -225,19 +225,19 @@ public class GenericsTest {
     @Test
     public void testCaptureConversion() {
         final ParametrizedType type1 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
-                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class))),
-                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class)))
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class))),
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class)))
         ));
         Assert.assertEquals(
-                "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.Comparable, CAP#2 extends (java.io.Serializable & CAP#1 extends java.lang.Comparable)>",
+                "ca.sapon.jici.test.GenericsTest.Y<CAP#2 extends (CAP#1 extends java.lang.Comparable & java.io.Serializable), CAP#1 extends java.lang.Comparable>",
                 type1.capture(new AtomicInteger(1)).getName()
         );
-        final ParametrizedType type2 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
-                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class))),
-                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class)))
-        ));
         try {
-            type2.capture();
+            final ParametrizedType type2 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class)))
+            ));
+            type2.capture(new AtomicInteger(1));
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -267,7 +267,8 @@ public class GenericsTest {
     public static final class X implements I<String> {
     }
 
-    public class Y<S, T extends S> {}
+    public class Y<T extends S, S> {
+    }
 
     private static Environment assertSucceeds(String source) {
         final Environment environment = new Environment();

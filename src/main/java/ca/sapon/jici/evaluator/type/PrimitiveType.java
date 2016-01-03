@@ -228,7 +228,7 @@ public class PrimitiveType implements LiteralType {
 
     @Override
     public int hashCode() {
-        return type.hashCode();
+        return type.getName().hashCode();
     }
 
     public static PrimitiveType of(Class<?> type) {

@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -54,6 +55,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     private final Class<?> type;
     private PrimitiveType unbox;
     private boolean unboxCached = false;
+    private java.lang.reflect.TypeVariable<?>[] parameters = null;
 
     static {
         UNBOXING_CONVERSIONS.put(Boolean.class, PrimitiveType.THE_BOOLEAN);
@@ -86,7 +88,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     public boolean isRaw() {
-        return type.getTypeParameters().length > 0;
+        return getTypeParameters().length > 0;
     }
 
     public boolean isInterface() {
@@ -96,6 +98,18 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     @Override
     public Class<?> getTypeClass() {
         return type;
+    }
+
+    protected java.lang.reflect.TypeVariable<?>[] getTypeParameters() {
+        if (this.parameters == null) {
+            // If this is an array, we need to get to the base component type
+            Class<?> baseComponent = type;
+            while (baseComponent.isArray()) {
+                baseComponent = baseComponent.getComponentType();
+            }
+            this.parameters = baseComponent.getTypeParameters();
+        }
+        return parameters;
     }
 
     public boolean isBox() {
@@ -165,8 +179,13 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     @Override
-    public LiteralReferenceType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+    public LiteralReferenceType substituteTypeVariables(Substitutions substitution) {
         return this;
+    }
+
+    @Override
+    public Set<TypeVariable> getTypeVariables() {
+        return new HashSet<>();
     }
 
     public LiteralReferenceType getDirectSuperClass() {
@@ -184,10 +203,6 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     public LiteralReferenceType capture(AtomicInteger idCounter) {
-        return this;
-    }
-
-    public LiteralReferenceType capture() {
         return this;
     }
 
@@ -226,6 +241,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         // If the target literal type is parametrized, this type must have a parent with
         // the same erasure and compatible type arguments
         // Else they can be cast to another literal class if they are a subtype
+        // They can also be converted to a type variable upper bound
         // They can also be converted to an intersection if they can be converted to each member
         if (to.isPrimitive()) {
             return isBox() && unbox().convertibleTo(to);
@@ -244,6 +260,10 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (to instanceof LiteralReferenceType) {
             final LiteralReferenceType target = (LiteralReferenceType) to;
             return target.type.isAssignableFrom(type);
+        }
+        if (to instanceof TypeVariable) {
+            final TypeVariable target = (TypeVariable) to;
+            return convertibleTo(target.getUpperBound());
         }
         if (to instanceof IntersectionType) {
             final IntersectionType target = (IntersectionType) to;
@@ -359,7 +379,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
 
     @Override
     public int hashCode() {
-        return type.hashCode();
+        return type.getName().hashCode();
     }
 
     public static LiteralReferenceType of(Class<?> type) {

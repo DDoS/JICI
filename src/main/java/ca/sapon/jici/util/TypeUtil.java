@@ -135,7 +135,7 @@ public final class TypeUtil {
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
             final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds(), new HashSet<SingleReferenceType>());
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getLowerBounds(), new HashSet<SingleReferenceType>());
+            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getUpperBounds(), new HashSet<SingleReferenceType>());
             return WildcardType.of(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getCanonicalName());

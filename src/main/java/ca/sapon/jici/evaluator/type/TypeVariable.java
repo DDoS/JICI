@@ -26,11 +26,11 @@ package ca.sapon.jici.evaluator.type;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.Substitutions;
 
 /**
  * A type variable, such as {@code <T>}.
@@ -120,9 +120,17 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     @Override
-    public TypeVariable substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+    public TypeVariable substituteTypeVariables(Substitutions substitution) {
         // Apply recursively on lower and upper bound
-        return new TypeVariable(name, lowerBound.substituteTypeVariables(namesToValues), upperBound.substituteTypeVariables(namesToValues), firstUpperBound);
+        return new TypeVariable(name, lowerBound.substituteTypeVariables(substitution), upperBound.substituteTypeVariables(substitution), firstUpperBound);
+    }
+
+    @Override
+    public Set<TypeVariable> getTypeVariables() {
+        final Set<TypeVariable> typeVariables = lowerBound.getTypeVariables();
+        typeVariables.addAll(upperBound.getTypeVariables());
+        typeVariables.add(this);
+        return typeVariables;
     }
 
     @Override
@@ -186,10 +194,6 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     }
 
     public static TypeVariable of(String name, List<SingleReferenceType> upperBound) {
-        return of(name, IntersectionType.EVERYTHING, upperBound);
-    }
-
-    public static TypeVariable of(String name, IntersectionType lowerBound, List<SingleReferenceType> upperBound) {
         if (upperBound.isEmpty()) {
             // Empty implies object
             upperBound.add(LiteralReferenceType.THE_OBJECT);
@@ -219,6 +223,24 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
                 throw new UnsupportedOperationException("Only the first upper bound can be anything other than an interface, found: " + bound);
             }
         }
-        return new TypeVariable(name, lowerBound, reducedUpperBound, upperBound.get(0));
+        return new TypeVariable(name, IntersectionType.EVERYTHING, reducedUpperBound, upperBound.get(0));
+    }
+
+    public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound) {
+        SingleReferenceType classUpperBound = null;
+        SingleReferenceType interfaceUpperBound = null;
+        for (SingleReferenceType type : upperBound.getTypes()) {
+            if (type instanceof LiteralReferenceType && ((LiteralReferenceType) type).isInterface()) {
+                if (interfaceUpperBound == null) {
+                    interfaceUpperBound = type;
+                }
+                continue;
+            }
+            if (classUpperBound != null) {
+                throw new UnsupportedOperationException("Cannot have more than one non-interface type in the upper bound, found: " + classUpperBound + " and " + type);
+            }
+            classUpperBound = type;
+        }
+        return new TypeVariable(name, lowerBound, upperBound, classUpperBound == null ? interfaceUpperBound : classUpperBound);
     }
 }

@@ -24,9 +24,9 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.value.ValueKind;
 
 /**
@@ -123,9 +123,16 @@ public class WildcardType implements TypeArgument {
     }
 
     @Override
-    public WildcardType substituteTypeVariables(Map<String, TypeArgument> namesToValues) {
+    public WildcardType substituteTypeVariables(Substitutions substitution) {
         // Apply recursively on lower and upper bounds
-        return new WildcardType(lowerBound.substituteTypeVariables(namesToValues), upperBound.substituteTypeVariables(namesToValues));
+        return new WildcardType(lowerBound.substituteTypeVariables(substitution), upperBound.substituteTypeVariables(substitution));
+    }
+
+    @Override
+    public Set<TypeVariable> getTypeVariables() {
+        final Set<TypeVariable> typeVariables = lowerBound.getTypeVariables();
+        typeVariables.addAll(upperBound.getTypeVariables());
+        return typeVariables;
     }
 
     @Override

@@ -24,7 +24,6 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -40,8 +39,6 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
     private final SingleReferenceType firstUpperBound;
-    // Cache the ordered upper bound to prevent creation every time
-    private List<SingleReferenceType> orderedUpperBound = null;
 
     private TypeVariable(String name, IntersectionType lowerBound, IntersectionType upperBound, SingleReferenceType firstUpperBound) {
         this.name = name;
@@ -140,6 +137,22 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
 
     @Override
     public boolean convertibleTo(Type to) {
+        // Can convert to a type variable if its bounds are within these ones
+        // Can convert to an intersection type if can convert to all the types in it
+        // Can convert to any other type if the upper bound can
+        if (to instanceof TypeVariable) {
+            final TypeVariable target = (TypeVariable) to;
+            return upperBound.convertibleTo(target.getUpperBound()) && target.getLowerBound().convertibleTo(lowerBound);
+        }
+        if (to instanceof IntersectionType) {
+            final IntersectionType target = (IntersectionType) to;
+            for (SingleReferenceType type : target.getTypes()) {
+                if (!convertibleTo(type)) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return upperBound.convertibleTo(to);
     }
 
@@ -153,23 +166,6 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
     public Set<SingleReferenceType> getDirectSuperTypes() {
         // The direct super types of a type variable are listed in its upper bound
         return upperBound.getTypes();
-    }
-
-    public List<SingleReferenceType> getOrderedUpperBound() {
-        if (orderedUpperBound == null) {
-            orderedUpperBound = new ArrayList<>();
-            // First bound followed by the full bound
-            orderedUpperBound.add(firstUpperBound);
-            orderedUpperBound.addAll(upperBound.getTypes());
-            // The full bound needs to have the first bound removed
-            for (int i = 1; i < orderedUpperBound.size(); i++) {
-                if (orderedUpperBound.get(i) == firstUpperBound) {
-                    orderedUpperBound.remove(i);
-                    break;
-                }
-            }
-        }
-        return orderedUpperBound;
     }
 
     @Override

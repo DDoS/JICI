@@ -224,20 +224,72 @@ public class GenericsTest {
 
     @Test
     public void testCaptureConversion() {
-        final ParametrizedType type1 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+        ParametrizedType type;
+        // Y<? extends Serializable, ? extends Comparable>
+        type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
                 WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class))),
                 WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class)))
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#2 extends (CAP#1 extends java.lang.Comparable & java.io.Serializable), CAP#1 extends java.lang.Comparable>",
-                type1.capture(new AtomicInteger(1)).getName()
+                type.capture(new AtomicInteger(1)).getName()
         );
+        // Y<? extends String, Serializable>
+        type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.asList(
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class))),
+               LiteralReferenceType.of(Serializable.class)
+        ));
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.String, java.io.Serializable>",
+                type.capture(new AtomicInteger(1)).getName()
+        );
+        // Y<? extends Integer, ? extends String>
         try {
-            final ParametrizedType type2 = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+            type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class)))
             ));
-            type2.capture(new AtomicInteger(1));
+            type.capture(new AtomicInteger(1));
+            Assert.fail("Expected type error");
+        } catch (UnsupportedOperationException ignored) {
+        }
+        // Y<? extends Integer, ? extends Serializable>
+        try {
+            type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class)))
+            ));
+            type.capture(new AtomicInteger(1));
+            Assert.fail("Expected type error");
+        } catch (UnsupportedOperationException ignored) {
+        }
+        // Y<? extends Integer, ? extends TypeArgument>
+        try {
+            type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(TypeArgument.class)))
+            ));
+            type.capture(new AtomicInteger(1));
+            Assert.fail("Expected type error");
+        } catch (UnsupportedOperationException ignored) {
+        }
+        // Y<? extends Integer[], ? extends Number[]>
+        try {
+            type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer[].class))),
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Number[].class)))
+            ));
+            type.capture(new AtomicInteger(1));
+            Assert.fail("Expected type error");
+        } catch (UnsupportedOperationException ignored) {
+        }
+        // Y<? extends float[], ? extends int[]> l
+        try {
+            type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(float[].class))),
+                    WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(int[].class)))
+            ));
+            type.capture(new AtomicInteger(1));
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }

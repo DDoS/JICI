@@ -141,11 +141,7 @@ public class WildcardType implements TypeArgument {
             final WildcardType otherWildcard = (WildcardType) other;
             return otherWildcard.upperBound.convertibleTo(upperBound) && lowerBound.convertibleTo(otherWildcard.lowerBound);
         }
-        if (other instanceof SingleReferenceType) {
-            final SingleReferenceType otherType = (SingleReferenceType) other;
-            return otherType.convertibleTo(upperBound) && lowerBound.convertibleTo(otherType);
-        }
-        return false;
+        return other.convertibleTo(upperBound) && lowerBound.convertibleTo(other);
     }
 
     @Override

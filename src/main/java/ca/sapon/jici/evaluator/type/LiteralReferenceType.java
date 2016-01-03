@@ -238,14 +238,11 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     @Override
     public boolean convertibleTo(Type to) {
         // Literal class types might be convertible to a primitive if they can be unboxed
-        // If the target literal type is parametrized, this type must have a parent with
-        // the same erasure and compatible type arguments
-        // Else they can be cast to another literal class if they are a subtype
-        // They can also be converted to a type variable upper bound
-        // They can also be converted to an intersection if they can be converted to each member
         if (to.isPrimitive()) {
             return isBox() && unbox().convertibleTo(to);
         }
+        // If the target literal type is parametrized, this type must have a parent with
+        // the same erasure and compatible type arguments
         if (to instanceof ParametrizedType) {
             final ParametrizedType parametrized = (ParametrizedType) to;
             final LiteralReferenceType erasure = parametrized.getErasure();
@@ -257,14 +254,17 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             }
             return false;
         }
+        // Else they can be converted to another literal class if they are a subtype
         if (to instanceof LiteralReferenceType) {
             final LiteralReferenceType target = (LiteralReferenceType) to;
             return target.type.isAssignableFrom(type);
         }
+        // They can also be converted to a type variable lower bound
         if (to instanceof TypeVariable) {
             final TypeVariable target = (TypeVariable) to;
-            return convertibleTo(target.getUpperBound());
+            return convertibleTo(target.getLowerBound());
         }
+        // They can also be converted to an intersection if they can be converted to each member
         if (to instanceof IntersectionType) {
             final IntersectionType target = (IntersectionType) to;
             for (SingleReferenceType type : target.getTypes()) {

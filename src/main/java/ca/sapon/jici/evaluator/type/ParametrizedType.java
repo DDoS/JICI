@@ -40,7 +40,6 @@ import ca.sapon.jici.util.TypeUtil;
  * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
  */
 public class ParametrizedType extends LiteralReferenceType {
-    private static final AtomicInteger CAPTURE_COUNTER = new AtomicInteger(1);
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
     // Cache these to prevent them from being created every time
@@ -275,7 +274,7 @@ public class ParametrizedType extends LiteralReferenceType {
             throw new UnsupportedOperationException("Mismatch in type parameter and argument count: " + parameters.length + " != " + arguments.size());
         }
         // The captured arguments must be subtypes of the parameter upper bounds resulting from substitution
-        final ParametrizedType capture = type.capture(CAPTURE_COUNTER);
+        final ParametrizedType capture = type.capture(new AtomicInteger(1));
         final List<TypeArgument> capturedArguments = capture.getArguments();
         final Substitutions substitutions = capture.getSubstitutions();
         for (int i = 0; i < parameters.length; i++) {

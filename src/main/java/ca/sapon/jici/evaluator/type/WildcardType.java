@@ -175,6 +175,7 @@ public class WildcardType implements TypeArgument {
     }
 
     public static WildcardType of(IntersectionType lowerBound, IntersectionType upperBound) {
+        upperBound.checkIfValidUpperBound();
         return new WildcardType(lowerBound, upperBound);
     }
 }

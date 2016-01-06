@@ -449,13 +449,13 @@ public final class TypeUtil {
                         // target is final, which has sub-cases
                         if (target instanceof ParametrizedType || target.isRaw()) {
                             // target is parametrized or raw, target must be an invocation of source generic declaration
-                            return hasInvocationParent(target, source);
+                            return hasInvocationSuperType(target, source);
                         }
                         // target is neither parametrized nor raw, target must implement source
                         return target.convertibleTo(source);
                     }
                     // target is not final, generic parents cannot conflict
-                    return !haveGenericallyDistinctParents(source, target);
+                    return !haveDifferentInvocationsInSuperTypes(source, target);
                 }
                 // any other target type is always valid
                 return true;
@@ -475,13 +475,13 @@ public final class TypeUtil {
                         return source.convertibleTo(target);
                     }
                     // source is not final, generic parents cannot conflict
-                    return !haveGenericallyDistinctParents(source, target);
+                    return !haveDifferentInvocationsInSuperTypes(source, target);
                 }
                 // target is a class type, erasures must be super or sub types and generic parents cannot conflict
                 final LiteralReferenceType sourceErasure = source.getErasure();
                 final LiteralReferenceType targetErasure = target.getErasure();
                 return (sourceErasure.convertibleTo(targetErasure) || targetErasure.convertibleTo(targetErasure))
-                        && !haveGenericallyDistinctParents(source, target);
+                        && !haveDifferentInvocationsInSuperTypes(source, target);
             }
             if (targetType instanceof TypeVariable) {
                 // target is a type variable, apply recursively to upper bound
@@ -508,28 +508,47 @@ public final class TypeUtil {
         return false;
     }
 
-    private static boolean haveGenericallyDistinctParents(LiteralReferenceType left, LiteralReferenceType right) {
-        final Map<LiteralReferenceType, LiteralReferenceType> leftSuperTypes = new HashMap<>();
-        final Map<LiteralReferenceType, LiteralReferenceType> rightSuperTypes = new HashMap<>();
-        // Get maps of erased types to full ones for left and right types
-        for (LiteralReferenceType superType : getSuperTypes(left)) {
-            leftSuperTypes.put(superType.getErasure(), superType);
+    public static boolean haveDifferentInvocationsInSuperTypes(LiteralReferenceType... types) {
+        return haveDifferentInvocationsInSuperTypes(Arrays.asList(types));
+    }
+
+    public static boolean haveDifferentInvocationsInSuperTypes(Collection<LiteralReferenceType> types) {
+        if (types.size() <= 1) {
+            // Fast track trivial cases
+            return false;
         }
-        for (LiteralReferenceType superType : getSuperTypes(right)) {
-            rightSuperTypes.put(superType.getErasure(), superType);
-        }
-        // Intersect the erased super types to get all common between left and right
-        leftSuperTypes.keySet().retainAll(rightSuperTypes.keySet());
-        // Left and right can have super types with the same erasures, but not with the same type arguments
-        for (Map.Entry<LiteralReferenceType, LiteralReferenceType> leftEntry : leftSuperTypes.entrySet()) {
-            if (!leftEntry.getValue().equals(rightSuperTypes.get(leftEntry.getKey()))) {
-                return true;
+        // Keep a map of all super types that have the same erasure, excluding non-parametrized types
+        final Map<LiteralReferenceType, LiteralReferenceType> commonErasedSuperTypes = new HashMap<>();
+        final Iterator<LiteralReferenceType> iterator = types.iterator();
+        // Add all parametrized parents and their erasures for the first type
+        for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
+            if (superType instanceof ParametrizedType) {
+                commonErasedSuperTypes.put(superType.getErasure(), superType);
             }
         }
+        // For the other types, look for an entry in the common set and ensure they have the same parametrization
+        // If not, fail; if so, add to the common set
+        do {
+            for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
+                if (!(superType instanceof ParametrizedType)) {
+                    continue;
+                }
+                final LiteralReferenceType erasure = superType.getErasure();
+                final LiteralReferenceType commonSuperType = commonErasedSuperTypes.get(erasure);
+                if (commonSuperType != null) {
+                    if (!superType.equals(commonSuperType)) {
+                        return true;
+                    }
+                } else {
+                    commonErasedSuperTypes.put(erasure, superType);
+                }
+            }
+        } while (iterator.hasNext());
+        // No conflict found, we're good
         return false;
     }
 
-    private static boolean hasInvocationParent(LiteralReferenceType type, LiteralReferenceType invocation) {
+    private static boolean hasInvocationSuperType(LiteralReferenceType type, LiteralReferenceType invocation) {
         // We need an invocation of the same declaration in the super types (that is, same erasures) with the same arguments
         final LiteralReferenceType declaration = invocation.getErasure();
         for (LiteralReferenceType superType : getSuperTypes(type)) {

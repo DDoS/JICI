@@ -187,11 +187,11 @@ public class GenericsTest {
                 environment
         );
         EvaluatorTest.assertSucceeds(
-                "I<String> s = null; Object w = (X) s;",
+                "J<String> s = null; Object w = (X) s;",
                 environment
         );
         EvaluatorTest.assertFails(
-                "I<Integer> t = null; Object l = (X) t;",
+                "J<Integer> t = null; Object l = (X) t;",
                 environment
         );
     }

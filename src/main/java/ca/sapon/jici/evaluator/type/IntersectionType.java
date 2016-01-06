@@ -251,6 +251,35 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
         return typeVariables;
     }
 
+    public SingleReferenceType checkIfValidUpperBound() {
+        final Set<LiteralReferenceType> interfaces = new HashSet<>();
+        SingleReferenceType nonInterface = null;
+        SingleReferenceType firstInterface = null;
+        //SingleReferenceType classUpperBound = null;
+        // Check for a single non interface type in the upper bound
+        for (SingleReferenceType type : getTypes()) {
+            if (type instanceof LiteralReferenceType) {
+                final LiteralReferenceType literalReferenceType = (LiteralReferenceType) type;
+                if (literalReferenceType.isInterface()) {
+                    interfaces.add(literalReferenceType);
+                    if (firstInterface == null) {
+                        firstInterface = literalReferenceType;
+                    }
+                    continue;
+                }
+            }
+            if (nonInterface != null) {
+                throw new UnsupportedOperationException("Cannot have more than one non-interface type in the upper bound, found: " + nonInterface + " and " + type);
+            }
+            nonInterface = type;
+        }
+        // Check that the interfaces don't have super types with the same erasure but different parametrizations
+        if (TypeUtil.haveDifferentInvocationsInSuperTypes(interfaces)) {
+            throw new UnsupportedOperationException("Upper bound has some interface types who's super types have the same erasure but different parametrizations");
+        }
+        return nonInterface == null ? firstInterface : nonInterface;
+    }
+
     @Override
     public String toString() {
         return getName();

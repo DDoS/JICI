@@ -204,39 +204,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
             throw new UnsupportedOperationException("The first upper bound must be a type variable, class or interface: " + firstUpperBound);
         }
         final IntersectionType reducedUpperBound = IntersectionType.of(upperBound);
-        // The reduced upper bound should have on class type or type variable with zero or more interfaces
-        boolean foundNonInterface = false;
-        for (SingleReferenceType bound : reducedUpperBound.getTypes()) {
-            if (bound instanceof LiteralReferenceType) {
-                final LiteralReferenceType literalReferenceType = (LiteralReferenceType) bound;
-                if (literalReferenceType.isInterface()) {
-                    continue;
-                }
-            }
-            if (!foundNonInterface) {
-                foundNonInterface = true;
-            } else {
-                throw new UnsupportedOperationException("Only the first upper bound can be anything other than an interface, found: " + bound);
-            }
-        }
+        reducedUpperBound.checkIfValidUpperBound();
         return new TypeVariable(name, IntersectionType.EVERYTHING, reducedUpperBound, upperBound.get(0));
     }
 
     public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound) {
-        SingleReferenceType classUpperBound = null;
-        SingleReferenceType interfaceUpperBound = null;
-        for (SingleReferenceType type : upperBound.getTypes()) {
-            if (type instanceof LiteralReferenceType && ((LiteralReferenceType) type).isInterface()) {
-                if (interfaceUpperBound == null) {
-                    interfaceUpperBound = type;
-                }
-                continue;
-            }
-            if (classUpperBound != null) {
-                throw new UnsupportedOperationException("Cannot have more than one non-interface type in the upper bound, found: " + classUpperBound + " and " + type);
-            }
-            classUpperBound = type;
-        }
-        return new TypeVariable(name, lowerBound, upperBound, classUpperBound == null ? interfaceUpperBound : classUpperBound);
+        final SingleReferenceType erasure = upperBound.checkIfValidUpperBound();
+        return new TypeVariable(name, lowerBound, upperBound, erasure);
     }
 }

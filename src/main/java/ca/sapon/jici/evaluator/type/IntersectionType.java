@@ -214,6 +214,15 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
+    public IntersectionType getErasure() {
+        final Set<SingleReferenceType> erasures = new HashSet<>();
+        for (SingleReferenceType type : types) {
+            erasures.add(type.getErasure());
+        }
+        return of(erasures);
+    }
+
+    @Override
     public IntersectionType substituteTypeVariables(Substitutions substitution) {
         final Set<ReferenceType> newIntersection = new HashSet<>();
         for (SingleReferenceType type : types) {

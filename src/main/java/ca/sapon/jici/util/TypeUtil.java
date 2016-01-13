@@ -160,7 +160,7 @@ public final class TypeUtil {
         return filterTypes(types, SuperTypeFilter.INSTANCE, SubTypeFilter.INSTANCE);
     }
 
-    private static <T extends Type> Set<T> filterTypes(Collection<T> types, Filter<Type, Type> potentialFilter, Filter<Type, Type> existingFilter) {
+    private static <T extends Type> Set<T> filterTypes(Collection<T> types, BiPredicate<Type, Type> potentialFilter, BiPredicate<Type, Type> existingFilter) {
         if (types.isEmpty()) {
             // Fast track trivial cases
             return Collections.emptySet();
@@ -246,9 +246,9 @@ public final class TypeUtil {
         // Intersect the erased super type sets EST(U) to generate the erased candidate set EC
         final Set<LiteralReferenceType> erasedCandidates = new HashSet<>();
         final Iterator<Set<LiteralReferenceType>> superTypesIterator = superTypes.iterator();
-        erasedCandidates.addAll(getErasedTypes(superTypesIterator.next()));
+        erasedCandidates.addAll(getErasures(superTypesIterator.next()));
         while (superTypesIterator.hasNext()) {
-            erasedCandidates.retainAll(getErasedTypes(superTypesIterator.next()));
+            erasedCandidates.retainAll(getErasures(superTypesIterator.next()));
         }
         // Get the minimal erased candidate set MEC
         final Set<LiteralReferenceType> minimalErasedCandidates = removeSuperTypes(erasedCandidates);
@@ -365,7 +365,7 @@ public final class TypeUtil {
         return invocations;
     }
 
-    private static Set<LiteralReferenceType> getErasedTypes(Set<LiteralReferenceType> types) {
+    private static Set<LiteralReferenceType> getErasures(Set<LiteralReferenceType> types) {
         final Set<LiteralReferenceType> erased = new HashSet<>();
         for (LiteralReferenceType type : types) {
             erased.add(type.getErasure());
@@ -455,7 +455,7 @@ public final class TypeUtil {
                         return target.convertibleTo(source);
                     }
                     // target is not final, generic parents cannot conflict
-                    return !haveDifferentInvocationsInSuperTypes(source, target);
+                    return !haveProvablyDistinctInvocationsInSuperTypes(source, target);
                 }
                 // any other target type is always valid
                 return true;
@@ -475,13 +475,13 @@ public final class TypeUtil {
                         return source.convertibleTo(target);
                     }
                     // source is not final, generic parents cannot conflict
-                    return !haveDifferentInvocationsInSuperTypes(source, target);
+                    return !haveProvablyDistinctInvocationsInSuperTypes(source, target);
                 }
                 // target is a class type, erasures must be super or sub types and generic parents cannot conflict
                 final LiteralReferenceType sourceErasure = source.getErasure();
                 final LiteralReferenceType targetErasure = target.getErasure();
                 return (sourceErasure.convertibleTo(targetErasure) || targetErasure.convertibleTo(targetErasure))
-                        && !haveDifferentInvocationsInSuperTypes(source, target);
+                        && !haveProvablyDistinctInvocationsInSuperTypes(source, target);
             }
             if (targetType instanceof TypeVariable) {
                 // target is a type variable, apply recursively to upper bound
@@ -508,39 +508,53 @@ public final class TypeUtil {
         return false;
     }
 
+    public static boolean haveProvablyDistinctInvocationsInSuperTypes(LiteralReferenceType... types) {
+        return haveProvablyDistinctInvocationsInSuperTypes(Arrays.asList(types));
+    }
+
+    public static boolean haveProvablyDistinctInvocationsInSuperTypes(Collection<LiteralReferenceType> types) {
+        return validateInvocationsInSuperTypes(types, ProvablyDistinctFilter.INSTANCE);
+    }
+
     public static boolean haveDifferentInvocationsInSuperTypes(LiteralReferenceType... types) {
         return haveDifferentInvocationsInSuperTypes(Arrays.asList(types));
     }
 
     public static boolean haveDifferentInvocationsInSuperTypes(Collection<LiteralReferenceType> types) {
+        return validateInvocationsInSuperTypes(types, NotEqualsFilter.<ParametrizedType, ParametrizedType>getInstance());
+    }
+
+    public static boolean validateInvocationsInSuperTypes(Collection<LiteralReferenceType> types,
+                                                          BiPredicate<ParametrizedType, ParametrizedType> test) {
         if (types.size() <= 1) {
             // Fast track trivial cases
             return false;
         }
         // Keep a map of all super types that have the same erasure, excluding non-parametrized types
-        final Map<LiteralReferenceType, LiteralReferenceType> commonErasedSuperTypes = new HashMap<>();
+        final Map<LiteralReferenceType, ParametrizedType> commonErasedSuperTypes = new HashMap<>();
         final Iterator<LiteralReferenceType> iterator = types.iterator();
         // Add all parametrized parents and their erasures for the first type
         for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
             if (superType instanceof ParametrizedType) {
-                commonErasedSuperTypes.put(superType.getErasure(), superType);
+                commonErasedSuperTypes.put(superType.getErasure(), (ParametrizedType) superType);
             }
         }
-        // For the other types, look for an entry in the common set and ensure they have the same parametrization
+        // For the other types, look for an entry in the common set and ensure they have a valid parametrization
         // If not, fail; if so, add to the common set
         do {
             for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
                 if (!(superType instanceof ParametrizedType)) {
                     continue;
                 }
-                final LiteralReferenceType erasure = superType.getErasure();
-                final LiteralReferenceType commonSuperType = commonErasedSuperTypes.get(erasure);
+                final ParametrizedType parametrizedSuperType = (ParametrizedType) superType;
+                final LiteralReferenceType erasure = parametrizedSuperType.getErasure();
+                final ParametrizedType commonSuperType = commonErasedSuperTypes.get(erasure);
                 if (commonSuperType != null) {
-                    if (!superType.equals(commonSuperType)) {
+                    if (test.test(parametrizedSuperType, commonSuperType)) {
                         return true;
                     }
                 } else {
-                    commonErasedSuperTypes.put(erasure, superType);
+                    commonErasedSuperTypes.put(erasure, parametrizedSuperType);
                 }
             }
         } while (iterator.hasNext());
@@ -601,11 +615,11 @@ public final class TypeUtil {
         return null;
     }
 
-    private interface Filter<S, T> {
+    private interface BiPredicate<S, T> {
         boolean test(S s, T t);
     }
 
-    private static class SubTypeFilter implements Filter<Type, Type> {
+    private static class SubTypeFilter implements BiPredicate<Type, Type> {
         private static final SubTypeFilter INSTANCE = new SubTypeFilter();
 
         @Override
@@ -614,12 +628,35 @@ public final class TypeUtil {
         }
     }
 
-    private static class SuperTypeFilter implements Filter<Type, Type> {
+    private static class SuperTypeFilter implements BiPredicate<Type, Type> {
         private static final SuperTypeFilter INSTANCE = new SuperTypeFilter();
 
         @Override
         public boolean test(Type left, Type right) {
             return right.convertibleTo(left);
+        }
+    }
+
+    private static class NotEqualsFilter<S, T> implements BiPredicate<S, T> {
+        private static final NotEqualsFilter<?, ?> INSTANCE = new NotEqualsFilter<>();
+
+        @Override
+        public boolean test(S left, T right) {
+            return !left.equals(right);
+        }
+
+        @SuppressWarnings("unchecked")
+        private static <S, T> NotEqualsFilter<S, T> getInstance() {
+            return (NotEqualsFilter<S, T>) INSTANCE;
+        }
+    }
+
+    private static class ProvablyDistinctFilter implements BiPredicate<ParametrizedType, ParametrizedType> {
+        private static final ProvablyDistinctFilter INSTANCE = new ProvablyDistinctFilter();
+
+        @Override
+        public boolean test(ParametrizedType left, ParametrizedType right) {
+            return left.provablyDistinct(right);
         }
     }
 }

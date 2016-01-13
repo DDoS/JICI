@@ -41,4 +41,6 @@ public interface ReferenceType extends Type {
     Callable getMethod(String name, Type[] arguments);
 
     Set<SingleReferenceType> getDirectSuperTypes();
+
+    ReferenceType getErasure();
 }

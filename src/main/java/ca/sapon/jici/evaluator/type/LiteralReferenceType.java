@@ -34,11 +34,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Substitutions;
+import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -202,7 +202,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return wrapped;
     }
 
-    public LiteralReferenceType capture(AtomicInteger idCounter) {
+    public LiteralReferenceType capture(IntegerCounter idCounter) {
         return this;
     }
 

@@ -34,7 +34,7 @@ import ca.sapon.jici.evaluator.Substitutions;
 /**
  * A type variable, such as {@code <T>}.
  */
-public class TypeVariable extends SingleReferenceType implements TypeArgument {
+public class TypeVariable extends SingleReferenceType implements TypeArgument, BoundedType {
     private final String name;
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
@@ -51,10 +51,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument {
         return name;
     }
 
+    @Override
     public IntersectionType getLowerBound() {
         return lowerBound;
     }
 
+    @Override
     public IntersectionType getUpperBound() {
         return upperBound;
     }

@@ -27,10 +27,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
@@ -45,6 +41,9 @@ import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.util.IntegerCounter;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
@@ -178,20 +177,41 @@ public class GenericsTest {
         environment.importClass(J.class);
         environment.importClass(X.class);
         environment.importClass(N.class);
+        environment.importClass(M.class);
         EvaluatorTest.assertSucceeds(
-                "J<String> j = null; Object o = (I<String>) j;",
+                "J<String> i1 = null; Object o1 = (I<String>) i1;",
                 environment
         );
         EvaluatorTest.assertFails(
-                "N<Integer> u = null; Object k = (N<String>) u;",
+                "N<Integer> i2 = null; Object o2 = (N<String>) i2;",
                 environment
         );
         EvaluatorTest.assertSucceeds(
-                "J<String> s = null; Object w = (X) s;",
+                "J<String> i3 = null; Object o3 = (X) i3;",
                 environment
         );
         EvaluatorTest.assertFails(
-                "J<Integer> t = null; Object l = (X) t;",
+                "J<Integer> i4 = null; Object o4 = (X) i4;",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "M<? extends CharSequence> i5 = null; Object o5 = (M<? extends String>) i5;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "M<CharSequence> i6 = null; Object o6 = (M<Number>) i6;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "M<? extends CharSequence> i7 = null; Object o7 = (M<Number>) i7;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "M<CharSequence> i8 = null; Object o8 = (M<? extends Number>) i8;",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "M<? extends CharSequence> i9 = null; Object o9 = (M<? extends Number>) i9;",
                 environment
         );
     }
@@ -232,7 +252,7 @@ public class GenericsTest {
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#2 extends (CAP#1 extends java.lang.Comparable & java.io.Serializable), CAP#1 extends java.lang.Comparable>",
-                type.capture(new AtomicInteger(1)).getName()
+                type.capture(new IntegerCounter()).getName()
         );
         // Y<? extends String, Serializable>
         type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.asList(
@@ -241,7 +261,7 @@ public class GenericsTest {
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.String, java.io.Serializable>",
-                type.capture(new AtomicInteger(1)).getName()
+                type.capture(new IntegerCounter()).getName()
         );
         // Y<? extends Integer, ? extends String>
         try {
@@ -249,7 +269,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class)))
             ));
-            type.capture(new AtomicInteger(1));
+            type.capture(new IntegerCounter());
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -259,7 +279,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class)))
             ));
-            type.capture(new AtomicInteger(1));
+            type.capture(new IntegerCounter());
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -269,7 +289,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(TypeArgument.class)))
             ));
-            type.capture(new AtomicInteger(1));
+            type.capture(new IntegerCounter());
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -279,7 +299,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer[].class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Number[].class)))
             ));
-            type.capture(new AtomicInteger(1));
+            type.capture(new IntegerCounter());
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -289,7 +309,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(float[].class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(int[].class)))
             ));
-            type.capture(new AtomicInteger(1));
+            type.capture(new IntegerCounter());
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }

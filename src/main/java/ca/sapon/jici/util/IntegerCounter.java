@@ -21,62 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator.type;
-
-import ca.sapon.jici.evaluator.value.ValueKind;
+package ca.sapon.jici.util;
 
 /**
- * A reference type comprised of a single backing type. That is, a non-divisible type.
+ *
  */
-public abstract class SingleReferenceType implements ReferenceType, ComponentType {
-    @Override
-    public ValueKind getKind() {
-        return ValueKind.OBJECT;
+public class IntegerCounter {
+    private int value;
+
+    public IntegerCounter() {
+        this(1);
     }
 
-    @Override
-    public boolean isVoid() {
-        return false;
+    public IntegerCounter(int value) {
+        this.value = value;
     }
 
-    @Override
-    public boolean isNull() {
-        return false;
+    public int nextValue() {
+        if (value >= Integer.MAX_VALUE) {
+            throw new IllegalStateException("Integer overflow");
+        }
+        return value++;
     }
 
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumeric() {
-        return false;
-    }
-
-    @Override
-    public boolean isIntegral() {
-        return false;
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return false;
-    }
-
-    @Override
-    public boolean isReference() {
-        return true;
-    }
-
-    @Override
-    public abstract SingleReferenceType asArray(int dimensions);
-
-    @Override
-    public abstract SingleReferenceType getErasure();
-
-    @Override
-    public String toString() {
-        return getName();
+    public int currentValue() {
+        return value;
     }
 }

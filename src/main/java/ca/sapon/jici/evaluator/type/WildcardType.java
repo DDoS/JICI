@@ -32,7 +32,7 @@ import ca.sapon.jici.evaluator.value.ValueKind;
 /**
  * A wildcard type, such as {@code <?>}, {@code <? extends String>} or {@code <? super Integer>}.
  */
-public class WildcardType implements TypeArgument {
+public class WildcardType implements TypeArgument, BoundedType {
     public static final WildcardType THE_UNBOUNDED = of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet());
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
@@ -42,10 +42,12 @@ public class WildcardType implements TypeArgument {
         this.upperBound = upperBound;
     }
 
+    @Override
     public IntersectionType getLowerBound() {
         return lowerBound;
     }
 
+    @Override
     public IntersectionType getUpperBound() {
         return upperBound;
     }
@@ -118,8 +120,7 @@ public class WildcardType implements TypeArgument {
 
     @Override
     public boolean convertibleTo(Type to) {
-        // Can only convert to another type argument containing this
-        return to instanceof TypeArgument && ((TypeArgument) to).contains(this);
+        throw new UnsupportedOperationException("Wildcard type needs to be capture converted for this operation");
     }
 
     @Override

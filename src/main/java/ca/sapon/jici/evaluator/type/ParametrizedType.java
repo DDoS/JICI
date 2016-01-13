@@ -30,9 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.sapon.jici.evaluator.Substitutions;
+import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
@@ -152,6 +152,51 @@ public class ParametrizedType extends LiteralReferenceType {
         return true;
     }
 
+    public boolean provablyDistinct(ParametrizedType other) {
+        // Distinct if the erasures are different (parametrizations of different types)
+        if (!getErasure().equals(other.getErasure())) {
+            return true;
+        }
+        // Else get the arguments from the captures of each
+        final IntegerCounter counter = new IntegerCounter();
+        final List<TypeArgument> thisArgs = capture(counter).getArguments();
+        final List<TypeArgument> otherArgs = other.capture(counter).getArguments();
+        // Compare arguments pairwise
+        for (int i = 0; i < thisArgs.size(); i++) {
+            final TypeArgument thisArg = thisArgs.get(i);
+            final TypeArgument otherArg = otherArgs.get(i);
+            // Must hold for any argument pair
+            if (!(thisArg instanceof BoundedType) && !(otherArg instanceof BoundedType)) {
+                // If neither are bounded (wildcard or type variable), they must not be the same
+                if (!thisArg.equals(otherArg)) {
+                    return true;
+                }
+            } else {
+                // If either or both are bounded
+                ReferenceType left;
+                ReferenceType right;
+                // Get the upper bound if bounded, else use the type itself
+                if (thisArg instanceof BoundedType) {
+                    left = ((BoundedType) thisArg).getUpperBound();
+                } else {
+                    left = (ReferenceType) thisArg;
+                }
+                if (otherArg instanceof BoundedType) {
+                    right = ((BoundedType) otherArg).getUpperBound();
+                } else {
+                    right = (ReferenceType) otherArg;
+                }
+                // The erasures must not be subtypes of each other
+                left = left.getErasure();
+                right = right.getErasure();
+                if (!left.convertibleTo(right) && !right.convertibleTo(left)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public LiteralReferenceType getDirectSuperClass() {
         final LiteralReferenceType superType = erased.getDirectSuperClass();
@@ -174,7 +219,7 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     @Override
-    public ParametrizedType capture(AtomicInteger idCounter) {
+    public ParametrizedType capture(IntegerCounter idCounter) {
         final ArrayList<TypeArgument> capturedArguments = new ArrayList<>();
         final TypeVariable[] parameters = getParameters();
         // Generate substitutions for the parameters, so we can get the dependency ordering
@@ -194,7 +239,7 @@ public class ParametrizedType extends LiteralReferenceType {
                 final WildcardType wildcard = (WildcardType) argument;
                 final Set<SingleReferenceType> upperBound = new HashSet<>(parameters[index].getUpperBound().substituteTypeVariables(substitutions).getTypes());
                 upperBound.addAll(wildcard.getUpperBound().getTypes());
-                final TypeVariable capturedArgument = TypeVariable.of("CAP#" + idCounter.getAndIncrement(), wildcard.getLowerBound(), IntersectionType.of(upperBound));
+                final TypeVariable capturedArgument = TypeVariable.of("CAP#" + idCounter.nextValue(), wildcard.getLowerBound(), IntersectionType.of(upperBound));
                 capturedArguments.set(index, capturedArgument);
                 // Replace the parameter by the captured arguments in the substitution too
                 namesToArguments.put(name, capturedArgument);
@@ -274,7 +319,7 @@ public class ParametrizedType extends LiteralReferenceType {
             throw new UnsupportedOperationException("Mismatch in type parameter and argument count: " + parameters.length + " != " + arguments.size());
         }
         // The captured arguments must be subtypes of the parameter upper bounds resulting from substitution
-        final ParametrizedType capture = type.capture(new AtomicInteger(1));
+        final ParametrizedType capture = type.capture(new IntegerCounter());
         final List<TypeArgument> capturedArguments = capture.getArguments();
         final Substitutions substitutions = capture.getSubstitutions();
         for (int i = 0; i < parameters.length; i++) {

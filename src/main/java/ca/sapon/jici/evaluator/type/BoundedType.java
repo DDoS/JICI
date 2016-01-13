@@ -23,60 +23,11 @@
  */
 package ca.sapon.jici.evaluator.type;
 
-import ca.sapon.jici.evaluator.value.ValueKind;
-
 /**
- * A reference type comprised of a single backing type. That is, a non-divisible type.
+ * Represents an unknown type with known bounds, such as a wildcard type or type variable.
  */
-public abstract class SingleReferenceType implements ReferenceType, ComponentType {
-    @Override
-    public ValueKind getKind() {
-        return ValueKind.OBJECT;
-    }
+public interface BoundedType {
+    IntersectionType getLowerBound();
 
-    @Override
-    public boolean isVoid() {
-        return false;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumeric() {
-        return false;
-    }
-
-    @Override
-    public boolean isIntegral() {
-        return false;
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return false;
-    }
-
-    @Override
-    public boolean isReference() {
-        return true;
-    }
-
-    @Override
-    public abstract SingleReferenceType asArray(int dimensions);
-
-    @Override
-    public abstract SingleReferenceType getErasure();
-
-    @Override
-    public String toString() {
-        return getName();
-    }
+    IntersectionType getUpperBound();
 }

@@ -26,7 +26,9 @@ package ca.sapon.jici.test;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
@@ -42,6 +44,7 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.IntegerCounter;
+import ca.sapon.jici.util.TypeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -257,7 +260,7 @@ public class GenericsTest {
         // Y<? extends String, Serializable>
         type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.asList(
                 WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class))),
-               LiteralReferenceType.of(Serializable.class)
+                LiteralReferenceType.of(Serializable.class)
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.String, java.io.Serializable>",
@@ -313,6 +316,26 @@ public class GenericsTest {
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
+    }
+
+    @Test
+    public void testSuperTypes() {
+        // Parametrized of L
+        final Set<LiteralReferenceType> superTypes1 = TypeUtil.getSuperTypes(ParametrizedType.of(L.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_CLONEABLE)));
+        Assert.assertEquals(new HashSet<>(Arrays.asList(
+                ParametrizedType.of(L.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_CLONEABLE)),
+                ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)),
+                ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)),
+                LiteralReferenceType.THE_OBJECT)
+        ), superTypes1);
+        // Raw of L
+        final Set<LiteralReferenceType> superTypes2 = TypeUtil.getSuperTypes(LiteralReferenceType.of(L.class));
+        Assert.assertEquals(new HashSet<>(Arrays.asList(
+                LiteralReferenceType.of(L.class),
+                LiteralReferenceType.of(N.class),
+                LiteralReferenceType.of(M.class),
+                LiteralReferenceType.THE_OBJECT)
+        ), superTypes2);
     }
 
     public static class M<T> {

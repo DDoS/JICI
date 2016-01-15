@@ -46,12 +46,12 @@ public class ParametrizedType extends LiteralReferenceType {
     private TypeVariable[] parameters = null;
     private Substitutions substitutions = null;
 
-    private ParametrizedType(LiteralReferenceType erased, List<TypeArgument> arguments) {
-        super(erased.getTypeClass());
+    private ParametrizedType(LiteralReferenceType raw, List<TypeArgument> arguments) {
+        super(raw.getTypeClass());
         if (arguments.size() <= 0) {
             throw new IllegalArgumentException("Expected at least one type argument");
         }
-        this.erased = erased;
+        erased = raw;
         this.arguments = arguments;
     }
 
@@ -61,7 +61,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public String getName() {
-        Class<?> _class = erased.getTypeClass();
+        Class<?> _class = getTypeClass();
         int dimensions = 0;
         while (_class.isArray()) {
             _class = _class.getComponentType();
@@ -92,7 +92,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType getComponentType() {
-        final ComponentType componentType = erased.getComponentType();
+        final ComponentType componentType = super.getComponentType();
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }
@@ -132,7 +132,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType asArray(int dimensions) {
-        return new ParametrizedType(erased.asArray(dimensions), arguments);
+        return new ParametrizedType(super.asArray(dimensions), arguments);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public LiteralReferenceType getDirectSuperClass() {
-        final LiteralReferenceType superType = erased.getDirectSuperClass();
+        final LiteralReferenceType superType = super.getDirectSuperClass();
         if (superType instanceof ParametrizedType) {
             return ((ParametrizedType) superType).substituteTypeVariables(getSubstitutions());
         }
@@ -208,7 +208,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public LiteralReferenceType[] getDirectlyImplementedInterfaces() {
-        final LiteralReferenceType[] interfaces = erased.getDirectlyImplementedInterfaces();
+        final LiteralReferenceType[] interfaces = super.getDirectlyImplementedInterfaces();
         for (int i = 0; i < interfaces.length; i++) {
             final LiteralReferenceType _interface = interfaces[i];
             if (_interface instanceof ParametrizedType) {
@@ -264,7 +264,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     private TypeVariable[] getParameters() {
         if (this.parameters == null) {
-            final java.lang.reflect.TypeVariable<?>[] parameters = erased.getTypeParameters();
+            final java.lang.reflect.TypeVariable<?>[] parameters = super.getTypeParameters();
             this.parameters = new TypeVariable[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
                 this.parameters[i] = (TypeVariable) TypeUtil.wrap(parameters[i]);
@@ -287,14 +287,8 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other instanceof ParametrizedType) {
-            final ParametrizedType that = (ParametrizedType) other;
-            return erased.equals(that.erased) && arguments.equals(that.arguments);
-        }
-        return false;
+        return this == other || super.equals(other) && other instanceof ParametrizedType
+                && arguments.equals(((ParametrizedType) other).arguments);
     }
 
     @Override

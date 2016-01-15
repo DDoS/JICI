@@ -190,14 +190,20 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
 
     public LiteralReferenceType getDirectSuperClass() {
         final java.lang.reflect.Type superClass = type.getGenericSuperclass();
-        return superClass != null ? (LiteralReferenceType) TypeUtil.wrap(superClass) : null;
+        if (superClass != null) {
+            final LiteralReferenceType wrappedClass = (LiteralReferenceType) TypeUtil.wrap(superClass);
+            return isRaw() ? wrappedClass.getErasure() : wrappedClass;
+        }
+        return null;
     }
 
     public LiteralReferenceType[] getDirectlyImplementedInterfaces() {
         final java.lang.reflect.Type[] interfaces = type.getGenericInterfaces();
+        final boolean raw = isRaw();
         final LiteralReferenceType[] wrapped = new LiteralReferenceType[interfaces.length];
         for (int i = 0; i < interfaces.length; i++) {
-            wrapped[i] = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
+            final LiteralReferenceType wrappedInterface = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
+            wrapped[i] = raw ? wrappedInterface.getErasure() : wrappedInterface;
         }
         return wrapped;
     }

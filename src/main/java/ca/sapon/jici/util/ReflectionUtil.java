@@ -128,11 +128,8 @@ public final class ReflectionUtil {
 
     public static Class<?> lookupNestedClass(Class<?> enclosing, String name) {
         for (Class<?> nested : enclosing.getDeclaredClasses()) {
-            if (nested.getSimpleName().equals(name)) {
-                final int modifiers = nested.getModifiers();
-                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)) {
-                    return nested;
-                }
+            if (nested.getSimpleName().equals(name) && Modifier.isPublic(nested.getModifiers())) {
+                return nested;
             }
         }
         return null;

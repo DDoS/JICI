@@ -30,19 +30,15 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
-import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
-import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 public class ClassTypeName implements TypeName {
     private final List<Identifier> name;
     private final List<TypeArgumentName> arguments;
-    private ReferenceType hint = null;
     private LiteralReferenceType type = null;
 
     public ClassTypeName(List<Identifier> name) {
@@ -55,52 +51,56 @@ public class ClassTypeName implements TypeName {
     }
 
     @Override
-    public LiteralType getType(Environment environment) {
+    public LiteralReferenceType getType(Environment environment) {
         if (type == null) {
-            // look for an imported class with possible inner classes
-            Class<?> _class = environment.findClass(name.get(0));
-            if (_class != null) {
-                final int size = name.size();
-                for (int i = 1; i < size; i++) {
-                    _class = ReflectionUtil.lookupNestedClass(_class, name.get(i).getSource());
-                    if (_class == null) {
-                        break;
-                    }
-                }
-            }
-            // else try for a full class name
-            if (_class == null) {
-                _class = ReflectionUtil.findClass(name);
-            }
-            // else try the hint
-            if (_class == null && hint != null) {
-                final Class<?> match = TypeUtil.findNameMatch(hint, name);
-                if (match == null) {
-                    // failed, discard hint
-                    hint = null;
-                } else {
-                    _class = match;
-                    try {
-                        environment.importClass(_class);
-                    } catch (UnsupportedOperationException ignored) {
-                    }
-                }
-            }
-            // we tried everything, fail
-            if (_class == null) {
-                throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
-            }
-            if (!arguments.isEmpty()) {
-                final List<TypeArgument> classes = new ArrayList<>(arguments.size());
-                for (TypeArgumentName parameter : arguments) {
-                    classes.add(parameter.getType(environment));
-                }
-                type = ParametrizedType.of(_class, classes);
+            final Class<?> _class = findTypeClass(environment);
+            final List<TypeArgument> typeArguments = checkArguments(environment);
+            final ParametrizedType owner = getOwner(environment);
+            if (!typeArguments.isEmpty() || owner != null) {
+                type = ParametrizedType.of(owner, _class, typeArguments);
             } else {
                 type = LiteralReferenceType.of(_class);
             }
         }
         return type;
+    }
+
+    private Class<?> findTypeClass(Environment environment) {
+        // look for an imported class with possible inner classes
+        Class<?> _class = environment.findClass(name.get(0));
+        if (_class != null) {
+            final int size = name.size();
+            for (int i = 1; i < size; i++) {
+                _class = ReflectionUtil.lookupNestedClass(_class, name.get(i).getSource());
+                if (_class == null) {
+                    break;
+                }
+            }
+        }
+        // else try for a full class name
+        if (_class == null) {
+            _class = ReflectionUtil.findClass(name);
+        }
+        // we tried everything, fail
+        if (_class == null) {
+            throw new EvaluatorException("Class not found: " + toString(), getStart(), getEnd());
+        }
+        return _class;
+    }
+
+    private List<TypeArgument> checkArguments(Environment environment) {
+        if (arguments.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<TypeArgument> typeArguments = new ArrayList<>(arguments.size());
+        for (TypeArgumentName parameter : arguments) {
+            typeArguments.add(parameter.getType(environment));
+        }
+        return typeArguments;
+    }
+
+    protected ParametrizedType getOwner(Environment environment) {
+        return null;
     }
 
     @Override
@@ -110,7 +110,7 @@ public class ClassTypeName implements TypeName {
 
     @Override
     public int getEnd() {
-        return name.get(name.size() - 1).getEnd();
+        return arguments.isEmpty() ? name.get(name.size() - 1).getEnd() : arguments.get(arguments.size() - 1).getEnd();
     }
 
     @Override

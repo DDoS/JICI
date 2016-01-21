@@ -28,10 +28,12 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +46,8 @@ import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- * A reference type literally used in the code, such as {@code String} or {@code int[]}.
+ * A reference type literally used in the code, such as {@code String}, {@code Outer.Inner}, {@code Outer.Inner<Integer>}, {@code Outer<String>.Inner} or {@code Outer<String>.Inner<Integer>}, {@code
+ * Set<T>}, {@code Map<? extends CharSequence, Integer>}, {@code Map.Entry<String, Integer>} or {@code int[]}.
  */
 public class LiteralReferenceType extends SingleReferenceType implements LiteralType, TypeArgument {
     public static final LiteralReferenceType THE_STRING = LiteralReferenceType.of(String.class);
@@ -93,6 +96,10 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
 
     public boolean isInterface() {
         return type.isInterface();
+    }
+
+    public boolean isStatic() {
+        return isInterface() || Modifier.isStatic(type.getModifiers());
     }
 
     @Override
@@ -389,6 +396,53 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     public static LiteralReferenceType of(Class<?> type) {
+        checkOwner(null, type);
         return new LiteralReferenceType(type);
+    }
+
+    protected static ParametrizedType checkOwner(ParametrizedType paramOwner, Class<?> inner) {
+        return checkOwner(paramOwner, inner, Collections.<TypeArgument>emptyList());
+    }
+
+    protected static ParametrizedType checkOwner(ParametrizedType paramOwner, Class<?> inner, List<TypeArgument> arguments) {
+        final LiteralReferenceType owner;
+        final Class<?> enclosingClass = inner.getEnclosingClass();
+        if (paramOwner != null) {
+            // If the owner is given, check that it matches what is actually declared in the code
+            if (!paramOwner.getTypeClass().equals(enclosingClass)) {
+                throw new UnsupportedOperationException("Mismatch between given owner and actual one: " + paramOwner + " and " + enclosingClass);
+            }
+            // Also check that the inner type is selectable (that is, not static)
+            if (Modifier.isStatic(inner.getModifiers())) {
+                throw new UnsupportedOperationException("Inner type " + inner.getSimpleName() + " cannot be used in a static context");
+            }
+            owner = paramOwner;
+        } else if (enclosingClass != null) {
+            // If it's not given, check if enclosing class is applicable: the inner class cannot be static
+            if (!Modifier.isStatic(inner.getModifiers())) {
+                owner = LiteralReferenceType.of(enclosingClass);
+            } else {
+                // The enclosing class isn't an owner type
+                owner = null;
+            }
+        } else {
+            // No enclosing class
+            owner = null;
+        }
+        if (owner != null) {
+            // Now that we found an owner, make sure we don't have a partially raw owner/inner combination
+            // Owner and inner cannot have one be raw and one not raw
+            final boolean ownerParam = owner instanceof ParametrizedType;
+            final boolean ownerRaw = owner.isRaw();
+            final boolean innerParam = !arguments.isEmpty();
+            final boolean innerRaw = inner.getTypeParameters().length > 0 && arguments.isEmpty();
+            if ((ownerParam || ownerRaw) && (innerParam || innerRaw) && ownerRaw != innerRaw) {
+                throw new UnsupportedOperationException("Cannot have a mix of raw and generic outer and inner classes");
+            }
+            // We only care of the owner if it is parametrized, as the type arguments are accessible by inner types
+            // We want to access those, the rest doesn't matter
+            return ownerParam ? (ParametrizedType) owner : null;
+        }
+        return null;
     }
 }

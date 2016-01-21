@@ -258,6 +258,12 @@ public class ParserTest {
         testParseStatement("Declaration(Object<? super String> m)", "Object<? super String> m;");
         testParseStatement("Declaration(Object<? super String, Double> m)", "Object<? super String, Double> m;");
 
+        testParseStatement("Declaration(Object.Nested m)", "Object.Nested m;");
+        testParseStatement("Declaration(Object.Nested<Integer> m)", "Object.Nested<Integer> m;");
+        testParseStatement("Declaration(Object<Double>.Nested m)", "Object<Double>.Nested m;");
+        testParseStatement("Declaration(Object<Double>.Nested<Integer> m)", "Object<Double>.Nested<Integer> m;");
+
+
         testParseStatement("Declaration(Object m = 1)", "Object m = 1;");
         testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");
 

@@ -583,7 +583,7 @@ public class EvaluatorTest {
         assertReturns(12, "3 << new Short((short) 2)", environment);
         assertReturns(12, "new Integer(3) << 2", environment);
         assertReturns(12, "new Integer(3) << new Integer(2)", environment);
-        assertReturns(12l, "new Long(3) << new Integer(2)", environment);
+        assertReturns(12L, "new Long(3) << new Integer(2)", environment);
         assertReturns(12, "new Integer(3) << new Long(2)", environment);
 
         assertFails("2 << null", environment);

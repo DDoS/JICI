@@ -65,6 +65,7 @@ import ca.sapon.jici.parser.expression.reference.Reference;
 import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.name.InnerClassTypeName;
 import ca.sapon.jici.parser.name.PrimitiveTypeName;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.name.TypeArgumentName.BoundKind;
@@ -100,6 +101,10 @@ public final class Parser {
             throw new ParseError("Expected end of expression", navigableTokens);
         }
         return expression;
+    }
+
+    public static TypeName parseTypeName(List<Token> tokens) {
+        return parseTypeName(new ListNavigator<>(tokens));
     }
 
     private static Statement parseStatement(ListNavigator<Token> tokens) {
@@ -141,7 +146,7 @@ public final class Parser {
     /*
         NAME:            IDENTIFIER.NAME _ IDENTIFIER
 
-        CLASS_NAME:      NAME _ NAME TYPE_ARG_LIST
+        CLASS_NAME:      NAME _ NAME TYPE_ARG_LIST _ NAME.CLASS_NAME _ NAME TYPE_ARG_LIST.CLASS_NAME
         ARRAY_NAME:      CLASS_NAME[] _ PRIMITIVE_TYPE_NAME[] _ ARRAY_NAME[]
         TYPE_NAME:       CLASS_NAME _ PRIMITIVE_TYPE_NAME _ ARRAY_NAME
 
@@ -176,7 +181,17 @@ public final class Parser {
     private static ClassTypeName parseClassName(ListNavigator<Token> tokens) {
         final List<Identifier> name = parseName(tokens);
         final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
-        return new ClassTypeName(name, typeArguments);
+        return parseClassName(tokens, new ClassTypeName(name, typeArguments));
+    }
+
+    private static ClassTypeName parseClassName(ListNavigator<Token> tokens, ClassTypeName outer) {
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_PERIOD) {
+            tokens.advance();
+            final List<Identifier> name = parseName(tokens);
+            final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
+            return parseClassName(tokens, new InnerClassTypeName(outer, name, typeArguments));
+        }
+        return outer;
     }
 
     private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {

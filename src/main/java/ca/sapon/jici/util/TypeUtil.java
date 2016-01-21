@@ -116,16 +116,32 @@ public final class TypeUtil {
         }
         if (type instanceof ParameterizedType) {
             final ParameterizedType paramType = (ParameterizedType) type;
-            final java.lang.reflect.Type[] params = paramType.getActualTypeArguments();
-            final List<TypeArgument> wrapped = new ArrayList<>(params.length);
-            for (java.lang.reflect.Type param : params) {
-                final Type wrap = wrap(param);
-                if (!(wrap instanceof TypeArgument)) {
-                    throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
+            final java.lang.reflect.Type[] args = paramType.getActualTypeArguments();
+            final List<TypeArgument> wrappedArgs;
+            if (args.length <= 0) {
+                wrappedArgs = Collections.emptyList();
+            } else {
+                wrappedArgs = new ArrayList<>(args.length);
+                for (java.lang.reflect.Type param : args) {
+                    final Type wrap = wrap(param);
+                    if (!(wrap instanceof TypeArgument)) {
+                        throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
+                    }
+                    wrappedArgs.add(((TypeArgument) wrap));
                 }
-                wrapped.add(((TypeArgument) wrap));
             }
-            return ParametrizedType.of((Class<?>) paramType.getRawType(), wrapped);
+            final java.lang.reflect.Type ownerType = paramType.getOwnerType();
+            final ParametrizedType wrappedOwner;
+            if (ownerType != null) {
+                final Type wrapped = wrap(ownerType);
+                wrappedOwner = wrapped instanceof ParametrizedType ? (ParametrizedType) wrapped : null;
+            } else {
+                wrappedOwner = null;
+            }
+            if (!wrappedArgs.isEmpty() || wrappedOwner != null) {
+                return ParametrizedType.of(wrappedOwner, (Class<?>) paramType.getRawType(), wrappedArgs);
+            }
+            return LiteralReferenceType.of((Class<?>) paramType.getRawType());
         }
         if (type instanceof java.lang.reflect.TypeVariable) {
             final java.lang.reflect.TypeVariable<?> typeVariable = (java.lang.reflect.TypeVariable<?>) type;
@@ -231,7 +247,7 @@ public final class TypeUtil {
         recursions.put(types, count);
         if (types.size() == 1) {
             // Fast track trivial cases
-            return IntersectionType.of(types.iterator().next());
+            return IntersectionType.of(types);
         }
         // Get the super type sets ST(U)
         final Map<ReferenceType, Set<LiteralReferenceType>> superTypeSets = new HashMap<>();

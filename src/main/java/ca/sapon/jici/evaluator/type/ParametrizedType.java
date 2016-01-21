@@ -37,17 +37,21 @@ import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
- * A type that takes type arguments, such as {@code Set<T>} or {@code Map<String, Integer>}.
+ * A type that takes type arguments, such as {@code Set<T>}, {@code Map<? extends CharSequence, Integer>} or {@code Map.Entry<String, Integer>}.
  */
 public class ParametrizedType extends LiteralReferenceType {
+    private final ParametrizedType owner;
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
     // Cache these to prevent them from being created every time
     private TypeVariable[] parameters = null;
     private Substitutions substitutions = null;
+    private Class<?> baseComponentType = null;
+    private int dimensions = -1;
 
-    private ParametrizedType(LiteralReferenceType raw, List<TypeArgument> arguments) {
+    protected ParametrizedType(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
         super(raw.getTypeClass());
+        this.owner = owner;
         if (arguments.size() <= 0) {
             throw new IllegalArgumentException("Expected at least one type argument");
         }
@@ -61,13 +65,16 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public String getName() {
-        Class<?> _class = getTypeClass();
-        int dimensions = 0;
-        while (_class.isArray()) {
-            _class = _class.getComponentType();
-            dimensions++;
+        if (baseComponentType == null) {
+            baseComponentType = getTypeClass();
+            dimensions = 0;
+            while (baseComponentType.isArray()) {
+                baseComponentType = baseComponentType.getComponentType();
+                dimensions++;
+            }
         }
-        return _class.getCanonicalName() + '<' + StringUtil.toString(arguments, ", ") + '>' + StringUtil.repeat("[]", dimensions);
+        return (owner != null ? owner.getName() + '.' + baseComponentType.getSimpleName() : baseComponentType.getCanonicalName())
+                + '<' + StringUtil.toString(arguments, ", ") + '>' + StringUtil.repeat("[]", dimensions);
     }
 
     @Override
@@ -96,7 +103,7 @@ public class ParametrizedType extends LiteralReferenceType {
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }
-        return new ParametrizedType((LiteralReferenceType) componentType, arguments);
+        return new ParametrizedType(owner, (LiteralReferenceType) componentType, arguments);
     }
 
     @Override
@@ -117,7 +124,7 @@ public class ParametrizedType extends LiteralReferenceType {
                 newArguments.add(type.substituteTypeVariables(substitution));
             }
         }
-        return new ParametrizedType(erased, newArguments);
+        return new ParametrizedType(owner, erased, newArguments);
     }
 
     @Override
@@ -132,7 +139,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType asArray(int dimensions) {
-        return new ParametrizedType(super.asArray(dimensions), arguments);
+        return new ParametrizedType(owner, super.asArray(dimensions), arguments);
     }
 
     @Override
@@ -249,7 +256,7 @@ public class ParametrizedType extends LiteralReferenceType {
             }
         }
         // Create a new parametrized type with the new arguments
-        return new ParametrizedType(erased, capturedArguments);
+        return new ParametrizedType(owner, erased, capturedArguments);
     }
 
     private int getParameterIndex(String name) {
@@ -297,14 +304,22 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     public static ParametrizedType of(Class<?> raw, List<TypeArgument> arguments) {
-        return of(LiteralReferenceType.of(raw), arguments);
+        return of(null, raw, arguments);
+    }
+
+    public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments) {
+        return of(owner, LiteralReferenceType.of(raw), arguments);
     }
 
     public static ParametrizedType of(LiteralReferenceType raw, List<TypeArgument> arguments) {
+        return of(null, raw, arguments);
+    }
+
+    public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
         if (arguments.size() < 1) {
             throw new UnsupportedOperationException("Expected at least one type argument");
         }
-        final ParametrizedType type = new ParametrizedType(raw, arguments);
+        final ParametrizedType type = new ParametrizedType(checkOwner(owner, raw.getTypeClass(), arguments), raw, arguments);
         final TypeVariable[] parameters = type.getParameters();
         if (parameters.length < 1) {
             throw new UnsupportedOperationException("Not a generic type: " + raw);

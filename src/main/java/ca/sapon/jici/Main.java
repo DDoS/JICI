@@ -26,5 +26,24 @@ package ca.sapon.jici;
 public class Main {
     public static void main(String[] args) throws Exception {
         JICI.breakInto();
+
+        /* TODO:
+            Allow no arguments in parametrized type if owner is parametrized
+            Finish inner types
+            Add capture conversion where needed
+            Implement generic memebers of parametrized types
+            Restructure type package
+            Move ast to its own package
+            Update codebase to Java 8
+            Absorb sign tokens in lexer
+            Split parser into name, expression and statement
+            Redefine Expression and Statement interfaces
+            Add name, expression and statement visitors
+            Move evaluator to visitor
+            Fix getSource() vs toString()
+            Fix source start and end indices
+            Implement generic type inference
+            Add eval() to JICI class
+        */
     }
 }

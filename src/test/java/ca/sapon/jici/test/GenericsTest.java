@@ -38,6 +38,7 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.WildcardType;
@@ -46,6 +47,8 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.test.GenericsTest.Outer.Inner;
+import ca.sapon.jici.test.GenericsTest.Outer.Normal;
+import ca.sapon.jici.test.GenericsTest.Outer.Ref;
 import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.TypeUtil;
 import org.junit.Assert;
@@ -309,7 +312,7 @@ public class GenericsTest {
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
-        // Y<? extends float[], ? extends int[]> l
+        // Y<? extends float[], ? extends int[]>
         try {
             type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.<TypeArgument>asList(
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(float[].class))),
@@ -319,6 +322,15 @@ public class GenericsTest {
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
+        // W<?, String>
+        type = ParametrizedType.of(LiteralReferenceType.of(W.class), Arrays.asList(
+                WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>emptySet()),
+                LiteralReferenceType.THE_STRING
+        ));
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.W<CAP#1 extends java.util.List<java.lang.String>, java.lang.String>",
+                type.capture(new IntegerCounter()).getName()
+        );
     }
 
     @Test
@@ -348,6 +360,9 @@ public class GenericsTest {
         environment.importClass(Map.Entry.class);
         environment.importClass(Outer.class);
         environment.importClass(Outer.Inner.class);
+        environment.importClass(Outer.Normal.class);
+        environment.importClass(Outer.Ref.class);
+        environment.importClass(Z.class);
         EvaluatorTest.assertFails(
                 "Outer<String>.Inner f;",
                 environment
@@ -357,16 +372,94 @@ public class GenericsTest {
                 environment
         );
         EvaluatorTest.assertFails(
+                "Inner<Integer> h;",
+                environment
+        );
+        EvaluatorTest.assertFails(
                 "Map<String, Integer>.Entry<String, Integer> e;",
                 environment
         );
+        EvaluatorTest.assertFails(
+                "Outer<CharSequence>.Ref<Integer> j;",
+                environment
+        );
+
+        final ParametrizedType type0 = ParametrizedType.of(
+                ParametrizedType.of(Outer.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(CharSequence.class))),
+                LiteralReferenceType.of(Ref.class),
+                Collections.<TypeArgument>singletonList(LiteralReferenceType.of(String.class))
+        );
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Outer<java.lang.CharSequence>.Ref<java.lang.String>",
+                type0.capture(new IntegerCounter()).getName()
+        );
+        Assert.assertTrue(type0.convertibleTo(ParametrizedType.of(
+                LiteralReferenceType.of(I.class),
+                Collections.<TypeArgument>singletonList(LiteralReferenceType.of(CharSequence.class)))
+        ));
+
         final LiteralType type1 = Parser.parseTypeName(Lexer.lex("Outer<String>.Inner<Integer>")).getType(environment);
         Assert.assertEquals(ParametrizedType.of(
                 ParametrizedType.of(Outer.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(String.class))),
                 Inner.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(Integer.class))
         ), type1);
+
         final LiteralType type2 = Parser.parseTypeName(Lexer.lex("Outer.Inner")).getType(environment);
         Assert.assertEquals(LiteralReferenceType.of(Inner.class), type2);
+
+        final LiteralType type3 = Parser.parseTypeName(Lexer.lex("Map.Entry<String, Integer>")).getType(environment);
+        Assert.assertEquals(ParametrizedType.of(
+                Map.Entry.class, Arrays.<TypeArgument>asList(LiteralReferenceType.of(String.class), LiteralReferenceType.of(Integer.class))
+        ), type3);
+
+        final LiteralType type4 = Parser.parseTypeName(Lexer.lex("Outer.Normal")).getType(environment);
+        Assert.assertEquals(LiteralReferenceType.of(Normal.class), type4);
+
+        final LiteralType type5 = Parser.parseTypeName(Lexer.lex("Outer<String>.Normal")).getType(environment);
+        Assert.assertEquals(ParametrizedType.of(
+                ParametrizedType.of(Outer.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(String.class))),
+                Normal.class, Collections.<TypeArgument>emptyList()
+        ), type5);
+
+        final ParametrizedType type6 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Outer<? extends String>.Inner<? extends Integer>")).getType(environment);
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.String>" +
+                        ".Inner<CAP#2 extends java.lang.Integer>",
+                type6.capture(new IntegerCounter()).getName()
+        );
+
+        final ParametrizedType type7 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Outer<? extends Comparable<?>>.Ref<? extends java.io.Serializable>")).getType(environment);
+        Assert.assertEquals("ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.Comparable<?>>" +
+                ".Ref<CAP#2 extends (CAP#1 extends java.lang.Comparable<?> & java.io.Serializable)>",
+                type7.capture(new IntegerCounter()).getName()
+        );
+
+        final ParametrizedType type8 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Z<?, String, Integer>")).getType(environment);
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Z<CAP#1 extends ca.sapon.jici.test.GenericsTest.Outer<" +
+                        "java.lang.String>.Inner<java.lang.Integer>, java.lang.String, java.lang.Integer>",
+                type8.capture(new IntegerCounter()).getName()
+        );
+    }
+
+    @Test
+    public void testErasure() {
+        final Environment environment = new Environment();
+        environment.importClass(Outer.class);
+        environment.importClass(Outer.Inner.class);
+        environment.importClass(Outer.Normal.class);
+
+        final ReferenceType type1 = ((ReferenceType) Parser.parseTypeName(Lexer.lex("Outer")).getType(environment)).getErasure();
+        Assert.assertEquals(LiteralReferenceType.of(Outer.class), type1);
+
+        final ReferenceType type2 = ((ReferenceType) Parser.parseTypeName(Lexer.lex("Outer<String>")).getType(environment)).getErasure();
+        Assert.assertEquals(LiteralReferenceType.of(Outer.class), type2);
+
+        final ReferenceType type3 = ((ReferenceType) Parser.parseTypeName(Lexer.lex("Outer<String>.Inner<Integer>")).getType(environment)).getErasure();
+        Assert.assertEquals(LiteralReferenceType.of(Inner.class), type3);
+
+        final ReferenceType type4 = ((ReferenceType) Parser.parseTypeName(Lexer.lex("Outer<String>.Normal")).getType(environment)).getErasure();
+        Assert.assertEquals(LiteralReferenceType.of(Normal.class), type4);
     }
 
     public static class M<T> {
@@ -396,9 +489,21 @@ public class GenericsTest {
     public static class Y<T extends S, S> {
     }
 
+    public static class W<T extends List<S>, S> {
+    }
+
     public static class Outer<T> {
         public class Inner<S> {
         }
+
+        public class Normal {
+        }
+
+        public class Ref<R extends T> implements I<T> {
+        }
+    }
+
+    public class Z<T extends Outer<S>.Inner<R>, S, R> {
     }
 
     private static Environment assertSucceeds(String source) {

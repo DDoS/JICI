@@ -110,11 +110,11 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     protected java.lang.reflect.TypeVariable<?>[] getTypeParameters() {
         if (this.parameters == null) {
             // If this is an array, we need to get to the base component type
-            Class<?> baseComponent = type;
-            while (baseComponent.isArray()) {
-                baseComponent = baseComponent.getComponentType();
+            Class<?> base = type;
+            while (base.isArray()) {
+                base = base.getComponentType();
             }
-            this.parameters = baseComponent.getTypeParameters();
+            this.parameters = base.getTypeParameters();
         }
         return parameters;
     }

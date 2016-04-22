@@ -52,7 +52,7 @@ public class ParametrizedType extends LiteralReferenceType {
     protected ParametrizedType(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
         super(raw.getTypeClass());
         this.owner = owner;
-        if (arguments.size() <= 0) {
+        if (arguments.size() <= 0 && owner == null) {
             throw new IllegalArgumentException("Expected at least one type argument");
         }
         erased = raw;
@@ -74,7 +74,7 @@ public class ParametrizedType extends LiteralReferenceType {
             }
         }
         return (owner != null ? owner.getName() + '.' + baseComponentType.getSimpleName() : baseComponentType.getCanonicalName())
-                + '<' + StringUtil.toString(arguments, ", ") + '>' + StringUtil.repeat("[]", dimensions);
+                + (arguments.isEmpty() ? "" : '<' + StringUtil.toString(arguments, ", ") + '>') + StringUtil.repeat("[]", dimensions);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class ParametrizedType extends LiteralReferenceType {
                 return false;
             }
         }
-        return true;
+        return owner == null || owner.isReifiable();
     }
 
     @Override
@@ -108,6 +108,8 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType substituteTypeVariables(Substitutions substitution) {
+        // Apply to owner if any
+        final ParametrizedType substitutedOwner = owner != null ? owner.substituteTypeVariables(substitution) : null;
         final List<TypeArgument> newArguments = new ArrayList<>();
         for (TypeArgument type : arguments) {
             if (type instanceof TypeVariable) {
@@ -124,7 +126,7 @@ public class ParametrizedType extends LiteralReferenceType {
                 newArguments.add(type.substituteTypeVariables(substitution));
             }
         }
-        return new ParametrizedType(owner, erased, newArguments);
+        return new ParametrizedType(substitutedOwner, erased, newArguments);
     }
 
     @Override
@@ -133,6 +135,9 @@ public class ParametrizedType extends LiteralReferenceType {
         final Set<TypeVariable> typeVariables = iterator.next().getTypeVariables();
         while (iterator.hasNext()) {
             typeVariables.addAll(iterator.next().getTypeVariables());
+        }
+        if (owner != null) {
+            typeVariables.addAll(owner.getTypeVariables());
         }
         return typeVariables;
     }
@@ -216,10 +221,11 @@ public class ParametrizedType extends LiteralReferenceType {
     @Override
     public LiteralReferenceType[] getDirectlyImplementedInterfaces() {
         final LiteralReferenceType[] interfaces = super.getDirectlyImplementedInterfaces();
+        final Substitutions substitutions = getSubstitutions();
         for (int i = 0; i < interfaces.length; i++) {
             final LiteralReferenceType _interface = interfaces[i];
             if (_interface instanceof ParametrizedType) {
-                interfaces[i] = ((ParametrizedType) _interface).substituteTypeVariables(getSubstitutions());
+                interfaces[i] = ((ParametrizedType) _interface).substituteTypeVariables(substitutions);
             }
         }
         return interfaces;
@@ -227,18 +233,27 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType capture(IntegerCounter idCounter) {
-        final ArrayList<TypeArgument> capturedArguments = new ArrayList<>();
+        // Capture the owner first, if any
+        final ParametrizedType ownerCapture = owner != null ? owner.capture(idCounter) : null;
+        // Next capture the arguments: first we need to figure out the order
+        final List<TypeArgument> capturedArguments = new ArrayList<>();
         final TypeVariable[] parameters = getParameters();
         // Generate substitutions for the parameters, so we can get the dependency ordering
-        final Map<String, TypeArgument> namesToArguments = new HashMap<>();
+        final Map<String, TypeArgument> namesToParameters = new HashMap<>();
         for (TypeVariable parameter : parameters) {
-            namesToArguments.put(parameter.getDeclaredName(), parameter.getUpperBound());
+            namesToParameters.put(parameter.getDeclaredName(), parameter.getUpperBound());
             // Fill the captured arguments with null placeholders so set(index, value) will work
             capturedArguments.add(null);
         }
-        final Substitutions substitutions = new Substitutions(namesToArguments);
+        final Substitutions ordering = new Substitutions(namesToParameters);
         // Following the dependency ordering, substitute the wildcards by type variables
-        for (String name : substitutions.getOrder()) {
+        final Map<String, TypeArgument> namesToArguments = new HashMap<>();
+        final Substitutions substitutions = new Substitutions(namesToArguments);
+        // Add the owner capture results if any, since the inner type might be dependent
+        if (ownerCapture != null) {
+            namesToArguments.putAll(ownerCapture.getSubstitutions().getMap());
+        }
+        for (String name : ordering.getOrder()) {
             final int index = getParameterIndex(name);
             final TypeArgument argument = arguments.get(index);
             if (argument instanceof WildcardType) {
@@ -248,15 +263,23 @@ public class ParametrizedType extends LiteralReferenceType {
                 upperBound.addAll(wildcard.getUpperBound().getTypes());
                 final TypeVariable capturedArgument = TypeVariable.of("CAP#" + idCounter.nextValue(), wildcard.getLowerBound(), IntersectionType.of(upperBound));
                 capturedArguments.set(index, capturedArgument);
-                // Replace the parameter by the captured arguments in the substitution too
+                // Update the substitutions
                 namesToArguments.put(name, capturedArgument);
             } else {
                 // Capture of any other type does nothing
                 capturedArguments.set(index, argument);
+                // Update the substitution
+                namesToArguments.put(name, argument);
+            }
+        }
+        // Check that all the arguments were captured
+        for (int i = 0; i < capturedArguments.size(); i++) {
+            if (capturedArguments.get(i) == null) {
+                throw new IllegalStateException("Missing substitution for argument at position " + i + ": " + arguments.get(i));
             }
         }
         // Create a new parametrized type with the new arguments
-        return new ParametrizedType(owner, erased, capturedArguments);
+        return new ParametrizedType(ownerCapture, erased, capturedArguments);
     }
 
     private int getParameterIndex(String name) {
@@ -287,6 +310,9 @@ public class ParametrizedType extends LiteralReferenceType {
             for (int i = 0; i < parameters.length; i++) {
                 namesToArguments.put(parameters[i].getDeclaredName(), arguments.get(i));
             }
+            if (owner != null) {
+                namesToArguments.putAll(owner.getSubstitutions().getMap());
+            }
             this.substitutions = new Substitutions(namesToArguments);
         }
         return this.substitutions;
@@ -316,12 +342,12 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
-        if (arguments.size() < 1) {
-            throw new UnsupportedOperationException("Expected at least one type argument");
+        if (arguments.size() < 1 && owner == null) {
+            throw new UnsupportedOperationException("Expected at least one type argument or a parametrized owner");
         }
         final ParametrizedType type = new ParametrizedType(checkOwner(owner, raw.getTypeClass(), arguments), raw, arguments);
         final TypeVariable[] parameters = type.getParameters();
-        if (parameters.length < 1) {
+        if (parameters.length < 1 && owner == null) {
             throw new UnsupportedOperationException("Not a generic type: " + raw);
         }
         if (parameters.length != arguments.size()) {

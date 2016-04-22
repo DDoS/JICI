@@ -53,7 +53,11 @@ public class Substitutions {
         for (Map.Entry<String, TypeArgument> substitution : substitutions.entrySet()) {
             final Set<String> dependentVariables = new HashSet<>();
             for (TypeVariable typeVariable : substitution.getValue().getTypeVariables()) {
-                dependentVariables.add(typeVariable.getDeclaredName());
+                // There's no actual dependency the variable isn't to be substituted
+                final String name = typeVariable.getDeclaredName();
+                if (substitutions.containsKey(name)) {
+                    dependentVariables.add(name);
+                }
             }
             variableDependencies.put(substitution.getKey(), dependentVariables);
         }

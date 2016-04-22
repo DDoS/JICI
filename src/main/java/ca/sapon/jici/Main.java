@@ -28,10 +28,9 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Allow no arguments in parametrized type if owner is parametrized
             Finish inner types
             Add capture conversion where needed
-            Implement generic memebers of parametrized types
+            Implement generic members of parametrized types
             Restructure type package
             Move ast to its own package
             Update codebase to Java 8

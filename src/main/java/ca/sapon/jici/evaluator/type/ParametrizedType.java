@@ -112,19 +112,7 @@ public class ParametrizedType extends LiteralReferenceType {
         final ParametrizedType substitutedOwner = owner != null ? owner.substituteTypeVariables(substitution) : null;
         final List<TypeArgument> newArguments = new ArrayList<>();
         for (TypeArgument type : arguments) {
-            if (type instanceof TypeVariable) {
-                // For type variables, substitute if the name matches, else apply recursively and add
-                final TypeVariable typeVariable = (TypeVariable) type;
-                final TypeArgument typeArgument = substitution.forVariable(typeVariable);
-                if (typeArgument != null) {
-                    newArguments.add(typeArgument);
-                } else {
-                    newArguments.add(typeVariable.substituteTypeVariables(substitution));
-                }
-            } else {
-                // Apply recursively to other members
-                newArguments.add(type.substituteTypeVariables(substitution));
-            }
+            newArguments.add(type.substituteTypeVariables(substitution));
         }
         return new ParametrizedType(substitutedOwner, erased, newArguments);
     }
@@ -303,7 +291,8 @@ public class ParametrizedType extends LiteralReferenceType {
         return this.parameters;
     }
 
-    private Substitutions getSubstitutions() {
+    @Override
+    public Substitutions getSubstitutions() {
         if (this.substitutions == null) {
             final Map<String, TypeArgument> namesToArguments = new HashMap<>();
             final TypeVariable[] parameters = getParameters();

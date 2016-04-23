@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import ca.sapon.jici.evaluator.type.TypeVariable;
  *
  */
 public class Substitutions {
+    public static final Substitutions NONE = new Substitutions(Collections.<String, TypeArgument>emptyMap());
     private final Map<String, TypeArgument> substitutions;
     private final List<String> order;
 
@@ -53,7 +55,7 @@ public class Substitutions {
         for (Map.Entry<String, TypeArgument> substitution : substitutions.entrySet()) {
             final Set<String> dependentVariables = new HashSet<>();
             for (TypeVariable typeVariable : substitution.getValue().getTypeVariables()) {
-                // There's no actual dependency the variable isn't to be substituted
+                // If there's no actual dependencies then the variable isn't to be substituted
                 final String name = typeVariable.getDeclaredName();
                 if (substitutions.containsKey(name)) {
                     dependentVariables.add(name);

@@ -27,7 +27,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Substitutions;
 
@@ -109,7 +109,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public Accessible getField(String name) {
+    public ClassVariable getField(String name) {
         return upperBound.getField(name);
     }
 
@@ -119,9 +119,14 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public TypeVariable substituteTypeVariables(Substitutions substitution) {
-        // Apply recursively on lower and upper bound
-        return new TypeVariable(name, lowerBound.substituteTypeVariables(substitution), upperBound.substituteTypeVariables(substitution), firstUpperBound);
+    public TypeArgument substituteTypeVariables(Substitutions substitutions) {
+        // If the variable is itself in the substitutions, return the substitution
+        final TypeArgument substitution = substitutions.forVariable(name);
+        if (substitution != null) {
+            return substitution;
+        }
+        // Else apply recursively on lower and upper bound
+        return new TypeVariable(name, lowerBound.substituteTypeVariables(substitutions), upperBound.substituteTypeVariables(substitutions), firstUpperBound);
     }
 
     @Override

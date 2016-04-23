@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
@@ -51,8 +54,6 @@ import ca.sapon.jici.test.GenericsTest.Outer.Normal;
 import ca.sapon.jici.test.GenericsTest.Outer.Ref;
 import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.TypeUtil;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  *
@@ -430,7 +431,7 @@ public class GenericsTest {
 
         final ParametrizedType type7 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Outer<? extends Comparable<?>>.Ref<? extends java.io.Serializable>")).getType(environment);
         Assert.assertEquals("ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.Comparable<?>>" +
-                ".Ref<CAP#2 extends (CAP#1 extends java.lang.Comparable<?> & java.io.Serializable)>",
+                        ".Ref<CAP#2 extends (CAP#1 extends java.lang.Comparable<?> & java.io.Serializable)>",
                 type7.capture(new IntegerCounter()).getName()
         );
 
@@ -462,16 +463,142 @@ public class GenericsTest {
         Assert.assertEquals(LiteralReferenceType.of(Normal.class), type4);
     }
 
+    @Test
+    public void testConstructors() {
+        final Environment environment = new Environment();
+        environment.importClass(M.class);
+        environment.importClass(N.class);
+        environment.importClass(K.class);
+        environment.importClass(Outer.class);
+        environment.importClass(Inner.class);
+        environment.importClass(U.class);
+
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.M<java.lang.String>",
+                "new M<String>()"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.N<java.lang.Integer>",
+                "new N<Integer>()"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.M<ca.sapon.jici.test.GenericsTest.N<?>>",
+                "new M<N<?>>()"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.U<java.lang.String>",
+                "new U<String>(\"Me too thanks\")"
+        );
+        EvaluatorTest.assertFails(
+                "new M<?>();",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new M<? extends String>();",
+                environment
+        );
+
+        /*assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.String>",
+                "new Outer<Integer>().newStringInner()"
+        );*/
+        /*assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.Float>",
+                "new Outer<Integer>().<Float>newInner()"
+        );*/
+    }
+
+    @Test
+    public void testFields() {
+        final Environment environment = new Environment();
+        environment.importClass(M.class);
+        environment.importClass(N.class);
+        environment.importClass(K.class);
+        environment.importClass(Outer.class);
+        environment.importClass(Inner.class);
+
+        assertType(
+                environment,
+                "java.lang.Integer",
+                "new M<String>().m"
+        );
+        assertType(
+                environment,
+                "java.lang.Double",
+                "new N<String>().o"
+        );
+        assertType(
+                environment,
+                "java.lang.Float",
+                "new K().p"
+        );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<String>().t"
+        );
+        assertType(
+                environment,
+                "java.lang.Float",
+                "new N<Float>().t"
+        );
+        assertType(
+                environment,
+                "java.lang.Integer",
+                "new K().t"
+        );
+        assertType(
+                environment,
+                "CAP#1 extends java.lang.String",
+                "M.newWildcardM().t"
+        );
+        /*assertType(
+                environment,
+                "java.lang.String",
+                "new Outer<Integer>().newStringInner().t"
+        );*/
+        /*assertType(
+                environment,
+                "java.lang.Integer",
+                "new Outer<Integer>().<Float>newInner().t"
+        );*/
+
+        Assert.assertEquals(
+                LiteralReferenceType.of(Short.class),
+                LiteralReferenceType.of(M.class).getField("s").getType()
+        );
+        try {
+            ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(Character.class))).getField("s");
+            Assert.fail("Expected an exception");
+        } catch (UnsupportedOperationException ignored) {
+        }
+    }
+
     public static class M<T> {
+        public static Short s = null;
+        public T t = null;
+        public Integer m = null;
+
+        public static M<? extends String> newWildcardM() {
+            return new M<>();
+        }
     }
 
     public static class N<T> extends M<T> {
+        public Double o = null;
     }
 
     public static class L<T> extends N<String> {
     }
 
     public static class K extends N<Integer> {
+        public Float p = null;
     }
 
     public class Q<T> extends M<M<T>> {
@@ -494,6 +621,7 @@ public class GenericsTest {
 
     public static class Outer<T> {
         public class Inner<S> {
+            public T t = null;
         }
 
         public class Normal {
@@ -501,9 +629,25 @@ public class GenericsTest {
 
         public class Ref<R extends T> implements I<T> {
         }
+
+        public <S> Inner<S> newInner() {
+            return new Inner<>();
+        }
+
+        public Inner<String> newStringInner() {
+            return new Inner<>();
+        }
     }
 
     public class Z<T extends Outer<S>.Inner<R>, S, R> {
+    }
+
+    public class U<T> {
+        public T t;
+
+        public U(T t) {
+            this.t = t;
+        }
     }
 
     private static Environment assertSucceeds(String source) {
@@ -527,6 +671,10 @@ public class GenericsTest {
     private static void assertLUB(String expectedType, String leftType, String rightType) {
         final Environment environment = assertSucceeds(generateDeclarationSource(leftType, rightType));
         String source = "true ? l1 : l2";
+        assertType(environment, expectedType, source);
+    }
+
+    private static void assertType(Environment environment, String expectedType, String source) {
         final SourceMetadata metadata = new SourceMetadata(source);
         try {
             source = Decoder.decode(source, metadata);

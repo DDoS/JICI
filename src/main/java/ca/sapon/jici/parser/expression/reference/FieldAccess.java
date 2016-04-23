@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ReferenceType;
@@ -35,7 +35,7 @@ import ca.sapon.jici.parser.expression.Expression;
 public class FieldAccess implements Reference {
     private final Expression object;
     private final Identifier field;
-    private Accessible accessible = null;
+    private ClassVariable classVariable = null;
 
     public FieldAccess(Expression object, Identifier field) {
         this.object = object;
@@ -44,26 +44,26 @@ public class FieldAccess implements Reference {
 
     @Override
     public Type getType(Environment environment) {
-        if (accessible == null) {
+        if (classVariable == null) {
             final Type objectType = object.getType(environment);
             final String name = field.getSource();
             if (!(objectType instanceof ReferenceType)) {
                 throw new EvaluatorException("Not a class type " + objectType.getName(), object);
             }
             try {
-                accessible = ((ReferenceType) objectType).getField(name);
+                classVariable = ((ReferenceType) objectType).getField(name);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }
         }
-        return accessible.getType();
+        return classVariable.getType();
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value target = object.getValue(environment);
         try {
-            return accessible.getValue(target);
+            return classVariable.getValue(target);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }
@@ -73,7 +73,7 @@ public class FieldAccess implements Reference {
     public void setValue(Environment environment, Value value) {
         final Value target = object.getValue(environment);
         try {
-            accessible.setValue(target, value);
+            classVariable.setValue(target, value);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }

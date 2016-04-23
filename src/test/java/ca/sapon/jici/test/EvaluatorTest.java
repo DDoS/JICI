@@ -876,7 +876,7 @@ public class EvaluatorTest {
             Assert.fail("Expected evaluator exception");
         } catch (AssertionError expected) {
             if (!(expected.getCause() instanceof EvaluatorException)) {
-                Assert.fail("Expected evaluator exception");
+                throw new AssertionError("Expected evaluator exception, got something else instead", expected.getCause());
             }
         }
         return environment;

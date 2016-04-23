@@ -228,7 +228,8 @@ public final class Parser {
 
     private static TypeArgumentName parseTypeArgumentName(ListNavigator<Token> tokens) {
         if (tokens.has()) {
-            if (tokens.get().getID() == TokenID.SYMBOL_QUESTION_MARK) {
+            final Token token = tokens.get();
+            if (token.getID() == TokenID.SYMBOL_QUESTION_MARK) {
                 tokens.advance();
                 if (tokens.has()) {
                     switch (tokens.get().getID()) {
@@ -244,7 +245,7 @@ public final class Parser {
                         }
                     }
                 }
-                return new TypeArgumentName(null, BoundKind.NONE);
+                return new TypeArgumentName(token.getIndex());
             } else {
                 final TypeName type = parseTypeName(tokens);
                 return new TypeArgumentName(type, BoundKind.EXACT);

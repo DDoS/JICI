@@ -26,6 +26,7 @@ package ca.sapon.jici.evaluator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
@@ -62,12 +63,12 @@ public abstract class Callable {
         return new ArrayCloneCallable(type);
     }
 
-    public static Callable forConstructor(Constructor<?> constructor) {
-        return new ConstructorCallable(constructor, false);
+    public static Callable forConstructor(LiteralReferenceType type, Constructor<?> constructor) {
+        return new ConstructorCallable(type, constructor, false);
     }
 
-    public static Callable forVarargConstructor(Constructor<?> constructor) {
-        return new ConstructorCallable(constructor, true);
+    public static Callable forVarargConstructor(LiteralReferenceType type, Constructor<?> constructor) {
+        return new ConstructorCallable(type, constructor, true);
     }
 
     private static class MethodCallable extends Callable {
@@ -116,8 +117,8 @@ public abstract class Callable {
         private final Class<?> varargType;
         private final int varargIndex;
 
-        private ConstructorCallable(Constructor<?> constructor, boolean vararg) {
-            super(TypeUtil.wrap(constructor.getDeclaringClass()));
+        private ConstructorCallable(LiteralReferenceType type, Constructor<?> constructor, boolean vararg) {
+            super(type);
             this.constructor = constructor;
             if (vararg) {
                 final Class<?>[] parameters = constructor.getParameterTypes();

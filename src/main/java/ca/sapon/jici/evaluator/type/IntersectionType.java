@@ -28,8 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.Accessible;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
@@ -186,7 +186,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public Accessible getField(String name) {
+    public ClassVariable getField(String name) {
         for (SingleReferenceType type : getTypes()) {
             try {
                 return type.getField(name);
@@ -226,21 +226,14 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     public IntersectionType substituteTypeVariables(Substitutions substitution) {
         final Set<ReferenceType> newIntersection = new HashSet<>();
         for (SingleReferenceType type : types) {
-            if (type instanceof TypeVariable) {
-                // For type variables, substitute if the name matches, else apply recursively and add
-                final TypeVariable typeVariable = (TypeVariable) type;
-                final TypeArgument typeArgument = substitution.forVariable(typeVariable);
-                if (typeArgument != null) {
-                    if (!(typeArgument instanceof ReferenceType)) {
-                        throw new UnsupportedOperationException("Substitution is not a reference type: " + typeVariable + " -> " + typeArgument);
-                    }
-                    newIntersection.add((ReferenceType) typeArgument);
-                } else {
-                    newIntersection.add(typeVariable.substituteTypeVariables(substitution));
+            if (type instanceof TypeArgument) {
+                // Apply to type arguments
+                final TypeArgument typeArgument = ((TypeArgument) type).substituteTypeVariables(substitution);
+                if (!(typeArgument instanceof ReferenceType)) {
+                    throw new UnsupportedOperationException("Substitution " + substitution + " on " + type +
+                            " doesn't result in a reference type, instead it is " + typeArgument);
                 }
-            } else if (type instanceof LiteralReferenceType) {
-                // Apply recursively to other reference type members
-                newIntersection.add(((LiteralReferenceType) type).substituteTypeVariables(substitution));
+                newIntersection.add((ReferenceType) typeArgument);
             } else {
                 // Any other member gets no substitution
                 newIntersection.add(type);

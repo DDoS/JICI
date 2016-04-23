@@ -25,7 +25,7 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.Accessible;
+import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Callable;
 
 /**
@@ -36,7 +36,7 @@ public interface ReferenceType extends Type {
 
     Callable getConstructor(Type[] arguments);
 
-    Accessible getField(String name);
+    ClassVariable getField(String name);
 
     Callable getMethod(String name, Type[] arguments);
 

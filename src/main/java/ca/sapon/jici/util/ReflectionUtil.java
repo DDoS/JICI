@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 
 /**
@@ -267,11 +268,15 @@ public final class ReflectionUtil {
         return !parameterB.isPrimitive() && parameterA.convertibleTo(parameterB);
     }
 
-    public static Class<?>[] expandsVarargs(Class<?>[] parameters, int count) {
-        final Class<?>[] expanded = new Class<?>[count];
+    public static Type[] expandsVarargs(Type[] parameters, int count) {
+        final Type[] expanded = new Type[count];
         final int lastIndex = parameters.length - 1;
+        final Type lastParameter = parameters[lastIndex];
+        if (!lastParameter.isArray()) {
+            throw new IllegalArgumentException("Expected last parameter to be an array type");
+        }
+        final Type varargType = ((ReferenceType) lastParameter).getComponentType();
         System.arraycopy(parameters, 0, expanded, 0, lastIndex);
-        final Class<?> varargType = parameters[lastIndex].getComponentType();
         for (int i = lastIndex; i < count; i++) {
             expanded[i] = varargType;
         }

@@ -28,7 +28,7 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Finish inner types
+            Implement type arguments before class name in constructor
             Add capture conversion where needed
             Implement generic members of parametrized types
             Restructure type package

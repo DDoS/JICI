@@ -28,8 +28,11 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.type.ReferenceType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.ClassTypeName;
@@ -61,9 +64,14 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public Type getType(Environment environment) {
         if (callable == null) {
-            final Type type = typeName.getType(environment);
-            if (!(type instanceof ReferenceType)) {
-                throw new EvaluatorException("Not a class type " + type.getName(), typeName);
+            final LiteralReferenceType type = typeName.getType(environment);
+            // Check that parametrized types don't have wildcards
+            if (type instanceof ParametrizedType) {
+                for (TypeArgument argument : ((ParametrizedType) type).getArguments()) {
+                    if (argument instanceof WildcardType) {
+                        throw new EvaluatorException("Cannot use wildcards as type arguments in a constructor call", typeName);
+                    }
+                }
             }
             final int size = arguments.size();
             final Type[] argumentTypes = new Type[size];
@@ -71,7 +79,7 @@ public class ConstructorCall implements Statement, Expression {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
             try {
-                callable = ((ReferenceType) type).getConstructor(argumentTypes);
+                callable = type.getConstructor(argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }

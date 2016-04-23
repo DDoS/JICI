@@ -39,11 +39,21 @@ import ca.sapon.jici.evaluator.type.WildcardType;
 public class TypeArgumentName implements SourceIndexed {
     private final TypeName bound;
     private final BoundKind kind;
+    private final int start;
     private TypeArgument type = null;
 
+    public TypeArgumentName(int index) {
+        this(null, BoundKind.NONE, index);
+    }
+
     public TypeArgumentName(TypeName bound, BoundKind kind) {
+        this(bound, kind, -1);
+    }
+
+    private TypeArgumentName(TypeName bound, BoundKind kind, int index) {
         this.bound = bound;
         this.kind = kind;
+        this.start = index >= 0 ? index : bound.getStart();
     }
 
     public TypeArgument getType(Environment environment) {
@@ -73,12 +83,12 @@ public class TypeArgumentName implements SourceIndexed {
 
     @Override
     public int getStart() {
-        return bound.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return bound.getEnd();
+        return bound == null ? start : bound.getEnd();
     }
 
     @Override

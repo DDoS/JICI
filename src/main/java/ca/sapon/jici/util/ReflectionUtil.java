@@ -137,6 +137,9 @@ public final class ReflectionUtil {
     }
 
     public static Class<?> asArrayType(Class<?> componentType, int dimensions) {
+        if (dimensions < 0) {
+            throw new IllegalArgumentException("Cannot have negative dimensions");
+        }
         if (dimensions == 0) {
             return componentType;
         }
@@ -148,7 +151,11 @@ public final class ReflectionUtil {
         } else {
             encodedName.append(character);
         }
-        return lookupClass(encodedName.toString());
+        final Class<?> arrayType = lookupClass(encodedName.toString());
+        if (arrayType == null) {
+            throw new UnsupportedOperationException("No array type possible for " + componentType.getName());
+        }
+        return arrayType;
     }
 
     public static <C> C resolveOverloads(Map<C, Type[]> candidates, Type[] arguments) {

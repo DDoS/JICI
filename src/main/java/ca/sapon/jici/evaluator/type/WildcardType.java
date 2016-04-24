@@ -124,6 +124,11 @@ public class WildcardType implements TypeArgument, BoundedType {
     }
 
     @Override
+    public TypeArgument asArray(int dimensions) {
+        return new WildcardType(lowerBound, upperBound.asArray(dimensions));
+    }
+
+    @Override
     public WildcardType substituteTypeVariables(Substitutions substitution) {
         // Apply recursively on lower and upper bounds
         return new WildcardType(lowerBound.substituteTypeVariables(substitution), upperBound.substituteTypeVariables(substitution));

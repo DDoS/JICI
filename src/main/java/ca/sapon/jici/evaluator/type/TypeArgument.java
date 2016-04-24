@@ -36,4 +36,6 @@ public interface TypeArgument extends Type {
     Set<TypeVariable> getTypeVariables();
 
     boolean contains(TypeArgument other);
+
+    TypeArgument asArray(int dimensions);
 }

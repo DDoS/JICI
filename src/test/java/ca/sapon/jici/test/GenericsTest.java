@@ -509,6 +509,10 @@ public class GenericsTest {
                 "new U<String>()"
         );
         EvaluatorTest.assertFails(
+                "new U<String>(2);",
+                environment
+        );
+        EvaluatorTest.assertFails(
                 "new M<?>();",
                 environment
         );
@@ -642,6 +646,10 @@ public class GenericsTest {
         );
         EvaluatorTest.assertSucceeds(
                 "new M<String>().setTs(new String[1]);",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new M<String>().setTs(1, 2);",
                 environment
         );
         EvaluatorTest.assertSucceeds(

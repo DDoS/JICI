@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -204,8 +205,8 @@ public final class TypeUtil {
         return filteredTypes;
     }
 
-    public static HashSet<SingleReferenceType> expandIntersectionTypes(Collection<? extends ReferenceType> intersection) {
-        final HashSet<SingleReferenceType> expandedTypes = new HashSet<>(intersection.size());
+    public static Set<SingleReferenceType> expandIntersectionTypes(Collection<? extends ReferenceType> intersection) {
+        final Set<SingleReferenceType> expandedTypes = new LinkedHashSet<>(intersection.size());
         for (ReferenceType type : intersection) {
             if (type instanceof IntersectionType) {
                 expandedTypes.addAll(((IntersectionType) type).getTypes());

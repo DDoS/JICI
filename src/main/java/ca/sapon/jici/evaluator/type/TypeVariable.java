@@ -27,24 +27,27 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Substitutions;
+import ca.sapon.jici.util.StringUtil;
 
 /**
  * A type variable, such as {@code <T>}.
  */
 public class TypeVariable extends SingleReferenceType implements TypeArgument, BoundedType {
     private final String name;
+    private final int dimensions;
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
     private final SingleReferenceType firstUpperBound;
 
-    private TypeVariable(String name, IntersectionType lowerBound, IntersectionType upperBound, SingleReferenceType firstUpperBound) {
+    private TypeVariable(String name, int dimensions, IntersectionType lowerBound, IntersectionType upperBound) {
         this.name = name;
+        this.dimensions = dimensions;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
-        this.firstUpperBound = firstUpperBound;
+        firstUpperBound = upperBound.checkIfValidUpperBound();
     }
 
     public String getDeclaredName() {
@@ -63,7 +66,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public String getName() {
-        String fullName = name;
+        String fullName = name + StringUtil.repeat("[]", dimensions);
         if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
             fullName += " super " + lowerBound;
         }
@@ -85,7 +88,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public TypeVariable asArray(int dimensions) {
-        return new TypeVariable(name, lowerBound, upperBound.asArray(dimensions), firstUpperBound);
+        return new TypeVariable(name, this.dimensions + dimensions, lowerBound, upperBound.asArray(dimensions));
     }
 
     @Override
@@ -100,7 +103,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public TypeVariable getComponentType() {
-        return new TypeVariable(name, lowerBound, upperBound.getComponentType(), firstUpperBound);
+        return new TypeVariable(name, dimensions - 1, lowerBound, upperBound.getComponentType());
     }
 
     @Override
@@ -123,10 +126,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         // If the variable is itself in the substitutions, return the substitution
         final TypeArgument substitution = substitutions.forVariable(name);
         if (substitution != null) {
-            return substitution;
+            return substitution.asArray(dimensions);
         }
         // Else apply recursively on lower and upper bound
-        return new TypeVariable(name, lowerBound.substituteTypeVariables(substitutions), upperBound.substituteTypeVariables(substitutions), firstUpperBound);
+        return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions), upperBound.substituteTypeVariables(substitutions));
     }
 
     @Override
@@ -165,7 +168,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public LiteralReferenceType getErasure() {
-        // The upper bound class cannot be null so the erasure must be a literal reference
+        // The upper bound cannot be the null type so the erasure must be a literal reference
         return (LiteralReferenceType) firstUpperBound.getErasure();
     }
 
@@ -184,7 +187,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             return false;
         }
         final TypeVariable that = (TypeVariable) other;
-        return name.equals(that.name) && lowerBound.equals(that.lowerBound) && upperBound.equals(that.upperBound) && firstUpperBound.equals(that.firstUpperBound);
+        return name.equals(that.name) && lowerBound.equals(that.lowerBound) && upperBound.equals(that.upperBound);
     }
 
     @Override
@@ -192,17 +195,16 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         int result = name.hashCode();
         result = 31 * result + lowerBound.hashCode();
         result = 31 * result + upperBound.hashCode();
-        result = 31 * result + firstUpperBound.hashCode();
         return result;
     }
 
-    public static TypeVariable of(String name, List<SingleReferenceType> upperBound) {
-        if (upperBound.isEmpty()) {
+    public static TypeVariable of(String name, List<SingleReferenceType> declaredUpperBound) {
+        if (declaredUpperBound.isEmpty()) {
             // Empty implies object
-            upperBound.add(LiteralReferenceType.THE_OBJECT);
+            declaredUpperBound.add(LiteralReferenceType.THE_OBJECT);
         }
         // Ensure the following holds for the first upper bound: a type variable, a class or an interface
-        final SingleReferenceType firstUpperBound = upperBound.get(0);
+        final SingleReferenceType firstUpperBound = declaredUpperBound.get(0);
         if (firstUpperBound instanceof LiteralReferenceType) {
             if (firstUpperBound.isArray()) {
                 throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstUpperBound);
@@ -210,13 +212,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         } else if (!(firstUpperBound instanceof TypeVariable)) {
             throw new UnsupportedOperationException("The first upper bound must be a type variable, class or interface: " + firstUpperBound);
         }
-        final IntersectionType reducedUpperBound = IntersectionType.of(upperBound);
-        reducedUpperBound.checkIfValidUpperBound();
-        return new TypeVariable(name, IntersectionType.EVERYTHING, reducedUpperBound, upperBound.get(0));
+        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, IntersectionType.of(declaredUpperBound));
     }
 
     public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound) {
-        final SingleReferenceType erasure = upperBound.checkIfValidUpperBound();
-        return new TypeVariable(name, lowerBound, upperBound, erasure);
+        return new TypeVariable(name, 0, lowerBound, upperBound);
     }
 }

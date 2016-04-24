@@ -216,7 +216,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     @Override
     public IntersectionType getErasure() {
         final Set<SingleReferenceType> erasures = new HashSet<>();
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             erasures.add(type.getErasure());
         }
         return of(erasures);
@@ -225,7 +225,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     @Override
     public IntersectionType substituteTypeVariables(Substitutions substitution) {
         final Set<ReferenceType> newIntersection = new HashSet<>();
-        for (SingleReferenceType type : types) {
+        for (SingleReferenceType type : getTypes()) {
             if (type instanceof TypeArgument) {
                 // Apply to type arguments
                 final TypeArgument typeArgument = ((TypeArgument) type).substituteTypeVariables(substitution);
@@ -257,7 +257,6 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
         final Set<LiteralReferenceType> interfaces = new HashSet<>();
         SingleReferenceType nonInterface = null;
         SingleReferenceType firstInterface = null;
-        //SingleReferenceType classUpperBound = null;
         // Check for a single non interface type in the upper bound
         for (SingleReferenceType type : getTypes()) {
             if (type instanceof LiteralReferenceType) {

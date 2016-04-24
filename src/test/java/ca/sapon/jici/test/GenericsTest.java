@@ -493,6 +493,21 @@ public class GenericsTest {
                 "ca.sapon.jici.test.GenericsTest.U<java.lang.String>",
                 "new U<String>(\"Me too thanks\")"
         );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.U<java.lang.String>",
+                "new U<String>(\"1\", \"2\", \"3\")"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.U<java.lang.String>",
+                "new U<String>(new String[1])"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.U<java.lang.String>",
+                "new U<String>()"
+        );
         EvaluatorTest.assertFails(
                 "new M<?>();",
                 environment
@@ -568,22 +583,105 @@ public class GenericsTest {
                 "java.lang.Integer",
                 "new Outer<Integer>().<Float>newInner().t"
         );*/
+    }
 
-        Assert.assertEquals(
-                LiteralReferenceType.of(Short.class),
-                LiteralReferenceType.of(M.class).getField("s").getType()
+    @Test
+    public void testMethods() {
+        final Environment environment = new Environment();
+        environment.importClass(M.class);
+        environment.importClass(N.class);
+        environment.importClass(K.class);
+        environment.importClass(Outer.class);
+        environment.importClass(Inner.class);
+
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<String>().getT()"
         );
-        try {
-            ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(Character.class))).getField("s");
-            Assert.fail("Expected an exception");
-        } catch (UnsupportedOperationException ignored) {
-        }
+        assertType(
+                environment,
+                "java.lang.Integer",
+                "new K().getT()"
+        );
+        assertType(
+                environment,
+                "java.lang.Short",
+                "new M<String>().getS()"
+        );
+        assertType(
+                environment,
+                "CAP#1 extends java.lang.String",
+                "M.newWildcardM().getT()"
+        );
+        /*assertType(
+                environment,
+                "java.lang.String",
+                "new Outer<Integer>().newStringInner().getT()"
+        );*/
+        /*assertType(
+                environment,
+                "java.lang.Integer",
+                "new Outer<Integer>().<Float>newInner().getT()"
+        );*/
+        EvaluatorTest.assertFails(
+                "new M<String>().setT();",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new M<String>().setT(new Integer(1));",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<String>().setT(\"1\");",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<String>().setTs(\"1\", \"2\", \"3\");",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<String>().setTs(new String[1]);",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<String>().setTs();",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<CharSequence>().setT(\"1\");",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new K().setT(new Integer(1));",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new K().setT(\"1\");",
+                environment
+        );
     }
 
     public static class M<T> {
         public static Short s = null;
         public T t = null;
         public Integer m = null;
+
+        public T getT() {
+            return t;
+        }
+
+        public void setT(T t) {
+            this.t = t;
+        }
+
+        @SafeVarargs
+        public final void setTs(T... t) {
+        }
+
+        public static Short getS() {
+            return s;
+        }
 
         public static M<? extends String> newWildcardM() {
             return new M<>();
@@ -622,6 +720,10 @@ public class GenericsTest {
     public static class Outer<T> {
         public class Inner<S> {
             public T t = null;
+
+            public T getT() {
+                return t;
+            }
         }
 
         public class Normal {
@@ -647,6 +749,11 @@ public class GenericsTest {
 
         public U(T t) {
             this.t = t;
+        }
+
+        @SafeVarargs
+        public U(T... t) {
+            this.t = null;
         }
     }
 

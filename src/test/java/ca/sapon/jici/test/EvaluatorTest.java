@@ -873,12 +873,13 @@ public class EvaluatorTest {
     public static Environment assertFails(String source, Environment environment) {
         try {
             assertSucceeds(source, environment);
-            Assert.fail("Expected evaluator exception");
-        } catch (AssertionError expected) {
+        } catch (Error expected) {
             if (!(expected.getCause() instanceof EvaluatorException)) {
                 throw new AssertionError("Expected evaluator exception, got something else instead", expected.getCause());
             }
+            return environment;
         }
+        Assert.fail("Expected evaluator exception");
         return environment;
     }
 

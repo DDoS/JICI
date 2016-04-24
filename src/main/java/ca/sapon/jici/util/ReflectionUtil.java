@@ -273,7 +273,7 @@ public final class ReflectionUtil {
         final int lastIndex = parameters.length - 1;
         final Type lastParameter = parameters[lastIndex];
         if (!lastParameter.isArray()) {
-            throw new IllegalArgumentException("Expected last parameter to be an array type");
+            throw new IllegalArgumentException("Expected last parameter to be an array type, but got " + lastParameter);
         }
         final Type varargType = ((ReferenceType) lastParameter).getComponentType();
         System.arraycopy(parameters, 0, expanded, 0, lastIndex);

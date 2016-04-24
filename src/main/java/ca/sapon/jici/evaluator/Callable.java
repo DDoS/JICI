@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
@@ -51,12 +52,12 @@ public abstract class Callable {
 
     public abstract Value call(Value target, Value... arguments);
 
-    public static Callable forMethod(Method method) {
-        return new MethodCallable(method, false);
+    public static Callable forMethod(Substitutions substitutions, Method method) {
+        return new MethodCallable(substitutions, method, false);
     }
 
-    public static Callable forVarargMethod(Method method) {
-        return new MethodCallable(method, true);
+    public static Callable forVarargMethod(Substitutions substitutions, Method method) {
+        return new MethodCallable(substitutions, method, true);
     }
 
     public static Callable forArrayClone(LiteralType type) {
@@ -76,8 +77,8 @@ public abstract class Callable {
         private final Class<?> varargType;
         private final int varargIndex;
 
-        private MethodCallable(Method method, boolean vararg) {
-            super(TypeUtil.wrap(method.getGenericReturnType()));
+        private MethodCallable(Substitutions substitutions, Method method, boolean vararg) {
+            super(getReturnType(substitutions, method));
             this.method = method;
             if (vararg) {
                 final Class<?>[] parameters = method.getParameterTypes();
@@ -109,6 +110,14 @@ public abstract class Callable {
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
+        }
+
+        private static Type getReturnType(Substitutions substitutions, Method method) {
+            Type type = TypeUtil.wrap(method.getGenericReturnType());
+            if (type instanceof TypeArgument) {
+                type = ((TypeArgument) type).substituteTypeVariables(substitutions);
+            }
+            return type;
         }
     }
 

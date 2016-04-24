@@ -28,9 +28,11 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Implement type arguments before class name in constructor
             Add capture conversion where needed
             Implement generic members of parametrized types
+            Parse type arguments for constructor
+            Implement generic method and constructors declarations
+            Implement generic type inference
             Restructure type package
             Move ast to its own package
             Update codebase to Java 8
@@ -41,7 +43,6 @@ public class Main {
             Move evaluator to visitor
             Fix getSource() vs toString()
             Fix source start and end indices
-            Implement generic type inference
             Add eval() to JICI class
         */
     }

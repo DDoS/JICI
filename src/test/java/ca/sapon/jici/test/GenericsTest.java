@@ -668,6 +668,26 @@ public class GenericsTest {
                 "new K().setT(\"1\");",
                 environment
         );
+        assertType(
+                environment,
+                "java.lang.Integer[]",
+                "new M<Integer>().getTs()"
+        );
+        assertType(
+                environment,
+                "java.lang.Integer[][]",
+                "new M<Integer>().getTts()"
+        );
+        assertType(
+                environment,
+                "CAP#1[] extends java.lang.String[]",
+                "M.newWildcardM().getTs()"
+        );
+        assertType(
+                environment,
+                "CAP#1[][] extends java.lang.String[][]",
+                "M.newWildcardM().getTts()"
+        );
     }
 
     public static class M<T> {
@@ -685,6 +705,14 @@ public class GenericsTest {
 
         @SafeVarargs
         public final void setTs(T... t) {
+        }
+
+        public T[] getTs() {
+            return null;
+        }
+
+        public T[][] getTts() {
+            return null;
         }
 
         public static Short getS() {

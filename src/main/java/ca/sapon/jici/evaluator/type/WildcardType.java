@@ -125,7 +125,11 @@ public class WildcardType implements TypeArgument, BoundedType {
 
     @Override
     public TypeArgument asArray(int dimensions) {
-        return new WildcardType(lowerBound, upperBound.asArray(dimensions));
+        IntersectionType arrayLowerBound = lowerBound;
+        if (!arrayLowerBound.equals(IntersectionType.EVERYTHING)) {
+            arrayLowerBound = arrayLowerBound.asArray(dimensions);
+        }
+        return new WildcardType(arrayLowerBound, upperBound.asArray(dimensions));
     }
 
     @Override

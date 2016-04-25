@@ -29,7 +29,6 @@ public class Main {
 
         /* TODO:
             Add capture conversion where needed
-            Implement generic members of parametrized types
             Parse type arguments for constructor
             Implement generic method and constructors declarations
             Implement generic type inference

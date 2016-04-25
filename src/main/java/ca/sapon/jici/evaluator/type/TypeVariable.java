@@ -88,7 +88,11 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public TypeVariable asArray(int dimensions) {
-        return new TypeVariable(name, this.dimensions + dimensions, lowerBound, upperBound.asArray(dimensions));
+        IntersectionType arrayLowerBound = lowerBound;
+        if (!arrayLowerBound.equals(IntersectionType.EVERYTHING)) {
+            arrayLowerBound = arrayLowerBound.asArray(dimensions);
+        }
+        return new TypeVariable(name, this.dimensions + dimensions, arrayLowerBound, upperBound.asArray(dimensions));
     }
 
     @Override
@@ -103,7 +107,11 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public TypeVariable getComponentType() {
-        return new TypeVariable(name, dimensions - 1, lowerBound, upperBound.getComponentType());
+        IntersectionType lowerBoundComponent = lowerBound;
+        if (!lowerBoundComponent.equals(IntersectionType.EVERYTHING)) {
+            lowerBoundComponent = lowerBoundComponent.getComponentType();
+        }
+        return new TypeVariable(name, dimensions - 1, lowerBoundComponent, upperBound.getComponentType());
     }
 
     @Override
@@ -129,7 +137,8 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             return substitution.asArray(dimensions);
         }
         // Else apply recursively on lower and upper bound
-        return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions), upperBound.substituteTypeVariables(substitutions));
+        return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions),
+                upperBound.substituteTypeVariables(substitutions));
     }
 
     @Override
@@ -148,12 +157,11 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     @Override
     public boolean convertibleTo(Type to) {
         // Can convert to a type variable if its bounds are within these ones
-        // Can convert to an intersection type if can convert to all the types in it
-        // Can convert to any other type if the upper bound can
         if (to instanceof TypeVariable) {
             final TypeVariable target = (TypeVariable) to;
             return upperBound.convertibleTo(target.getUpperBound()) && target.getLowerBound().convertibleTo(lowerBound);
         }
+        // Can convert to an intersection type if can convert to all the types in it
         if (to instanceof IntersectionType) {
             final IntersectionType target = (IntersectionType) to;
             for (SingleReferenceType type : target.getTypes()) {
@@ -163,6 +171,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             }
             return true;
         }
+        // Can convert to any other type if the upper bound can
         return upperBound.convertibleTo(to);
     }
 

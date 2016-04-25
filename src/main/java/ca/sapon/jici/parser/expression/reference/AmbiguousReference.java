@@ -114,7 +114,7 @@ public class AmbiguousReference implements Reference {
         return resolved;
     }
 
-    private static class StaticAccess implements Expression {
+    public static class StaticAccess implements Expression {
         private final Class<?> _class;
         private final int start;
         private final int end;

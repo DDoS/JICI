@@ -34,6 +34,7 @@ import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
@@ -84,6 +85,9 @@ public class MethodCall implements Expression, Statement {
                 callable = ((ReferenceType) objectType).getMethod(method.getSource(), argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), method);
+            }
+            if (!callable.isStatic() && object instanceof AmbiguousReference.StaticAccess) {
+                throw new EvaluatorException("Cannot access a non-static member directly from the type name", this);
             }
         }
         return callable.getReturnType();

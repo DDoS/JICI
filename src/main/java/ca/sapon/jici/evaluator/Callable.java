@@ -25,6 +25,7 @@ package ca.sapon.jici.evaluator;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
@@ -49,6 +50,8 @@ public abstract class Callable {
     public Type getReturnType() {
         return returnType;
     }
+
+    public abstract boolean isStatic();
 
     public abstract Value call(Value target, Value... arguments);
 
@@ -88,6 +91,11 @@ public abstract class Callable {
                 varargIndex = -1;
                 varargType = null;
             }
+        }
+
+        @Override
+        public boolean isStatic() {
+            return Modifier.isStatic(method.getModifiers());
         }
 
         @Override
@@ -140,6 +148,11 @@ public abstract class Callable {
         }
 
         @Override
+        public boolean isStatic() {
+            return false;
+        }
+
+        @Override
         public Value call(Value target, Value... arguments) {
             final int length = arguments.length;
             Object[] values = new Object[length];
@@ -160,6 +173,11 @@ public abstract class Callable {
     private static class ArrayCloneCallable extends Callable {
         private ArrayCloneCallable(LiteralType type) {
             super(type);
+        }
+
+        @Override
+        public boolean isStatic() {
+            return false;
         }
 
         @Override

@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
@@ -54,8 +57,6 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class EvaluatorTest {
     @Test
@@ -220,6 +221,7 @@ public class EvaluatorTest {
         assertReturns(6d, "new Integer(6).doubleValue()", environment);
         assertReturns(2, "Integer.bitCount(3)", environment);
         assertFails("Float.intBitsToFloat(0f)", environment);
+        assertFails("Integer.doubleValue()", environment);
 
         environment.declareVariable(Identifier.from("v", 0), LiteralReferenceType.of(Varargs.class), ObjectValue.of(new Varargs()));
         assertSucceeds("v.varargs(\"1\", \"2\")", environment);

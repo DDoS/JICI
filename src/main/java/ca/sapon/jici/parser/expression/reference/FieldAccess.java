@@ -55,6 +55,9 @@ public class FieldAccess implements Reference {
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }
+            if (!classVariable.isStatic() && object instanceof AmbiguousReference.StaticAccess) {
+                throw new EvaluatorException("Cannot access a non-static member directly from the type name", field);
+            }
         }
         return classVariable.getType();
     }

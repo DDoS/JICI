@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.call;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.sapon.jici.evaluator.Callable;
@@ -36,16 +37,23 @@ import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.name.ClassTypeName;
+import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
 
 public class ConstructorCall implements Statement, Expression {
     private final ClassTypeName typeName;
+    private final List<TypeArgumentName> typeArguments;
     private final List<Expression> arguments;
     private Callable callable = null;
 
     public ConstructorCall(ClassTypeName typeName, List<Expression> arguments) {
+        this(typeName, Collections.<TypeArgumentName>emptyList(), arguments);
+    }
+
+    public ConstructorCall(ClassTypeName typeName, List<TypeArgumentName> typeArguments, List<Expression> arguments) {
         this.arguments = arguments;
+        this.typeArguments = typeArguments;
         this.typeName = typeName;
     }
 
@@ -113,6 +121,7 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public String toString() {
-        return "ConstructorCall(new " + typeName + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "ConstructorCall(new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                typeName + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

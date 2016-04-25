@@ -29,9 +29,9 @@ public class Main {
 
         /* TODO:
             Add capture conversion where needed
-            Parse type arguments for constructor
             Implement generic method and constructors declarations
             Implement generic type inference
+            Redo type and constructor call parser according to spec
             Restructure type package
             Move ast to its own package
             Update codebase to Java 8

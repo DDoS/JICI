@@ -449,7 +449,8 @@ public final class Parser {
         ATOM:            LITERAL _ NAME _ NAME.IDENTIFIER ARGUMENTS _ NAME.<TYPE_ARG_LIST>IDENTIFIER ARGUMENTS
                          CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
 
-        CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
+        CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new <TYPE_ARG_LIST>CLASS_NAME ARGUMENTS
+                         new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
 
         ARGUMENTS:       (EXPRESSION_LIST)
 
@@ -851,7 +852,7 @@ public final class Parser {
                     }
                     if (!typeArguments.isEmpty()) {
                         if (tokens.has() && tokens.get().getGroup() == TokenGroup.IDENTIFIER) {
-                            // add method identifier trailing type params to full name
+                            // add the method identifier after the type params to full name
                             name.add((Identifier) tokens.get());
                             tokens.advance();
                         } else {
@@ -920,14 +921,24 @@ public final class Parser {
     }
 
     private static Expression parseConstructor(ListNavigator<Token> tokens) {
+        // Try for constructor type arguments
+        final List<TypeArgumentName> typeArguments;
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
+            typeArguments = parseTypeArgumentNameList(tokens);
+        } else {
+            typeArguments = Collections.emptyList();
+        }
+        // Parse the constructor type
         final TypeName type = parseTypeName(tokens);
-        if (type instanceof ArrayTypeName) {
+        // Check for an array constructor of the form "new T[]{}"
+        if (typeArguments.isEmpty() && type instanceof ArrayTypeName) {
             try {
                 return new ArrayConstructor((ArrayTypeName) type, parseArrayInitializer(tokens));
             } catch (ParseFailure failure) {
                 throw new ParseError("Expected array initializer", tokens);
             }
         }
+        // Can be either an array constructor like "new T[0]" or a just regular constructor
         if (tokens.has()) {
             switch (tokens.get().getID()) {
                 case SYMBOL_OPEN_PARENTHESIS: {
@@ -935,9 +946,13 @@ public final class Parser {
                         throw new ParseError("Expected class type", type);
                     }
                     tokens.advance();
-                    return new ConstructorCall((ClassTypeName) type, parseArgumentsRest(tokens));
+                    return new ConstructorCall((ClassTypeName) type, typeArguments, parseArgumentsRest(tokens));
                 }
                 case SYMBOL_OPEN_BRACKET: {
+                    if (!typeArguments.isEmpty()) {
+                        throw new ParseError("Type arguments are not allowed here", typeArguments.get(0).getStart(),
+                                typeArguments.get(typeArguments.size() - 1).getEnd());
+                    }
                     tokens.advance();
                     return new ArrayConstructor(type, parseArraySizes(tokens), tokens.get(-1).getEnd());
                 }

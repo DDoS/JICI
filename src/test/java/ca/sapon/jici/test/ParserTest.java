@@ -50,6 +50,7 @@ public class ParserTest {
         testParseExpression("test", "test");
         testParseExpression("test.stuff", "test.stuff");
 
+        testParseExpression("ConstructorCall(new ca.sapon.Test())", "new ca.sapon.Test()");
         testParseExpression("ConstructorCall(new Test())", "new Test()");
         testParseExpression("ConstructorCall(new Test(0, 1, 2))", "new Test(0, 1, 2)");
         testParseExpression("ConstructorCall(new Test<String>())", "new Test<String>()");
@@ -57,6 +58,7 @@ public class ParserTest {
         testParseExpression("ConstructorCall(new Test<Test<String>, Test<Object>>())", "new Test<Test<String>, Test<Object>>()");
         testParseExpression("ConstructorCall(new Test<Test<Test<Object>>>())", "new Test<Test<Test<Object>>>()");
         testParseExpression("ConstructorCall(new Test<Test<Test<Test<Object>>>>())", "new Test<Test<Test<Test<Object>>>>()");
+        testParseExpression("ConstructorCall(new <String>Test())", "new <String>Test()");
 
         testParseExpression("ArrayConstructor(new int[1])", "new int[1]");
         testParseExpression("ArrayConstructor(new Object[1])", "new Object[1]");

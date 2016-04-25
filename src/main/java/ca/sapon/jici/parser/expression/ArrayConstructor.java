@@ -84,22 +84,18 @@ public class ArrayConstructor implements Expression {
                 final int dimensions = sizes.size();
                 final int unsizedDimensions = dimensions - sizedDimensions;
                 final LiteralType baseType = typeName.getType(environment);
+                if (!baseType.isReifiable()) {
+                    throw new EvaluatorException("Array component type must be reifiable", typeName);
+                }
                 final ComponentType componentType;
                 if (unsizedDimensions != 0) {
                     componentType = baseType.asArray(unsizedDimensions);
-                    if (componentType == null) {
-                        throw new EvaluatorException("Class not found: array of " + baseType.getName() + " with dimensions " + unsizedDimensions, this);
-                    }
                 } else {
                     componentType = baseType;
                 }
-                final ReferenceType arrayType = baseType.asArray(dimensions);
-                if (arrayType == null) {
-                    throw new EvaluatorException("Class not found: array of " + componentType.getName() + " with dimensions " + sizedDimensions, this);
-                }
                 this.componentType = componentType;
                 this.sizedDimensions = sizedDimensions;
-                type = arrayType;
+                type = baseType.asArray(dimensions);
             } else {
                 final Type arrayType = typeName.getType(environment);
                 initializer.setType(environment, arrayType);

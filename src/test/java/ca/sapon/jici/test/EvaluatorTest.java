@@ -478,6 +478,7 @@ public class EvaluatorTest {
     @Test
     public void testArrayConstructor() {
         final Environment environment = new Environment();
+        environment.importClass(List.class);
         assertReturns(new int[1], "new int[1]", environment);
         assertReturns(new int[1][], "new int[1][]", environment);
         assertReturns(new int[1][2], "new int[1][2]", environment);
@@ -486,6 +487,8 @@ public class EvaluatorTest {
         assertReturns(new Object[1][], "new Object[1][]", environment);
         assertReturns(new Object[1][2], "new Object[1][2]", environment);
         assertReturns(new Object[1][2][][], "new Object[1][2][][]", environment);
+
+        assertFails("new List<String>[1]", environment);
 
         assertReturns(new int[]{1, 2}, "new int[]{1, 2}", environment);
         //noinspection UnnecessaryBoxing

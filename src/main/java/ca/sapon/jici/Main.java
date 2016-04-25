@@ -30,7 +30,8 @@ public class Main {
         /* TODO:
             Add capture conversion where needed
             Implement generic method and constructors declarations
-            Implement generic type inference
+            Properly handle unchecked conversions in method arguments
+            Fix logical operator short-circuiting
             Redo type and constructor call parser according to spec
             Restructure type package
             Move ast to its own package

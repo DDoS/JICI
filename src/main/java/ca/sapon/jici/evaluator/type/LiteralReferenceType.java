@@ -367,7 +367,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     @Override
-    public Callable getMethod(String name, Type[] arguments) {
+    public Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments) {
         final int argumentCount = arguments.length;
         if (isArray() && argumentCount == 0 && "clone".equals(name)) {
             return Callable.forArrayClone(this);
@@ -400,17 +400,25 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                     continue;
                 }
                 final java.lang.reflect.Type[] parameterTypes = candidate.getGenericParameterTypes();
-                // look for matches in length
+                // look for matches in length parameter types
                 if (parameterTypes.length == argumentCount) {
-                    candidates.put(candidate, substituteParameters(substitutions, TypeUtil.wrap(parameterTypes)));
-                    declarorSubstitutions.put(candidate, substitutions);
+                    // Now check if the type arguments are suitable, if the method declares type parameters
+                    final Substitutions combinedSubstitutions = checkTypeArguments(substitutions, candidate.getTypeParameters(), typeArguments);
+                    if (combinedSubstitutions != null) {
+                        candidates.put(candidate, substituteParameters(combinedSubstitutions, TypeUtil.wrap(parameterTypes)));
+                        declarorSubstitutions.put(candidate, combinedSubstitutions);
+                    }
                 }
                 // look for varargs with matches in name and length of non-varargs
                 if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
-                    final Type[] substitutedParameters = substituteParameters(substitutions, TypeUtil.wrap(parameterTypes));
-                    // expand the parameters through the vararg to match the argument count
-                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(substitutedParameters, argumentCount));
-                    declarorSubstitutions.put(candidate, substitutions);
+                    // Now check if the type arguments are suitable, if the method declares type parameters
+                    final Substitutions combinedSubstitutions = checkTypeArguments(substitutions, candidate.getTypeParameters(), typeArguments);
+                    if (combinedSubstitutions != null) {
+                        final Type[] substitutedParameters = substituteParameters(combinedSubstitutions, TypeUtil.wrap(parameterTypes));
+                        // expand the parameters through the vararg to match the argument count
+                        varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(substitutedParameters, argumentCount));
+                        declarorSubstitutions.put(candidate, combinedSubstitutions);
+                    }
                 }
             }
             // Search the super types after (to respect shadowing rules)
@@ -441,6 +449,41 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             }
         }
         return parameters;
+    }
+
+    private Substitutions checkTypeArguments(Substitutions substitutions, java.lang.reflect.TypeVariable<Method>[] parameters, TypeArgument[] arguments) {
+        // It's allowed to call a non-parametrized method with type arguments
+        if (parameters.length == 0) {
+            return substitutions;
+        }
+        // Check for length match
+        if (parameters.length != arguments.length) {
+            return null;
+        }
+        // Wrap the parameters
+        final TypeVariable[] signatureParameters = new TypeVariable[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            signatureParameters[i] = (TypeVariable) TypeUtil.wrap(parameters[i]);
+        }
+        // Generate the combined substitution of the declaring class and method parameters, following the shadowing rules
+        final Map<String, TypeArgument> namesToArguments = new HashMap<>();
+        // First add all declaring class arguments from the original substitutions
+        namesToArguments.putAll(substitutions.getMap());
+        // Now add the method ones, replacing the declaring class arguments (shadowing)
+        namesToArguments.putAll(Substitutions.toSubstitutionMap(signatureParameters, arguments));
+        final Substitutions combinedSubstitutions = new Substitutions(namesToArguments);
+        // Apply the substitutions to the method parameter bounds to get the final method signature parameters
+        for (int i = 0; i < signatureParameters.length; i++) {
+            signatureParameters[i] = signatureParameters[i].substituteBoundTypeVariables(combinedSubstitutions);
+        }
+        // Check if arguments are within bounds
+        for (int i = 0; i < signatureParameters.length; i++) {
+            if (!signatureParameters[i].boundsContain(arguments[i])) {
+                throw new UnsupportedOperationException("Cannot convert type argument " + arguments[i] + " to " + signatureParameters[i]);
+            }
+        }
+        // Return the combined substitutions to be used on other types in the method signature
+        return combinedSubstitutions;
     }
 
     public Substitutions getSubstitutions() {

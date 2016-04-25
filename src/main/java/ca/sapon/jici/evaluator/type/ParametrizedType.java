@@ -347,10 +347,10 @@ public class ParametrizedType extends LiteralReferenceType {
         final List<TypeArgument> capturedArguments = capture.getArguments();
         final Substitutions substitutions = capture.getSubstitutions();
         for (int i = 0; i < parameters.length; i++) {
-            final IntersectionType parameterUpperBound = parameters[i].getUpperBound().substituteTypeVariables(substitutions);
+            final TypeVariable substitutedParameter = parameters[i].substituteBoundTypeVariables(substitutions);
             final TypeArgument capturedArgument = capturedArguments.get(i);
-            if (!capturedArgument.convertibleTo(parameterUpperBound)) {
-                throw new UnsupportedOperationException("Cannot convert argument " + capturedArgument + " to " + parameterUpperBound);
+            if (!substitutedParameter.boundsContain(capturedArgument)) {
+                throw new UnsupportedOperationException("Cannot convert type argument " + capturedArgument + " to " + substitutedParameter);
             }
         }
         return type;

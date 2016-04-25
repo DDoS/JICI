@@ -38,7 +38,7 @@ public interface ReferenceType extends Type {
 
     ClassVariable getField(String name);
 
-    Callable getMethod(String name, Type[] arguments);
+    Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments);
 
     Set<SingleReferenceType> getDirectSuperTypes();
 

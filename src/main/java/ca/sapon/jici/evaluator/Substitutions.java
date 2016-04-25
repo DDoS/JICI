@@ -105,4 +105,15 @@ public class Substitutions {
     public TypeArgument forVariable(String name) {
         return substitutions.get(name);
     }
+
+    public static Map<String, TypeArgument> toSubstitutionMap(TypeVariable[] parameters, TypeArgument[] arguments) {
+        if (parameters.length != arguments.length) {
+            throw new IllegalArgumentException("Expected the parameter and argument arrays to be the same length");
+        }
+        final HashMap<String, TypeArgument> substitutions = new HashMap<>();
+        for (int i = 0; i < arguments.length; i++) {
+            substitutions.put(parameters[i].getDeclaredName(), arguments[i]);
+        }
+        return substitutions;
+    }
 }

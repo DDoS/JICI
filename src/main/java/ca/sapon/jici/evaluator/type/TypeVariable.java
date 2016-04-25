@@ -67,10 +67,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     @Override
     public String getName() {
         String fullName = name + StringUtil.repeat("[]", dimensions);
-        if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
+        if (!lowerBound.equals(IntersectionType.EVERYTHING)) {
             fullName += " super " + lowerBound;
         }
-        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
+        if (!upperBound.equals(IntersectionType.NOTHING)) {
             fullName += " extends " + upperBound;
         }
         return fullName;
@@ -125,8 +125,8 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public Callable getMethod(String name, Type[] arguments) {
-        return upperBound.getMethod(name, arguments);
+    public Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments) {
+        return upperBound.getMethod(name, typeArguments, arguments);
     }
 
     @Override
@@ -136,7 +136,13 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         if (substitution != null) {
             return substitution.asArray(dimensions);
         }
-        // Else apply recursively on lower and upper bound
+        // Else apply recursively on lower and upper bounds
+        return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions),
+                upperBound.substituteTypeVariables(substitutions));
+    }
+
+    public TypeVariable substituteBoundTypeVariables(Substitutions substitutions) {
+        // Apply only on lower and upper bounds
         return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions),
                 upperBound.substituteTypeVariables(substitutions));
     }
@@ -161,7 +167,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             final TypeVariable target = (TypeVariable) to;
             return upperBound.convertibleTo(target.getUpperBound()) && target.getLowerBound().convertibleTo(lowerBound);
         }
-        // Can convert to an intersection type if can convert to all the types in it
+        // Can convert to an intersection type if can convert to all the types it contains
         if (to instanceof IntersectionType) {
             final IntersectionType target = (IntersectionType) to;
             for (SingleReferenceType type : target.getTypes()) {
@@ -173,6 +179,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         }
         // Can convert to any other type if the upper bound can
         return upperBound.convertibleTo(to);
+    }
+
+    public boolean boundsContain(Type type) {
+        return lowerBound.convertibleTo(type) && type.convertibleTo(upperBound);
     }
 
     @Override

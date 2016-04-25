@@ -104,7 +104,7 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public Callable getMethod(String name, Type[] arguments) {
+    public Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments) {
         throw new UnsupportedOperationException("Cannot dereference the null type");
     }
 

@@ -31,6 +31,8 @@ import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
@@ -76,13 +78,25 @@ public class MethodCall implements Expression, Statement {
             if (!(objectType instanceof ReferenceType)) {
                 throw new EvaluatorException("Not a class type " + objectType.getName(), object);
             }
-            final int size = arguments.size();
-            final Type[] argumentTypes = new Type[size];
-            for (int i = 0; i < size; i++) {
+            // Check type arguments
+            final int typeArgumentCount = typeArguments.size();
+            final TypeArgument[] typeArguments = new TypeArgument[typeArgumentCount];
+            for (int i = 0; i < typeArgumentCount; i++) {
+                final TypeArgument typeArgument = this.typeArguments.get(i).getType(environment);
+                if (typeArgument instanceof WildcardType) {
+                    throw new EvaluatorException("Cannot use wildcards as type arguments in method calls", this.typeArguments.get(i));
+                }
+                typeArguments[i] = typeArgument;
+            }
+            // Check argument types
+            final int argumentCount = arguments.size();
+            final Type[] argumentTypes = new Type[argumentCount];
+            for (int i = 0; i < argumentCount; i++) {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
+            // Get method to call
             try {
-                callable = ((ReferenceType) objectType).getMethod(method.getSource(), argumentTypes);
+                callable = ((ReferenceType) objectType).getMethod(method.getSource(), typeArguments, argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), method);
             }

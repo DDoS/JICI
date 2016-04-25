@@ -197,10 +197,10 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public Callable getMethod(String name, Type[] arguments) {
+    public Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments) {
         for (SingleReferenceType type : getTypes()) {
             try {
-                return type.getMethod(name, arguments);
+                return type.getMethod(name, typeArguments, arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }

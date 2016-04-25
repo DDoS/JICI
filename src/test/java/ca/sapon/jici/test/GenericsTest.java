@@ -528,17 +528,16 @@ public class GenericsTest {
                 "new M<? extends String>();",
                 environment
         );
-
-        /*assertType(
+        assertType(
                 environment,
                 "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.String>",
                 "new Outer<Integer>().newStringInner()"
-        );*/
-        /*assertType(
+        );
+        assertType(
                 environment,
                 "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.Float>",
                 "new Outer<Integer>().<Float>newInner()"
-        );*/
+        );
     }
 
     @Test
@@ -585,16 +584,16 @@ public class GenericsTest {
                 "CAP#1 extends java.lang.String",
                 "M.newWildcardM().t"
         );
-        /*assertType(
+        assertType(
                 environment,
-                "java.lang.String",
+                "java.lang.Integer",
                 "new Outer<Integer>().newStringInner().t"
-        );*/
-        /*assertType(
+        );
+        assertType(
                 environment,
                 "java.lang.Integer",
                 "new Outer<Integer>().<Float>newInner().t"
-        );*/
+        );
     }
 
     @Test
@@ -619,23 +618,23 @@ public class GenericsTest {
         assertType(
                 environment,
                 "java.lang.Short",
-                "new M<String>().getS()"
+                "new M<String>().getShort()"
         );
         assertType(
                 environment,
                 "CAP#1 extends java.lang.String",
                 "M.newWildcardM().getT()"
         );
-        /*assertType(
+        assertType(
                 environment,
-                "java.lang.String",
+                "java.lang.Integer",
                 "new Outer<Integer>().newStringInner().getT()"
-        );*/
-        /*assertType(
+        );
+        assertType(
                 environment,
                 "java.lang.Integer",
                 "new Outer<Integer>().<Float>newInner().getT()"
-        );*/
+        );
         EvaluatorTest.assertFails(
                 "new M<String>().setT();",
                 environment
@@ -700,6 +699,38 @@ public class GenericsTest {
                 "CAP#1[][] extends java.lang.String[][]",
                 "M.newWildcardM().getTts()"
         );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<Integer>().<String>getS(1)"
+        );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<CharSequence>().<String>getS2()"
+        );
+        EvaluatorTest.assertFails(
+                "new M<CharSequence>().<Integer>getS2()",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new M<CharSequence>().<? extends String>getS2()",
+                environment
+        );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<Integer>().<String>getS3(\"1\")"
+        );
+        EvaluatorTest.assertFails(
+                "new M<Integer>().<String>getS3((Integer) 1)",
+                environment
+        );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new M<Integer>().<String>getT2(\"1\")"
+        );
     }
 
     public static class M<T> {
@@ -727,7 +758,23 @@ public class GenericsTest {
             return null;
         }
 
-        public static Short getS() {
+        public <S> S getS(T t) {
+            return null;
+        }
+
+        public <S extends T> S getS2() {
+            return null;
+        }
+
+        public <S> S getS3(S s) {
+            return s;
+        }
+
+        public <T> T getT2(T t) {
+            return t;
+        }
+
+        public static Short getShort() {
             return s;
         }
 

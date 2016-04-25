@@ -53,16 +53,16 @@ public class WildcardType implements TypeArgument, BoundedType {
     }
 
     public boolean isUnbounded() {
-        return lowerBound.getTypes().contains(LiteralReferenceType.THE_OBJECT) && lowerBound.getTypes().contains(NullType.THE_NULL);
+        return lowerBound.equals(IntersectionType.EVERYTHING) && upperBound.equals(IntersectionType.NOTHING);
     }
 
     @Override
     public String getName() {
         String name = "?";
-        if (!lowerBound.getTypes().contains(NullType.THE_NULL)) {
+        if (!lowerBound.equals(IntersectionType.EVERYTHING)) {
             name += " super " + lowerBound;
         }
-        if (!upperBound.getTypes().contains(LiteralReferenceType.THE_OBJECT)) {
+        if (!upperBound.equals(IntersectionType.NOTHING)) {
             name += " extends " + upperBound;
         }
         return name;

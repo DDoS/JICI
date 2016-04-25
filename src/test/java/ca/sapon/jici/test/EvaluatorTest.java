@@ -30,19 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.NullType;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
@@ -57,6 +54,8 @@ import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class EvaluatorTest {
     @Test
@@ -489,6 +488,7 @@ public class EvaluatorTest {
         assertReturns(new Object[1][2][][], "new Object[1][2][][]", environment);
 
         assertFails("new List<String>[1]", environment);
+        assertReturns(new List<?>[1], "new List<?>[1]", environment);
 
         assertReturns(new int[]{1, 2}, "new int[]{1, 2}", environment);
         //noinspection UnnecessaryBoxing

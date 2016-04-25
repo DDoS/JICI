@@ -178,6 +178,14 @@ public class GenericsTest {
                 "M<String> n; K k = null; n = k;",
                 environment
         );
+        EvaluatorTest.assertSucceeds(
+                "M i; M<String> j = null; i = j;",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "M<String> a; M b = null; a = b;",
+                environment
+        );
     }
 
     @Test
@@ -638,6 +646,10 @@ public class GenericsTest {
         );
         EvaluatorTest.assertSucceeds(
                 "new M<String>().setT(\"1\");",
+                environment
+        );
+        EvaluatorTest.assertSucceeds(
+                "new M<N<String>>().setT(new N());",
                 environment
         );
         EvaluatorTest.assertSucceeds(

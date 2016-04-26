@@ -34,7 +34,7 @@ import ca.sapon.jici.evaluator.Callable;
 public interface ReferenceType extends Type {
     ComponentType getComponentType();
 
-    Callable getConstructor(Type[] arguments);
+    Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments);
 
     ClassVariable getField(String name);
 

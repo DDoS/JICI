@@ -77,17 +77,29 @@ public class ConstructorCall implements Statement, Expression {
             if (type instanceof ParametrizedType) {
                 for (TypeArgument argument : ((ParametrizedType) type).getArguments()) {
                     if (argument instanceof WildcardType) {
-                        throw new EvaluatorException("Cannot use wildcards as type arguments in a constructor call", typeName);
+                        throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeName);
                     }
                 }
             }
+            // Check type arguments
+            final int typeArgumentCount = typeArguments.size();
+            final TypeArgument[] typeArguments = new TypeArgument[typeArgumentCount];
+            for (int i = 0; i < typeArgumentCount; i++) {
+                final TypeArgument typeArgument = this.typeArguments.get(i).getType(environment);
+                if (typeArgument instanceof WildcardType) {
+                    throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", this.typeArguments.get(i));
+                }
+                typeArguments[i] = typeArgument;
+            }
+            // Check argument types
             final int size = arguments.size();
             final Type[] argumentTypes = new Type[size];
             for (int i = 0; i < size; i++) {
                 argumentTypes[i] = arguments.get(i).getType(environment);
             }
+            // Get constructor to call
             try {
-                callable = type.getConstructor(argumentTypes);
+                callable = type.getConstructor(typeArguments, argumentTypes);
             } catch (UnsupportedOperationException exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }

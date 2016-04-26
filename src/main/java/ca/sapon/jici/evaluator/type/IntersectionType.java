@@ -174,10 +174,10 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public Callable getConstructor(Type[] arguments) {
+    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
         for (SingleReferenceType type : getTypes()) {
             try {
-                return type.getConstructor(arguments);
+                return type.getConstructor(typeArguments, arguments);
             } catch (UnsupportedOperationException ignored) {
             }
         }

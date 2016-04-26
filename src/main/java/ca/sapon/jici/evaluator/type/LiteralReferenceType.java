@@ -293,7 +293,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     @Override
-    public Callable getConstructor(Type[] arguments) {
+    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
         final int argumentCount = arguments.length;
         // Search for both regular and vararg candidates at the same time
         final Map<Constructor<?>, Type[]> candidates = new HashMap<>();
@@ -311,15 +311,23 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             final java.lang.reflect.Type[] parameterTypes = candidate.getGenericParameterTypes();
             // look for matches in length
             if (parameterTypes.length == argumentCount) {
-                // Apply substitutions for parameters to support parametrized types
-                candidates.put(candidate, substituteParameters(substitutions, TypeUtil.wrap(parameterTypes)));
+                // Now check if the type arguments are suitable, if the method declares type parameters
+                final Substitutions combinedSubstitutions = checkTypeArguments(substitutions, candidate.getTypeParameters(), typeArguments);
+                if (combinedSubstitutions != null) {
+                    // Apply substitutions for parameters to support parametrized types
+                    candidates.put(candidate, substituteParameters(combinedSubstitutions, TypeUtil.wrap(parameterTypes)));
+                }
             }
             // look for varargs with matches in name and length of non-varargs
             if (candidate.isVarArgs() && parameterTypes.length - 1 <= argumentCount) {
-                // Apply substitutions for parameters to support parametrized types
-                final Type[] substitutedParameters = substituteParameters(substitutions, TypeUtil.wrap(parameterTypes));
-                // expand the parameters through the vararg to match the argument count
-                varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(substitutedParameters, argumentCount));
+                // Now check if the type arguments are suitable, if the method declares type parameters
+                final Substitutions combinedSubstitutions = checkTypeArguments(substitutions, candidate.getTypeParameters(), typeArguments);
+                if (combinedSubstitutions != null) {
+                    // Apply substitutions for parameters to support parametrized types
+                    final Type[] substitutedParameters = substituteParameters(combinedSubstitutions, TypeUtil.wrap(parameterTypes));
+                    // expand the parameters through the vararg to match the argument count
+                    varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(substitutedParameters, argumentCount));
+                }
             }
         }
         // try to resolve the overloads
@@ -332,8 +340,9 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (constructor != null) {
             return Callable.forVarargConstructor(capture, constructor);
         }
-        throw new UnsupportedOperationException("No constructor for signature: "
-                + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        throw new UnsupportedOperationException("No constructor for signature: " +
+                (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                type.getSimpleName() + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     @Override
@@ -414,6 +423,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                     // Now check if the type arguments are suitable, if the method declares type parameters
                     final Substitutions combinedSubstitutions = checkTypeArguments(substitutions, candidate.getTypeParameters(), typeArguments);
                     if (combinedSubstitutions != null) {
+                        // Apply substitutions for parameters to support parametrized types
                         final Type[] substitutedParameters = substituteParameters(combinedSubstitutions, TypeUtil.wrap(parameterTypes));
                         // expand the parameters through the vararg to match the argument count
                         varargCandidate.put(candidate, ReflectionUtil.expandsVarargs(substitutedParameters, argumentCount));
@@ -437,8 +447,9 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (method != null) {
             return Callable.forVarargMethod(declarorSubstitutions.get(method), method);
         }
-        throw new UnsupportedOperationException("No method for signature: "
-                + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        throw new UnsupportedOperationException("No method for signature: " +
+                (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
     }
 
     private Type[] substituteParameters(Substitutions substitutions, Type[] parameters) {
@@ -451,7 +462,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return parameters;
     }
 
-    private Substitutions checkTypeArguments(Substitutions substitutions, java.lang.reflect.TypeVariable<Method>[] parameters, TypeArgument[] arguments) {
+    private Substitutions checkTypeArguments(Substitutions substitutions, java.lang.reflect.TypeVariable<?>[] parameters, TypeArgument[] arguments) {
         // It's allowed to call a non-parametrized method with type arguments
         if (parameters.length == 0) {
             return substitutions;

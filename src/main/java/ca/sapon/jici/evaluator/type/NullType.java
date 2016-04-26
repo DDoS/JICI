@@ -94,7 +94,7 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public Callable getConstructor(Type[] arguments) {
+    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
         throw new UnsupportedOperationException("Cannot dereference the null type");
     }
 

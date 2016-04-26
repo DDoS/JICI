@@ -115,8 +115,8 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public Callable getConstructor(Type[] arguments) {
-        return upperBound.getConstructor(arguments);
+    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
+        return upperBound.getConstructor(typeArguments, arguments);
     }
 
     @Override

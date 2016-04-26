@@ -480,6 +480,7 @@ public class GenericsTest {
         environment.importClass(Outer.class);
         environment.importClass(Inner.class);
         environment.importClass(U.class);
+        environment.importClass(V.class);
 
         assertType(
                 environment,
@@ -537,6 +538,46 @@ public class GenericsTest {
                 environment,
                 "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.Float>",
                 "new Outer<Integer>().<Float>newInner()"
+        );
+        EvaluatorTest.assertFails(
+                "new V<String>(\"1\");",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new <? extends String>V<String>(\"1\");",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new <Integer>V<String>(\"1\");",
+                environment
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.V<java.lang.Integer>",
+                "new <String>V<Integer>(\"1\")"
+        );
+        EvaluatorTest.assertFails(
+                "new <Integer>V<CharSequence>(\"1\", new StringBuilder());",
+                environment
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.V<java.lang.CharSequence>",
+                "new <String>V<CharSequence>(\"1\", new StringBuilder())"
+        );
+        EvaluatorTest.assertFails(
+                "new <Integer>V<CharSequence>((Integer) 1, \"1\", false);",
+                environment
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.V<java.lang.Float>",
+                "new <Integer, CharSequence>V<Float>((Integer) 1, \"1\", true)"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.V<java.lang.Float>",
+                "new <Integer, String>V<Float>((Integer) 1, \"1\", true)"
         );
     }
 
@@ -667,6 +708,10 @@ public class GenericsTest {
                 "new M<String>().setTs();",
                 environment
         );
+        EvaluatorTest.assertFails(
+                "new M<Integer>().setT(\"1\");",
+                environment
+        );
         EvaluatorTest.assertSucceeds(
                 "new M<CharSequence>().setT(\"1\");",
                 environment
@@ -698,6 +743,10 @@ public class GenericsTest {
                 environment,
                 "CAP#1[][] extends java.lang.String[][]",
                 "M.newWildcardM().getTts()"
+        );
+        EvaluatorTest.assertFails(
+                "new M<Integer>().getS();",
+                environment
         );
         assertType(
                 environment,
@@ -794,7 +843,7 @@ public class GenericsTest {
         public Float p = null;
     }
 
-    public class Q<T> extends M<M<T>> {
+    public static class Q<T> extends M<M<T>> {
     }
 
     interface I<A> {
@@ -836,10 +885,10 @@ public class GenericsTest {
         }
     }
 
-    public class Z<T extends Outer<S>.Inner<R>, S, R> {
+    public static class Z<T extends Outer<S>.Inner<R>, S, R> {
     }
 
-    public class U<T> {
+    public static class U<T> {
         public T t;
 
         public U(T t) {
@@ -849,6 +898,17 @@ public class GenericsTest {
         @SafeVarargs
         public U(T... t) {
             this.t = null;
+        }
+    }
+
+    public static class V<T> {
+        public <S> V(S s) {
+        }
+
+        public <S extends T> V(S s, T t) {
+        }
+
+        public <S, T> V(S s, T t, boolean b) {
         }
     }
 

@@ -29,20 +29,21 @@ public class Main {
 
         /* TODO:
             Add capture conversion where needed
-            Implement generic method and constructors declarations
             Properly handle unchecked conversions in method arguments
-            Fix logical operator short-circuiting
             Redo type and constructor call parser according to spec
+            Update constructor call evaluator to match spec
+            Fix logical operator short-circuiting
+            Absorb sign tokens in lexer
+            Fix source start and end indices
+
             Restructure type package
             Move ast to its own package
             Update codebase to Java 8
-            Absorb sign tokens in lexer
             Split parser into name, expression and statement
             Redefine Expression and Statement interfaces
             Add name, expression and statement visitors
             Move evaluator to visitor
             Fix getSource() vs toString()
-            Fix source start and end indices
             Add eval() to JICI class
         */
     }

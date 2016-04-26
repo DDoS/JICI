@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -45,6 +46,10 @@ public final class StringUtil {
     }
 
     private StringUtil() {
+    }
+
+    public static String toString(Object[] elements, String separator) {
+        return toString(Arrays.asList(elements), separator);
     }
 
     public static String toString(Collection<?> elements, String separator) {

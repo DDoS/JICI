@@ -1,4 +1,7 @@
 # JICI #
+
+[![Build status](https://travis-ci.org/DDoS/JICI.svg?branch=master)](https://travis-ci.org/DDoS/JICI)
+
 Stands for <strong>J</strong>ava <strong>i</strong>ntepreter and <strong>c</strong>ode <strong>i</strong>nteraction.
 
 Currently supported are expressions (all operators), including arrays, field accesses, method and constructor calls.  

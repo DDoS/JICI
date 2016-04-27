@@ -43,4 +43,7 @@ public interface ReferenceType extends Type {
     Set<SingleReferenceType> getDirectSuperTypes();
 
     ReferenceType getErasure();
+
+    @Override
+    ReferenceType capture();
 }

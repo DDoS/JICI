@@ -66,15 +66,15 @@ public class PostIncrement implements Expression, Statement {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            increment.getType(environment);
-            final Type innerType = increment.getLeftType();
-            if (!innerType.isNumeric()) {
-                throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
-            }
-            type = innerType;
+        if (type != null) {
+            return type;
         }
-        return type;
+        increment.getType(environment);
+        final Type innerType = increment.getLeftType();
+        if (!innerType.isNumeric()) {
+            throw new EvaluatorException("Not a numeric type: " + innerType.getName(), inner);
+        }
+        return type = innerType;
     }
 
     @Override

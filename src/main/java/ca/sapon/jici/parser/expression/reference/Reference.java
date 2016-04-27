@@ -24,10 +24,13 @@
 package ca.sapon.jici.parser.expression.reference;
 
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 
 public interface Reference extends Expression {
+    Type getTargetType(Environment environment);
+
     void setValue(Environment environment, Value value);
 
     String toString();

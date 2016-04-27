@@ -49,69 +49,69 @@ public class Conditional implements Expression {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final Type testType = TypeUtil.coerceToPrimitive(environment, test);
-            Type leftType = left.getType(environment);
-            Type rightType = right.getType(environment);
-            if (!testType.isBoolean()) {
-                throw new EvaluatorException("Not a boolean: " + testType.getName(), test);
-            }
-            if (leftType.isVoid()) {
-                throw new EvaluatorException("Illegal type: void", left);
-            }
-            if (rightType.isVoid()) {
-                throw new EvaluatorException("Illegal type: void", right);
-            }
-            if (leftType.equals(rightType)) {
-                // both same type to that type
-                return type = leftType;
-            }
-            if (leftType.isNull()) {
-                // left null to right type
-                if (rightType instanceof PrimitiveType) {
-                    rightType = ((PrimitiveType) rightType).box();
-                }
-                return type = rightType;
-            }
-            if (rightType.isNull()) {
-                // right null to left type
-                if (leftType instanceof PrimitiveType) {
-                    leftType = ((PrimitiveType) leftType).box();
-                }
-                return type = leftType;
-            }
-            if (leftType instanceof LiteralReferenceType) {
-                leftType = ((LiteralReferenceType) leftType).tryUnbox();
-            }
-            if (rightType instanceof LiteralReferenceType) {
-                rightType = ((LiteralReferenceType) rightType).tryUnbox();
-            }
-            if (leftType.isReference() || rightType.isReference()) {
-                // for objects the lowest upper bound
-                return type = TypeUtil.lowestUpperBound(
-                        leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ReferenceType) leftType,
-                        rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ReferenceType) rightType
-                );
-            }
-            final PrimitiveType leftPrimitiveType = (PrimitiveType) leftType;
-            final PrimitiveType rightPrimitiveType = (PrimitiveType) rightType;
-            if (left instanceof IntLiteral && rightPrimitiveType.canNarrowFrom(((IntLiteral) left).asInt())) {
-                // left constant numeric that narrows to right, use right
-                return type = rightPrimitiveType;
-            }
-            if (right instanceof IntLiteral && leftPrimitiveType.canNarrowFrom(((IntLiteral) right).asInt())) {
-                // right constant numeric that narrows to left, use left
-                return type = leftPrimitiveType;
-            }
-            if (leftPrimitiveType.equals(PrimitiveType.THE_BYTE) && rightPrimitiveType.equals(PrimitiveType.THE_SHORT)
-                    || leftPrimitiveType.equals(PrimitiveType.THE_SHORT) && rightPrimitiveType.equals(PrimitiveType.THE_BYTE)) {
-                // one byte and other short to short
-                return type = PrimitiveType.THE_SHORT;
-            }
-            // else use binary widening
-            return type = leftPrimitiveType.binaryWiden(rightPrimitiveType);
+        if (type != null) {
+            return type;
         }
-        return type;
+        final Type testType = TypeUtil.coerceToPrimitive(environment, test);
+        Type leftType = left.getType(environment);
+        Type rightType = right.getType(environment);
+        if (!testType.isBoolean()) {
+            throw new EvaluatorException("Not a boolean: " + testType.getName(), test);
+        }
+        if (leftType.isVoid()) {
+            throw new EvaluatorException("Illegal type: void", left);
+        }
+        if (rightType.isVoid()) {
+            throw new EvaluatorException("Illegal type: void", right);
+        }
+        if (leftType.equals(rightType)) {
+            // both same type to that type
+            return type = leftType;
+        }
+        if (leftType.isNull()) {
+            // left null to right type
+            if (rightType instanceof PrimitiveType) {
+                rightType = ((PrimitiveType) rightType).box();
+            }
+            return type = rightType;
+        }
+        if (rightType.isNull()) {
+            // right null to left type
+            if (leftType instanceof PrimitiveType) {
+                leftType = ((PrimitiveType) leftType).box();
+            }
+            return type = leftType;
+        }
+        if (leftType instanceof LiteralReferenceType) {
+            leftType = ((LiteralReferenceType) leftType).tryUnbox();
+        }
+        if (rightType instanceof LiteralReferenceType) {
+            rightType = ((LiteralReferenceType) rightType).tryUnbox();
+        }
+        if (leftType.isReference() || rightType.isReference()) {
+            // for objects use the lowest upper bound capture
+            return type = TypeUtil.lowestUpperBound(
+                    leftType instanceof PrimitiveType ? ((PrimitiveType) leftType).box() : (ReferenceType) leftType,
+                    rightType instanceof PrimitiveType ? ((PrimitiveType) rightType).box() : (ReferenceType) rightType
+            ).capture();
+        }
+        final PrimitiveType leftPrimitiveType = (PrimitiveType) leftType;
+        final PrimitiveType rightPrimitiveType = (PrimitiveType) rightType;
+        if (left instanceof IntLiteral && rightPrimitiveType.canNarrowFrom(((IntLiteral) left).asInt())) {
+            // left constant numeric that narrows to right, use right
+            return type = rightPrimitiveType;
+        }
+        if (right instanceof IntLiteral && leftPrimitiveType.canNarrowFrom(((IntLiteral) right).asInt())) {
+            // right constant numeric that narrows to left, use left
+            return type = leftPrimitiveType;
+        }
+        if (leftPrimitiveType.equals(PrimitiveType.THE_BYTE) && rightPrimitiveType.equals(PrimitiveType.THE_SHORT)
+                || leftPrimitiveType.equals(PrimitiveType.THE_SHORT) && rightPrimitiveType.equals(PrimitiveType.THE_BYTE)) {
+            // one byte and other short to short
+            return type = PrimitiveType.THE_SHORT;
+        }
+        // else use binary widening
+        return type = leftPrimitiveType.binaryWiden(rightPrimitiveType);
     }
 
     @Override

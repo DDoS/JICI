@@ -30,5 +30,8 @@ public interface LiteralType extends Type, ComponentType {
     Class<?> getTypeClass();
 
     @Override
+    LiteralType capture();
+
+    @Override
     LiteralReferenceType asArray(int dimensions);
 }

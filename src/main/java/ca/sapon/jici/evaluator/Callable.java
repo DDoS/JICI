@@ -125,7 +125,7 @@ public abstract class Callable {
             if (type instanceof TypeArgument) {
                 type = ((TypeArgument) type).substituteTypeVariables(substitutions);
             }
-            return type;
+            return type.capture();
         }
     }
 

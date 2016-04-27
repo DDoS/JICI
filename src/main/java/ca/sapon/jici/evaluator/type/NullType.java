@@ -69,6 +69,11 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
+    public NullType capture() {
+        return this;
+    }
+
+    @Override
     public Set<SingleReferenceType> getDirectSuperTypes() {
         throw new UnsupportedOperationException("Can't list the direct super types of the null types as it is the universal set");
     }

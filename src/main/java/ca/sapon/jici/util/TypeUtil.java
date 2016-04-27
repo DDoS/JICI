@@ -393,7 +393,7 @@ public final class TypeUtil {
     public static Set<LiteralReferenceType> getSuperTypes(ReferenceType type) {
         final Set<LiteralReferenceType> result = new HashSet<>();
         final Queue<ReferenceType> queue = new ArrayDeque<>();
-        queue.add(type);
+        queue.add(type.capture());
         while (!queue.isEmpty()) {
             final ReferenceType child = queue.remove();
             final LiteralReferenceType literalChild = child instanceof LiteralReferenceType ? (LiteralReferenceType) child : null;

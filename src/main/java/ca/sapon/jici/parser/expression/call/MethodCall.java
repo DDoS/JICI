@@ -37,6 +37,7 @@ import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.expression.reference.AmbiguousReference;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.StringUtil;
@@ -92,7 +93,12 @@ public class MethodCall implements Expression, Statement {
             final int argumentCount = arguments.size();
             final Type[] argumentTypes = new Type[argumentCount];
             for (int i = 0; i < argumentCount; i++) {
-                argumentTypes[i] = arguments.get(i).getType(environment);
+                Type argumentType = arguments.get(i).getType(environment);
+                // Must capture variables subject to invocation conversion
+                if (arguments.get(i) instanceof VariableAccess) {
+                    argumentType = argumentType.capture();
+                }
+                argumentTypes[i] = argumentType;
             }
             // Get method to call
             try {

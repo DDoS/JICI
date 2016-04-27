@@ -31,6 +31,7 @@ import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.TypeUtil;
 
@@ -46,39 +47,44 @@ public class Cast implements Expression {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final LiteralType castType = typeName.getType(environment);
-            Type objectType = object.getType(environment);
-            if (objectType.isVoid() || castType.isVoid()) {
-                failCast(castType, objectType);
-            }
-            // apply boxing or unboxing if possible to have
-            // a pair primitive-primitive or object-object
-            if (castType.isPrimitive()) {
-                if (objectType instanceof LiteralReferenceType) {
-                    objectType = ((LiteralReferenceType) objectType).tryUnbox();
-                }
-            } else if (objectType instanceof PrimitiveType) {
-                objectType = ((PrimitiveType) objectType).box();
-            }
-            // cast primitive to primitive
-            // cast boolean to boolean
-            // more complicated rules for reference types
-            if (castType.isPrimitive()) {
-                if (!objectType.isPrimitive()) {
-                    failCast(castType, objectType);
-                }
-                if (castType.isBoolean() ^ objectType.isBoolean()) {
-                    failCast(castType, objectType);
-                }
-            } else if (objectType.isPrimitive()) {
-                failCast(castType, objectType);
-            } else if (!TypeUtil.isValidReferenceCast((ReferenceType) objectType, (ReferenceType) castType)) {
-                failCast(castType, objectType);
-            }
-            type = castType;
+        if (type != null) {
+            return type;
         }
-        return type;
+        final LiteralType castType = typeName.getType(environment);
+        Type objectType = object.getType(environment);
+        // Must capture variables subject to casting conversion
+        if (object instanceof VariableAccess) {
+            objectType = objectType.capture();
+        }
+        // Check the validity of the cast
+        if (objectType.isVoid() || castType.isVoid()) {
+            failCast(castType, objectType);
+        }
+        // apply boxing or unboxing if possible to have
+        // a pair primitive-primitive or object-object
+        if (castType.isPrimitive()) {
+            if (objectType instanceof LiteralReferenceType) {
+                objectType = ((LiteralReferenceType) objectType).tryUnbox();
+            }
+        } else if (objectType instanceof PrimitiveType) {
+            objectType = ((PrimitiveType) objectType).box();
+        }
+        // cast primitive to primitive
+        // cast boolean to boolean
+        // more complicated rules for reference types
+        if (castType.isPrimitive()) {
+            if (!objectType.isPrimitive()) {
+                failCast(castType, objectType);
+            }
+            if (castType.isBoolean() ^ objectType.isBoolean()) {
+                failCast(castType, objectType);
+            }
+        } else if (objectType.isPrimitive()) {
+            failCast(castType, objectType);
+        } else if (!TypeUtil.isValidReferenceCast((ReferenceType) objectType, (ReferenceType) castType)) {
+            failCast(castType, objectType);
+        }
+        return type = castType.capture();
     }
 
     private void failCast(Type cast, Type object) {

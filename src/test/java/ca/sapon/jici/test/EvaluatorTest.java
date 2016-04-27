@@ -648,7 +648,7 @@ public class EvaluatorTest {
         assertHasClass(Map.Entry.class, environment);
     }
 
-    private Environment assertReturns(boolean expected, String source, Environment environment) {
+    private static Environment assertReturns(boolean expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -663,7 +663,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(byte expected, String source, Environment environment) {
+    private static Environment assertReturns(byte expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -678,7 +678,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(short expected, String source, Environment environment) {
+    private static Environment assertReturns(short expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -693,7 +693,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(char expected, String source, Environment environment) {
+    private static Environment assertReturns(char expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -708,7 +708,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(char[] expected, String source, Environment environment) {
+    private static Environment assertReturns(char[] expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -723,7 +723,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(int expected, String source, Environment environment) {
+    private static Environment assertReturns(int expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -738,7 +738,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(long expected, String source, Environment environment) {
+    private static Environment assertReturns(long expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -753,7 +753,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(int[] expected, String source, Environment environment) {
+    private static Environment assertReturns(int[] expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -768,7 +768,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(float expected, String source, Environment environment) {
+    private static Environment assertReturns(float expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -783,7 +783,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(float[] expected, String source, Environment environment) {
+    private static Environment assertReturns(float[] expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -798,7 +798,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(double expected, String source, Environment environment) {
+    private static Environment assertReturns(double expected, String source, Environment environment) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -813,7 +813,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(Object expected, String source, Environment environment, Class<?>... expectedTypes) {
+    private static Environment assertReturns(Object expected, String source, Environment environment, Class<?>... expectedTypes) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -832,7 +832,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private Environment assertReturns(Object[] expected, String source, Environment environment, Class<?>... expectedTypes) {
+    private static Environment assertReturns(Object[] expected, String source, Environment environment, Class<?>... expectedTypes) {
         final SourceMetadata metadata = new SourceMetadata(source);
         final Expression expression = parse(source, metadata);
         try {
@@ -888,7 +888,7 @@ public class EvaluatorTest {
         return environment;
     }
 
-    private void assertTypeEquals(Type type, Class<?>... expected) {
+    private static void assertTypeEquals(Type type, Class<?>... expected) {
         if (type instanceof IntersectionType) {
             final Set<SingleReferenceType> lowestUpperBound = ((IntersectionType) type).getTypes();
             final Set<Class<?>> actualSet = new HashSet<>();
@@ -903,7 +903,7 @@ public class EvaluatorTest {
         }
     }
 
-    private Expression parse(String source, SourceMetadata metadata) {
+    private static Expression parse(String source, SourceMetadata metadata) {
         try {
             source = Decoder.decode(source, metadata);
             final List<Token> tokens = Lexer.lex(source);
@@ -916,26 +916,26 @@ public class EvaluatorTest {
         }
     }
 
-    private void assertHasVariable(Class<?> type, String name, Environment environment) {
+    private static void assertHasVariable(Class<?> type, String name, Environment environment) {
         Assert.assertEquals(type, environment.getVariableType(Identifier.from(name, 0)).getTypeClass());
     }
 
-    private void assertHasVariable(String name, byte value, Environment environment) {
+    private static void assertHasVariable(String name, byte value, Environment environment) {
         Assert.assertEquals(byte.class, environment.getVariableType(Identifier.from(name, 0)).getTypeClass());
         Assert.assertEquals(value, environment.getVariable(Identifier.from(name, 0)).asByte());
     }
 
-    private void assertHasVariable(String name, int value, Environment environment) {
+    private static void assertHasVariable(String name, int value, Environment environment) {
         Assert.assertEquals(int.class, environment.getVariableType(Identifier.from(name, 0)).getTypeClass());
         Assert.assertEquals(value, environment.getVariable(Identifier.from(name, 0)).asInt());
     }
 
-    private void assertHasVariable(String name, int[] value, Environment environment) {
+    private static void assertHasVariable(String name, int[] value, Environment environment) {
         Assert.assertEquals(int[].class, environment.getVariableType(Identifier.from(name, 0)).getTypeClass());
         Assert.assertArrayEquals(value, (int[]) environment.getVariable(Identifier.from(name, 0)).asObject());
     }
 
-    private void assertHasClass(Class<?> _class, Environment environment) {
+    private static void assertHasClass(Class<?> _class, Environment environment) {
         Assert.assertEquals(_class, environment.getClass(Identifier.from(_class.getSimpleName(), 0)));
     }
 }

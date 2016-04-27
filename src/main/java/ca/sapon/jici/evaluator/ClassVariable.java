@@ -45,6 +45,10 @@ public abstract class ClassVariable {
     }
 
     public Type getType() {
+        return type.capture();
+    }
+
+    public Type getTargetType() {
         return type;
     }
 

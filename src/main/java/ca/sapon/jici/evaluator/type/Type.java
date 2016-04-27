@@ -53,6 +53,8 @@ public interface Type {
 
     boolean convertibleTo(Type to);
 
+    Type capture();
+
     @Override
     String toString();
 

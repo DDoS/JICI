@@ -38,12 +38,14 @@ import ca.sapon.jici.SourceException;
 import ca.sapon.jici.SourceMetadata;
 import ca.sapon.jici.decoder.Decoder;
 import ca.sapon.jici.evaluator.Environment;
+import ca.sapon.jici.evaluator.type.IntersectionType;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.LiteralType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.SingleReferenceType;
 import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.lexer.Token;
@@ -161,6 +163,7 @@ public class GenericsTest {
         environment.importClass(M.class);
         environment.importClass(L.class);
         environment.importClass(K.class);
+
         EvaluatorTest.assertSucceeds(
                 "M<String> m; L<Integer> l = null; m = l;",
                 environment
@@ -195,6 +198,7 @@ public class GenericsTest {
         environment.importClass(X.class);
         environment.importClass(N.class);
         environment.importClass(M.class);
+
         EvaluatorTest.assertSucceeds(
                 "J<String> i1 = null; Object o1 = (I<String>) i1;",
                 environment
@@ -339,6 +343,40 @@ public class GenericsTest {
                 "ca.sapon.jici.test.GenericsTest.W<CAP#1 extends java.util.List<java.lang.String>, java.lang.String>",
                 type.capture().getName()
         );
+
+        final Environment environment = new Environment();
+        environment.importClass(D.class);
+
+        assertType(
+                environment,
+                "java.util.List<CAP#1 extends java.lang.String>",
+                "new D().ti"
+        );
+        assertType(
+                environment,
+                "java.util.List<CAP#1 super java.lang.String>",
+                "D.ts"
+        );
+        assertType(
+                environment,
+                "java.util.List<CAP#1>",
+                "new D().getWhat()"
+        );
+        assertType(
+                environment,
+                "java.util.List<CAP#1 extends java.lang.Integer>",
+                "D.as[0]"
+        );
+        assertType(
+                environment,
+                "java.util.List<CAP#1>",
+                "(java.util.List<?>) null"
+        );
+        assertType(
+                environment,
+                "java.util.List<CAP#1 super java.lang.String>",
+                "D.ts = new java.util.ArrayList<Object>()"
+        );
     }
 
     @Test
@@ -359,6 +397,15 @@ public class GenericsTest {
                 LiteralReferenceType.of(M.class),
                 LiteralReferenceType.THE_OBJECT)
         ), superTypes2);
+        // Parametrized of N with a wildcard
+        final Set<LiteralReferenceType> superTypes3 = TypeUtil.getSuperTypes(ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(
+                WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING))
+        )));
+        Assert.assertEquals(new HashSet<>(Arrays.asList(
+                ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
+                ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
+                LiteralReferenceType.THE_OBJECT)
+        ), superTypes3);
     }
 
     @Test
@@ -371,6 +418,8 @@ public class GenericsTest {
         environment.importClass(Outer.Normal.class);
         environment.importClass(Outer.Ref.class);
         environment.importClass(Z.class);
+        environment.importClass(D.class);
+
         EvaluatorTest.assertFails(
                 "Outer<String>.Inner f;",
                 environment
@@ -885,6 +934,17 @@ public class GenericsTest {
     }
 
     public static class Z<T extends Outer<S>.Inner<R>, S, R> {
+    }
+
+    public static class D {
+        public static List<? super String> ts = null;
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        public static List<? extends Integer>[] as = new List[]{null};
+        public List<? extends String> ti = null;
+
+        public List<?> getWhat() {
+            return null;
+        }
     }
 
     public static class U<T> {

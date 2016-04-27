@@ -106,6 +106,11 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
+    public TypeVariable capture() {
+        return this;
+    }
+
+    @Override
     public TypeVariable getComponentType() {
         IntersectionType lowerBoundComponent = lowerBound;
         if (!lowerBoundComponent.equals(IntersectionType.EVERYTHING)) {

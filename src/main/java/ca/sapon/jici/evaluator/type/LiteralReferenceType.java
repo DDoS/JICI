@@ -216,6 +216,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return wrapped;
     }
 
+    @Override
     public LiteralReferenceType capture() {
         return this;
     }

@@ -28,9 +28,9 @@ import java.util.List;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
@@ -39,34 +39,41 @@ import ca.sapon.jici.util.TypeUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
-    private Type type = null;
     private Reference reference = null;
 
     public AmbiguousReference(List<Identifier> name) {
         this.name = name;
     }
 
+    private Reference getReference(Environment environment) {
+        if (reference != null) {
+            return reference;
+        }
+        final Expression resolved = disambiguate(environment, name);
+        if (!(resolved instanceof Reference)) {
+            throw new EvaluatorException("Not a reference", resolved);
+        }
+        return reference = (Reference) resolved;
+    }
+
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final Expression resolved = disambiguate(environment, name);
-            if (!(resolved instanceof Reference)) {
-                throw new EvaluatorException("Not a reference", resolved);
-            }
-            reference = (Reference) resolved;
-            type = reference.getType(environment);
-        }
-        return type;
+        return getReference(environment).getType(environment);
+    }
+
+    @Override
+    public Type getTargetType(Environment environment) {
+        return getReference(environment).getTargetType(environment);
     }
 
     @Override
     public Value getValue(Environment environment) {
-        return reference.getValue(environment);
+        return getReference(environment).getValue(environment);
     }
 
     @Override
     public void setValue(Environment environment, Value value) {
-        reference.setValue(environment, value);
+        getReference(environment).setValue(environment, value);
     }
 
     @Override

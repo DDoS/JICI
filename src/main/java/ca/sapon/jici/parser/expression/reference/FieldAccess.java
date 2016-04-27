@@ -42,31 +42,41 @@ public class FieldAccess implements Reference {
         this.field = field;
     }
 
+    private ClassVariable getClassVariable(Environment environment) {
+        if (classVariable != null) {
+            return classVariable;
+        }
+        final Type objectType = object.getType(environment);
+        final String name = field.getSource();
+        if (!(objectType instanceof ReferenceType)) {
+            throw new EvaluatorException("Not a class type " + objectType.getName(), object);
+        }
+        try {
+            classVariable = ((ReferenceType) objectType).getField(name);
+        } catch (UnsupportedOperationException exception) {
+            throw new EvaluatorException(exception.getMessage(), this);
+        }
+        if (!classVariable.isStatic() && object instanceof AmbiguousReference.StaticAccess) {
+            throw new EvaluatorException("Cannot access a non-static member directly from the type name", field);
+        }
+        return classVariable;
+    }
+
     @Override
     public Type getType(Environment environment) {
-        if (classVariable == null) {
-            final Type objectType = object.getType(environment);
-            final String name = field.getSource();
-            if (!(objectType instanceof ReferenceType)) {
-                throw new EvaluatorException("Not a class type " + objectType.getName(), object);
-            }
-            try {
-                classVariable = ((ReferenceType) objectType).getField(name);
-            } catch (UnsupportedOperationException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
-            }
-            if (!classVariable.isStatic() && object instanceof AmbiguousReference.StaticAccess) {
-                throw new EvaluatorException("Cannot access a non-static member directly from the type name", field);
-            }
-        }
-        return classVariable.getType();
+        return getClassVariable(environment).getType();
+    }
+
+    @Override
+    public Type getTargetType(Environment environment) {
+        return getClassVariable(environment).getTargetType();
     }
 
     @Override
     public Value getValue(Environment environment) {
         final Value target = object.getValue(environment);
         try {
-            return classVariable.getValue(target);
+            return getClassVariable(environment).getValue(target);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }
@@ -76,7 +86,7 @@ public class FieldAccess implements Reference {
     public void setValue(Environment environment, Value value) {
         final Value target = object.getValue(environment);
         try {
-            classVariable.setValue(target, value);
+            getClassVariable(environment).setValue(target, value);
         } catch (Exception exception) {
             throw new EvaluatorException("Could not access field", exception, field);
         }

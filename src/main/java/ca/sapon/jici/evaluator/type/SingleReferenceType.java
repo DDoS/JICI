@@ -76,6 +76,11 @@ public abstract class SingleReferenceType implements ReferenceType, ComponentTyp
     public abstract SingleReferenceType getErasure();
 
     @Override
+    public SingleReferenceType capture() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return getName();
     }

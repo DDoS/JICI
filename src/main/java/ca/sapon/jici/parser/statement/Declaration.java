@@ -38,6 +38,7 @@ import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.lexer.literal.number.IntLiteral;
 import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.ArrayTypeName;
 import ca.sapon.jici.parser.name.TypeName;
 import ca.sapon.jici.util.StringUtil;
@@ -84,7 +85,12 @@ public class Declaration implements Statement {
                 for (Entry<Variable, LiteralType> entry : declaredTypes.entrySet()) {
                     final Variable variable = entry.getKey();
                     final Type declaredType = entry.getValue();
-                    final Type valueType = variable.getType(environment, declaredType);
+                    Type valueType = variable.getType(environment, declaredType);
+                    // Must capture variables subject to assignment conversion
+                    if (variable.getValueExpression() instanceof VariableAccess) {
+                        valueType = valueType.capture();
+                    }
+                    // Check validity of the assignment
                     if (!valueType.convertibleTo(declaredType)) {
                         if (variable.getValueExpression() instanceof IntLiteral) {
                             final IntLiteral intLiteral = (IntLiteral) variable.getValueExpression();

@@ -223,6 +223,11 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
+    public IntersectionType capture() {
+        return this;
+    }
+
+    @Override
     public IntersectionType substituteTypeVariables(Substitutions substitution) {
         final Set<ReferenceType> newIntersection = new HashSet<>();
         for (SingleReferenceType type : getTypes()) {

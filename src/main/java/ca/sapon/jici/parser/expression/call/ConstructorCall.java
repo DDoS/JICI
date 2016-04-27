@@ -36,6 +36,7 @@ import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.ClassTypeName;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
@@ -95,7 +96,12 @@ public class ConstructorCall implements Statement, Expression {
             final int size = arguments.size();
             final Type[] argumentTypes = new Type[size];
             for (int i = 0; i < size; i++) {
-                argumentTypes[i] = arguments.get(i).getType(environment);
+                Type argumentType = arguments.get(i).getType(environment);
+                // Must capture variables subject to invocation conversion
+                if (arguments.get(i) instanceof VariableAccess) {
+                    argumentType = argumentType.capture();
+                }
+                argumentTypes[i] = argumentType;
             }
             // Get constructor to call
             try {

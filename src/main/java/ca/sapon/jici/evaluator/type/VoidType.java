@@ -96,6 +96,11 @@ public class VoidType implements Type {
     }
 
     @Override
+    public VoidType capture() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return getName();
     }

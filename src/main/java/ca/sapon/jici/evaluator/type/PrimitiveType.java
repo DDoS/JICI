@@ -217,6 +217,11 @@ public class PrimitiveType implements LiteralType {
     }
 
     @Override
+    public PrimitiveType capture() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return getName();
     }

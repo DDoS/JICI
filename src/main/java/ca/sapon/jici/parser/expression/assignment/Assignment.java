@@ -34,6 +34,7 @@ import ca.sapon.jici.parser.expression.Shift;
 import ca.sapon.jici.parser.expression.arithmetic.Arithmetic;
 import ca.sapon.jici.parser.expression.logic.BitwiseLogic;
 import ca.sapon.jici.parser.expression.reference.Reference;
+import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.statement.Statement;
 import ca.sapon.jici.util.TypeUtil;
 
@@ -86,22 +87,27 @@ public class Assignment implements Expression, Statement {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final Type valueType = value.getType(environment);
-            final Type assigneeType = assignee.getType(environment);
-            if ((simpleAssign || !valueType.isNumeric() || !assigneeType.isNumeric()) && !valueType.convertibleTo(assigneeType)) {
-                if (value instanceof IntLiteral) {
-                    final IntLiteral intLiteral = (IntLiteral) value;
-                    if (!TypeUtil.coerceToPrimitive(assignee, assigneeType).canNarrowFrom(intLiteral.asInt())) {
-                        throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + assigneeType.getName(), intLiteral);
-                    }
-                } else {
-                    throw new EvaluatorException("Cannot convert " + valueType.getName() + " to " + assigneeType.getName(), value);
-                }
-            }
-            this.type = assigneeType;
+        if (type != null) {
+            return type;
         }
-        return type;
+        Type valueType = value.getType(environment);
+        final Type assigneeType = assignee.getTargetType(environment);
+        // Must capture variables subject to assignment conversion
+        if (value instanceof VariableAccess) {
+            valueType = valueType.capture();
+        }
+        // Check validity of the assignment
+        if ((simpleAssign || !valueType.isNumeric() || !assigneeType.isNumeric()) && !valueType.convertibleTo(assigneeType)) {
+            if (value instanceof IntLiteral) {
+                final IntLiteral intLiteral = (IntLiteral) value;
+                if (!TypeUtil.coerceToPrimitive(assignee, assigneeType).canNarrowFrom(intLiteral.asInt())) {
+                    throw new EvaluatorException("Cannot narrow " + intLiteral + " to " + assigneeType.getName(), intLiteral);
+                }
+            } else {
+                throw new EvaluatorException("Cannot convert " + valueType.getName() + " to " + assigneeType.getName(), value);
+            }
+        }
+        return type = assigneeType.capture();
     }
 
     @Override

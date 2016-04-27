@@ -45,18 +45,23 @@ public class IndexAccess implements Reference {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            final Type objectType = object.getType(environment);
-            final Type indexType = index.getType(environment);
-            if (!objectType.isArray()) {
-                throw new EvaluatorException("Not an array: " + objectType.getName(), object);
-            }
-            if (!indexType.convertibleTo(PrimitiveType.THE_INT)) {
-                throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
-            }
-            type = ((ReferenceType) objectType).getComponentType();
+        return getTargetType(environment).capture();
+    }
+
+    @Override
+    public Type getTargetType(Environment environment) {
+        if (type != null) {
+            return type;
         }
-        return type;
+        final Type objectType = object.getType(environment);
+        final Type indexType = index.getType(environment);
+        if (!objectType.isArray()) {
+            throw new EvaluatorException("Not an array: " + objectType.getName(), object);
+        }
+        if (!indexType.convertibleTo(PrimitiveType.THE_INT)) {
+            throw new EvaluatorException("Cannot convert " + indexType.getName() + " to int", index);
+        }
+        return type = ((ReferenceType) objectType).getComponentType();
     }
 
     @Override

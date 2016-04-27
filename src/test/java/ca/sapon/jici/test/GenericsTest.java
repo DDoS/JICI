@@ -52,7 +52,6 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.test.GenericsTest.Outer.Inner;
 import ca.sapon.jici.test.GenericsTest.Outer.Normal;
 import ca.sapon.jici.test.GenericsTest.Outer.Ref;
-import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.TypeUtil;
 
 /**
@@ -270,7 +269,7 @@ public class GenericsTest {
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#2 extends (CAP#1 extends java.lang.Comparable & java.io.Serializable), CAP#1 extends java.lang.Comparable>",
-                type.capture(new IntegerCounter()).getName()
+                type.capture().getName()
         );
         // Y<? extends String, Serializable>
         type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.asList(
@@ -279,7 +278,7 @@ public class GenericsTest {
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends java.lang.String, java.io.Serializable>",
-                type.capture(new IntegerCounter()).getName()
+                type.capture().getName()
         );
         // Y<? extends Integer, ? extends String>
         try {
@@ -287,7 +286,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(String.class)))
             ));
-            type.capture(new IntegerCounter());
+            type.capture();
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -297,7 +296,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Serializable.class)))
             ));
-            type.capture(new IntegerCounter());
+            type.capture();
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -307,7 +306,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer.class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(TypeArgument.class)))
             ));
-            type.capture(new IntegerCounter());
+            type.capture();
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -317,7 +316,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Integer[].class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Number[].class)))
             ));
-            type.capture(new IntegerCounter());
+            type.capture();
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -327,7 +326,7 @@ public class GenericsTest {
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(float[].class))),
                     WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(int[].class)))
             ));
-            type.capture(new IntegerCounter());
+            type.capture();
             Assert.fail("Expected type error");
         } catch (UnsupportedOperationException ignored) {
         }
@@ -338,7 +337,7 @@ public class GenericsTest {
         ));
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.W<CAP#1 extends java.util.List<java.lang.String>, java.lang.String>",
-                type.capture(new IntegerCounter()).getName()
+                type.capture().getName()
         );
     }
 
@@ -400,7 +399,7 @@ public class GenericsTest {
         );
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Outer<java.lang.CharSequence>.Ref<java.lang.String>",
-                type0.capture(new IntegerCounter()).getName()
+                type0.capture().getName()
         );
         Assert.assertTrue(type0.convertibleTo(ParametrizedType.of(
                 LiteralReferenceType.of(I.class),
@@ -434,20 +433,20 @@ public class GenericsTest {
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.String>" +
                         ".Inner<CAP#2 extends java.lang.Integer>",
-                type6.capture(new IntegerCounter()).getName()
+                type6.capture().getName()
         );
 
         final ParametrizedType type7 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Outer<? extends Comparable<?>>.Ref<? extends java.io.Serializable>")).getType(environment);
         Assert.assertEquals("ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.Comparable<?>>" +
                         ".Ref<CAP#2 extends (CAP#1 extends java.lang.Comparable<?> & java.io.Serializable)>",
-                type7.capture(new IntegerCounter()).getName()
+                type7.capture().getName()
         );
 
         final ParametrizedType type8 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Z<?, String, Integer>")).getType(environment);
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Z<CAP#1 extends ca.sapon.jici.test.GenericsTest.Outer<" +
                         "java.lang.String>.Inner<java.lang.Integer>, java.lang.String, java.lang.Integer>",
-                type8.capture(new IntegerCounter()).getName()
+                type8.capture().getName()
         );
     }
 

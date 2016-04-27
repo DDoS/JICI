@@ -42,7 +42,6 @@ import java.util.Set;
 import ca.sapon.jici.evaluator.Callable;
 import ca.sapon.jici.evaluator.ClassVariable;
 import ca.sapon.jici.evaluator.Substitutions;
-import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -217,7 +216,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         return wrapped;
     }
 
-    public LiteralReferenceType capture(IntegerCounter idCounter) {
+    public LiteralReferenceType capture() {
         return this;
     }
 
@@ -299,7 +298,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         final Map<Constructor<?>, Type[]> candidates = new HashMap<>();
         final Map<Constructor<?>, Type[]> varargCandidate = new HashMap<>();
         // Generate the substitutions for this type so we can get constructors for parametrized types
-        final LiteralReferenceType capture = this.capture(new IntegerCounter());
+        final LiteralReferenceType capture = this.capture();
         final Substitutions substitutions = capture.getSubstitutions();
         // Search all the candidate constructors
         final Constructor<?>[] constructors = type.getDeclaredConstructors();
@@ -366,7 +365,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                     continue;
                 }
                 // Pass the type variable substitutions to properly handle fields of parametrized types
-                return ClassVariable.forField(literal.capture(new IntegerCounter()).getSubstitutions(), field);
+                return ClassVariable.forField(literal.capture().getSubstitutions(), field);
             } catch (NoSuchFieldException ignored) {
             }
             // Search the super types after (to respect shadowing rules)
@@ -396,7 +395,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             }
             final LiteralReferenceType literal = (LiteralReferenceType) type;
             // Generate the substitutions for this type so we can get constructors for parametrized types
-            final Substitutions substitutions = literal.capture(new IntegerCounter()).getSubstitutions();
+            final Substitutions substitutions = literal.capture().getSubstitutions();
             // Search the methods for the type
             final Method[] methods = literal.getTypeClass().getDeclaredMethods();
             for (Method candidate : methods) {

@@ -46,6 +46,7 @@ public class ParametrizedType extends LiteralReferenceType {
     // Cache these to prevent them from being created every time
     private TypeVariable[] parameters = null;
     private Substitutions substitutions = null;
+    private ParametrizedType capture = null;
     private Class<?> baseComponentType = null;
     private int dimensions = -1;
 
@@ -158,9 +159,8 @@ public class ParametrizedType extends LiteralReferenceType {
             return true;
         }
         // Else get the arguments from the captures of each
-        final IntegerCounter counter = new IntegerCounter();
-        final List<TypeArgument> thisArgs = capture(counter).getArguments();
-        final List<TypeArgument> otherArgs = other.capture(counter).getArguments();
+        final List<TypeArgument> thisArgs = capture().getArguments();
+        final List<TypeArgument> otherArgs = other.capture().getArguments();
         // Compare arguments pairwise
         for (int i = 0; i < thisArgs.size(); i++) {
             final TypeArgument thisArg = thisArgs.get(i);
@@ -220,7 +220,16 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     @Override
-    public ParametrizedType capture(IntegerCounter idCounter) {
+    public ParametrizedType capture() {
+        // Check the cache first
+        if (capture != null) {
+            return capture;
+        }
+        // Else compute it
+        return capture(new IntegerCounter());
+    }
+
+    private ParametrizedType capture(IntegerCounter idCounter) {
         // Capture the owner first, if any
         final ParametrizedType ownerCapture = owner != null ? owner.capture(idCounter) : null;
         // Next capture the arguments: first we need to figure out the order
@@ -266,8 +275,8 @@ public class ParametrizedType extends LiteralReferenceType {
                 throw new IllegalStateException("Missing substitution for argument at position " + i + ": " + arguments.get(i));
             }
         }
-        // Create a new parametrized type with the new arguments
-        return new ParametrizedType(ownerCapture, erased, capturedArguments);
+        // Create a new parametrized type with the new arguments and cache
+        return capture = new ParametrizedType(ownerCapture, erased, capturedArguments);
     }
 
     private int getParameterIndex(String name) {
@@ -343,7 +352,7 @@ public class ParametrizedType extends LiteralReferenceType {
             throw new UnsupportedOperationException("Mismatch in type parameter and argument count: " + parameters.length + " != " + arguments.size());
         }
         // The captured arguments must be subtypes of the parameter upper bounds resulting from substitution
-        final ParametrizedType capture = type.capture(new IntegerCounter());
+        final ParametrizedType capture = type.capture();
         final List<TypeArgument> capturedArguments = capture.getArguments();
         final Substitutions substitutions = capture.getSubstitutions();
         for (int i = 0; i < parameters.length; i++) {

@@ -36,6 +36,7 @@ public class Main {
             Absorb sign tokens in lexer
             Fix source start and end indices
 
+            Add generic type inference
             Restructure type package
             Move ast to its own package
             Update codebase to Java 8

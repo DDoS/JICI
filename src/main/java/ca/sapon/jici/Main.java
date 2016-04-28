@@ -31,7 +31,6 @@ public class Main {
             Properly handle unchecked conversions in method arguments
             Redo type and constructor call parser according to spec
             Update constructor call evaluator to match spec
-            Fix logical operator short-circuiting
             Absorb sign tokens in lexer
             Fix source start and end indices
 

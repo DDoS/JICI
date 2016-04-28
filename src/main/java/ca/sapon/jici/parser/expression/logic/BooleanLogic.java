@@ -63,16 +63,22 @@ public class BooleanLogic implements Expression {
 
     @Override
     public Value getValue(Environment environment) {
-        final Value leftValue = left.getValue(environment);
-        final Value rightValue = right.getValue(environment);
         switch (operator.getID()) {
             case SYMBOL_BOOLEAN_AND:
-                return doBooleanAND(leftValue, rightValue);
+                return doBooleanAND(environment);
             case SYMBOL_BOOLEAN_OR:
-                return doBooleanOR(leftValue, rightValue);
+                return doBooleanOR(environment);
             default:
                 throw new EvaluatorException("Invalid operator for boolean logic: " + operator, operator);
         }
+    }
+
+    private Value doBooleanAND(Environment environment) {
+        return BooleanValue.of(left.getValue(environment).asBoolean() && right.getValue(environment).asBoolean());
+    }
+
+    private Value doBooleanOR(Environment environment) {
+        return BooleanValue.of(left.getValue(environment).asBoolean() || right.getValue(environment).asBoolean());
     }
 
     @Override
@@ -83,14 +89,6 @@ public class BooleanLogic implements Expression {
     @Override
     public int getEnd() {
         return right.getEnd();
-    }
-
-    private Value doBooleanAND(Value leftValue, Value rightValue) {
-        return BooleanValue.of(leftValue.asBoolean() && rightValue.asBoolean());
-    }
-
-    private Value doBooleanOR(Value leftValue, Value rightValue) {
-        return BooleanValue.of(leftValue.asBoolean() || rightValue.asBoolean());
     }
 
     @Override

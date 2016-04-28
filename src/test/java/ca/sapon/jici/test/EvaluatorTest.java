@@ -367,8 +367,16 @@ public class EvaluatorTest {
     @Test
     public void testBooleanLogic() {
         final Environment environment = new Environment();
+        environment.declareVariable(Identifier.from("f", 0), LiteralReferenceType.of(Fields.class), ObjectValue.of(null));
+
         assertReturns(true, "true && true", environment);
         assertReturns(true, "true || false", environment);
+
+        assertReturns(true, "true || f.instance == -2", environment);
+        assertFails("false || f.instance == -2", environment);
+
+        assertReturns(false, "false && f.instance == -2", environment);
+        assertFails("true && f.instance == -2", environment);
 
         assertFails("true && 2", environment);
         assertFails("3.0 && true", environment);

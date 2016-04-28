@@ -34,6 +34,8 @@ import ca.sapon.jici.evaluator.value.Value;
 public interface Callable {
     LiteralReferenceType getDeclaringType();
 
+    String getName();
+
     TypeVariable[] getTypeParameters();
 
     Type[] getParameterTypes();

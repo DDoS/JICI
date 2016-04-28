@@ -27,6 +27,11 @@ public class ConstructorCallable extends DeclaredCallable {
     }
 
     @Override
+    public String getName() {
+        return constructor.getName();
+    }
+
+    @Override
     public boolean isStatic() {
         return Modifier.isStatic(constructor.getModifiers());
     }

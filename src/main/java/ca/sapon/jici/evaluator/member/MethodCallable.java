@@ -29,6 +29,11 @@ public class MethodCallable extends DeclaredCallable {
     }
 
     @Override
+    public String getName() {
+        return method.getName();
+    }
+
+    @Override
     public boolean isStatic() {
         return Modifier.isStatic(method.getModifiers());
     }

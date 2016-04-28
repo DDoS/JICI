@@ -23,6 +23,11 @@ public class ArrayCloneCallable implements Callable {
     }
 
     @Override
+    public String getName() {
+        return "clone";
+    }
+
+    @Override
     public TypeVariable[] getTypeParameters() {
         return new TypeVariable[0];
     }

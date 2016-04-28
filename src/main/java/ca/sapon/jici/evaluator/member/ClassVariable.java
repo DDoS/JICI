@@ -23,114 +23,25 @@
  */
 package ca.sapon.jici.evaluator.member;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
-import ca.sapon.jici.evaluator.Substitutions;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
-import ca.sapon.jici.evaluator.type.TypeArgument;
-import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
  */
-public abstract class ClassVariable {
-    protected final Type type;
+public interface ClassVariable {
+    LiteralReferenceType getDeclaringType();
 
-    protected ClassVariable(Type type) {
-        this.type = type;
-    }
+    String getName();
 
-    public Type getType() {
-        return type.capture();
-    }
+    Type getType();
 
-    public Type getTargetType() {
-        return type;
-    }
+    Type getTargetType();
 
-    public abstract boolean isStatic();
+    boolean isStatic();
 
-    public abstract Value getValue(Value target);
+    Value getValue(Value target);
 
-    public abstract void setValue(Value target, Value value);
-
-    public static ClassVariable forField(Substitutions substitutions, Field field) {
-        return new InstanceVariable(substitutions, field);
-    }
-
-    public static ClassVariable forArrayLength() {
-        return ArrayLengthField.INSTANCE;
-    }
-
-    private static class InstanceVariable extends ClassVariable {
-        private final Field field;
-
-        private InstanceVariable(Substitutions substitutions, Field field) {
-            super(getType(substitutions, field));
-            this.field = field;
-        }
-
-        @Override
-        public boolean isStatic() {
-            return Modifier.isStatic(field.getModifiers());
-        }
-
-        @Override
-        public Value getValue(Value target) {
-            try {
-                return type.getKind().wrap(field.get(target.asObject()));
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-
-        @Override
-        public void setValue(Value target, Value value) {
-            try {
-                field.set(target.asObject(), value.asObject());
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-
-        private static Type getType(Substitutions substitutions, Field field) {
-            Type type = TypeUtil.wrap(field.getGenericType());
-            if (type instanceof TypeArgument) {
-                type = ((TypeArgument) type).substituteTypeVariables(substitutions);
-            }
-            return type;
-        }
-    }
-
-    private static class ArrayLengthField extends ClassVariable {
-        private static final ArrayLengthField INSTANCE = new ArrayLengthField();
-
-        private ArrayLengthField() {
-            super(PrimitiveType.THE_INT);
-        }
-
-        @Override
-        public boolean isStatic() {
-            return false;
-        }
-
-        @Override
-        public Value getValue(Value target) {
-            try {
-                return IntValue.of(Array.getLength(target.asObject()));
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-
-        @Override
-        public void setValue(Value target, Value value) {
-            throw new UnsupportedOperationException("Array length field is final");
-        }
-    }
+    void setValue(Value target, Value value);
 }

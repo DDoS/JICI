@@ -828,6 +828,16 @@ public class GenericsTest {
                 "java.lang.String",
                 "new M<Integer>().<String>getT2(\"1\")"
         );
+
+        //List d = new M().d(null);
+        //List<String> d = new M<Integer>().d(null);
+        //List d = new M<Integer>().d(new ArrayList());
+        //List<String> d = new M<Integer>().d(new ArrayList<String>());
+
+        //Object s = new L().t;
+        //Object s = new Ks().t;
+        //String r = new Kr<String>().r;
+        //Object t = new Kr<String>().t;
     }
 
     public static class M<T> {
@@ -871,6 +881,10 @@ public class GenericsTest {
             return t;
         }
 
+        public List<String> d(List<String> l) {
+            return l;
+        }
+
         public static Short getShort() {
             return s;
         }
@@ -889,6 +903,14 @@ public class GenericsTest {
 
     public static class K extends N<Integer> {
         public Float p = null;
+    }
+
+    public static class Ks<T> extends K {
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class Kr<T> extends M {
+        public T r = null;
     }
 
     public static class Q<T> extends M<M<T>> {

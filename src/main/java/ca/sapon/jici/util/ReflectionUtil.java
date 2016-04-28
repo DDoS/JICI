@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.type.ComponentType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 
@@ -290,11 +291,11 @@ public final class ReflectionUtil {
         return expanded;
     }
 
-    public static Object[] compactVarargs(Class<?> varargType, int varargIndex, Object[] arguments) {
+    public static Object[] compactVarargs(ComponentType varargType, int varargIndex, Object[] arguments) {
         final Object[] compacted = new Object[varargIndex + 1];
         System.arraycopy(arguments, 0, compacted, 0, varargIndex);
         final int varargCount = arguments.length - varargIndex;
-        final Object array = Array.newInstance(varargType, varargCount);
+        final Object array = varargType.newArray(varargCount);
         for (int i = 0; i < varargCount; i++) {
             Array.set(array, i, arguments[i + varargIndex]);
         }

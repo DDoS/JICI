@@ -26,7 +26,7 @@ package ca.sapon.jici.parser.expression.call;
 import java.util.Collections;
 import java.util.List;
 
-import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ReferenceType;

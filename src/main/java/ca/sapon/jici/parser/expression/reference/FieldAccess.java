@@ -23,7 +23,7 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.evaluator.ClassVariable;
+import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.ReferenceType;

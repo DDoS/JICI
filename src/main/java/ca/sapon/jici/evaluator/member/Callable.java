@@ -21,29 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator.type;
+package ca.sapon.jici.evaluator.member;
 
-import java.util.Set;
-
-import ca.sapon.jici.evaluator.member.ClassVariable;
-import ca.sapon.jici.evaluator.member.Callable;
+import ca.sapon.jici.evaluator.type.LiteralReferenceType;
+import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeVariable;
+import ca.sapon.jici.evaluator.value.Value;
 
 /**
- * A type backed by a class other than the primitive ones. Includes the null type.
+ *
  */
-public interface ReferenceType extends Type {
-    ComponentType getComponentType();
+public interface Callable {
+    LiteralReferenceType getDeclaringType();
 
-    Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments);
+    TypeVariable[] getTypeParameters();
 
-    ClassVariable getField(String name);
+    Type[] getParameterTypes();
 
-    Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments);
+    Type getReturnType();
 
-    Set<SingleReferenceType> getDirectSuperTypes();
+    boolean isStatic();
 
-    ReferenceType getErasure();
+    boolean supportsVararg();
 
-    @Override
-    ReferenceType capture();
+    boolean isVarargEnabled();
+
+    Callable useVararg();
+
+    boolean isApplicable(Type[] argumentTypes);
+
+    boolean isMoreApplicableThan(Callable other, Type[] argumentTypes);
+
+    Value call(Value target, Value... arguments);
 }

@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package ca.sapon.jici.evaluator;
+package ca.sapon.jici.evaluator.member;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeArgument;

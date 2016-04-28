@@ -25,8 +25,8 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.ClassVariable;
-import ca.sapon.jici.evaluator.Callable;
+import ca.sapon.jici.evaluator.member.ClassVariable;
+import ca.sapon.jici.evaluator.member.Callable;
 
 /**
  * The null type, for the {@code null} literal.

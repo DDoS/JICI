@@ -28,8 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.Callable;
-import ca.sapon.jici.evaluator.ClassVariable;
+import ca.sapon.jici.evaluator.member.Callable;
+import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;

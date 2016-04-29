@@ -24,12 +24,13 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Array;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
-import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.util.StringUtil;
 
 /**
@@ -197,10 +198,23 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public Set<SingleReferenceType> getDirectSuperTypes() {
-        // The direct super types of a type variable are listed in its upper bound
-        return upperBound.getTypes();
+    public boolean isUncheckedConversion(Type to) {
+        return upperBound.isUncheckedConversion(to);
     }
+
+    @Override
+    public Set<LiteralReferenceType> getDirectSuperTypes() {
+        // The direct super types of a type variable are listed in its upper bound
+        return upperBound.getSuperTypes();
+    }
+
+    @Override
+    public Set<LiteralReferenceType> getSuperTypes() {
+        final Set<LiteralReferenceType> superTypes = new HashSet<>();
+        superTypes.addAll(upperBound.getSuperTypes());
+        return superTypes;
+    }
+
 
     @Override
     public boolean equals(Object other) {

@@ -12,7 +12,6 @@ import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.util.ReflectionUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A common class for declared callables, such as methods and constructors. This excludes built-in like the clone() method for arrays.
@@ -22,18 +21,40 @@ public abstract class DeclaredCallable implements Callable {
     private final TypeVariable[] typeParameters;
     private final Type[] parameterTypes;
     private final Type returnType;
-    private boolean varargEnabled;
+    private final boolean _static;
+    private final boolean varargEnabled;
 
-    protected DeclaredCallable(LiteralReferenceType declaror, TypeVariable[] typeParameters, Type returnType,
-                               java.lang.reflect.Type[] genericParameterTypes, Substitutions substitutions) {
-        this(declaror, typeParameters, getParameterTypes(genericParameterTypes, substitutions), returnType, false);
+    protected DeclaredCallable(LiteralReferenceType declaror, TypeVariable[] typeParameters, Type returnType, Type[] parameterTypes, TypeArgument[] typeArguments, boolean _static)
+            throws IncompatibleTypeArgumentsException {
+        this.declaror = declaror;
+        this._static = _static;
+        // Raw types require the erasure of all type information on non-static members
+        if (declaror.isRaw() && !_static) {
+            if (typeArguments.length > 0) {
+                throw new UnsupportedOperationException("Cannot pass type arguments to a raw type member");
+            }
+            this.typeParameters = new TypeVariable[0];
+            this.returnType = eraseType(returnType);
+            this.parameterTypes = eraseTypes(parameterTypes);
+        } else {
+            final TypeArgumentChecker checker = new TypeArgumentChecker(typeParameters, declaror, typeArguments);
+            if (!checker.check()) {
+                throw new IncompatibleTypeArgumentsException("Type arguments are not within type parameter bounds");
+            }
+            final Substitutions substitutions = checker.getSubstitutions();
+            this.typeParameters = checker.getTypeParameters();
+            this.returnType = substituteType(returnType, substitutions).capture();
+            this.parameterTypes = substituteTypes(parameterTypes, substitutions);
+        }
+        varargEnabled = false;
     }
 
-    protected DeclaredCallable(LiteralReferenceType declaror, TypeVariable[] typeParameters, Type[] parameterTypes, Type returnType, boolean varargEnabled) {
+    protected DeclaredCallable(LiteralReferenceType declaror, TypeVariable[] typeParameters, Type[] parameterTypes, Type returnType, boolean _static, boolean varargEnabled) {
         this.declaror = declaror;
         this.typeParameters = typeParameters;
         this.parameterTypes = parameterTypes;
         this.returnType = returnType;
+        this._static = _static;
         this.varargEnabled = varargEnabled;
     }
 
@@ -58,6 +79,11 @@ public abstract class DeclaredCallable implements Callable {
     }
 
     @Override
+    public boolean isStatic() {
+        return _static;
+    }
+
+    @Override
     public boolean isVarargEnabled() {
         return varargEnabled;
     }
@@ -67,22 +93,13 @@ public abstract class DeclaredCallable implements Callable {
 
     @Override
     public boolean isApplicable(Type[] argumentTypes) {
-        final Type[] expandedParameter;
-        if (varargEnabled) {
-            // When we use vararg, we can expand the last type parameter to have the required count
-            if (argumentTypes.length < parameterTypes.length - 1) {
-                return false;
-            }
-            expandedParameter = ReflectionUtil.expandsVarargs(parameterTypes, argumentTypes.length);
-        } else {
-            if (argumentTypes.length != parameterTypes.length) {
-                return false;
-            }
-            expandedParameter = parameterTypes;
+        final Type[] expandedParameters = getExpandedParameters(argumentTypes);
+        if (expandedParameters == null) {
+            return false;
         }
         // Argument types must be convertible to the parameter types
-        for (int i = 0; i < expandedParameter.length; i++) {
-            if (!argumentTypes[i].convertibleTo(expandedParameter[i])) {
+        for (int i = 0; i < expandedParameters.length; i++) {
+            if (!argumentTypes[i].convertibleTo(expandedParameters[i])) {
                 return false;
             }
         }
@@ -108,6 +125,35 @@ public abstract class DeclaredCallable implements Callable {
             }
         }
         return true;
+    }
+
+    @Override
+    public boolean requiresUncheckedConversion(Type[] argumentTypes) {
+        final Type[] expandedParameters = getExpandedParameters(argumentTypes);
+        if (expandedParameters == null) {
+            throw new IllegalArgumentException("Argument type count does not match the parameter count");
+        }
+        for (int i = 0; i < argumentTypes.length; i++) {
+            final Type type = argumentTypes[i];
+            if (type instanceof ReferenceType && ((ReferenceType) type).isUncheckedConversion(expandedParameters[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Type[] getExpandedParameters(Type[] argumentTypes) {
+        if (varargEnabled) {
+            // When we use vararg, we can expand the last type parameter to have the required count
+            if (argumentTypes.length < parameterTypes.length - 1) {
+                return null;
+            }
+            return ReflectionUtil.expandsVarargs(parameterTypes, argumentTypes.length);
+        }
+        if (argumentTypes.length != parameterTypes.length) {
+            return null;
+        }
+        return parameterTypes;
     }
 
     protected Object[] unwrapArguments(Value[] arguments) {
@@ -149,39 +195,60 @@ public abstract class DeclaredCallable implements Callable {
         return parameterB.isPrimitive() ? !primitiveArgument : parameterA.convertibleTo(parameterB);
     }
 
-    private static Type[] getParameterTypes(java.lang.reflect.Type[] genericParameterTypes, Substitutions substitutions) {
-        // Get the parameter types by applying declaror and type argument substitutions
-        final Type[] parameterTypes = TypeUtil.wrap(genericParameterTypes);
-        for (int i = 0; i < parameterTypes.length; i++) {
-            final Type parameterType = parameterTypes[i];
-            if (parameterType instanceof TypeArgument) {
-                parameterTypes[i] = ((TypeArgument) parameterType).substituteTypeVariables(substitutions);
+    private static Type[] substituteTypes(Type[] types, Substitutions substitutions) {
+        for (int i = 0; i < types.length; i++) {
+            final Type type = types[i];
+            if (type instanceof TypeArgument) {
+                types[i] = ((TypeArgument) type).substituteTypeVariables(substitutions);
             }
         }
-        return parameterTypes;
+        return types;
+    }
+
+    private static Type substituteType(Type type, Substitutions substitutions) {
+        if (type instanceof TypeArgument) {
+            return ((TypeArgument) type).substituteTypeVariables(substitutions);
+        }
+        return type;
+    }
+
+    private static Type eraseType(Type type) {
+        if (type instanceof ReferenceType) {
+            return ((ReferenceType) type).getErasure();
+        }
+        return type;
+    }
+
+    private static Type[] eraseTypes(Type[] types) {
+        for (int i = 0; i < types.length; i++) {
+            final Type type = types[i];
+            if (type instanceof ReferenceType) {
+                types[i] = ((ReferenceType) type).getErasure();
+            }
+        }
+        return types;
     }
 
     public static class TypeArgumentChecker {
-        private TypeArgument[] typeArguments;
+        private final TypeVariable[] typeParameters;
+        private final LiteralReferenceType declaror;
+        private final TypeArgument[] typeArguments;
         private Substitutions substitutions;
-        private java.lang.reflect.TypeVariable<?>[] typeParameters;
-        private TypeVariable[] signatureParameters;
-        private Substitutions combinedSubstitutions;
         private boolean valid;
         private boolean checked = false;
 
-        public TypeArgumentChecker(TypeArgument[] typeArguments, Substitutions substitutions, java.lang.reflect.TypeVariable<?>[] typeParameters) {
-            this.typeArguments = typeArguments;
-            this.substitutions = substitutions;
+        public TypeArgumentChecker(TypeVariable[] typeParameters, LiteralReferenceType declaror, TypeArgument[] typeArguments) {
             this.typeParameters = typeParameters;
+            this.declaror = declaror;
+            this.typeArguments = typeArguments;
         }
 
         public TypeVariable[] getTypeParameters() {
-            return signatureParameters;
+            return typeParameters;
         }
 
         public Substitutions getSubstitutions() {
-            return combinedSubstitutions;
+            return substitutions;
         }
 
         public boolean check() {
@@ -193,29 +260,32 @@ public abstract class DeclaredCallable implements Callable {
             if (typeParameters.length != typeArguments.length) {
                 return valid = false;
             }
-            // Wrap the parameters
-            signatureParameters = new TypeVariable[typeParameters.length];
-            for (int i = 0; i < typeParameters.length; i++) {
-                signatureParameters[i] = (TypeVariable) TypeUtil.wrap(typeParameters[i]);
-            }
             // Generate the combined substitution of the declaring class and method parameters, following the shadowing rules
             final Map<String, TypeArgument> namesToArguments = new HashMap<>();
-            // First add all declaring class arguments from the original substitutions
-            namesToArguments.putAll(substitutions.getMap());
+            // First add all declaring class captured arguments as the original substitutions
+            namesToArguments.putAll(declaror.capture().getSubstitutions().getMap());
             // Now add the method ones, replacing the declaring class arguments (shadowing)
-            namesToArguments.putAll(Substitutions.toSubstitutionMap(signatureParameters, typeArguments));
-            combinedSubstitutions = new Substitutions(namesToArguments);
+            namesToArguments.putAll(Substitutions.toSubstitutionMap(typeParameters, typeArguments));
+            substitutions = new Substitutions(namesToArguments);
             // Apply the substitutions to the method parameter bounds to get the final method signature parameters
-            for (int i = 0; i < signatureParameters.length; i++) {
-                signatureParameters[i] = signatureParameters[i].substituteBoundTypeVariables(combinedSubstitutions);
+            for (int i = 0; i < typeParameters.length; i++) {
+                typeParameters[i] = typeParameters[i].substituteBoundTypeVariables(substitutions);
             }
             // Check if arguments are within bounds
-            for (int i = 0; i < signatureParameters.length; i++) {
-                if (!signatureParameters[i].boundsContain(typeArguments[i])) {
+            for (int i = 0; i < typeParameters.length; i++) {
+                if (!typeParameters[i].boundsContain(typeArguments[i])) {
                     return valid = false;
                 }
             }
             return valid = true;
+        }
+    }
+
+    public static class IncompatibleTypeArgumentsException extends Exception {
+        private static final long serialVersionUID = 1;
+
+        public IncompatibleTypeArgumentsException(String message) {
+            super(message);
         }
     }
 }

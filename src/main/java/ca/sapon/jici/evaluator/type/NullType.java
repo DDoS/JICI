@@ -25,8 +25,8 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.member.Callable;
+import ca.sapon.jici.evaluator.member.ClassVariable;
 
 /**
  * The null type, for the {@code null} literal.
@@ -69,13 +69,23 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
+    public boolean isUncheckedConversion(Type to) {
+        return false;
+    }
+
+    @Override
     public NullType capture() {
         return this;
     }
 
     @Override
-    public Set<SingleReferenceType> getDirectSuperTypes() {
+    public Set<LiteralReferenceType> getDirectSuperTypes() {
         throw new UnsupportedOperationException("Can't list the direct super types of the null types as it is the universal set");
+    }
+
+    @Override
+    public Set<LiteralReferenceType> getSuperTypes() {
+        return getDirectSuperTypes();
     }
 
     @Override

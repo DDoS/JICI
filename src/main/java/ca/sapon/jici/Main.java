@@ -28,7 +28,6 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Properly handle unchecked conversions in method arguments
             Redo type and constructor call parser according to spec
             Update constructor call evaluator to match spec
             Fix source start and end indices

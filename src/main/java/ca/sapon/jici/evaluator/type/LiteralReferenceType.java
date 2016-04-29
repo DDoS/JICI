@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -154,8 +155,8 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     }
 
     @Override
-    public Set<SingleReferenceType> getDirectSuperTypes() {
-        final Set<SingleReferenceType> superTypes = new HashSet<>();
+    public Set<LiteralReferenceType> getDirectSuperTypes() {
+        final Set<LiteralReferenceType> superTypes = new HashSet<>();
         if (isArray()) {
             // Find the number of dimensions of the array and the base component type
             int dimensions = 0;
@@ -174,8 +175,8 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                 superTypes.add(LiteralReferenceType.THE_CLONEABLE.asArray(dimensions - 1));
             } else {
                 // Add all the component direct super types as arrays of the same dimension
-                if (componentType instanceof ReferenceType) {
-                    for (SingleReferenceType superType : ((ReferenceType) componentType).getDirectSuperTypes()) {
+                if (componentType instanceof LiteralReferenceType) {
+                    for (LiteralReferenceType superType : ((LiteralReferenceType) componentType).getDirectSuperTypes()) {
                         superTypes.add(superType.asArray(dimensions));
                     }
                 }
@@ -195,6 +196,24 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             Collections.addAll(superTypes, getDirectlyImplementedInterfaces());
         }
         return superTypes;
+    }
+
+    @Override
+    public LinkedHashSet<LiteralReferenceType> getSuperTypes() {
+        final LinkedHashSet<LiteralReferenceType> result = new LinkedHashSet<>();
+        final Queue<LiteralReferenceType> queue = new ArrayDeque<>();
+        queue.add(capture());
+        final boolean raw = isRaw();
+        while (!queue.isEmpty()) {
+            LiteralReferenceType child = queue.remove();
+            if (raw) {
+                child = child.getErasure();
+            }
+            if (result.add(child)) {
+                queue.addAll(child.getDirectSuperTypes());
+            }
+        }
+        return result;
     }
 
     @Override
@@ -272,7 +291,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (to instanceof ParametrizedType) {
             final ParametrizedType parametrized = (ParametrizedType) to;
             final LiteralReferenceType erasure = parametrized.getErasure();
-            for (LiteralReferenceType superType : TypeUtil.getSuperTypes(this)) {
+            for (LiteralReferenceType superType : getSuperTypes()) {
                 if (superType.getErasure().equals(erasure)) {
                     return !(superType instanceof ParametrizedType)
                             || parametrized.argumentsContain(((ParametrizedType) superType).getArguments());
@@ -299,6 +318,21 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                 }
             }
             return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isUncheckedConversion(Type to) {
+        if (!(to instanceof ParametrizedType)) {
+            return false;
+        }
+        final ParametrizedType parametrized = (ParametrizedType) to;
+        final LiteralReferenceType erasure = parametrized.getErasure();
+        for (LiteralReferenceType superType : getSuperTypes()) {
+            if (superType.getErasure().equals(erasure)) {
+                return !(superType instanceof ParametrizedType);
+            }
         }
         return false;
     }
@@ -365,22 +399,13 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
 
     @Override
     public ClassVariable getField(String name) {
-        // Search the type hierarchy from bottom to top
-        final Queue<SingleReferenceType> searchQueue = new ArrayDeque<>();
-        searchQueue.add(this);
-        do {
-            final SingleReferenceType type = searchQueue.poll();
-            if (!(type instanceof LiteralReferenceType)) {
-                throw new UnsupportedOperationException("Expected only literal reference types in the type hierarchy");
-            }
-            final LiteralReferenceType literal = (LiteralReferenceType) type;
-            final ClassVariable field = literal.getDeclaredField(name);
+        final LinkedHashSet<LiteralReferenceType> superTypes = getSuperTypes();
+        for (LiteralReferenceType type : superTypes) {
+            final ClassVariable field = type.getDeclaredField(name);
             if (field != null) {
                 return field;
             }
-            // Search the super types after (to respect shadowing rules)
-            searchQueue.addAll(type.getDirectSuperTypes());
-        } while (!searchQueue.isEmpty());
+        }
         throw new UnsupportedOperationException("No field named " + name + " in " + getName());
     }
 
@@ -409,7 +434,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             callable = reduceCallableCandidates(varargCandidates, arguments);
         }
         if (callable != null) {
-            return callable;
+            return callable.requiresUncheckedConversion(arguments) ? callable.eraseReturnType() : callable;
         }
         throw new UnsupportedOperationException("No constructor for signature: " +
                 (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
@@ -421,16 +446,9 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         // Get the declared methods and look for applicable candidates with and without using vararg
         final Set<Callable> regularCandidates = new HashSet<>();
         final Set<Callable> varargCandidates = new HashSet<>();
-        // Search the type hierarchy from bottom to top
-        final Queue<SingleReferenceType> searchQueue = new ArrayDeque<>();
-        searchQueue.add(this);
-        do {
-            final SingleReferenceType type = searchQueue.poll();
-            if (!(type instanceof LiteralReferenceType)) {
-                throw new UnsupportedOperationException("Expected only literal reference types in the type hierarchy");
-            }
-            final LiteralReferenceType literal = (LiteralReferenceType) type;
-            for (Callable method : literal.getDeclaredMethods(name, typeArguments)) {
+        final LinkedHashSet<LiteralReferenceType> superTypes = getSuperTypes();
+        for (LiteralReferenceType type : superTypes) {
+            for (Callable method : type.getDeclaredMethods(name, typeArguments)) {
                 if (method.isApplicable(arguments)) {
                     regularCandidates.add(method);
                 }
@@ -442,9 +460,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
                     varargCandidates.add(varargMethod);
                 }
             }
-            // Search the super types after (to respect shadowing rules)
-            searchQueue.addAll(type.getDirectSuperTypes());
-        } while (!searchQueue.isEmpty());
+        }
         // Resolve overloads
         Callable callable = reduceCallableCandidates(regularCandidates, arguments);
         // If the regular callables don't work, try with vararg
@@ -452,7 +468,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
             callable = reduceCallableCandidates(varargCandidates, arguments);
         }
         if (callable != null) {
-            return callable;
+            return callable.requiresUncheckedConversion(arguments) ? callable.eraseReturnType() : callable;
         }
         throw new UnsupportedOperationException("No method for signature: " +
                 (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +

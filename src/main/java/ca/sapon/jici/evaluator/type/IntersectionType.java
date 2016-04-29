@@ -28,9 +28,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
-import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -209,8 +209,25 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public Set<SingleReferenceType> getDirectSuperTypes() {
-        return getTypes();
+    public Set<LiteralReferenceType> getDirectSuperTypes() {
+        final Set<LiteralReferenceType> directSuperTypes = new HashSet<>();
+        for (SingleReferenceType type : getTypes()) {
+            if (type instanceof LiteralReferenceType) {
+                directSuperTypes.add((LiteralReferenceType) type);
+            } else {
+                directSuperTypes.addAll(type.getDirectSuperTypes());
+            }
+        }
+        return directSuperTypes;
+    }
+
+    @Override
+    public Set<LiteralReferenceType> getSuperTypes() {
+        final Set<LiteralReferenceType> result = new HashSet<>();
+        for (LiteralReferenceType type : getDirectSuperTypes()) {
+            result.addAll(type.getSuperTypes());
+        }
+        return result;
     }
 
     @Override
@@ -220,6 +237,16 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
             erasures.add(type.getErasure());
         }
         return of(erasures);
+    }
+
+    @Override
+    public boolean isUncheckedConversion(Type to) {
+        for (SingleReferenceType bound : getTypes()) {
+            if (bound.isUncheckedConversion(to)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -54,5 +54,9 @@ public interface Callable {
 
     boolean isMoreApplicableThan(Callable other, Type[] argumentTypes);
 
+    boolean requiresUncheckedConversion(Type[] argumentTypes);
+
+    Callable eraseReturnType();
+
     Value call(Value target, Value... arguments);
 }

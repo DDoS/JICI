@@ -25,8 +25,8 @@ package ca.sapon.jici.evaluator.type;
 
 import java.util.Set;
 
-import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.member.Callable;
+import ca.sapon.jici.evaluator.member.ClassVariable;
 
 /**
  * A type backed by a class other than the primitive ones. Includes the null type.
@@ -40,9 +40,13 @@ public interface ReferenceType extends Type {
 
     Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments);
 
-    Set<SingleReferenceType> getDirectSuperTypes();
+    Set<LiteralReferenceType> getDirectSuperTypes();
+
+    Set<LiteralReferenceType> getSuperTypes();
 
     ReferenceType getErasure();
+
+    boolean isUncheckedConversion(Type to);
 
     @Override
     ReferenceType capture();

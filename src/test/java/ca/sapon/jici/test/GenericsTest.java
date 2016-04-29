@@ -26,7 +26,7 @@ package ca.sapon.jici.test;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +54,6 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.test.GenericsTest.Outer.Inner;
 import ca.sapon.jici.test.GenericsTest.Outer.Normal;
 import ca.sapon.jici.test.GenericsTest.Outer.Ref;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -382,30 +381,39 @@ public class GenericsTest {
     @Test
     public void testSuperTypes() {
         // Parametrized of L
-        final Set<LiteralReferenceType> superTypes1 = TypeUtil.getSuperTypes(ParametrizedType.of(L.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_CLONEABLE)));
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        final Set<LiteralReferenceType> superTypes1 = ParametrizedType.of(L.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_CLONEABLE)).getSuperTypes();
+        Assert.assertEquals(new LinkedHashSet<>(Arrays.asList(
                 ParametrizedType.of(L.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_CLONEABLE)),
                 ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)),
                 ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.THE_STRING)),
                 LiteralReferenceType.THE_OBJECT)
         ), superTypes1);
         // Raw of L
-        final Set<LiteralReferenceType> superTypes2 = TypeUtil.getSuperTypes(LiteralReferenceType.of(L.class));
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        final Set<LiteralReferenceType> superTypes2 = LiteralReferenceType.of(L.class).getSuperTypes();
+        Assert.assertEquals(new LinkedHashSet<>(Arrays.asList(
                 LiteralReferenceType.of(L.class),
                 LiteralReferenceType.of(N.class),
                 LiteralReferenceType.of(M.class),
                 LiteralReferenceType.THE_OBJECT)
         ), superTypes2);
+        // Raw of Ks
+        final Set<LiteralReferenceType> superTypes3 = LiteralReferenceType.of(Ks.class).getSuperTypes();
+        Assert.assertEquals(new LinkedHashSet<>(Arrays.asList(
+                LiteralReferenceType.of(Ks.class),
+                LiteralReferenceType.of(K.class),
+                LiteralReferenceType.of(N.class),
+                LiteralReferenceType.of(M.class),
+                LiteralReferenceType.THE_OBJECT)
+        ), superTypes3);
         // Parametrized of N with a wildcard
-        final Set<LiteralReferenceType> superTypes3 = TypeUtil.getSuperTypes(ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(
+        final Set<LiteralReferenceType> superTypes4 = ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(
                 WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING))
-        )));
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        )).getSuperTypes();
+        Assert.assertEquals(new LinkedHashSet<>(Arrays.asList(
                 ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
                 ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
                 LiteralReferenceType.THE_OBJECT)
-        ), superTypes3);
+        ), superTypes4);
     }
 
     @Test
@@ -418,7 +426,6 @@ public class GenericsTest {
         environment.importClass(Outer.Normal.class);
         environment.importClass(Outer.Ref.class);
         environment.importClass(Z.class);
-        environment.importClass(D.class);
 
         EvaluatorTest.assertFails(
                 "Outer<String>.Inner f;",
@@ -828,22 +835,118 @@ public class GenericsTest {
                 "java.lang.String",
                 "new M<Integer>().<String>getT2(\"1\")"
         );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.M<CAP#1 extends java.lang.String>",
+                "M.newWildcardM()"
+        );
+    }
 
-        //List d = new M().d(null);
-        //List<String> d = new M<Integer>().d(null);
-        //List d = new M<Integer>().d(new ArrayList());
-        //List<String> d = new M<Integer>().d(new ArrayList<String>());
+    @Test
+    public void testRawTypeMembers() {
+        final Environment environment = new Environment();
+        environment.importClass(M.class);
+        environment.importClass(L.class);
+        environment.importClass(Ks.class);
+        environment.importClass(Kr.class);
 
-        //Object s = new L().t;
-        //Object s = new Ks().t;
-        //String r = new Kr<String>().r;
-        //Object t = new Kr<String>().t;
+        assertType(
+                environment,
+                "java.util.List",
+                "new M().d(null)"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M<Integer>().d(null)"
+        );
+        assertType(
+                environment,
+                "java.util.List",
+                "new M<Integer>().d(new java.util.ArrayList())"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M<Integer>().d(new java.util.ArrayList<String>())"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M<Integer>().li"
+        );
+        assertType(
+                environment,
+                "java.util.List",
+                "new M().li"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M<Integer>().ls"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M().ls"
+        );
+        assertType(
+                environment,
+                "java.util.List<java.lang.String>",
+                "new M<Integer>().<String>ds()"
+        );
+        assertType(
+                environment,
+                "java.util.List",
+                "new M().ds()"
+        );
+        EvaluatorTest.assertFails(
+                "new M().<String>ds()",
+                environment
+        );
+        assertType(
+                environment,
+                "java.lang.Object",
+                "new L().t"
+        );
+        assertType(
+                environment,
+                "java.lang.Object",
+                "new Ks().t"
+        );
+        assertType(
+                environment,
+                "java.lang.String",
+                "new Kr<String>().r"
+        );
+        assertType(
+                environment,
+                "java.lang.Object",
+                "new Kr<String>().t"
+        );
+        EvaluatorTest.assertFails(
+                "new <String>M(null)",
+                environment
+        );
+        assertType(
+                environment,
+                "java.util.List",
+                "new M<Integer>().setM(new Kr<Integer>())"
+        );
     }
 
     public static class M<T> {
         public static Short s = null;
+        public static List<String> ls = null;
         public T t = null;
         public Integer m = null;
+        public List<String> li = null;
+
+        public M() {
+        }
+
+        public <S> M(List<S> s) {
+        }
 
         public T getT() {
             return t;
@@ -851,6 +954,9 @@ public class GenericsTest {
 
         public void setT(T t) {
             this.t = t;
+        }
+
+        public void setTL(List<T> t) {
         }
 
         @SafeVarargs
@@ -883,6 +989,14 @@ public class GenericsTest {
 
         public List<String> d(List<String> l) {
             return l;
+        }
+
+        public <S> List<S> ds() {
+            return null;
+        }
+
+        public List<String> setM(M<T> m) {
+            return null;
         }
 
         public static Short getShort() {

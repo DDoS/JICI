@@ -26,7 +26,6 @@ package ca.sapon.jici.util;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,7 +36,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Environment;
@@ -90,6 +88,14 @@ public final class TypeUtil {
         final Type[] wrapped = new Type[types.length];
         for (int i = 0; i < types.length; i++) {
             wrapped[i] = wrap(types[i]);
+        }
+        return wrapped;
+    }
+
+    public static TypeVariable[] wrap(java.lang.reflect.TypeVariable<?>[] typeVariables) {
+        final TypeVariable[] wrapped = new TypeVariable[typeVariables.length];
+        for (int i = 0; i < typeVariables.length; i++) {
+            wrapped[i] = (TypeVariable) wrap(typeVariables[i]);
         }
         return wrapped;
     }
@@ -253,12 +259,12 @@ public final class TypeUtil {
         // Get the super type sets ST(U)
         final Map<ReferenceType, Set<LiteralReferenceType>> superTypeSets = new HashMap<>();
         final Collection<Set<LiteralReferenceType>> superTypes = superTypeSets.values();
-        for (ReferenceType type : types) {
+        for (SingleReferenceType type : types) {
             if (type.convertibleTo(NullType.THE_NULL)) {
                 // The null type has a universal set of super types, we can skip it
                 continue;
             }
-            superTypeSets.put(type, getSuperTypes(type));
+            superTypeSets.put(type, type.getSuperTypes());
         }
         // Intersect the erased super type sets EST(U) to generate the erased candidate set EC
         final Set<LiteralReferenceType> erasedCandidates = new HashSet<>();
@@ -388,21 +394,6 @@ public final class TypeUtil {
             erased.add(type.getErasure());
         }
         return erased;
-    }
-
-    public static Set<LiteralReferenceType> getSuperTypes(ReferenceType type) {
-        final Set<LiteralReferenceType> result = new HashSet<>();
-        final Queue<ReferenceType> queue = new ArrayDeque<>();
-        queue.add(type.capture());
-        while (!queue.isEmpty()) {
-            final ReferenceType child = queue.remove();
-            final LiteralReferenceType literalChild = child instanceof LiteralReferenceType ? (LiteralReferenceType) child : null;
-            // Non literal types are always scanned because they cannot be in the super type set (since it only contains literals)
-            if (literalChild == null || result.add(literalChild)) {
-                queue.addAll(child.getDirectSuperTypes());
-            }
-        }
-        return result;
     }
 
     public static PrimitiveType coerceToPrimitive(Environment environment, Expression expression) {
@@ -551,7 +542,7 @@ public final class TypeUtil {
         final Map<LiteralReferenceType, ParametrizedType> commonErasedSuperTypes = new HashMap<>();
         final Iterator<LiteralReferenceType> iterator = types.iterator();
         // Add all parametrized parents and their erasures for the first type
-        for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
+        for (LiteralReferenceType superType : iterator.next().getSuperTypes()) {
             if (superType instanceof ParametrizedType) {
                 commonErasedSuperTypes.put(superType.getErasure(), (ParametrizedType) superType);
             }
@@ -559,7 +550,7 @@ public final class TypeUtil {
         // For the other types, look for an entry in the common set and ensure they have a valid parametrization
         // If not, fail; if so, add to the common set
         do {
-            for (LiteralReferenceType superType : getSuperTypes(iterator.next())) {
+            for (LiteralReferenceType superType : iterator.next().getSuperTypes()) {
                 if (!(superType instanceof ParametrizedType)) {
                     continue;
                 }
@@ -582,7 +573,7 @@ public final class TypeUtil {
     private static boolean hasInvocationSuperType(LiteralReferenceType type, LiteralReferenceType invocation) {
         // We need an invocation of the same declaration in the super types (that is, same erasures) with the same arguments
         final LiteralReferenceType declaration = invocation.getErasure();
-        for (LiteralReferenceType superType : getSuperTypes(type)) {
+        for (LiteralReferenceType superType : type.getSuperTypes()) {
             if (superType.getErasure().equals(declaration)) {
                 return superType.equals(invocation);
             }

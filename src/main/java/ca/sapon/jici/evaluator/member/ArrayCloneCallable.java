@@ -73,6 +73,16 @@ public class ArrayCloneCallable implements Callable {
     }
 
     @Override
+    public boolean requiresUncheckedConversion(Type[] argumentTypes) {
+        return false;
+    }
+
+    @Override
+    public ArrayCloneCallable eraseReturnType() {
+        return new ArrayCloneCallable(declaror.getErasure());
+    }
+
+    @Override
     public Value call(Value target, Value... arguments) {
         try {
             return ObjectValue.of(ReflectionUtil.cloneArray(target.asObject()));

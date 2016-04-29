@@ -59,7 +59,7 @@ public final class Lexer {
             final char c = consumer.get();
             // tries to generate a token, generates null on failure
             final Token token;
-            if (isWhitespace(c)) {
+            if (StringUtil.isWhitespace(c)) {
                 // ignore all whitespace
                 consumeWhitespace(consumer);
                 token = null;
@@ -132,13 +132,13 @@ public final class Lexer {
 
     private static void consumeWhitespace(StringConsumer consumer) {
         // consume whitespace
-        while (consumer.consume() && isWhitespace(consumer.get())) {
+        while (consumer.consume() && StringUtil.isWhitespace(consumer.get())) {
         }
     }
 
     private static void consumeLineComment(StringConsumer consumer) {
         // consume everything until a line terminator is reached
-        while (consumer.consume() && !isLineTerminator(consumer.get())) {
+        while (consumer.consume() && !StringUtil.isLineTerminator(consumer.get())) {
         }
     }
 
@@ -298,7 +298,7 @@ public final class Lexer {
         consumer.consume();
         while (consumer.has()) {
             c = consumer.get();
-            if (isLineTerminator(c)) {
+            if (StringUtil.isLineTerminator(c)) {
                 throw new LexerException("Expected '" + enclosure + '\'', consumer.get(), consumer.position());
             }
             consumer.consume();
@@ -324,13 +324,5 @@ public final class Lexer {
             consumer.consume();
         } while (Symbol.is(consumer.consumed(start)));
         consumer.expel();
-    }
-
-    private static boolean isWhitespace(char c) {
-        return c == ' ' || c == '\t' || c == '\f' || isLineTerminator(c);
-    }
-
-    private static boolean isLineTerminator(char c) {
-        return c == '\n' || c == '\r';
     }
 }

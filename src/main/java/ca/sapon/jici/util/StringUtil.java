@@ -48,6 +48,14 @@ public final class StringUtil {
     private StringUtil() {
     }
 
+    public static boolean isWhitespace(char c) {
+        return c == ' ' || c == '\t' || c == '\f' || isLineTerminator(c);
+    }
+
+    public static boolean isLineTerminator(char c) {
+        return c == '\n' || c == '\r';
+    }
+
     public static String toString(Object[] elements, String separator) {
         return toString(Arrays.asList(elements), separator);
     }
@@ -122,6 +130,25 @@ public final class StringUtil {
             default:
                 throw new IllegalArgumentException("No known radix identifier for " + radix);
         }
+    }
+
+    public static String reduceSign(String source) {
+        boolean sign = false;
+        int i = 0;
+        for (; i < source.length(); i++) {
+            final char c = source.charAt(i);
+            if (c == '+') {
+                continue;
+            }
+            if (c == '-') {
+                sign ^= true;
+                continue;
+            }
+            if (!isWhitespace(c)) {
+                break;
+            }
+        }
+        return (sign ? '-' : "") + source.substring(i);
     }
 
     public static int getDigitValue(char digit, int radix) {

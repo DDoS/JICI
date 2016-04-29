@@ -28,12 +28,21 @@ import ca.sapon.jici.SourceIndexed;
 public abstract class Token implements SourceIndexed {
     private final TokenID id;
     private final String source;
-    private final int index;
+    private final int start;
+    private final int end;
 
     protected Token(TokenID id, String source, int index) {
         this.id = id;
         this.source = source;
-        this.index = index;
+        this.start = index;
+        this.end = index + source.length() - 1;
+    }
+
+    protected Token(TokenID id, String source, int start, int end) {
+        this.id = id;
+        this.source = source;
+        this.start = start;
+        this.end = end;
     }
 
     public TokenID getID() {
@@ -49,17 +58,17 @@ public abstract class Token implements SourceIndexed {
     }
 
     public int getIndex() {
-        return index;
+        return start;
     }
 
     @Override
     public int getStart() {
-        return getIndex();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return getStart() + getSource().length() - 1;
+        return end;
     }
 
     @Override

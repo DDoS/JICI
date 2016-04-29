@@ -23,12 +23,13 @@
  */
 package ca.sapon.jici.test;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ca.sapon.jici.lexer.Lexer;
 import ca.sapon.jici.parser.Parser;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.parser.statement.Statement;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ParserTest {
     @Test
@@ -91,12 +92,12 @@ public class ParserTest {
 
     @Test
     public void testParseUnary() {
-        testParseExpression("1", "+1");
+        testParseExpression("+1", "+1");
         testParseExpression("-1", "-1");
-        testParseExpression("-1", "+-1");
-        testParseExpression("-1", "-+1");
-        testParseExpression("1", "- -1");
-        testParseExpression("1", "+ +1");
+        testParseExpression("+-1", "+-1");
+        testParseExpression("-+1", "-+1");
+        testParseExpression("- -1", "- -1");
+        testParseExpression("+ +1", "+ +1");
 
         testParseExpression("Sign(+test)", "+test");
         testParseExpression("Sign(-test)", "-test");

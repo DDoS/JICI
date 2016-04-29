@@ -139,7 +139,8 @@ public class CharacterLiteral extends Literal {
 
     @Override
     public Type getType(Environment environment) {
-        return PrimitiveType.of(getTypeClass());
+        evaluate();
+        return PrimitiveType.THE_CHAR;
     }
 
     @Override

@@ -28,29 +28,23 @@ import ca.sapon.jici.lexer.literal.Literal;
 import ca.sapon.jici.util.StringUtil;
 
 public abstract class NumberLiteral extends Literal {
-    private boolean negative = false;
-
     protected NumberLiteral(TokenID id, String source, int index) {
         super(id, source, index);
     }
 
-    public void applySign(boolean negative) {
-        this.negative ^= negative;
-    }
-
-    @Override
-    public String getSource() {
-        return negative ? '-' + super.getSource() : super.getSource();
+    protected NumberLiteral(TokenID id, String source, int start, int end) {
+        super(id, source, start, end);
     }
 
     public static NumberLiteral from(String source, int index) {
-        final int length = source.length();
+        int length = source.length();
         // fast track 0 integers since they are very common
         if (length == 1 && source.charAt(0) == '0') {
             return new ZeroLiteral(index);
         }
-        // remove number separators
+        // remove number separators (don't forget to update length!)
         source = StringUtil.removeAll(source, '_');
+        length = source.length();
         // is a floating point if
         //   - has a decimal separator
         //   - has a p or P

@@ -130,7 +130,8 @@ public class FloatLiteral extends NumberLiteral {
 
     @Override
     public Type getType(Environment environment) {
-        return PrimitiveType.of(getTypeClass());
+        evaluate();
+        return PrimitiveType.THE_FLOAT;
     }
 
     @Override

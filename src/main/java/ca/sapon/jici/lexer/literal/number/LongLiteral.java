@@ -25,10 +25,11 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
@@ -40,9 +41,13 @@ public class LongLiteral extends NumberLiteral {
         super(TokenID.LITERAL_LONG, source, index);
     }
 
+    private LongLiteral(String source, int start, int end) {
+        super(TokenID.LITERAL_LONG, source, start, end);
+    }
+
     private void evaluate() {
         if (!evaluated) {
-            String source = getSource();
+            String source = StringUtil.reduceSign(getSource());
             final int lastIndex = source.length() - 1;
             if (StringUtil.equalsNoCaseASCII(source.charAt(lastIndex), 'l')) {
                 source = source.substring(0, lastIndex);
@@ -50,10 +55,10 @@ public class LongLiteral extends NumberLiteral {
             final int radix = StringUtil.findRadix(source);
             try {
                 source = StringUtil.removeRadixIdentifier(source, radix);
-            } catch (IllegalArgumentException exception) {
+                value = Long.parseLong(source, radix);
+            } catch (Exception exception) {
                 throw new EvaluatorException(exception.getMessage(), this);
             }
-            value = Long.parseLong(source, radix);
             evaluated = true;
         }
     }
@@ -132,11 +137,20 @@ public class LongLiteral extends NumberLiteral {
 
     @Override
     public Type getType(Environment environment) {
-        return PrimitiveType.of(getTypeClass());
+        evaluate();
+        return PrimitiveType.THE_LONG;
     }
 
     @Override
     public Value getValue(Environment environment) {
         return this;
+    }
+
+    public LongLiteral withSign(Symbol sign) {
+        final TokenID id = sign.getID();
+        if (id != TokenID.SYMBOL_MINUS && id != TokenID.SYMBOL_PLUS) {
+            throw new UnsupportedOperationException("Expected a sign symbol");
+        }
+        return new LongLiteral(sign.getSource() + (sign.getSource().charAt(0) == getSource().charAt(0) ? ' ' : "") + getSource(), sign.getIndex(), getEnd());
     }
 }

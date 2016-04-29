@@ -32,4 +32,8 @@ public abstract class Literal extends Token implements Value, Expression {
     protected Literal(TokenID id, String source, int index) {
         super(id, source, index);
     }
+
+    protected Literal(TokenID id, String source, int start, int end) {
+        super(id, source, start, end);
+    }
 }

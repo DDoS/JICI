@@ -35,7 +35,8 @@ import ca.sapon.jici.lexer.Token;
 import ca.sapon.jici.lexer.TokenGroup;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.lexer.literal.Literal;
-import ca.sapon.jici.lexer.literal.number.NumberLiteral;
+import ca.sapon.jici.lexer.literal.number.IntLiteral;
+import ca.sapon.jici.lexer.literal.number.LongLiteral;
 import ca.sapon.jici.parser.expression.ArrayConstructor;
 import ca.sapon.jici.parser.expression.ArrayConstructor.ArrayInitializer;
 import ca.sapon.jici.parser.expression.Cast;
@@ -699,9 +700,11 @@ public final class Parser {
                 case SYMBOL_MINUS: {
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    if (inner instanceof NumberLiteral) {
-                        ((NumberLiteral) inner).applySign(token.getID() == TokenID.SYMBOL_MINUS);
-                        return inner;
+                    if (inner instanceof IntLiteral) {
+                        return ((IntLiteral) inner).withSign((Symbol) token);
+                    }
+                    if (inner instanceof LongLiteral) {
+                        return ((LongLiteral) inner).withSign((Symbol) token);
                     }
                     return new Sign(inner, (Symbol) token);
                 }

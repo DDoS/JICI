@@ -102,6 +102,12 @@ public class EvaluatorTest {
         assertReturns(-5, "+-i", environment);
         assertReturns(-5, "-+i", environment);
 
+        assertReturns(Integer.MIN_VALUE, "-2_147_483_648", environment);
+        assertFails("2_147_483_648", environment);
+
+        assertReturns(Long.MIN_VALUE, "-9_223_372_036_854_775_808L", environment);
+        assertFails("9_223_372_036_854_775_808L", environment);
+
         environment.declareVariable(Identifier.from("io", 0), LiteralReferenceType.of(Integer.class), ObjectValue.of(5));
         assertReturns(-5, "-io", environment);
 

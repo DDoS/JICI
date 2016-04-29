@@ -25,10 +25,11 @@ package ca.sapon.jici.lexer.literal.number;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.Value;
+import ca.sapon.jici.evaluator.value.ValueKind;
+import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.lexer.TokenID;
 import ca.sapon.jici.util.StringUtil;
 
@@ -40,18 +41,23 @@ public class IntLiteral extends NumberLiteral {
         super(TokenID.LITERAL_INT, source, index);
     }
 
+    private IntLiteral(String source, int start, int end) {
+        super(TokenID.LITERAL_INT, source, start, end);
+    }
+
     private void evaluate() {
-        if (!evaluated) {
-            String source = getSource();
-            final int radix = StringUtil.findRadix(source);
-            try {
-                source = StringUtil.removeRadixIdentifier(source, radix);
-            } catch (IllegalArgumentException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
-            }
-            value = Integer.parseInt(source, radix);
-            evaluated = true;
+        if (evaluated) {
+            return;
         }
+        String source = StringUtil.reduceSign(getSource());
+        final int radix = StringUtil.findRadix(source);
+        try {
+            source = StringUtil.removeRadixIdentifier(source, radix);
+            value = Integer.parseInt(source, radix);
+        } catch (Exception exception) {
+            throw new EvaluatorException(exception.getMessage(), this);
+        }
+        evaluated = true;
     }
 
     @Override
@@ -123,7 +129,8 @@ public class IntLiteral extends NumberLiteral {
 
     @Override
     public Type getType(Environment environment) {
-        return PrimitiveType.of(getTypeClass());
+        evaluate();
+        return PrimitiveType.THE_INT;
     }
 
     @Override
@@ -134,5 +141,13 @@ public class IntLiteral extends NumberLiteral {
     @Override
     public Value getValue(Environment environment) {
         return this;
+    }
+
+    public IntLiteral withSign(Symbol sign) {
+        final TokenID id = sign.getID();
+        if (id != TokenID.SYMBOL_MINUS && id != TokenID.SYMBOL_PLUS) {
+            throw new UnsupportedOperationException("Expected a sign symbol");
+        }
+        return new IntLiteral(sign.getSource() + (sign.getSource().charAt(0) == getSource().charAt(0) ? ' ' : "") + getSource(), sign.getIndex(), getEnd());
     }
 }

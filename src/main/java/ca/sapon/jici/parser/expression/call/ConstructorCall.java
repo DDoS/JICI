@@ -45,19 +45,24 @@ import ca.sapon.jici.util.StringUtil;
 public class ConstructorCall implements Statement, Expression {
     private final ClassTypeName typeName;
     private final List<TypeArgumentName> typeArguments;
+    private final boolean diamondOperator;
     private final List<Expression> arguments;
     private int start;
     private int end;
     private Callable callable = null;
 
-    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments, int start, int end) {
-        this(typeName, Collections.<TypeArgumentName>emptyList(), arguments, start, end);
+    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments, boolean diamondOperator, int start, int end) {
+        this(typeName, Collections.<TypeArgumentName>emptyList(), diamondOperator, arguments, start, end);
     }
 
-    public ConstructorCall(ClassTypeName typeName, List<TypeArgumentName> typeArguments, List<Expression> arguments, int start, int end) {
-        this.arguments = arguments;
-        this.typeArguments = typeArguments;
+    public ConstructorCall(ClassTypeName typeName, List<TypeArgumentName> typeArguments, boolean diamondOperator, List<Expression> arguments, int start, int end) {
+        if (diamondOperator && typeName.hasArguments()) {
+            throw new IllegalArgumentException("Cannot use the diamond operator and have class type arguments at the same time");
+        }
         this.typeName = typeName;
+        this.typeArguments = typeArguments;
+        this.diamondOperator = diamondOperator;
+        this.arguments = arguments;
         this.start = start;
         this.end = end;
     }
@@ -155,6 +160,6 @@ public class ConstructorCall implements Statement, Expression {
     @Override
     public String toString() {
         return "ConstructorCall(new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
-                typeName + "(" + StringUtil.toString(arguments, ", ") + "))";
+                typeName + (diamondOperator ? "<>" : "") + "(" + StringUtil.toString(arguments, ", ") + "))";
     }
 }

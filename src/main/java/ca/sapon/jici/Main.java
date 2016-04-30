@@ -28,7 +28,6 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Redo type and constructor call parser according to spec
             Update constructor call evaluator to match spec
 
             Add generic type inference

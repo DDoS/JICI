@@ -70,39 +70,40 @@ public class ArrayConstructor implements Expression {
 
     @Override
     public Type getType(Environment environment) {
-        if (type == null) {
-            if (initializer == null) {
-                int sizedDimensions = 0;
-                for (Expression size : sizes) {
-                    if (size == null) {
-                        break;
-                    }
-                    final Type sizeType = size.getType(environment);
-                    if (!sizeType.convertibleTo(PrimitiveType.THE_INT)) {
-                        throw new EvaluatorException("Cannot convert " + sizeType.getName() + " to int", size);
-                    }
-                    sizedDimensions++;
+        if (type != null) {
+            return type;
+        }
+        if (initializer == null) {
+            int sizedDimensions = 0;
+            for (Expression size : sizes) {
+                if (size == null) {
+                    break;
                 }
-                final int dimensions = sizes.size();
-                final int unsizedDimensions = dimensions - sizedDimensions;
-                final LiteralType baseType = typeName.getType(environment);
-                if (!baseType.isReifiable()) {
-                    throw new EvaluatorException("Array component type must be reifiable", typeName);
+                final Type sizeType = size.getType(environment);
+                if (!sizeType.convertibleTo(PrimitiveType.THE_INT)) {
+                    throw new EvaluatorException("Cannot convert " + sizeType.getName() + " to int", size);
                 }
-                final ComponentType componentType;
-                if (unsizedDimensions != 0) {
-                    componentType = baseType.asArray(unsizedDimensions);
-                } else {
-                    componentType = baseType;
-                }
-                this.componentType = componentType;
-                this.sizedDimensions = sizedDimensions;
-                type = baseType.asArray(dimensions);
-            } else {
-                final Type arrayType = typeName.getType(environment);
-                initializer.setType(environment, arrayType);
-                type = arrayType;
+                sizedDimensions++;
             }
+            final int dimensions = sizes.size();
+            final int unsizedDimensions = dimensions - sizedDimensions;
+            final LiteralType baseType = typeName.getType(environment);
+            if (!baseType.isReifiable()) {
+                throw new EvaluatorException("Array component type must be reifiable", typeName);
+            }
+            final ComponentType componentType;
+            if (unsizedDimensions != 0) {
+                componentType = baseType.asArray(unsizedDimensions);
+            } else {
+                componentType = baseType;
+            }
+            this.componentType = componentType;
+            this.sizedDimensions = sizedDimensions;
+            type = baseType.asArray(dimensions);
+        } else {
+            final Type arrayType = typeName.getType(environment);
+            initializer.setType(environment, arrayType);
+            type = arrayType;
         }
         return type;
     }

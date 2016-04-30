@@ -61,12 +61,22 @@ public class ParserTest {
         testParseExpression("ConstructorCall(new Test<Test<Test<Test<Object>>>>())", "new Test<Test<Test<Test<Object>>>>()");
         testParseExpression("ConstructorCall(new <String>Test())", "new <String>Test()");
 
+        testParseExpression("ConstructorCall(new ca.sapon.Test<>())", "new ca.sapon.Test<>()");
+        testParseExpression("ConstructorCall(new Test<>())", "new Test<>()");
+
+        testParseExpression("ConstructorCall(new Inner<String>.Outer<Integer>())", "new Inner<String>.Outer<Integer>()");
+
         testParseExpression("ArrayConstructor(new int[1])", "new int[1]");
         testParseExpression("ArrayConstructor(new Object[1])", "new Object[1]");
         testParseExpression("ArrayConstructor(new Object[1][2])", "new Object[1][2]");
         testParseExpression("ArrayConstructor(new Object[1][])", "new Object[1][]");
         testParseExpression("ArrayConstructor(new Object[]{})", "new Object[]{}");
         testParseExpression("ArrayConstructor(new Object[][]{})", "new Object[][]{}");
+
+        testParseExpression("ArrayConstructor(new ca.sapon.Test[1])", "new ca.sapon.Test[1]");
+        testParseExpression("ArrayConstructor(new ca.sapon.Test<?>[1])", "new ca.sapon.Test<?>[1]");
+
+        testParseExpression("ArrayConstructor(new Inner<String>.Outer<Integer>[1])", "new Inner<String>.Outer<Integer>[1]");
 
         testParseExpression("ClassAccess(test.class)", "test.class");
         testParseExpression("ClassAccess(int.class)", "int.class");
@@ -265,7 +275,7 @@ public class ParserTest {
         testParseStatement("Declaration(Object.Nested<Integer> m)", "Object.Nested<Integer> m;");
         testParseStatement("Declaration(Object<Double>.Nested m)", "Object<Double>.Nested m;");
         testParseStatement("Declaration(Object<Double>.Nested<Integer> m)", "Object<Double>.Nested<Integer> m;");
-
+        testParseStatement("Declaration(Object<Triple>.Nested<Integer>.Classes<String> m)", "Object<Triple>.Nested<Integer>.Classes<String> m;");
 
         testParseStatement("Declaration(Object m = 1)", "Object m = 1;");
         testParseStatement("Declaration(Object m = 1, k = 2, j = 3)", "Object m = 1, k = 2, j = 3;");

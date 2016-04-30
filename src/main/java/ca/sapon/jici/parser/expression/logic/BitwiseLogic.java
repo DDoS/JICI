@@ -25,13 +25,13 @@ package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.type.PrimitiveType;
+import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.BooleanValue;
 import ca.sapon.jici.evaluator.value.IntValue;
 import ca.sapon.jici.evaluator.value.LongValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.ValueKind;
-import ca.sapon.jici.evaluator.type.PrimitiveType;
-import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.lexer.Symbol;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.TypeUtil;
@@ -40,12 +40,16 @@ public class BitwiseLogic implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private int start;
+    private int end;
     private Type type = null;
 
     public BitwiseLogic(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
+        this.start = left.getStart();
+        this.end = right.getEnd();
     }
 
     @Override
@@ -91,12 +95,22 @@ public class BitwiseLogic implements Expression {
 
     @Override
     public int getStart() {
-        return left.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return right.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     private Value doBitwiseAND(Value leftValue, Value rightValue, ValueKind widenKind) {

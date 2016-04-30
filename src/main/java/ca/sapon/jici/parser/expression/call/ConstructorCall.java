@@ -26,9 +26,9 @@ package ca.sapon.jici.parser.expression.call;
 import java.util.Collections;
 import java.util.List;
 
-import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.ParametrizedType;
 import ca.sapon.jici.evaluator.type.Type;
@@ -46,16 +46,20 @@ public class ConstructorCall implements Statement, Expression {
     private final ClassTypeName typeName;
     private final List<TypeArgumentName> typeArguments;
     private final List<Expression> arguments;
+    private int start;
+    private int end;
     private Callable callable = null;
 
-    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments) {
-        this(typeName, Collections.<TypeArgumentName>emptyList(), arguments);
+    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments, int start, int end) {
+        this(typeName, Collections.<TypeArgumentName>emptyList(), arguments, start, end);
     }
 
-    public ConstructorCall(ClassTypeName typeName, List<TypeArgumentName> typeArguments, List<Expression> arguments) {
+    public ConstructorCall(ClassTypeName typeName, List<TypeArgumentName> typeArguments, List<Expression> arguments, int start, int end) {
         this.arguments = arguments;
         this.typeArguments = typeArguments;
         this.typeName = typeName;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -76,9 +80,10 @@ public class ConstructorCall implements Statement, Expression {
             final LiteralReferenceType type = typeName.getType(environment);
             // Check that parametrized types don't have wildcards
             if (type instanceof ParametrizedType) {
-                for (TypeArgument argument : ((ParametrizedType) type).getArguments()) {
-                    if (argument instanceof WildcardType) {
-                        throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeName);
+                List<TypeArgument> arguments1 = ((ParametrizedType) type).getArguments();
+                for (int i = 0; i < arguments1.size(); i++) {
+                    if (arguments1.get(i) instanceof WildcardType) {
+                        throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeName.getArgument(i));
                     }
                 }
             }
@@ -129,12 +134,22 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public int getStart() {
-        return typeName.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return arguments.isEmpty() ? typeName.getEnd() : arguments.get(arguments.size() - 1).getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

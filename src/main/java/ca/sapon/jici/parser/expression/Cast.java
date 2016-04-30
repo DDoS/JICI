@@ -38,11 +38,15 @@ import ca.sapon.jici.util.TypeUtil;
 public class Cast implements Expression {
     private final TypeName typeName;
     private final Expression object;
+    private int start;
+    private int end;
     private LiteralType type = null;
 
-    public Cast(TypeName typeName, Expression object) {
+    public Cast(TypeName typeName, Expression object, int start) {
         this.typeName = typeName;
         this.object = object;
+        this.start = start;
+        end = object.getEnd();
     }
 
     @Override
@@ -116,12 +120,22 @@ public class Cast implements Expression {
 
     @Override
     public int getStart() {
-        return typeName.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return object.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

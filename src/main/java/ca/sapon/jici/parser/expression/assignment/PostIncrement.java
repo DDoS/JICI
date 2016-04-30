@@ -44,12 +44,20 @@ public class PostIncrement implements Expression, Statement {
     protected final Reference inner;
     protected final Arithmetic increment;
     protected final Symbol operator;
+    private int start;
+    private int end;
     protected Type type = null;
 
     public PostIncrement(Reference inner, Symbol operator) {
+        this(inner, operator, inner.getStart(), operator.getEnd());
+    }
+
+    public PostIncrement(Reference inner, Symbol operator, int start, int end) {
         this.inner = inner;
         this.operator = operator;
         increment = new Arithmetic(inner, ONE, operator.getCompoundAssignOperator());
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -87,12 +95,22 @@ public class PostIncrement implements Expression, Statement {
 
     @Override
     public int getStart() {
-        return inner.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return operator.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

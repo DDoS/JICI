@@ -31,11 +31,5 @@ public interface TypeName extends SourceIndexed {
     LiteralType getType(Environment environment);
 
     @Override
-    int getStart();
-
-    @Override
-    int getEnd();
-
-    @Override
     String toString();
 }

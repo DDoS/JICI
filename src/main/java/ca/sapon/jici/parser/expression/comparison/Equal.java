@@ -38,12 +38,16 @@ public class Equal implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private int start;
+    private int end;
     private ValueKind widenKind = null;
 
     public Equal(Expression left, Expression right, Symbol operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
+        this.start = left.getStart();
+        this.end = right.getEnd();
     }
 
     @Override
@@ -86,12 +90,22 @@ public class Equal implements Expression {
 
     @Override
     public int getStart() {
-        return left.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return right.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     private Value doEqual(Value leftValue, Value rightValue, ValueKind widenKind) {

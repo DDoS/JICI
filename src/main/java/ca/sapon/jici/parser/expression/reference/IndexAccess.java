@@ -36,11 +36,15 @@ import ca.sapon.jici.parser.expression.Expression;
 public class IndexAccess implements Reference {
     private final Expression object;
     private final Expression index;
+    private int start;
+    private int end;
     private Type type = null;
 
-    public IndexAccess(Expression object, Expression index) {
+    public IndexAccess(Expression object, Expression index, int end) {
         this.object = object;
         this.index = index;
+        start = object.getStart();
+        this.end = end;
     }
 
     @Override
@@ -88,12 +92,22 @@ public class IndexAccess implements Reference {
 
     @Override
     public int getStart() {
-        return object.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return index.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

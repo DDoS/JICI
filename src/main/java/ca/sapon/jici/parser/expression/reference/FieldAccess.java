@@ -23,9 +23,9 @@
  */
 package ca.sapon.jici.parser.expression.reference;
 
-import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.member.ClassVariable;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.value.Value;
@@ -35,11 +35,15 @@ import ca.sapon.jici.parser.expression.Expression;
 public class FieldAccess implements Reference {
     private final Expression object;
     private final Identifier field;
+    private int start;
+    private int end;
     private ClassVariable classVariable = null;
 
     public FieldAccess(Expression object, Identifier field) {
         this.object = object;
         this.field = field;
+        start = field.getStart();
+        end = field.getEnd();
     }
 
     private ClassVariable getClassVariable(Environment environment) {
@@ -94,12 +98,22 @@ public class FieldAccess implements Reference {
 
     @Override
     public int getStart() {
-        return object.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return field.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

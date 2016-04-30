@@ -38,12 +38,16 @@ import ca.sapon.jici.util.TypeUtil;
 public class TypeCheck implements Expression {
     private final Expression object;
     private final TypeName typeName;
+    private int start;
+    private int end;
     private Type type = null;
     private LiteralReferenceType checkType = null;
 
     public TypeCheck(Expression object, TypeName typeName) {
         this.object = object;
         this.typeName = typeName;
+        this.start = object.getStart();
+        this.end = typeName.getEnd();
     }
 
     @Override
@@ -77,12 +81,22 @@ public class TypeCheck implements Expression {
 
     @Override
     public int getStart() {
-        return object.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return typeName.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

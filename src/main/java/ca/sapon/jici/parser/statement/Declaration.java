@@ -58,7 +58,13 @@ public class Declaration implements Statement {
     public void execute(Environment environment) {
         try {
             if (declaredTypes == null) {
-                final LiteralType declarationType = typeName.getType(environment);
+                final LiteralType declarationType;
+                try {
+                    declarationType = typeName.getType(environment);
+                } catch (UnsupportedOperationException exception) {
+                    throw new EvaluatorException(exception.getMessage(), typeName);
+
+                }
                 // find the declared type of each variable, which can change by array dimensions
                 final Map<Variable, LiteralType> declaredTypes = new HashMap<>();
                 for (Variable variable : variables) {
@@ -116,6 +122,8 @@ public class Declaration implements Statement {
             }
         } catch (EvaluatorException exception) {
             throw exception;
+        } catch (UnsupportedOperationException exception) {
+            throw new EvaluatorException(exception.getMessage(), this);
         } catch (Exception exception) {
             throw new EvaluatorException(exception, this);
         }

@@ -38,6 +38,8 @@ public class Comparison implements Expression {
     private final Expression left;
     private final Expression right;
     private final Symbol operator;
+    private int start;
+    private int end;
     private Type type = null;
     private Type widenType = null;
 
@@ -45,6 +47,8 @@ public class Comparison implements Expression {
         this.left = left;
         this.right = right;
         this.operator = operator;
+        this.start = left.getStart();
+        this.end = right.getEnd();
     }
 
     @Override
@@ -85,12 +89,22 @@ public class Comparison implements Expression {
 
     @Override
     public int getStart() {
-        return left.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return right.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     private Value doLesserThan(Value leftValue, Value rightValue, ValueKind widenKind) {

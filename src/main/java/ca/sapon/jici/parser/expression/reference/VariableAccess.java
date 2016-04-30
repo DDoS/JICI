@@ -34,10 +34,14 @@ import ca.sapon.jici.lexer.Identifier;
  */
 public class VariableAccess implements Reference {
     private final Identifier name;
+    private int start;
+    private int end;
     private Type type = null;
 
     public VariableAccess(Identifier name) {
         this.name = name;
+        start = name.getStart();
+        end = name.getEnd();
     }
 
     @Override
@@ -78,12 +82,22 @@ public class VariableAccess implements Reference {
 
     @Override
     public int getStart() {
-        return name.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return name.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

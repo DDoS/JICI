@@ -32,12 +32,14 @@ import ca.sapon.jici.util.StringUtil;
 public class ArrayTypeName implements TypeName {
     private final TypeName componentTypeName;
     private final int dimensions;
+    private final int end;
     private LiteralType componentType = null;
     private LiteralType type = null;
 
-    public ArrayTypeName(TypeName componentTypeName, int dimensions) {
+    public ArrayTypeName(TypeName componentTypeName, int dimensions, int end) {
         this.componentTypeName = componentTypeName;
         this.dimensions = dimensions;
+        this.end = end;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class ArrayTypeName implements TypeName {
 
     @Override
     public int getEnd() {
-        return componentTypeName.getEnd();
+        return end;
     }
 
     @Override

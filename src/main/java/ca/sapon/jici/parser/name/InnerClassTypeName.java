@@ -40,11 +40,11 @@ public class InnerClassTypeName extends ClassTypeName {
     private boolean typeCached = false;
 
     public InnerClassTypeName(ClassTypeName outerName, List<Identifier> name) {
-        this(outerName, name, Collections.<TypeArgumentName>emptyList());
+        this(outerName, name, Collections.<TypeArgumentName>emptyList(), name.get(name.size() - 1).getEnd());
     }
 
-    public InnerClassTypeName(ClassTypeName outerName, List<Identifier> name, List<TypeArgumentName> arguments) {
-        super(name, arguments);
+    public InnerClassTypeName(ClassTypeName outerName, List<Identifier> name, List<TypeArgumentName> arguments, int end) {
+        super(name, arguments, end);
         this.outerName = outerName;
     }
 

@@ -182,7 +182,8 @@ public final class Parser {
     private static ClassTypeName parseClassName(ListNavigator<Token> tokens) {
         final List<Identifier> name = parseName(tokens);
         final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
-        return parseClassName(tokens, new ClassTypeName(name, typeArguments));
+        final int end = tokens.get(-1).getEnd();
+        return parseClassName(tokens, new ClassTypeName(name, typeArguments, end));
     }
 
     private static ClassTypeName parseClassName(ListNavigator<Token> tokens, ClassTypeName outer) {
@@ -190,14 +191,19 @@ public final class Parser {
             tokens.advance();
             final List<Identifier> name = parseName(tokens);
             final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
-            return parseClassName(tokens, new InnerClassTypeName(outer, name, typeArguments));
+            final int end = tokens.get(-1).getEnd();
+            return parseClassName(tokens, new InnerClassTypeName(outer, name, typeArguments, end));
         }
         return outer;
     }
 
     private static TypeName parseArrayName(ListNavigator<Token> tokens, TypeName componentType) {
         final int dimensions = parseArrayDimensions(tokens);
-        return dimensions > 0 ? new ArrayTypeName(componentType, dimensions) : componentType;
+        if (dimensions > 0) {
+            final int end = tokens.get(-1).getEnd();
+            return new ArrayTypeName(componentType, dimensions, end);
+        }
+        return componentType;
     }
 
     private static int parseArrayDimensions(ListNavigator<Token> tokens) {
@@ -231,25 +237,26 @@ public final class Parser {
         if (tokens.has()) {
             final Token token = tokens.get();
             if (token.getID() == TokenID.SYMBOL_QUESTION_MARK) {
+                final int start = tokens.get().getStart();
                 tokens.advance();
                 if (tokens.has()) {
                     switch (tokens.get().getID()) {
                         case KEYWORD_EXTENDS: {
                             tokens.advance();
                             final TypeName type = parseTypeName(tokens);
-                            return new TypeArgumentName(type, BoundKind.UPPER);
+                            return new TypeArgumentName(type, BoundKind.UPPER, start);
                         }
                         case KEYWORD_SUPER: {
                             tokens.advance();
                             final TypeName type = parseTypeName(tokens);
-                            return new TypeArgumentName(type, BoundKind.LOWER);
+                            return new TypeArgumentName(type, BoundKind.LOWER, start);
                         }
                     }
                 }
-                return new TypeArgumentName(token.getIndex());
+                return new TypeArgumentName(start);
             } else {
                 final TypeName type = parseTypeName(tokens);
-                return new TypeArgumentName(type, BoundKind.EXACT);
+                return new TypeArgumentName(type, BoundKind.EXACT, type.getStart());
             }
         }
         throw new ParseError("Expected a type name or '?'", tokens);
@@ -407,6 +414,7 @@ public final class Parser {
 
     private static Import parseImport(ListNavigator<Token> tokens) {
         if (tokens.has() && tokens.get().getID() == TokenID.KEYWORD_IMPORT) {
+            final int start = tokens.get().getStart();
             tokens.advance();
             final List<Identifier> name = parseName(tokens);
             if (tokens.has()) {
@@ -414,12 +422,14 @@ public final class Parser {
                 if (token.getID() == TokenID.SYMBOL_PERIOD && tokens.has(2) && tokens.get(1).getID() == TokenID.SYMBOL_MULTIPLY) {
                     tokens.advance(2);
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_SEMICOLON) {
+                        final int end = tokens.get().getEnd();
                         tokens.advance();
-                        return new Import(name, true);
+                        return new Import(name, true, start, end);
                     }
                 } else if (token.getID() == TokenID.SYMBOL_SEMICOLON) {
+                    final int end = tokens.get().getEnd();
                     tokens.advance();
-                    return new Import(name, false);
+                    return new Import(name, false, start, end);
                 }
                 throw new ParseError("Expected ';'", tokens);
             }
@@ -709,18 +719,21 @@ public final class Parser {
                     return new Sign(inner, (Symbol) token);
                 }
                 case SYMBOL_BOOLEAN_NOT: {
+                    final int start = tokens.get().getStart();
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new BooleanNot(inner);
+                    return new BooleanNot(inner, start);
                 }
                 case SYMBOL_BITWISE_NOT: {
+                    final int start = tokens.get().getStart();
                     tokens.advance();
                     final Expression inner = parseUnary(tokens);
-                    return new BitwiseNot(inner);
+                    return new BitwiseNot(inner, start);
                 }
                 case SYMBOL_OPEN_PARENTHESIS: {
                     if (tokens.has(2)) {
                         tokens.pushPosition();
+                        final int start = tokens.get().getStart();
                         tokens.advance();
                         try {
                             final TypeName type = parseTypeName(tokens);
@@ -728,7 +741,7 @@ public final class Parser {
                                 tokens.advance();
                                 final Expression inner = parseUnary(tokens);
                                 tokens.discardPosition();
-                                return new Cast(type, inner);
+                                return new Cast(type, inner, start);
                             }
                         } catch (ParserException exception) {
                             // this is not a cast, but an access
@@ -770,6 +783,7 @@ public final class Parser {
             switch (tokens.get().getID()) {
                 case SYMBOL_PERIOD: {
                     tokens.advance();
+                    final int start = tokens.has() ? tokens.get().getStart() : -1;
                     final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
                     if (tokens.has()) {
                         final Token token = tokens.get();
@@ -779,7 +793,8 @@ public final class Parser {
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                                 tokens.advance();
                                 final List<Expression> arguments = parseArgumentsRest(tokens);
-                                access = new MethodCall(object, (Identifier) token, typeArguments, arguments);
+                                final int end = tokens.get(-1).getEnd();
+                                access = new MethodCall(object, (Identifier) token, typeArguments, arguments, start, end);
                             } else {
                                 if (!typeArguments.isEmpty()) {
                                     throw new ParseError("Type arguments not accepted here", typeArguments.get(0));
@@ -795,8 +810,9 @@ public final class Parser {
                     tokens.advance();
                     final Expression index = parseExpression(tokens);
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_BRACKET) {
+                        final int end = tokens.get().getEnd();
                         tokens.advance();
-                        final IndexAccess access = new IndexAccess(object, index);
+                        final IndexAccess access = new IndexAccess(object, index, end);
                         return parseAccess(tokens, access);
                     }
                     throw new ParseError("Expected ']'", tokens);
@@ -819,13 +835,15 @@ public final class Parser {
                     tokens.advance();
                     final int dimensions = parseArrayDimensions(tokens);
                     if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                        final int end = tokens.get().getEnd();
                         tokens.advance(2);
                         TypeName type = new PrimitiveTypeName((Keyword) token);
                         if (dimensions > 0) {
-                            type = new ArrayTypeName(type, dimensions);
+                            final int nameEnd = tokens.get(-1).getEnd();
+                            type = new ArrayTypeName(type, dimensions, nameEnd);
                         }
                         tokens.discardPosition();
-                        return new ClassAccess(type);
+                        return new ClassAccess(type, end);
                     }
                     tokens.popPosition();
                     break;
@@ -836,21 +854,26 @@ public final class Parser {
                     tokens.pushPosition();
                     final int dimensions = parseArrayDimensions(tokens);
                     if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                        final int end = tokens.get(1).getEnd();
                         tokens.advance(2);
                         TypeName type = new ClassTypeName(name);
                         if (dimensions > 0) {
-                            type = new ArrayTypeName(type, dimensions);
+                            final int nameEnd = tokens.get(-1).getEnd();
+                            type = new ArrayTypeName(type, dimensions, nameEnd);
                         }
                         tokens.discardPosition();
-                        return new ClassAccess(type);
+                        return new ClassAccess(type, end);
                     }
                     tokens.popPosition();
                     // look for type arguments
+                    final int start;
                     final List<TypeArgumentName> typeArguments;
                     if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.SYMBOL_LESSER) {
+                        start = tokens.get(1).getStart();
                         tokens.advance(1);
                         typeArguments = parseTypeArgumentNameList(tokens);
                     } else {
+                        start = name.get(name.size() - 1).getStart();
                         typeArguments = Collections.emptyList();
                     }
                     if (!typeArguments.isEmpty()) {
@@ -866,7 +889,8 @@ public final class Parser {
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
                         tokens.advance();
                         final List<Expression> arguments = parseArgumentsRest(tokens);
-                        return new AmbiguousCall(name, typeArguments, arguments);
+                        final int end = tokens.get(-1).getEnd();
+                        return new AmbiguousCall(name, typeArguments, arguments, start, end);
                     }
                     // this is a name access, either a variable of a field
                     if (!typeArguments.isEmpty()) {
@@ -880,10 +904,14 @@ public final class Parser {
                 default: {
                     switch (token.getID()) {
                         case SYMBOL_OPEN_PARENTHESIS: {
+                            int start = token.getStart();
                             tokens.advance();
                             final Expression expression = parseExpression(tokens);
                             if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_CLOSE_PARENTHESIS) {
+                                int end = tokens.get().getEnd();
                                 tokens.advance();
+                                expression.setStart(start);
+                                expression.setEnd(end);
                                 return expression;
                             }
                             throw new ParseError("Expected ')'", tokens);
@@ -895,8 +923,9 @@ public final class Parser {
                         case KEYWORD_VOID: {
                             tokens.advance();
                             if (tokens.has(2) && tokens.get(0).getID() == TokenID.SYMBOL_PERIOD && tokens.get(1).getID() == TokenID.KEYWORD_CLASS) {
+                                final int end = tokens.get(1).getEnd();
                                 tokens.advance(2);
-                                return new ClassAccess(token);
+                                return new ClassAccess(token, end);
                             }
                             tokens.retreat();
                             break;
@@ -924,6 +953,7 @@ public final class Parser {
     }
 
     private static Expression parseConstructor(ListNavigator<Token> tokens) {
+        final int start = tokens.get(-1).getStart();
         // Try for constructor type arguments
         final List<TypeArgumentName> typeArguments;
         if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
@@ -936,7 +966,9 @@ public final class Parser {
         // Check for an array constructor of the form "new T[]{}"
         if (typeArguments.isEmpty() && type instanceof ArrayTypeName) {
             try {
-                return new ArrayConstructor((ArrayTypeName) type, parseArrayInitializer(tokens));
+                final ArrayInitializer initializer = parseArrayInitializer(tokens);
+                final int end = tokens.get(-1).getEnd();
+                return new ArrayConstructor((ArrayTypeName) type, initializer, start, end);
             } catch (ParseFailure failure) {
                 throw new ParseError("Expected array initializer", tokens);
             }
@@ -949,7 +981,9 @@ public final class Parser {
                         throw new ParseError("Expected class type", type);
                     }
                     tokens.advance();
-                    return new ConstructorCall((ClassTypeName) type, typeArguments, parseArgumentsRest(tokens));
+                    final List<Expression> arguments = parseArgumentsRest(tokens);
+                    final int end = tokens.get(-1).getEnd();
+                    return new ConstructorCall((ClassTypeName) type, typeArguments, arguments, start, end);
                 }
                 case SYMBOL_OPEN_BRACKET: {
                     if (!typeArguments.isEmpty()) {
@@ -957,7 +991,9 @@ public final class Parser {
                                 typeArguments.get(typeArguments.size() - 1).getEnd());
                     }
                     tokens.advance();
-                    return new ArrayConstructor(type, parseArraySizes(tokens), tokens.get(-1).getEnd());
+                    final List<Expression> arraySizes = parseArraySizes(tokens);
+                    final int end = tokens.get(-1).getEnd();
+                    return new ArrayConstructor(type, arraySizes, start, end);
                 }
             }
         }

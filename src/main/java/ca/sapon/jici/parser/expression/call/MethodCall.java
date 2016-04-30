@@ -26,9 +26,9 @@ package ca.sapon.jici.parser.expression.call;
 import java.util.Collections;
 import java.util.List;
 
-import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
+import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeArgument;
@@ -47,17 +47,21 @@ public class MethodCall implements Expression, Statement {
     private final Identifier method;
     private final List<TypeArgumentName> typeArguments;
     private final List<Expression> arguments;
+    private int start;
+    private int end;
     private Callable callable = null;
 
-    public MethodCall(Expression object, Identifier method, List<Expression> arguments) {
-        this(object, method, Collections.<TypeArgumentName>emptyList(), arguments);
+    public MethodCall(Expression object, Identifier method, List<Expression> arguments, int end) {
+        this(object, method, Collections.<TypeArgumentName>emptyList(), arguments, method.getStart(), end);
     }
 
-    public MethodCall(Expression object, Identifier method, List<TypeArgumentName> typeArguments, List<Expression> arguments) {
+    public MethodCall(Expression object, Identifier method, List<TypeArgumentName> typeArguments, List<Expression> arguments, int start, int end) {
         this.object = object;
         this.method = method;
         this.typeArguments = typeArguments;
         this.arguments = arguments;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -104,7 +108,7 @@ public class MethodCall implements Expression, Statement {
             try {
                 callable = ((ReferenceType) objectType).getMethod(method.getSource(), typeArguments, argumentTypes);
             } catch (UnsupportedOperationException exception) {
-                throw new EvaluatorException(exception.getMessage(), method);
+                throw new EvaluatorException(exception.getMessage(), this);
             }
             if (!callable.isStatic() && object instanceof AmbiguousReference.StaticAccess) {
                 throw new EvaluatorException("Cannot access a non-static member directly from the type name", this);
@@ -130,12 +134,22 @@ public class MethodCall implements Expression, Statement {
 
     @Override
     public int getStart() {
-        return object.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return arguments.isEmpty() ? method.getEnd() : arguments.get(arguments.size() - 1).getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

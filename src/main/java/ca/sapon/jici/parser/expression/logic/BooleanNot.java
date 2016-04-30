@@ -25,19 +25,23 @@ package ca.sapon.jici.parser.expression.logic;
 
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
-import ca.sapon.jici.evaluator.value.BooleanValue;
-import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.type.PrimitiveType;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.value.BooleanValue;
+import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.TypeUtil;
 
 public class BooleanNot implements Expression {
     private final Expression inner;
+    private int start;
+    private int end;
     private Type type = null;
 
-    public BooleanNot(Expression inner) {
+    public BooleanNot(Expression inner, int start) {
         this.inner = inner;
+        this.start = start;
+        end = inner.getEnd();
     }
 
     @Override
@@ -60,12 +64,22 @@ public class BooleanNot implements Expression {
 
     @Override
     public int getStart() {
-        return inner.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return inner.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

@@ -30,7 +30,7 @@ import ca.sapon.jici.parser.expression.reference.Reference;
 
 public class PreIncrement extends PostIncrement {
     public PreIncrement(Reference inner, Symbol operator) {
-        super(inner, operator);
+        super(inner, operator, operator.getStart(), inner.getEnd());
     }
 
     @Override
@@ -39,16 +39,6 @@ public class PreIncrement extends PostIncrement {
         final Value value = type.getKind().convert(result);
         inner.setValue(environment, value);
         return value;
-    }
-
-    @Override
-    public int getStart() {
-        return operator.getStart();
-    }
-
-    @Override
-    public int getEnd() {
-        return inner.getEnd();
     }
 
     @Override

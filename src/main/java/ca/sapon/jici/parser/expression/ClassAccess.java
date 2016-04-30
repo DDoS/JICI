@@ -37,20 +37,25 @@ public class ClassAccess implements Expression {
     private static final LiteralReferenceType TYPE = LiteralReferenceType.of(Class.class);
     private final TypeName typeName;
     private final SourceIndexed source;
+    private int start;
+    private int end;
     private Type type = null;
     private Class<?> typeClass = null;
 
-    public ClassAccess(Token voidToken) {
+    public ClassAccess(Token voidToken, int end) {
         if (voidToken.getID() != TokenID.KEYWORD_VOID) {
             throw new IllegalArgumentException("Not a void token " + voidToken);
         }
         typeName = null;
         source = voidToken;
+        start = source.getStart();
+        this.end = end;
     }
 
-    public ClassAccess(TypeName typeName) {
+    public ClassAccess(TypeName typeName, int end) {
         this.typeName = typeName;
         source = typeName;
+        this.end = end;
     }
 
     @Override
@@ -73,12 +78,22 @@ public class ClassAccess implements Expression {
 
     @Override
     public int getStart() {
-        return source.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return source.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

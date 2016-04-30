@@ -30,7 +30,6 @@ public class Main {
         /* TODO:
             Redo type and constructor call parser according to spec
             Update constructor call evaluator to match spec
-            Fix source start and end indices
 
             Add generic type inference
             Restructure type package

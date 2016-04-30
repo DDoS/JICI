@@ -39,12 +39,16 @@ public class Conditional implements Expression {
     private final Expression test;
     private final Expression left;
     private final Expression right;
+    private int start;
+    private int end;
     private Type type = null;
 
     public Conditional(Expression test, Expression left, Expression right) {
         this.test = test;
         this.left = left;
         this.right = right;
+        start = test.getStart();
+        end = right.getEnd();
     }
 
     @Override
@@ -132,12 +136,22 @@ public class Conditional implements Expression {
 
     @Override
     public int getStart() {
-        return test.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return right.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

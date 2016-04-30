@@ -42,9 +42,16 @@ public abstract class NumberLiteral extends Literal {
         if (length == 1 && source.charAt(0) == '0') {
             return new ZeroLiteral(index);
         }
-        // remove number separators (don't forget to update length!)
+        // remove number separators
         source = StringUtil.removeAll(source, '_');
-        length = source.length();
+        final NumberLiteral number = disambiguateNumber(source, index);
+        // update the end index to the one before removing underscores
+        number.setEnd(number.getStart() + length - 1);
+        return number;
+    }
+
+    private static NumberLiteral disambiguateNumber(String source, int index) {
+        int length = source.length();
         // is a floating point if
         //   - has a decimal separator
         //   - has a p or P

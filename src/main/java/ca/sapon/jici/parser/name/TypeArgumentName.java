@@ -46,14 +46,10 @@ public class TypeArgumentName implements SourceIndexed {
         this(null, BoundKind.NONE, index);
     }
 
-    public TypeArgumentName(TypeName bound, BoundKind kind) {
-        this(bound, kind, -1);
-    }
-
-    private TypeArgumentName(TypeName bound, BoundKind kind, int index) {
+    public TypeArgumentName(TypeName bound, BoundKind kind, int start) {
         this.bound = bound;
         this.kind = kind;
-        this.start = index >= 0 ? index : bound.getStart();
+        this.start = start;
     }
 
     public TypeArgument getType(Environment environment) {

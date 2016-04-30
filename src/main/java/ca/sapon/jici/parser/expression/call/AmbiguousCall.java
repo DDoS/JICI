@@ -41,17 +41,21 @@ public class AmbiguousCall implements Expression, Statement {
     private final List<Identifier> name;
     private final List<TypeArgumentName> typeArguments;
     private final List<Expression> arguments;
+    private int start;
+    private int end;
     private Type type = null;
     private MethodCall call = null;
 
-    public AmbiguousCall(List<Identifier> name, List<Expression> arguments) {
-        this(name, Collections.<TypeArgumentName>emptyList(), arguments);
+    public AmbiguousCall(List<Identifier> name, List<Expression> arguments, int end) {
+        this(name, Collections.<TypeArgumentName>emptyList(), arguments, name.get(name.size() - 1).getStart(), end);
     }
 
-    public AmbiguousCall(List<Identifier> name, List<TypeArgumentName> typeArguments, List<Expression> arguments) {
+    public AmbiguousCall(List<Identifier> name, List<TypeArgumentName> typeArguments, List<Expression> arguments, int start, int end) {
         this.name = name;
         this.typeArguments = typeArguments;
         this.arguments = arguments;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -71,7 +75,7 @@ public class AmbiguousCall implements Expression, Statement {
         if (type == null) {
             final int lastIndex = name.size() - 1;
             final Expression resolved = AmbiguousReference.disambiguate(environment, name.subList(0, lastIndex));
-            call = new MethodCall(resolved, name.get(lastIndex), typeArguments, arguments);
+            call = new MethodCall(resolved, name.get(lastIndex), typeArguments, arguments, start, end);
             type = call.getType(environment);
         }
         return type;
@@ -84,12 +88,22 @@ public class AmbiguousCall implements Expression, Statement {
 
     @Override
     public int getStart() {
-        return name.get(0).getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return arguments.isEmpty() ? name.get(name.size() - 1).getEnd() : arguments.get(arguments.size() - 1).getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

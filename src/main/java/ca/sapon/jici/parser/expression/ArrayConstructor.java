@@ -46,23 +46,25 @@ public class ArrayConstructor implements Expression {
     private final TypeName typeName;
     private final ArrayInitializer initializer;
     private final List<Expression> sizes;
-    private final int end;
+    private int start;
+    private int end;
     private ComponentType componentType = null;
     private int sizedDimensions = 0;
     private Type type = null;
 
-    public ArrayConstructor(ArrayTypeName typeName, ArrayInitializer initializer) {
-        this(typeName, null, initializer, initializer.getEnd());
+    public ArrayConstructor(ArrayTypeName typeName, ArrayInitializer initializer, int start, int end) {
+        this(typeName, null, initializer, start, end);
     }
 
-    public ArrayConstructor(TypeName componentTypeName, List<Expression> sizes, int end) {
-        this(componentTypeName, sizes, null, end);
+    public ArrayConstructor(TypeName componentTypeName, List<Expression> sizes, int start, int end) {
+        this(componentTypeName, sizes, null, start, end);
     }
 
-    private ArrayConstructor(TypeName typeName, List<Expression> sizes, ArrayInitializer initializer, int end) {
+    private ArrayConstructor(TypeName typeName, List<Expression> sizes, ArrayInitializer initializer, int start, int end) {
         this.typeName = typeName;
         this.initializer = initializer;
         this.sizes = sizes;
+        this.start = start;
         this.end = end;
     }
 
@@ -119,12 +121,22 @@ public class ArrayConstructor implements Expression {
 
     @Override
     public int getStart() {
-        return typeName.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
         return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override
@@ -146,8 +158,8 @@ public class ArrayConstructor implements Expression {
 
     public static class ArrayInitializer implements Expression {
         private final List<Expression> elements;
-        private final int start;
-        private final int end;
+        private int start;
+        private int end;
         private Type type = null;
         private ComponentType componentType = null;
 
@@ -162,7 +174,7 @@ public class ArrayConstructor implements Expression {
                 if (!type.isArray()) {
                     throw new EvaluatorException("Cannot convert array type to " + type.getName(), this);
                 }
-                final ComponentType componentType =  ((ReferenceType) type).getComponentType();
+                final ComponentType componentType = ((ReferenceType) type).getComponentType();
                 for (final Expression element : elements) {
                     if (element instanceof ArrayInitializer) {
                         ((ArrayInitializer) element).setType(environment, componentType);
@@ -206,6 +218,16 @@ public class ArrayConstructor implements Expression {
         @Override
         public int getEnd() {
             return end;
+        }
+
+        @Override
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        @Override
+        public void setEnd(int end) {
+            this.end = end;
         }
 
         @Override

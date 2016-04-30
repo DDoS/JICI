@@ -39,10 +39,14 @@ import ca.sapon.jici.util.TypeUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
+    private int start;
+    private int end;
     private Reference reference = null;
 
     public AmbiguousReference(List<Identifier> name) {
         this.name = name;
+        start = name.get(0).getStart();
+        end = name.get(name.size() - 1).getEnd();
     }
 
     private Reference getReference(Environment environment) {
@@ -78,12 +82,22 @@ public class AmbiguousReference implements Reference {
 
     @Override
     public int getStart() {
-        return name.get(0).getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return name.get(name.size() - 1).getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override
@@ -123,8 +137,8 @@ public class AmbiguousReference implements Reference {
 
     public static class StaticAccess implements Expression {
         private final Class<?> _class;
-        private final int start;
-        private final int end;
+        private int start;
+        private int end;
         private Type type = null;
 
         private StaticAccess(Class<?> _class, int start, int end) {
@@ -154,6 +168,16 @@ public class AmbiguousReference implements Reference {
         @Override
         public int getEnd() {
             return end;
+        }
+
+        @Override
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        @Override
+        public void setEnd(int end) {
+            this.end = end;
         }
 
         @Override

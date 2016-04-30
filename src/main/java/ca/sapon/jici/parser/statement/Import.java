@@ -35,10 +35,14 @@ import ca.sapon.jici.util.StringUtil;
 public class Import implements Statement {
     private final List<Identifier> name;
     private final boolean _package;
+    private final int start;
+    private final int end;
 
-    public Import(List<Identifier> name, boolean _package) {
+    public Import(List<Identifier> name, boolean _package, int start, int end) {
         this.name = name;
         this._package = _package;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -70,12 +74,12 @@ public class Import implements Statement {
 
     @Override
     public int getStart() {
-        return name.get(0).getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return name.get(name.size() - 1).getEnd();
+        return end;
     }
 
     @Override

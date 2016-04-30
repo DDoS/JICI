@@ -41,6 +41,8 @@ import ca.sapon.jici.util.TypeUtil;
 public class Assignment implements Expression, Statement {
     private final Reference assignee;
     private final Expression value;
+    private int start;
+    private int end;
     private boolean simpleAssign = false;
     private Type type = null;
 
@@ -71,6 +73,8 @@ public class Assignment implements Expression, Statement {
             default:
                 throw new EvaluatorException("Not a valid operator for assign: " + operator, operator);
         }
+        start = assignee.getStart();
+        end = value.getEnd();
     }
 
     @Override
@@ -119,12 +123,22 @@ public class Assignment implements Expression, Statement {
 
     @Override
     public int getStart() {
-        return assignee.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return value.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     @Override

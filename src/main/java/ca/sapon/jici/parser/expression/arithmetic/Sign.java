@@ -40,11 +40,15 @@ import ca.sapon.jici.util.TypeUtil;
 public class Sign implements Expression {
     private final Expression inner;
     private final Symbol operator;
+    private int start;
+    private int end;
     private Type type = null;
 
     public Sign(Expression inner, Symbol operator) {
         this.inner = inner;
         this.operator = operator;
+        start = operator.getStart();
+        end = inner.getEnd();
     }
 
     @Override
@@ -75,12 +79,22 @@ public class Sign implements Expression {
 
     @Override
     public int getStart() {
-        return operator.getStart();
+        return start;
     }
 
     @Override
     public int getEnd() {
-        return inner.getEnd();
+        return end;
+    }
+
+    @Override
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    @Override
+    public void setEnd(int end) {
+        this.end = end;
     }
 
     private Value doNegate(Value innerValue, ValueKind widenKind) {

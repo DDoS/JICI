@@ -39,15 +39,17 @@ import ca.sapon.jici.util.StringUtil;
 public class ClassTypeName implements TypeName {
     private final List<Identifier> name;
     private final List<TypeArgumentName> arguments;
+    private final int end;
     private LiteralReferenceType type = null;
 
     public ClassTypeName(List<Identifier> name) {
-        this(name, Collections.<TypeArgumentName>emptyList());
+        this(name, Collections.<TypeArgumentName>emptyList(), name.get(name.size() - 1).getEnd());
     }
 
-    public ClassTypeName(List<Identifier> name, List<TypeArgumentName> arguments) {
+    public ClassTypeName(List<Identifier> name, List<TypeArgumentName> arguments, int end) {
         this.name = name;
         this.arguments = arguments;
+        this.end = end;
     }
 
     @Override
@@ -103,6 +105,10 @@ public class ClassTypeName implements TypeName {
         return null;
     }
 
+    public TypeArgumentName getArgument(int i) {
+        return arguments.get(i);
+    }
+
     @Override
     public int getStart() {
         return name.get(0).getIndex();
@@ -110,7 +116,7 @@ public class ClassTypeName implements TypeName {
 
     @Override
     public int getEnd() {
-        return arguments.isEmpty() ? name.get(name.size() - 1).getEnd() : arguments.get(arguments.size() - 1).getEnd();
+        return end;
     }
 
     @Override

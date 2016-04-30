@@ -504,6 +504,11 @@ public class GenericsTest {
                         "java.lang.String>.Inner<java.lang.Integer>, java.lang.String, java.lang.Integer>",
                 type8.capture().getName()
         );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.Outer<?>.Inner<?>[][]",
+                "new Outer<?>.Inner<?>[1][]"
+        );
     }
 
     @Test

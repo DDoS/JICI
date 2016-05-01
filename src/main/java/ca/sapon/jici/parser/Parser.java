@@ -52,6 +52,7 @@ import ca.sapon.jici.parser.expression.assignment.PreIncrement;
 import ca.sapon.jici.parser.expression.call.AmbiguousCall;
 import ca.sapon.jici.parser.expression.call.ConstructorCall;
 import ca.sapon.jici.parser.expression.call.MethodCall;
+import ca.sapon.jici.parser.expression.call.QualifiedConstructorCall;
 import ca.sapon.jici.parser.expression.comparison.Comparison;
 import ca.sapon.jici.parser.expression.comparison.Equal;
 import ca.sapon.jici.parser.expression.comparison.TypeCheck;
@@ -459,13 +460,15 @@ public final class Parser {
         ADD:             ADD + MULTIPLY _ MULTIPLY
         MULTIPLY:        MULTIPLY * UNARY _ UNARY
         UNARY:           +UNARY _ ++UNARY _ UNARY++ _ (TYPE) UNARY _ ACCESS
-        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION] _ ATOM
+        ACCESS:          ACCESS.IDENTIFIER _ ACCESS.IDENTIFIER ARGUMENTS _ ACCESS[EXPRESSION]
+                         ACCESS.CTOR_CALL _ ATOM
 
         ATOM:            LITERAL _ NAME _ NAME.IDENTIFIER ARGUMENTS _ NAME.<TYPE_ARG_LIST>IDENTIFIER ARGUMENTS
-                         CONSTRUCTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
+                         CTOR_CALL _ ARRAY_CTOR _ TYPE_NAME.class _ void.class _ (EXPRESSION)
 
-        CONSTRUCTOR:     new CLASS_NAME ARGUMENTS _ new <TYPE_ARG_LIST>CLASS_NAME ARGUMENTS
-                         new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
+        CTOR_CALL:       new CLASS_NAME ARGUMENTS _ new <TYPE_ARG_LIST>CLASS_NAME ARGUMENTS
+                         new CLASS_NAME<>ARGUMENTS _ new <TYPE_ARG_LIST>CLASS_NAME<>ARGUMENTS
+        ARRAY_CTOR:      new ARRAY_NAME ARRAY_INIT _ new CLASS_NAME ARRAY_SIZES
 
         ARGUMENTS:       (EXPRESSION_LIST)
 
@@ -789,27 +792,38 @@ public final class Parser {
         switch (tokens.get().getID()) {
             case SYMBOL_PERIOD: {
                 tokens.advance();
-                final int start = tokens.has() ? tokens.get().getStart() : -1;
-                final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
-                if (tokens.has()) {
-                    final Token token = tokens.get();
-                    if (token.getGroup() == TokenGroup.IDENTIFIER) {
-                        tokens.advance();
-                        final Expression access;
-                        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
-                            final List<Expression> arguments = parseArguments(tokens);
-                            final int end = tokens.get(-1).getEnd();
-                            access = new MethodCall(object, (Identifier) token, typeArguments, arguments, start, end);
-                        } else {
-                            if (!typeArguments.isEmpty()) {
-                                throw new ParseError("Type arguments not accepted here", typeArguments.get(0));
-                            }
-                            access = new FieldAccess(object, (Identifier) token);
-                        }
-                        return parseAccess(tokens, access);
-                    }
+                if (!tokens.has()) {
+                    throw new ParseError("Expected a token", tokens);
                 }
-                throw new ParseError("Expected an identifier", tokens);
+                final Token token = tokens.get();
+                // Look for a qualified constructor call
+                if (token.getID() == TokenID.KEYWORD_NEW) {
+                    final Expression constructorCall = parseQualifiedConstructorCall(tokens, object);
+                    return parseAccess(tokens, constructorCall);
+                }
+                // Else check for a method call or field access
+                final int start = token.getStart();
+                // Start with optional type arguments
+                final List<TypeArgumentName> typeArguments = parseTypeArgumentNameList(tokens);
+                // Then check for an identifier
+                if (!tokens.has() || tokens.get().getGroup() != TokenGroup.IDENTIFIER) {
+                    throw new ParseError("Expected an identifier", tokens);
+                }
+                final Token identifier = tokens.get();
+                tokens.advance();
+                // Now go looking for arguments for a method call. If none found then we have a field access
+                final Expression access;
+                if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
+                    final List<Expression> arguments = parseArgumentList(tokens);
+                    final int end = tokens.get(-1).getEnd();
+                    access = new MethodCall(object, (Identifier) identifier, typeArguments, arguments, start, end);
+                } else {
+                    if (!typeArguments.isEmpty()) {
+                        throw new ParseError("Type arguments not accepted here", typeArguments.get(0));
+                    }
+                    access = new FieldAccess(object, (Identifier) identifier);
+                }
+                return parseAccess(tokens, access);
             }
             case SYMBOL_OPEN_BRACKET: {
                 tokens.advance();
@@ -891,7 +905,7 @@ public final class Parser {
                     }
                     // check for a method call by looking for arguments
                     if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_OPEN_PARENTHESIS) {
-                        final List<Expression> arguments = parseArguments(tokens);
+                        final List<Expression> arguments = parseArgumentList(tokens);
                         final int end = tokens.get(-1).getEnd();
                         return new AmbiguousCall(name, typeArguments, arguments, start, end);
                     }
@@ -981,7 +995,7 @@ public final class Parser {
             diamondOperator = false;
         }
         // Now we need a list of arguments
-        final List<Expression> arguments = parseArguments(tokens);
+        final List<Expression> arguments = parseArgumentList(tokens);
         final int end = tokens.get(-1).getEnd();
         return new ConstructorCall(className, typeArguments, diamondOperator, arguments, start, end);
     }
@@ -1018,7 +1032,53 @@ public final class Parser {
         return new ArrayConstructor(typeName, sizes, start, end);
     }
 
-    private static List<Expression> parseArguments(ListNavigator<Token> tokens) {
+    private static Expression parseQualifiedConstructorCall(ListNavigator<Token> tokens, Expression target) {
+        if (!tokens.has() || tokens.get().getID() != TokenID.KEYWORD_NEW) {
+            throw new ParseError("Expected \"new\"", tokens);
+        }
+        final int start = tokens.get().getStart();
+        tokens.advance();
+        // Try for constructor type arguments
+        final List<TypeArgumentName> typeArguments;
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
+            typeArguments = parseTypeArgumentNameList(tokens);
+        } else {
+            typeArguments = Collections.emptyList();
+        }
+        // Now parse the class name, which unlike the unqualified constructor call is just a single identifier
+        if (!tokens.has() || tokens.get().getGroup() != TokenGroup.IDENTIFIER) {
+            throw new ParseError("Expected an identifier", tokens);
+        }
+        final Identifier identifier = (Identifier) tokens.get();
+        tokens.advance();
+        // Next we can have either type arguments for the class type or a diamond operator
+        final List<TypeArgumentName> classTypeArguments;
+        final boolean diamondOperator;
+        final int classTypeEnd;
+        if (tokens.has() && tokens.get().getID() == TokenID.SYMBOL_LESSER) {
+            if (tokens.has(2) && tokens.get(1).getID() == TokenID.SYMBOL_GREATER) {
+                tokens.advance(2);
+                classTypeArguments = Collections.emptyList();
+                diamondOperator = true;
+                classTypeEnd = identifier.getEnd();
+            } else {
+                classTypeArguments = parseTypeArgumentNameList(tokens);
+                diamondOperator = false;
+                classTypeEnd = tokens.get(-1).getEnd();
+            }
+        } else {
+            classTypeArguments = Collections.emptyList();
+            diamondOperator = false;
+            classTypeEnd = identifier.getEnd();
+        }
+        final ClassTypeName type = new ClassTypeName(Collections.singletonList(identifier), classTypeArguments, classTypeEnd);
+        // Finally we have an argument list
+        final List<Expression> arguments = parseArgumentList(tokens);
+        final int end = tokens.get(-1).getEnd();
+        return new QualifiedConstructorCall(target, type, typeArguments, diamondOperator, arguments, start, end);
+    }
+
+    private static List<Expression> parseArgumentList(ListNavigator<Token> tokens) {
         if (!tokens.has() || tokens.get().getID() != TokenID.SYMBOL_OPEN_PARENTHESIS) {
             throw new ParseError("Expected '('", tokens);
         }

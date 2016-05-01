@@ -159,7 +159,11 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public String toString() {
-        return "ConstructorCall(new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
-                typeName + (diamondOperator ? "<>" : "") + "(" + StringUtil.toString(arguments, ", ") + "))";
+        return "ConstructorCall(" + expressionString() + ")";
+    }
+
+    protected String expressionString() {
+        return "new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                typeName + (diamondOperator ? "<>" : "") + "(" + StringUtil.toString(arguments, ", ") + ")";
     }
 }

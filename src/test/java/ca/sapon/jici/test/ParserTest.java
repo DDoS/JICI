@@ -63,8 +63,19 @@ public class ParserTest {
 
         testParseExpression("ConstructorCall(new ca.sapon.Test<>())", "new ca.sapon.Test<>()");
         testParseExpression("ConstructorCall(new Test<>())", "new Test<>()");
+        testParseExpression("ConstructorCall(new <String>Test<>())", "new <String>Test<>()");
+        testParseExpression("ConstructorCall(new <String>Test<String>())", "new <String>Test<String>()");
 
         testParseExpression("ConstructorCall(new Inner<String>.Outer<Integer>())", "new Inner<String>.Outer<Integer>()");
+
+        testParseExpression("ConstructorCall(\"1\".new Test())", "\"1\".new Test()");
+        testParseExpression("ConstructorCall(\"1\".new Test<String>())", "\"1\".new Test<String>()");
+        testParseExpression("ConstructorCall(\"1\".new <String>Test())", "\"1\".new <String>Test()");
+        testParseExpression("ConstructorCall(\"1\".new <String>Test<>())", "\"1\".new <String>Test<>()");
+        testParseExpression("ConstructorCall(\"1\".new <String>Test<String>())", "\"1\".new <String>Test<String>()");
+
+        testParseExpression("ConstructorCall(ConstructorCall(a.new Test()).new More())", "a.new Test().new More()");
+        testParseExpression("ConstructorCall(ConstructorCall(ConstructorCall(new Crazy()).new Test()).new More())", "new Crazy().new Test().new More()");
 
         testParseExpression("ArrayConstructor(new int[1])", "new int[1]");
         testParseExpression("ArrayConstructor(new Object[1])", "new Object[1]");

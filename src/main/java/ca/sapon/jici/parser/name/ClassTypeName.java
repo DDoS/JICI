@@ -105,6 +105,10 @@ public class ClassTypeName implements TypeName {
         return null;
     }
 
+    public boolean hasSimpleName() {
+        return name.size() == 1;
+    }
+
     public boolean hasArguments() {
         return arguments.size() > 0;
     }

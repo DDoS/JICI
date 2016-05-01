@@ -31,6 +31,7 @@ import java.util.Set;
 import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
+import ca.sapon.jici.evaluator.member.ConstructorCallable;
 import ca.sapon.jici.util.StringUtil;
 
 /**
@@ -121,7 +122,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     }
 
     @Override
-    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
+    public LiteralReferenceType getInnerClass(String name, TypeArgument[] typeArguments) {
+        return upperBound.getInnerClass(name, typeArguments);
+    }
+
+    @Override
+    public ConstructorCallable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
         return upperBound.getConstructor(typeArguments, arguments);
     }
 
@@ -214,7 +220,6 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         superTypes.addAll(upperBound.getSuperTypes());
         return superTypes;
     }
-
 
     @Override
     public boolean equals(Object other) {

@@ -59,4 +59,6 @@ public interface Callable {
     Callable eraseReturnType();
 
     Value call(Value target, Value... arguments);
+
+    String toString();
 }

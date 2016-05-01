@@ -639,6 +639,36 @@ public class GenericsTest {
                 "ca.sapon.jici.test.GenericsTest.V<java.lang.Float>",
                 "new <Integer, String>V<Float>((Integer) 1, \"1\", true)"
         );
+        EvaluatorTest.assertFails(
+                "new <Integer>M<>(null);",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new K<>(null);",
+                environment
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Normal",
+                "new Outer<Integer>().new Normal()"
+        );
+        assertType(
+                environment,
+                "ca.sapon.jici.test.GenericsTest.Outer<java.lang.Integer>.Inner<java.lang.Byte>",
+                "new Outer<Integer>().new Inner<Byte>()"
+        );
+        EvaluatorTest.assertFails(
+                "new Outer<Integer>().new Inner<? extends CharSequence>();",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new Outer<Integer>().new <String>Normal<>();",
+                environment
+        );
+        EvaluatorTest.assertFails(
+                "new Outer<Integer>().new Normal<>();",
+                environment
+        );
     }
 
     @Test

@@ -94,16 +94,7 @@ public class MethodCall implements Expression, Statement {
                 typeArguments[i] = typeArgument;
             }
             // Check argument types
-            final int argumentCount = arguments.size();
-            final Type[] argumentTypes = new Type[argumentCount];
-            for (int i = 0; i < argumentCount; i++) {
-                Type argumentType = arguments.get(i).getType(environment);
-                // Must capture variables subject to invocation conversion
-                if (arguments.get(i) instanceof VariableAccess) {
-                    argumentType = argumentType.capture();
-                }
-                argumentTypes[i] = argumentType;
-            }
+            final Type[] argumentTypes = checkArguments(environment, arguments);
             // Get method to call
             try {
                 callable = ((ReferenceType) objectType).getMethod(method.getSource(), typeArguments, argumentTypes);
@@ -115,6 +106,20 @@ public class MethodCall implements Expression, Statement {
             }
         }
         return callable.getReturnType();
+    }
+
+    public static Type[] checkArguments(Environment environment, List<Expression> arguments) {
+        final int size = arguments.size();
+        final Type[] argumentTypes = new Type[size];
+        for (int i = 0; i < size; i++) {
+            Type argumentType = arguments.get(i).getType(environment);
+            // Must capture variables subject to invocation conversion
+            if (arguments.get(i) instanceof VariableAccess) {
+                argumentType = argumentType.capture();
+            }
+            argumentTypes[i] = argumentType;
+        }
+        return argumentTypes;
     }
 
     @Override

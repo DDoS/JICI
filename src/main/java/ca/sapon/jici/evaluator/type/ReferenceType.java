@@ -27,6 +27,7 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
+import ca.sapon.jici.evaluator.member.ConstructorCallable;
 
 /**
  * A type backed by a class other than the primitive ones. Includes the null type.
@@ -34,9 +35,11 @@ import ca.sapon.jici.evaluator.member.ClassVariable;
 public interface ReferenceType extends Type {
     ComponentType getComponentType();
 
-    Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments);
+    LiteralReferenceType getInnerClass(String name, TypeArgument[] typeArguments);
 
     ClassVariable getField(String name);
+
+    ConstructorCallable getConstructor(TypeArgument[] typeArguments, Type[] arguments);
 
     Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments);
 

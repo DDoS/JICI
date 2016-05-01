@@ -1071,11 +1071,10 @@ public final class Parser {
             diamondOperator = false;
             classTypeEnd = identifier.getEnd();
         }
-        final ClassTypeName type = new ClassTypeName(Collections.singletonList(identifier), classTypeArguments, classTypeEnd);
         // Finally we have an argument list
         final List<Expression> arguments = parseArgumentList(tokens);
         final int end = tokens.get(-1).getEnd();
-        return new QualifiedConstructorCall(target, type, typeArguments, diamondOperator, arguments, start, end);
+        return new QualifiedConstructorCall(target, identifier, typeArguments, classTypeArguments, diamondOperator, arguments, classTypeEnd, start, end);
     }
 
     private static List<Expression> parseArgumentList(ListNavigator<Token> tokens) {

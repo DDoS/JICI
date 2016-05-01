@@ -44,4 +44,6 @@ public interface ClassVariable {
     Value getValue(Value target);
 
     void setValue(Value target, Value value);
+
+    String toString();
 }

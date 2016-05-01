@@ -27,6 +27,7 @@ import java.util.Set;
 
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
+import ca.sapon.jici.evaluator.member.ConstructorCallable;
 
 /**
  * The null type, for the {@code null} literal.
@@ -109,7 +110,12 @@ public class NullType extends SingleReferenceType {
     }
 
     @Override
-    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
+    public LiteralReferenceType getInnerClass(String name, TypeArgument[] typeArguments) {
+        throw new UnsupportedOperationException("Cannot dereference the null type");
+    }
+
+    @Override
+    public ConstructorCallable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
         throw new UnsupportedOperationException("Cannot dereference the null type");
     }
 

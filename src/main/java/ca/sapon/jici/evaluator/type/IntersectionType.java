@@ -31,6 +31,7 @@ import java.util.Set;
 import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.evaluator.member.Callable;
 import ca.sapon.jici.evaluator.member.ClassVariable;
+import ca.sapon.jici.evaluator.member.ConstructorCallable;
 import ca.sapon.jici.evaluator.value.ValueKind;
 import ca.sapon.jici.util.StringUtil;
 import ca.sapon.jici.util.TypeUtil;
@@ -174,23 +175,71 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     @Override
-    public Callable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
+    public LiteralReferenceType getInnerClass(String name, TypeArgument[] typeArguments) {
+        LiteralReferenceType candidate = null;
         for (SingleReferenceType type : getTypes()) {
+            final LiteralReferenceType innerClass;
             try {
-                return type.getConstructor(typeArguments, arguments);
-            } catch (UnsupportedOperationException ignored) {
+                innerClass = type.getInnerClass(name, typeArguments);
+            } catch (UnsupportedOperationException exception) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = innerClass;
+            } else {
+                throw new UnsupportedOperationException("Inner class for name " + name + " in type " + getName() +
+                        " is ambiguous: both " + candidate + " and " + innerClass + " match");
             }
         }
-        throw new UnsupportedOperationException("No constructor for signature: "
-                + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        if (candidate == null) {
+            throw new UnsupportedOperationException("No inner class for name " + name + " in " + getName());
+        }
+        return candidate;
+    }
+
+    @Override
+    public ConstructorCallable getConstructor(TypeArgument[] typeArguments, Type[] arguments) {
+        ConstructorCallable candidate = null;
+        for (SingleReferenceType type : getTypes()) {
+            final ConstructorCallable constructor;
+            try {
+                constructor = type.getConstructor(typeArguments, arguments);
+            } catch (UnsupportedOperationException exception) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = constructor;
+            } else {
+                throw new UnsupportedOperationException("Constructor for signature" +
+                        (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                        "init(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")" +
+                        " in type " + getName() + " is ambiguous: both " +
+                        candidate + " and " + constructor + " match");
+            }
+        }
+        if (candidate == null) {
+            throw new UnsupportedOperationException("No constructor for signature: " +
+                    (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                    "init(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        }
+        return candidate;
     }
 
     @Override
     public ClassVariable getField(String name) {
+        ClassVariable candidate = null;
         for (SingleReferenceType type : getTypes()) {
+            final ClassVariable field;
             try {
-                return type.getField(name);
+                field = type.getField(name);
             } catch (UnsupportedOperationException ignored) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = field;
+            } else {
+                throw new UnsupportedOperationException("Field for name" + name + " in type " + getName() +
+                        " is ambiguous: both " + candidate + " and " + field + " match");
             }
         }
         throw new UnsupportedOperationException("No field named " + name + " in " + getName());
@@ -198,14 +247,30 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public Callable getMethod(String name, TypeArgument[] typeArguments, Type[] arguments) {
+        Callable candidate = null;
         for (SingleReferenceType type : getTypes()) {
+            final Callable method;
             try {
-                return type.getMethod(name, typeArguments, arguments);
-            } catch (UnsupportedOperationException ignored) {
+                method = type.getMethod(name, typeArguments, arguments);
+            } catch (UnsupportedOperationException exception) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = method;
+            } else {
+                throw new UnsupportedOperationException("Method for signature" +
+                        (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                        name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ")" +
+                        " in type " + getName() + " is ambiguous: both " +
+                        candidate + " and " + method + " match");
             }
         }
-        throw new UnsupportedOperationException("No method for signature: "
-                + name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        if (candidate == null) {
+            throw new UnsupportedOperationException("No method for signature: " +
+                    (typeArguments.length > 0 ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                    name + "(" + StringUtil.toString(Arrays.asList(arguments), ", ") + ") in " + getName());
+        }
+        return candidate;
     }
 
     @Override

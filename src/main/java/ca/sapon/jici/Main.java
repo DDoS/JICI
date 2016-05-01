@@ -28,8 +28,6 @@ public class Main {
         JICI.breakInto();
 
         /* TODO:
-            Update constructor call evaluator to match spec
-
             Add generic type inference
             Restructure type package
             Move ast to its own package

@@ -202,6 +202,7 @@ public class EvaluatorTest {
     @Test
     public void testConstructorCall() {
         final Environment environment = new Environment();
+
         environment.declareVariable(Identifier.from("chars", 0), LiteralReferenceType.of(char[].class), ObjectValue.of(new char[]{'a', 'b', 'c', 'd'}));
         assertReturns("", "new String()", environment);
         assertReturns("test", "new String(\"test\")", environment);
@@ -217,6 +218,35 @@ public class EvaluatorTest {
         assertReturns(new Varargs(1f, 2f), "new Varargs(1, 2f)", environment);
         assertReturns(new Varargs(1f, 2f), "new Varargs(1, 2)", environment);
         assertFails("new Varargs(1, 2, 1d)", environment);
+
+        environment.importClass(NotStatic.class);
+        environment.importClass(Things.class);
+        environment.importClass(Art.class);
+        environment.importClass(Shh.class);
+        assertFails("new NotStatic()", environment);
+        assertFails("new Things()", environment);
+        assertFails("new Art()", environment);
+        assertFails("new Shh()", environment);
+
+        environment.importClass(Outside.class);
+        assertReturns(new Outside(1), "new Outside(1)", environment);
+        assertFails("new Outside(2).new NotStatic()", environment);
+        assertFails("new Outside(3).new Things()", environment);
+        assertFails("new Outside(4).new Art()", environment);
+        assertFails("new Outside(5).new Shh()", environment);
+        assertReturns(new Outside(6).new OK(10), "new Outside(6).new OK(10)", environment);
+
+        environment.declareVariable(Identifier.from("o", 0), LiteralReferenceType.of(Outside.class), ObjectValue.of(new Outside(7)));
+        assertReturns(new Outside(7).new OK(11), "o.new OK(11)", environment);
+        assertFails("\"1\".new OK(12)", environment);
+
+        environment.importClass(SubOutside.class);
+        assertReturns(new SubOutside(8).new OK(13), "new SubOutside(8).new OK(13)", environment);
+        environment.declareVariable(Identifier.from("os", 0), LiteralReferenceType.of(SubOutside.class), ObjectValue.of(new SubOutside(9)));
+        assertReturns(new Outside(9).new OK(14), "os.new OK(14)", environment);
+
+        environment.importClass(ConflictOutside.class);
+        assertReturns(new ConflictOutside(10).new OK().toString(), "new ConflictOutside(10).new OK().toString()", environment);
     }
 
     @Test
@@ -226,6 +256,7 @@ public class EvaluatorTest {
         assertReturns("es", "new String(\"test\").substring(1, 3)", environment);
         assertReturns(6d, "new Integer(6).doubleValue()", environment);
         assertReturns(2, "Integer.bitCount(3)", environment);
+        assertReturns('a', "(true ? \"a\" : new StringBuilder(\"a\")).charAt(0)", environment);
         assertFails("Float.intBitsToFloat(0f)", environment);
         assertFails("Integer.doubleValue()", environment);
 
@@ -265,6 +296,92 @@ public class EvaluatorTest {
         @Override
         public String toString() {
             return Arrays.toString(args);
+        }
+    }
+
+    public class NotStatic {
+    }
+
+    public enum Things {
+    }
+
+    public static abstract class Art {
+    }
+
+    private static class Shh {
+    }
+
+    public static class Outside {
+        private final int i;
+
+        public Outside(int i) {
+            this.i = i;
+        }
+
+        public enum Things {
+        }
+
+        public abstract class Art {
+        }
+
+        private class Shh {
+        }
+
+        public class OK {
+            private final int j;
+
+            public OK(int j) {
+                this.j = j;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return this == o || o instanceof OK && j == ((OK) o).j;
+            }
+
+            @Override
+            public int hashCode() {
+                return j;
+            }
+
+            @Override
+            public String toString() {
+                return "OK(" + j + ")";
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof Outside && i == ((Outside) o).i;
+        }
+
+        @Override
+        public int hashCode() {
+            return i;
+        }
+
+        @Override
+        public String toString() {
+            return "Outside(" + i + ")";
+        }
+    }
+
+    public static class SubOutside extends Outside {
+        public SubOutside(int i) {
+            super(i);
+        }
+    }
+
+    public static class ConflictOutside extends Outside {
+        public ConflictOutside(int i) {
+            super(i);
+        }
+
+        public class OK {
+            @Override
+            public String toString() {
+                return "I'm different";
+            }
         }
     }
 

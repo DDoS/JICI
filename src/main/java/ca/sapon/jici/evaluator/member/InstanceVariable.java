@@ -84,6 +84,11 @@ public class InstanceVariable implements ClassVariable {
         }
     }
 
+    @Override
+    public String toString() {
+        return field.getName();
+    }
+
     public static InstanceVariable of(LiteralReferenceType declaror, Field field) {
         // Make sure the field actually belongs to the declaror
         if (field.getDeclaringClass() != declaror.getTypeClass()) {

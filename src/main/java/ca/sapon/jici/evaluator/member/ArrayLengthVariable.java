@@ -57,6 +57,11 @@ public class ArrayLengthVariable implements ClassVariable {
         throw new UnsupportedOperationException("Array length field is final");
     }
 
+    @Override
+    public String toString() {
+        return "length";
+    }
+
     public static ArrayLengthVariable of(LiteralReferenceType declaror) {
         if (!declaror.isArray()) {
             throw new IllegalArgumentException("Cannot declaror an array cloning method on the non-array type " + declaror);

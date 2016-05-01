@@ -36,7 +36,6 @@ import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.WildcardType;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.parser.expression.Expression;
-import ca.sapon.jici.parser.expression.reference.VariableAccess;
 import ca.sapon.jici.parser.name.ClassTypeName;
 import ca.sapon.jici.parser.name.TypeArgumentName;
 import ca.sapon.jici.parser.statement.Statement;
@@ -51,7 +50,7 @@ public class ConstructorCall implements Statement, Expression {
     private int end;
     private Callable callable = null;
 
-    public ConstructorCall(ClassTypeName typeName, List<Expression> arguments, boolean diamondOperator, int start, int end) {
+    public ConstructorCall(ClassTypeName typeName, boolean diamondOperator, List<Expression> arguments, int start, int end) {
         this(typeName, Collections.<TypeArgumentName>emptyList(), diamondOperator, arguments, start, end);
     }
 
@@ -81,46 +80,74 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public Type getType(Environment environment) {
-        if (callable == null) {
-            final LiteralReferenceType type = typeName.getType(environment);
-            // Check that parametrized types don't have wildcards
-            if (type instanceof ParametrizedType) {
-                List<TypeArgument> arguments1 = ((ParametrizedType) type).getArguments();
-                for (int i = 0; i < arguments1.size(); i++) {
-                    if (arguments1.get(i) instanceof WildcardType) {
-                        throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeName.getArgument(i));
-                    }
-                }
-            }
-            // Check type arguments
-            final int typeArgumentCount = typeArguments.size();
-            final TypeArgument[] typeArguments = new TypeArgument[typeArgumentCount];
-            for (int i = 0; i < typeArgumentCount; i++) {
-                final TypeArgument typeArgument = this.typeArguments.get(i).getType(environment);
-                if (typeArgument instanceof WildcardType) {
-                    throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", this.typeArguments.get(i));
-                }
-                typeArguments[i] = typeArgument;
-            }
-            // Check argument types
-            final int size = arguments.size();
-            final Type[] argumentTypes = new Type[size];
-            for (int i = 0; i < size; i++) {
-                Type argumentType = arguments.get(i).getType(environment);
-                // Must capture variables subject to invocation conversion
-                if (arguments.get(i) instanceof VariableAccess) {
-                    argumentType = argumentType.capture();
-                }
-                argumentTypes[i] = argumentType;
-            }
-            // Get constructor to call
-            try {
-                callable = type.getConstructor(typeArguments, argumentTypes);
-            } catch (UnsupportedOperationException exception) {
-                throw new EvaluatorException(exception.getMessage(), this);
-            }
+        if (callable != null) {
+            return callable.getReturnType();
+        }
+        // Check the type to be instantiated
+        final LiteralReferenceType type = checkInstantiationType(environment);
+        // Check type arguments
+        final TypeArgument[] typeArguments = checkTypeArguments(environment, this.typeArguments, diamondOperator);
+        // Check argument types
+        final Type[] argumentTypes = MethodCall.checkArguments(environment, arguments);
+        // Get the constructor to call
+        try {
+            callable = type.getConstructor(typeArguments, argumentTypes);
+        } catch (UnsupportedOperationException exception) {
+            throw new EvaluatorException(exception.getMessage(), this);
         }
         return callable.getReturnType();
+    }
+
+    private LiteralReferenceType checkInstantiationType(Environment environment) {
+        final LiteralReferenceType type = typeName.getType(environment);
+        // The class should be top level or static, which means it is not a inner class
+        if (!type.isInnerClassOf(null)) {
+            throw new EvaluatorException("Cannot instantiate the inner class " + type + " outside its enclosing class", typeName);
+        }
+        // Now check that we can actually instantiate the type
+        if (type.isEnum()) {
+            throw new EvaluatorException("Cannot instantiate the enum class " + type, typeName);
+        }
+        if (type.isAbstract()) {
+            throw new EvaluatorException("Cannot instantiate the abstract class " + type, typeName);
+        }
+        if (!type.isPublic()) {
+            throw new EvaluatorException("Cannot access class " + type, typeName);
+        }
+        if (type instanceof ParametrizedType) {
+            // Check that the diamond operator is not being used when type arguments are already given
+            if (diamondOperator) {
+                throw new EvaluatorException("Cannot use the diamond operator when type arguments are provided", typeName);
+            }
+            // Check that parametrized types don't have wildcards
+            final List<TypeArgument> arguments = ((ParametrizedType) type).getArguments();
+            for (int i = 0; i < arguments.size(); i++) {
+                if (arguments.get(i) instanceof WildcardType) {
+                    throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeName.getArgument(i));
+                }
+            }
+        } else if (diamondOperator && !type.isRaw()) {
+            // Check that the diamond operator is being used on a generic type
+            throw new EvaluatorException("Cannot use the diamond operator on the non-generic type " + type, typeName);
+        }
+        return type;
+    }
+
+    public static TypeArgument[] checkTypeArguments(Environment environment, List<TypeArgumentName> typeArgumentNames, boolean diamondOperator) {
+        final int typeArgumentCount = typeArgumentNames.size();
+        if (typeArgumentCount > 0 && diamondOperator) {
+            throw new EvaluatorException("Cannot use constructor type arguments with the diamond operator",
+                    typeArgumentNames.get(0).getStart(), typeArgumentNames.get(typeArgumentCount - 1).getEnd());
+        }
+        final TypeArgument[] typeArguments = new TypeArgument[typeArgumentCount];
+        for (int i = 0; i < typeArgumentCount; i++) {
+            final TypeArgument typeArgument = typeArgumentNames.get(i).getType(environment);
+            if (typeArgument instanceof WildcardType) {
+                throw new EvaluatorException("Cannot use wildcards as type arguments in constructor calls", typeArgumentNames.get(i));
+            }
+            typeArguments[i] = typeArgument;
+        }
+        return typeArguments;
     }
 
     @Override
@@ -159,11 +186,7 @@ public class ConstructorCall implements Statement, Expression {
 
     @Override
     public String toString() {
-        return "ConstructorCall(" + expressionString() + ")";
-    }
-
-    protected String expressionString() {
-        return "new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
-                typeName + (diamondOperator ? "<>" : "") + "(" + StringUtil.toString(arguments, ", ") + ")";
+        return "ConstructorCall(new " + (!typeArguments.isEmpty() ? '<' + StringUtil.toString(typeArguments, ", ") + '>' : "") +
+                typeName + (diamondOperator ? "<>" : "") + "(" + StringUtil.toString(arguments, ", ") + ")" + ")";
     }
 }

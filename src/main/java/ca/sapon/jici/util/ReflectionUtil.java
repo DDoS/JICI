@@ -1,7 +1,7 @@
 /*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
+ * Copyright (c) 2015-2016 Aleksi Sapon <http://sapon.ca/jici/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@ package ca.sapon.jici.util;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -35,10 +34,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.type.ComponentType;
@@ -157,123 +154,6 @@ public final class ReflectionUtil {
             throw new UnsupportedOperationException("No array type possible for " + componentType.getName());
         }
         return arrayType;
-    }
-
-    public static <C> C resolveOverloads(Map<C, Type[]> candidates, Type[] arguments) {
-        // fast-track the lack of candidates
-        if (candidates.isEmpty()) {
-            return null;
-        }
-        // remove methods with un-applicable parameters
-        candidates:
-        for (Iterator<Entry<C, Type[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<C, Type[]> entry = iterator.next();
-            final Type[] parameters = entry.getValue();
-            boolean allEqual = parameters.length != 0;
-            for (int i = 0; i < parameters.length; i++) {
-                final Type argument = arguments[i];
-                final Type parameter = parameters[i];
-                if (!argument.convertibleTo(parameter)) {
-                    iterator.remove();
-                    continue candidates;
-                }
-                // look for a perfect match
-                allEqual &= argument.equals(parameter);
-            }
-            // fast track perfect matches
-            if (allEqual) {
-                return entry.getKey();
-            }
-        }
-        // remove methods with the corresponding wider types
-        C callable = null;
-        int candidateCount = candidates.size();
-        candidates:
-        for (final Entry<C, Type[]> entry : candidates.entrySet()) {
-            final Type[] parameters = entry.getValue();
-            for (Type[] challenges : candidates.values()) {
-                // don't compare with itself
-                if (challenges == parameters) {
-                    continue;
-                }
-                for (int i = 0; i < parameters.length; i++) {
-                    // remove when the challenge is narrower than the parameter
-                    if (isNarrowerParameter(challenges[i], parameters[i], arguments[i].isPrimitive())) {
-                        candidateCount--;
-                        continue candidates;
-                    }
-                }
-            }
-            // cache the candidate because getting a single element from a set is awkward
-            callable = entry.getKey();
-        }
-        // we need exactly one match
-        return candidateCount != 1 ? null : callable;
-    }
-
-    private static boolean isNarrowerParameter(Type parameterA, Type parameterB, boolean primitiveArgument) {
-        // if A is primitive
-        //   if B is primitive
-        //     A < B
-        //   else
-        //     argument is primitive
-        // else
-        //   if B is primitive
-        //     argument is not primitive
-        //   else
-        //     A < B
-        if (parameterA.isPrimitive()) {
-            return parameterB.isPrimitive() ? parameterA.convertibleTo(parameterB) : primitiveArgument;
-        }
-        return parameterB.isPrimitive() ? !primitiveArgument : parameterA.convertibleTo(parameterB);
-    }
-
-    public static void fixReturnTypeConflicts(Map<Method, Type[]> candidates) {
-        // no possible conflicts if less than 2 methods
-        if (candidates.size() <= 1) {
-            return;
-        }
-        // check if some methods have the same parameters
-        for (Iterator<Entry<Method, Type[]>> iterator = candidates.entrySet().iterator(); iterator.hasNext(); ) {
-            final Entry<Method, Type[]> candidate = iterator.next();
-            final Method method = candidate.getKey();
-            Method conflict = null;
-            for (Entry<Method, Type[]> challenge : candidates.entrySet()) {
-                // don't compare with itself
-                if (challenge.getKey() == method) {
-                    continue;
-                }
-                if (Arrays.equals(candidate.getValue(), challenge.getValue())) {
-                    conflict = challenge.getKey();
-                    break;
-                }
-            }
-            // only keep the one with the narrowest return type
-            if (conflict != null && isNarrowerReturnType(TypeUtil.wrap(conflict.getGenericReturnType()), TypeUtil.wrap(method.getGenericReturnType()))) {
-                iterator.remove();
-            }
-        }
-    }
-
-    private static boolean isNarrowerReturnType(Type parameterA, Type parameterB) {
-        // if A is void
-        //   false
-        // else if B is void
-        //   true
-        // else if A is primitive
-        //   B !is primitive or A < B
-        // else
-        //   B !is primitive and A < B
-        if (parameterA.isVoid()) {
-            return false;
-        }
-        if (parameterB.isVoid()) {
-            return true;
-        }
-        if (parameterA.isPrimitive()) {
-            return !parameterB.isPrimitive() || parameterA.convertibleTo(parameterB);
-        }
-        return !parameterB.isPrimitive() && parameterA.convertibleTo(parameterB);
     }
 
     public static Type[] expandsVarargs(Type[] parameters, int count) {

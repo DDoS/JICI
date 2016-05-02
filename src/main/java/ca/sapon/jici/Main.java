@@ -1,7 +1,7 @@
 /*
  * This file is part of JICI, licensed under the MIT License (MIT).
  *
- * Copyright (c) 2015-2015 Aleksi Sapon <http://sapon.ca/jici/>
+ * Copyright (c) 2015-2016 Aleksi Sapon <http://sapon.ca/jici/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,14 @@
 package ca.sapon.jici;
 
 public class Main {
+    public static final String VERSION = "0.0.2-SNAPSHOT";
+
     public static void main(String[] args) throws Exception {
         JICI.breakInto();
 
         /* TODO:
+            Fix simple method calls
+            Fix class access
             Add generic type inference
             Restructure type package
             Move ast to its own package

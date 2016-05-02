@@ -16,10 +16,10 @@ mainClassName = "ca.sapon.jici.Main"
 // Extended project information
 ext.projectName = 'JICI'
 ext.inceptionYear = '2015'
-ext.currentYear = '2015'
+ext.currentYear = '2016'
 ext.packaging = 'jar'
 ext.url = 'http://sapon.ca/jici'
-ext.description = 'Java intepreter and code interaction'
+ext.description = 'Java interpreter and code interaction'
 ext.author = 'Aleksi Sapon'
 
 // Minimum version of Java required

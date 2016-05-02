@@ -54,6 +54,7 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.test.GenericsTest.Outer.Inner;
 import ca.sapon.jici.test.GenericsTest.Outer.Normal;
 import ca.sapon.jici.test.GenericsTest.Outer.Ref;
+import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -970,6 +971,17 @@ public class GenericsTest {
         );
     }
 
+    @Test
+    public void testCycles() {
+        final ParametrizedType type = ParametrizedType.of(Cycles.class, Collections.<TypeArgument>singletonList(
+                TypeVariable.of("T", IntersectionType.EVERYTHING, IntersectionType.NOTHING)
+        ));
+        Assert.assertEquals(
+                type,
+                TypeUtil.wrap(SubCycle.class.getGenericSuperclass())
+        );
+    }
+
     public static class M<T> {
         public static Short s = null;
         public static List<String> ls = null;
@@ -1140,6 +1152,12 @@ public class GenericsTest {
 
         public <S, T> V(S s, T t, boolean b) {
         }
+    }
+
+    public static class Cycles<T extends Cycles<T>> {
+    }
+
+    public static class SubCycle extends Cycles<SubCycle> {
     }
 
     private static Environment assertSucceeds(String source) {

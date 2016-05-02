@@ -581,48 +581,6 @@ public final class TypeUtil {
         return false;
     }
 
-    public static Class<?> findNameMatch(ReferenceType type, List<Identifier> name) {
-        if (type instanceof LiteralReferenceType) {
-            final LiteralReferenceType singleClass = (LiteralReferenceType) type;
-            final Class<?> typeClass = singleClass.getTypeClass();
-            Class<?> currentClass = typeClass;
-            for (int i = name.size() - 1; i >= 0; i--) {
-                if (currentClass != null && name.get(i).getSource().equals(currentClass.getSimpleName())) {
-                    // partial name match, continue
-                    currentClass = currentClass.getEnclosingClass();
-                } else {
-                    // name match fail, check super class
-                    final Class<?> superClass = typeClass.getSuperclass();
-                    if (superClass != null) {
-                        final Class<?> match = findNameMatch(LiteralReferenceType.of(superClass), name);
-                        if (match != null) {
-                            return match;
-                        }
-                    }
-                    // now check implemented interfaces
-                    for (Class<?> implemented : typeClass.getInterfaces()) {
-                        final Class<?> match = findNameMatch(LiteralReferenceType.of(implemented), name);
-                        if (match != null) {
-                            return match;
-                        }
-                    }
-                    return null;
-                }
-            }
-            return typeClass;
-        }
-        if (type instanceof IntersectionType) {
-            for (ReferenceType referenceType : ((IntersectionType) type).getTypes()) {
-                final Class<?> match = findNameMatch(referenceType, name);
-                if (match != null) {
-                    return match;
-                }
-            }
-            return null;
-        }
-        return null;
-    }
-
     private interface BiPredicate<S, T> {
         boolean test(S s, T t);
     }

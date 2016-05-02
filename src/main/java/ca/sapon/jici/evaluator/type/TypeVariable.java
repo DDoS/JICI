@@ -49,7 +49,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         this.dimensions = dimensions;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
-        firstUpperBound = upperBound.checkIfValidUpperBound();
+        firstUpperBound = upperBound.getTypes().iterator().next();
     }
 
     public String getDeclaredName() {
@@ -246,19 +246,13 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             // Empty implies object
             declaredUpperBound.add(LiteralReferenceType.THE_OBJECT);
         }
-        // Ensure the following holds for the first upper bound: a type variable, a class or an interface
-        final SingleReferenceType firstUpperBound = declaredUpperBound.get(0);
-        if (firstUpperBound instanceof LiteralReferenceType) {
-            if (firstUpperBound.isArray()) {
-                throw new UnsupportedOperationException("Cannot have an array type in the upper bound: " + firstUpperBound);
-            }
-        } else if (!(firstUpperBound instanceof TypeVariable)) {
-            throw new UnsupportedOperationException("The first upper bound must be a type variable, class or interface: " + firstUpperBound);
-        }
-        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, IntersectionType.of(declaredUpperBound));
+        final IntersectionType upperBound = IntersectionType.of(declaredUpperBound);
+        upperBound.checkIfValidUpperBound();
+        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, upperBound);
     }
 
     public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound) {
+        upperBound.checkIfValidUpperBound();
         return new TypeVariable(name, 0, lowerBound, upperBound);
     }
 }

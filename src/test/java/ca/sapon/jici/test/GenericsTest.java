@@ -63,96 +63,96 @@ public class GenericsTest {
     public void testWildcards() {
         // Subtype assignable to upper-bound
         assertAssignSucceeds(
-                "List<String>",
-                "List<? extends CharSequence>"
+                "java.util.List<String>",
+                "java.util.List<? extends CharSequence>"
         );
         assertLUB(
                 "java.util.List<? extends java.lang.CharSequence>",
-                "List<String>",
-                "List<? extends CharSequence>"
+                "java.util.List<String>",
+                "java.util.List<? extends CharSequence>"
         );
         assertAssignFails(
-                "List<CharSequence>",
-                "List<? extends String>"
+                "java.util.List<CharSequence>",
+                "java.util.List<? extends String>"
         );
         // Super type assignable to lower-bound
         assertAssignSucceeds(
-                "List<CharSequence>",
-                "List<? super String>"
+                "java.util.List<CharSequence>",
+                "java.util.List<? super String>"
         );
         assertLUB(
                 "java.util.List<? super java.lang.String>",
-                "List<CharSequence>",
-                "List<? super String>"
+                "java.util.List<CharSequence>",
+                "java.util.List<? super String>"
         );
         assertAssignFails(
-                "List<String>",
-                "List<? super CharSequence>"
+                "java.util.List<String>",
+                "java.util.List<? super CharSequence>"
         );
         // Unbounded assignable to unbounded
         assertAssignSucceeds(
-                "List<?>",
-                "List<?>"
+                "java.util.List<?>",
+                "java.util.List<?>"
         );
         assertLUB(
                 "java.util.List<?>",
-                "List<?>",
-                "List<?>"
+                "java.util.List<?>",
+                "java.util.List<?>"
         );
         // Upper-bounded assignable to higher upper-bounded
         assertAssignSucceeds(
-                "List<? extends String>",
-                "List<? extends CharSequence>"
+                "java.util.List<? extends String>",
+                "java.util.List<? extends CharSequence>"
         );
         assertLUB(
                 "java.util.List<? extends java.lang.CharSequence>",
-                "List<? extends String>",
-                "List<? extends CharSequence>"
+                "java.util.List<? extends String>",
+                "java.util.List<? extends CharSequence>"
         );
         assertAssignFails(
-                "List<? extends CharSequence>",
-                "List<? extends String>"
+                "java.util.List<? extends CharSequence>",
+                "java.util.List<? extends String>"
         );
         // Lower-bounded assignable to lower lower-bounded
         assertAssignSucceeds(
-                "List<? super CharSequence>",
-                "List<? super String>"
+                "java.util.List<? super CharSequence>",
+                "java.util.List<? super String>"
         );
         assertLUB(
                 "java.util.List<? super java.lang.String>",
-                "List<? super CharSequence>",
-                "List<? super String>"
+                "java.util.List<? super CharSequence>",
+                "java.util.List<? super String>"
         );
         assertAssignFails(
-                "List<? super String>",
-                "List<? super CharSequence>"
+                "java.util.List<? super String>",
+                "java.util.List<? super CharSequence>"
         );
         // Similar as a above but with bounded and unbounded
         assertAssignSucceeds(
-                "List<? extends String>",
-                "List<?>"
+                "java.util.List<? extends String>",
+                "java.util.List<?>"
         );
         assertLUB(
                 "java.util.List<?>",
-                "List<? extends String>",
-                "List<?>"
+                "java.util.List<? extends String>",
+                "java.util.List<?>"
         );
         assertAssignSucceeds(
-                "List<? super String>",
-                "List<?>"
+                "java.util.List<? super String>",
+                "java.util.List<?>"
         );
         assertLUB(
                 "java.util.List<?>",
-                "List<? super String>",
-                "List<?>"
+                "java.util.List<? super String>",
+                "java.util.List<?>"
         );
         assertAssignFails(
-                "List<?>",
-                "List<? extends String>"
+                "java.util.List<?>",
+                "java.util.List<? extends String>"
         );
         assertAssignFails(
-                "List<?>",
-                "List<? super String>"
+                "java.util.List<?>",
+                "java.util.List<? super String>"
         );
     }
 
@@ -1182,8 +1182,7 @@ public class GenericsTest {
     }
 
     private static String generateDeclarationSource(String leftType, String rightType) {
-        return "import java.util.List;"
-                + leftType + " l1 = null;"
+        return leftType + " l1 = null;"
                 + rightType + " l2;";
     }
 }

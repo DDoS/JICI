@@ -43,14 +43,14 @@ public class ParametrizedType extends LiteralReferenceType {
     private final ParametrizedType owner;
     private final LiteralReferenceType erased;
     private final List<TypeArgument> arguments;
+    private final TypeVariable[] parameters;
     // Cache these to prevent them from being created every time
-    private TypeVariable[] parameters = null;
     private Substitutions substitutions = null;
     private ParametrizedType capture = null;
     private Class<?> baseComponentType = null;
     private int dimensions = -1;
 
-    protected ParametrizedType(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
+    protected ParametrizedType(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments, TypeVariable[] parameters) {
         super(raw.getTypeClass());
         this.owner = owner;
         if (arguments.size() <= 0 && owner == null) {
@@ -58,10 +58,15 @@ public class ParametrizedType extends LiteralReferenceType {
         }
         erased = raw;
         this.arguments = arguments;
+        this.parameters = parameters;
     }
 
     public List<TypeArgument> getArguments() {
         return arguments;
+    }
+
+    public ParametrizedType getOwner() {
+        return owner;
     }
 
     @Override
@@ -104,7 +109,7 @@ public class ParametrizedType extends LiteralReferenceType {
         if (!(componentType instanceof LiteralReferenceType)) {
             throw new UnsupportedOperationException("Component type is not a literal reference type");
         }
-        return new ParametrizedType(owner, (LiteralReferenceType) componentType, arguments);
+        return new ParametrizedType(owner, (LiteralReferenceType) componentType, arguments, parameters);
     }
 
     @Override
@@ -115,12 +120,15 @@ public class ParametrizedType extends LiteralReferenceType {
         for (TypeArgument type : arguments) {
             newArguments.add(type.substituteTypeVariables(substitution));
         }
-        return new ParametrizedType(substitutedOwner, erased, newArguments);
+        return new ParametrizedType(substitutedOwner, erased, newArguments, parameters);
     }
 
     @Override
     public Set<TypeVariable> getTypeVariables() {
         final Iterator<TypeArgument> iterator = arguments.iterator();
+        if (!iterator.hasNext()) {
+            return new HashSet<>();
+        }
         final Set<TypeVariable> typeVariables = iterator.next().getTypeVariables();
         while (iterator.hasNext()) {
             typeVariables.addAll(iterator.next().getTypeVariables());
@@ -133,7 +141,7 @@ public class ParametrizedType extends LiteralReferenceType {
 
     @Override
     public ParametrizedType asArray(int dimensions) {
-        return new ParametrizedType(owner, super.asArray(dimensions), arguments);
+        return new ParametrizedType(owner, super.asArray(dimensions), arguments, parameters);
     }
 
     @Override
@@ -234,7 +242,6 @@ public class ParametrizedType extends LiteralReferenceType {
         final ParametrizedType ownerCapture = owner != null ? owner.capture(idCounter) : null;
         // Next capture the arguments: first we need to figure out the order
         final List<TypeArgument> capturedArguments = new ArrayList<>();
-        final TypeVariable[] parameters = getParameters();
         // Generate substitutions for the parameters, so we can get the dependency ordering
         final Map<String, TypeArgument> namesToParameters = new HashMap<>();
         for (TypeVariable parameter : parameters) {
@@ -250,6 +257,19 @@ public class ParametrizedType extends LiteralReferenceType {
         if (ownerCapture != null) {
             namesToArguments.putAll(ownerCapture.getSubstitutions().getMap());
         }
+        // Some type variables reference themselves in their bounds.
+        // We add their unbounded capture to the substitutions to prevent cycles
+        final Map<Integer, String> cyclicCaptureNames = new HashMap<>();
+        for (int i = 0; i < parameters.length; i++) {
+            if (!parameters[i].isCyclical()) {
+                continue;
+            }
+            final String captureName = "CAP#" + idCounter.nextValue();
+            final TypeVariable cycle = TypeVariable.of(captureName, IntersectionType.EVERYTHING, IntersectionType.NOTHING);
+            namesToArguments.put(parameters[i].getDeclaredName(), cycle);
+            cyclicCaptureNames.put(i, captureName);
+        }
+        // Now we perform the actual capture conversion
         for (String name : ordering.getOrder()) {
             final int index = getParameterIndex(name);
             final TypeArgument argument = arguments.get(index);
@@ -258,10 +278,20 @@ public class ParametrizedType extends LiteralReferenceType {
                 final WildcardType wildcard = (WildcardType) argument;
                 final Set<SingleReferenceType> upperBound = new HashSet<>(parameters[index].getUpperBound().substituteTypeVariables(substitutions).getTypes());
                 upperBound.addAll(wildcard.getUpperBound().getTypes());
-                final TypeVariable capturedArgument = TypeVariable.of("CAP#" + idCounter.nextValue(), wildcard.getLowerBound(), IntersectionType.of(upperBound));
+                // If the capture has a cycle, use the name we gave it earlier
+                String captureName = cyclicCaptureNames.get(index);
+                boolean hasCycle = true;
+                if (captureName == null) {
+                    captureName = "CAP#" + idCounter.nextValue();
+                    hasCycle = false;
+                }
+                // Create the capture argument
+                final TypeVariable capturedArgument = TypeVariable.of(captureName, wildcard.getLowerBound(), IntersectionType.of(upperBound));
                 capturedArguments.set(index, capturedArgument);
-                // Update the substitutions
-                namesToArguments.put(name, capturedArgument);
+                // Update the substitutions, unless we have a cycle, so we preserve the cycle-breaking substitution added earlier
+                if (!hasCycle) {
+                    namesToArguments.put(name, capturedArgument);
+                }
             } else {
                 // Capture of any other type does nothing
                 capturedArguments.set(index, argument);
@@ -276,11 +306,10 @@ public class ParametrizedType extends LiteralReferenceType {
             }
         }
         // Create a new parametrized type with the new arguments and cache
-        return capture = new ParametrizedType(ownerCapture, erased, capturedArguments);
+        return capture = new ParametrizedType(ownerCapture, erased, capturedArguments, parameters);
     }
 
     private int getParameterIndex(String name) {
-        final TypeVariable[] parameters = getParameters();
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i].getDeclaredName().equals(name)) {
                 return i;
@@ -289,22 +318,10 @@ public class ParametrizedType extends LiteralReferenceType {
         throw new UnsupportedOperationException("Not a parameter: " + name);
     }
 
-    private TypeVariable[] getParameters() {
-        if (this.parameters == null) {
-            final java.lang.reflect.TypeVariable<?>[] parameters = super.getTypeParameters();
-            this.parameters = new TypeVariable[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                this.parameters[i] = (TypeVariable) TypeUtil.wrap(parameters[i]);
-            }
-        }
-        return this.parameters;
-    }
-
     @Override
     public Substitutions getSubstitutions() {
         if (this.substitutions == null) {
             final Map<String, TypeArgument> namesToArguments = new HashMap<>();
-            final TypeVariable[] parameters = getParameters();
             for (int i = 0; i < parameters.length; i++) {
                 namesToArguments.put(parameters[i].getDeclaredName(), arguments.get(i));
             }
@@ -328,23 +345,31 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     public static ParametrizedType of(Class<?> raw, List<TypeArgument> arguments) {
-        return of(null, raw, arguments);
+        return of(null, raw, arguments, null);
     }
 
     public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments) {
-        return of(owner, LiteralReferenceType.of(raw), arguments);
+        return of(owner, LiteralReferenceType.of(raw), arguments, null);
+    }
+
+    public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments, Set<java.lang.reflect.TypeVariable<?>> cycles) {
+        return of(owner, LiteralReferenceType.of(raw), arguments, cycles);
     }
 
     public static ParametrizedType of(LiteralReferenceType raw, List<TypeArgument> arguments) {
-        return of(null, raw, arguments);
+        return of(null, raw, arguments, null);
     }
 
     public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
+        return of(owner, raw, arguments, null);
+    }
+
+    public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments, Set<java.lang.reflect.TypeVariable<?>> cycles) {
         if (arguments.size() < 1 && owner == null) {
             throw new UnsupportedOperationException("Expected at least one type argument or a parametrized owner");
         }
-        final ParametrizedType type = new ParametrizedType(checkOwner(owner, raw.getTypeClass(), arguments), raw, arguments);
-        final TypeVariable[] parameters = type.getParameters();
+        final TypeVariable[] parameters = wrapParameters(raw.getTypeParameters(), cycles);
+        final ParametrizedType type = new ParametrizedType(checkOwner(owner, raw.getTypeClass(), arguments), raw, arguments, parameters);
         if (parameters.length < 1 && owner == null) {
             throw new UnsupportedOperationException("Not a generic type: " + raw);
         }
@@ -358,10 +383,22 @@ public class ParametrizedType extends LiteralReferenceType {
         for (int i = 0; i < parameters.length; i++) {
             final TypeVariable substitutedParameter = parameters[i].substituteBoundTypeVariables(substitutions);
             final TypeArgument capturedArgument = capturedArguments.get(i);
+            // Try to detect cycles where the upper bound of a parameter is the type itself
+            if (substitutedParameter.getUpperBound().isOnly(capture)) {
+                continue;
+            }
             if (!substitutedParameter.boundsContain(capturedArgument)) {
                 throw new UnsupportedOperationException("Cannot convert type argument " + capturedArgument + " to " + substitutedParameter);
             }
         }
         return type;
+    }
+
+    private static TypeVariable[] wrapParameters(java.lang.reflect.TypeVariable<?>[] parameters, Set<java.lang.reflect.TypeVariable<?>> cycles) {
+        final TypeVariable[] wrapped = new TypeVariable[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            wrapped[i] = (TypeVariable) TypeUtil.wrap(parameters[i], cycles);
+        }
+        return wrapped;
     }
 }

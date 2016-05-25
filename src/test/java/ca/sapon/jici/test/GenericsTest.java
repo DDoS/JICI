@@ -54,7 +54,6 @@ import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.test.GenericsTest.Outer.Inner;
 import ca.sapon.jici.test.GenericsTest.Outer.Normal;
 import ca.sapon.jici.test.GenericsTest.Outer.Ref;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -973,12 +972,40 @@ public class GenericsTest {
 
     @Test
     public void testCycles() {
-        final ParametrizedType type = ParametrizedType.of(Cycles.class, Collections.<TypeArgument>singletonList(
-                TypeVariable.of("T", IntersectionType.EVERYTHING, IntersectionType.NOTHING)
-        ));
         Assert.assertEquals(
-                type,
-                TypeUtil.wrap(SubCycle.class.getGenericSuperclass())
+                "ca.sapon.jici.test.GenericsTest.Cycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.Cycles<CAP#1>>",
+                ParametrizedType.of(Cycles.class, Collections.<TypeArgument>singletonList(WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)))
+                        .capture().toString()
+        );
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.DependentCycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.DependentCycles<CAP#1, CAP#2>, " +
+                        "CAP#2 extends ca.sapon.jici.test.GenericsTest.DependentCycles<CAP#1, CAP#2>>",
+                ParametrizedType.of(DependentCycles.class, Arrays.<TypeArgument>asList(
+                        WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING),
+                        WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
+                )).capture().toString()
+        );
+
+        Assert.assertEquals(
+                "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.SubCycle>]",
+                LiteralReferenceType.of(SubCycle.class).getDirectSuperTypes().toString()
+        );
+        Assert.assertEquals(
+                "[ca.sapon.jici.test.GenericsTest.DependentCycles<ca.sapon.jici.test.GenericsTest.SubDependentCycles, ca.sapon.jici.test.GenericsTest.SubDependentCycles>]",
+                LiteralReferenceType.of(SubDependentCycles.class).getDirectSuperTypes().toString()
+        );
+        Assert.assertEquals(
+                "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.Cycles<T extends ca.sapon.jici.test.GenericsTest.Cycles<T>>.InnerCycle>]",
+                LiteralReferenceType.of(Cycles.InnerCycle.class).getDirectSuperTypes().toString()
+        );
+        Assert.assertEquals(
+                "[java.lang.Comparable<ca.sapon.jici.test.GenericsTest.Cycle2>, java.lang.Object]",
+                LiteralReferenceType.of(Cycle2.class).getDirectSuperTypes().toString()
+        );
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.SubCycle",
+                LiteralReferenceType.of(GenericsTest.class).getDeclaredMethods("cyclicMethod", new TypeArgument[]{LiteralReferenceType.of(SubCycle.class)})
+                        .iterator().next().getReturnType().toString()
         );
     }
 
@@ -1155,9 +1182,28 @@ public class GenericsTest {
     }
 
     public static class Cycles<T extends Cycles<T>> {
+        public class InnerCycle extends Cycles<InnerCycle> {
+        }
     }
 
     public static class SubCycle extends Cycles<SubCycle> {
+    }
+
+    public static class DependentCycles<S extends DependentCycles<S, T>, T extends DependentCycles<S, T>> {
+    }
+
+    public static class SubDependentCycles extends DependentCycles<SubDependentCycles, SubDependentCycles> {
+    }
+
+    public static class Cycle2 implements Comparable<Cycle2> {
+        @Override
+        public int compareTo(Cycle2 o) {
+            return 0;
+        }
+    }
+
+    public static <T extends Cycles<T>> T cyclicMethod() {
+        return null;
     }
 
     private static Environment assertSucceeds(String source) {

@@ -55,7 +55,7 @@ public class Substitutions {
         for (Map.Entry<String, TypeArgument> substitution : substitutions.entrySet()) {
             final Set<String> dependentVariables = new HashSet<>();
             for (TypeVariable typeVariable : substitution.getValue().getTypeVariables()) {
-                // If there's no actual dependencies then the variable isn't to be substituted
+                // If the dependency isn't in the substitutions then the variable isn't to be substituted
                 final String name = typeVariable.getDeclaredName();
                 if (substitutions.containsKey(name)) {
                     dependentVariables.add(name);
@@ -65,25 +65,34 @@ public class Substitutions {
         }
         // Try to substitute the dependent variables, solving dependencies from the bottom up
         final Set<String> solvedVariables = new HashSet<>();
-        boolean progressed;
-        do {
-            progressed = false;
+        while (!variableDependencies.isEmpty()) {
+            boolean cycle = true;
             for (Iterator<Map.Entry<String, Set<String>>> iterator = variableDependencies.entrySet().iterator(); iterator.hasNext(); ) {
                 final Map.Entry<String, Set<String>> entry = iterator.next();
                 final Set<String> dependentVariables = entry.getValue();
                 if (solvedVariables.containsAll(dependentVariables)) {
                     // All dependent variables are solved, so solve this one and add it to the solved set
-                    final String variableName = entry.getKey();
-                    if (!dependentVariables.isEmpty()) {
-                        substitutions.put(variableName, substitutions.get(variableName).substituteTypeVariables(this));
-                    }
-                    solvedVariables.add(variableName);
-                    order.add(variableName);
+                    solveVariable(solvedVariables, entry.getKey(), dependentVariables);
                     iterator.remove();
-                    progressed = true;
+                    cycle = false;
                 }
             }
-        } while (progressed);
+            if (cycle) {
+                // If a cycle is found, break it arbitrarily by removing the first dependency
+                final Iterator<Map.Entry<String, Set<String>>> iterator = variableDependencies.entrySet().iterator();
+                final Map.Entry<String, Set<String>> entry = iterator.next();
+                solveVariable(solvedVariables, entry.getKey(), entry.getValue());
+                iterator.remove();
+            }
+        }
+    }
+
+    private void solveVariable(Set<String> solvedVariables, String variableName, Set<String> dependentVariables) {
+        if (!dependentVariables.isEmpty()) {
+            substitutions.put(variableName, substitutions.get(variableName).substituteTypeVariables(this));
+        }
+        solvedVariables.add(variableName);
+        order.add(variableName);
     }
 
     public List<String> getOrder() {

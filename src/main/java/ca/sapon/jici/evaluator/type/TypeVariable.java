@@ -43,6 +43,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
     private final SingleReferenceType firstUpperBound;
+    private Boolean isCyclical = null;
 
     private TypeVariable(String name, int dimensions, IntersectionType lowerBound, IntersectionType upperBound) {
         this.name = name;
@@ -169,6 +170,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
 
     @Override
     public boolean contains(TypeArgument other) {
+        if (other instanceof TypeVariable && ((TypeVariable) other).getDeclaredName().equals(getDeclaredName())) {
+            // If this is a reference of the variable itself we have to ignore the bounds since they where changed to break the cycle
+            return isCyclical();
+        }
         return equals(other);
     }
 
@@ -219,6 +224,18 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         final Set<LiteralReferenceType> superTypes = new HashSet<>();
         superTypes.addAll(upperBound.getSuperTypes());
         return superTypes;
+    }
+
+    public boolean isCyclical() {
+        if (isCyclical != null) {
+            return isCyclical;
+        }
+        for (TypeVariable typeVariable : upperBound.getTypeVariables()) {
+            if (typeVariable.getDeclaredName().equals(getDeclaredName())) {
+                return isCyclical = true;
+            }
+        }
+        return isCyclical = false;
     }
 
     @Override

@@ -378,6 +378,11 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
         return nonInterface == null ? firstInterface : nonInterface;
     }
 
+    public boolean isOnly(SingleReferenceType type) {
+        final Set<SingleReferenceType> types = getTypes();
+        return types.size() == 1 && types.contains(type);
+    }
+
     @Override
     public String toString() {
         return getName();

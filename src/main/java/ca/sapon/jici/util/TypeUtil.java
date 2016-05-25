@@ -53,7 +53,6 @@ import ca.sapon.jici.evaluator.type.TypeArgument;
 import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.type.VoidType;
 import ca.sapon.jici.evaluator.type.WildcardType;
-import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 
 /**
@@ -101,6 +100,10 @@ public final class TypeUtil {
     }
 
     public static Type wrap(java.lang.reflect.Type type) {
+        return wrap(type, null);
+    }
+
+    public static Type wrap(java.lang.reflect.Type type, Set<java.lang.reflect.TypeVariable<?>> cycles) {
         if (type == null) {
             throw new NullPointerException("type");
         }
@@ -115,7 +118,7 @@ public final class TypeUtil {
                 componentType = ((GenericArrayType) componentType).getGenericComponentType();
                 dimensions++;
             }
-            final Type wrapped = wrap(componentType);
+            final Type wrapped = wrap(componentType, cycles);
             if (wrapped instanceof ComponentType) {
                 return ((ComponentType) wrapped).asArray(dimensions);
             }
@@ -130,7 +133,7 @@ public final class TypeUtil {
             } else {
                 wrappedArgs = new ArrayList<>(args.length);
                 for (java.lang.reflect.Type param : args) {
-                    final Type wrap = wrap(param);
+                    final Type wrap = wrap(param, cycles);
                     if (!(wrap instanceof TypeArgument)) {
                         throw new UnsupportedOperationException("Invalid type for generic parameter: " + wrap.getName());
                     }
@@ -140,33 +143,39 @@ public final class TypeUtil {
             final java.lang.reflect.Type ownerType = paramType.getOwnerType();
             final ParametrizedType wrappedOwner;
             if (ownerType != null) {
-                final Type wrapped = wrap(ownerType);
+                final Type wrapped = wrap(ownerType, cycles);
                 wrappedOwner = wrapped instanceof ParametrizedType ? (ParametrizedType) wrapped : null;
             } else {
                 wrappedOwner = null;
             }
             if (!wrappedArgs.isEmpty() || wrappedOwner != null) {
-                return ParametrizedType.of(wrappedOwner, (Class<?>) paramType.getRawType(), wrappedArgs);
+                return ParametrizedType.of(wrappedOwner, (Class<?>) paramType.getRawType(), wrappedArgs, cycles);
             }
             return LiteralReferenceType.of((Class<?>) paramType.getRawType());
         }
         if (type instanceof java.lang.reflect.TypeVariable) {
             final java.lang.reflect.TypeVariable<?> typeVariable = (java.lang.reflect.TypeVariable<?>) type;
-            final List<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds(), new ArrayList<SingleReferenceType>());
+            if (cycles == null) {
+                cycles = new HashSet<>();
+            } else if (cycles.contains(typeVariable)) {
+                return TypeVariable.of(typeVariable.getName(), IntersectionType.EVERYTHING, IntersectionType.NOTHING);
+            }
+            cycles.add(typeVariable);
+            final List<SingleReferenceType> wrappedUpper = wrapBounds(typeVariable.getBounds(), new ArrayList<SingleReferenceType>(), cycles);
             return TypeVariable.of(typeVariable.getName(), wrappedUpper);
         }
         if (type instanceof java.lang.reflect.WildcardType) {
             final java.lang.reflect.WildcardType wildcardType = (java.lang.reflect.WildcardType) type;
-            final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds(), new HashSet<SingleReferenceType>());
-            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getUpperBounds(), new HashSet<SingleReferenceType>());
+            final Set<SingleReferenceType> wrappedLower = wrapBounds(wildcardType.getLowerBounds(), new HashSet<SingleReferenceType>(), cycles);
+            final Set<SingleReferenceType> wrappedUpper = wrapBounds(wildcardType.getUpperBounds(), new HashSet<SingleReferenceType>(), cycles);
             return WildcardType.of(wrappedLower, wrappedUpper);
         }
         throw new UnsupportedOperationException(type.getClass().getCanonicalName());
     }
 
-    private static <C extends Collection<SingleReferenceType>> C wrapBounds(java.lang.reflect.Type[] types, C to) {
+    private static <C extends Collection<SingleReferenceType>> C wrapBounds(java.lang.reflect.Type[] types, C to, Set<java.lang.reflect.TypeVariable<?>> cycles) {
         for (java.lang.reflect.Type type : types) {
-            final Type wrap = wrap(type);
+            final Type wrap = wrap(type, cycles);
             if (!(wrap instanceof SingleReferenceType)) {
                 throw new UnsupportedOperationException("Invalid type for bound: " + wrap.getName());
             }

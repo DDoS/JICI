@@ -29,9 +29,9 @@ import java.lang.reflect.Modifier;
 import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.TypeCache;
 import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -41,7 +41,7 @@ public class ConstructorCallable extends DeclaredCallable {
 
     private ConstructorCallable(Constructor<?> constructor, LiteralReferenceType declaror, TypeArgument[] typeArguments)
             throws IncompatibleTypeArgumentsException {
-        super(declaror, TypeUtil.wrap(constructor.getTypeParameters()), declaror, TypeUtil.wrap(constructor.getGenericParameterTypes()),
+        super(declaror, TypeCache.wrapTypeVariables(constructor.getTypeParameters()), declaror, TypeCache.wrapTypes(constructor.getGenericParameterTypes()),
                 typeArguments, Modifier.isStatic(constructor.getModifiers()));
         this.constructor = constructor;
     }

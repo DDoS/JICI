@@ -30,10 +30,10 @@ import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.TypeCache;
 import ca.sapon.jici.evaluator.type.TypeVariable;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.evaluator.value.VoidValue;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -43,7 +43,7 @@ public class MethodCallable extends DeclaredCallable {
 
     private MethodCallable(Method method, LiteralReferenceType declaror, TypeArgument[] typeArguments)
             throws IncompatibleTypeArgumentsException {
-        super(declaror, TypeUtil.wrap(method.getTypeParameters()), TypeUtil.wrap(method.getGenericReturnType()), TypeUtil.wrap(method.getGenericParameterTypes()),
+        super(declaror, TypeCache.wrapTypeVariables(method.getTypeParameters()), TypeCache.wrapType(method.getGenericReturnType()), TypeCache.wrapTypes(method.getGenericParameterTypes()),
                 typeArguments, Modifier.isStatic(method.getModifiers()));
         this.method = method;
     }

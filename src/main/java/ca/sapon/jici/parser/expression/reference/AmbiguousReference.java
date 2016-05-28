@@ -29,13 +29,13 @@ import java.util.List;
 import ca.sapon.jici.evaluator.Environment;
 import ca.sapon.jici.evaluator.EvaluatorException;
 import ca.sapon.jici.evaluator.type.Type;
+import ca.sapon.jici.evaluator.type.TypeCache;
 import ca.sapon.jici.evaluator.value.ObjectValue;
 import ca.sapon.jici.evaluator.value.Value;
 import ca.sapon.jici.lexer.Identifier;
 import ca.sapon.jici.parser.expression.Expression;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 public class AmbiguousReference implements Reference {
     private final List<Identifier> name;
@@ -150,7 +150,7 @@ public class AmbiguousReference implements Reference {
         @Override
         public Type getType(Environment environment) {
             if (type == null) {
-                type = TypeUtil.wrap(_class);
+                type = TypeCache.wrapClass(_class);
             }
             return type;
         }

@@ -65,34 +65,25 @@ public class Substitutions {
         }
         // Try to substitute the dependent variables, solving dependencies from the bottom up
         final Set<String> solvedVariables = new HashSet<>();
-        while (!variableDependencies.isEmpty()) {
-            boolean cycle = true;
+        boolean progressed;
+        do {
+            progressed = false;
             for (Iterator<Map.Entry<String, Set<String>>> iterator = variableDependencies.entrySet().iterator(); iterator.hasNext(); ) {
                 final Map.Entry<String, Set<String>> entry = iterator.next();
                 final Set<String> dependentVariables = entry.getValue();
                 if (solvedVariables.containsAll(dependentVariables)) {
                     // All dependent variables are solved, so solve this one and add it to the solved set
-                    solveVariable(solvedVariables, entry.getKey(), dependentVariables);
+                    final String variableName = entry.getKey();
+                    if (!dependentVariables.isEmpty()) {
+                        substitutions.put(variableName, substitutions.get(variableName).substituteTypeVariables(this));
+                    }
+                    solvedVariables.add(variableName);
+                    order.add(variableName);
                     iterator.remove();
-                    cycle = false;
+                    progressed = true;
                 }
             }
-            if (cycle) {
-                // If a cycle is found, break it arbitrarily by removing the first dependency
-                final Iterator<Map.Entry<String, Set<String>>> iterator = variableDependencies.entrySet().iterator();
-                final Map.Entry<String, Set<String>> entry = iterator.next();
-                solveVariable(solvedVariables, entry.getKey(), entry.getValue());
-                iterator.remove();
-            }
-        }
-    }
-
-    private void solveVariable(Set<String> solvedVariables, String variableName, Set<String> dependentVariables) {
-        if (!dependentVariables.isEmpty()) {
-            substitutions.put(variableName, substitutions.get(variableName).substituteTypeVariables(this));
-        }
-        solvedVariables.add(variableName);
-        order.add(variableName);
+        } while (progressed);
     }
 
     public List<String> getOrder() {

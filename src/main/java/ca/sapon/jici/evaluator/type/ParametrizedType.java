@@ -23,6 +23,7 @@
  */
 package ca.sapon.jici.evaluator.type;
 
+import java.lang.reflect.GenericDeclaration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,6 @@ import java.util.Set;
 import ca.sapon.jici.evaluator.Substitutions;
 import ca.sapon.jici.util.IntegerCounter;
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A type that takes type arguments, such as {@code Set<T>}, {@code Map<? extends CharSequence, Integer>} or {@code Map.Entry<String, Integer>}.
@@ -240,82 +240,62 @@ public class ParametrizedType extends LiteralReferenceType {
     private ParametrizedType capture(IntegerCounter idCounter) {
         // Capture the owner first, if any
         final ParametrizedType ownerCapture = owner != null ? owner.capture(idCounter) : null;
-        // Next capture the arguments: first we need to figure out the order
-        final List<TypeArgument> capturedArguments = new ArrayList<>();
-        // Generate substitutions for the parameters, so we can get the dependency ordering
-        final Map<String, TypeArgument> namesToParameters = new HashMap<>();
-        for (TypeVariable parameter : parameters) {
-            namesToParameters.put(parameter.getDeclaredName(), parameter.getUpperBound());
-            // Fill the captured arguments with null placeholders so set(index, value) will work
-            capturedArguments.add(null);
-        }
-        final Substitutions ordering = new Substitutions(namesToParameters);
-        // Following the dependency ordering, substitute the wildcards by type variables
-        final Map<String, TypeArgument> namesToArguments = new HashMap<>();
-        final Substitutions substitutions = new Substitutions(namesToArguments);
-        // Add the owner capture results if any, since the inner type might be dependent
-        if (ownerCapture != null) {
-            namesToArguments.putAll(ownerCapture.getSubstitutions().getMap());
-        }
-        // Some type variables reference themselves in their bounds.
-        // We add their unbounded capture to the substitutions to prevent cycles
-        final Map<Integer, String> cyclicCaptureNames = new HashMap<>();
-        for (int i = 0; i < parameters.length; i++) {
-            if (!parameters[i].isCyclical()) {
-                continue;
-            }
-            final String captureName = "CAP#" + idCounter.nextValue();
-            final TypeVariable cycle = TypeVariable.of(captureName, IntersectionType.EVERYTHING, IntersectionType.NOTHING);
-            namesToArguments.put(parameters[i].getDeclaredName(), cycle);
-            cyclicCaptureNames.put(i, captureName);
-        }
+        // The declaror of the capture type variables is this generic type
+        final GenericDeclaration declaror = erased.getTypeClass();
         // Now we perform the actual capture conversion
-        for (String name : ordering.getOrder()) {
-            final int index = getParameterIndex(name);
-            final TypeArgument argument = arguments.get(index);
+        final List<TypeArgument> capturedArguments = new ArrayList<>();
+        final Map<String, TypeArgument> namesToArguments = new HashMap<>();
+        for (int i = 0; i < parameters.length; i++) {
+            final TypeArgument argument = arguments.get(i);
+            final String name = parameters[i].getDeclaredName();
             if (argument instanceof WildcardType) {
-                // Capture of a wildcard type replaces it with a unique type variable and merges the bounds (after substitution) from the declaration
+                // Capture of a wildcard type replaces it with a unique type variable and merges the bounds from the declaration
                 final WildcardType wildcard = (WildcardType) argument;
-                final Set<SingleReferenceType> upperBound = new HashSet<>(parameters[index].getUpperBound().substituteTypeVariables(substitutions).getTypes());
+                final Set<SingleReferenceType> upperBound = new HashSet<>(parameters[i].getUpperBound().getTypes());
                 upperBound.addAll(wildcard.getUpperBound().getTypes());
-                // If the capture has a cycle, use the name we gave it earlier
-                String captureName = cyclicCaptureNames.get(index);
-                boolean hasCycle = true;
-                if (captureName == null) {
-                    captureName = "CAP#" + idCounter.nextValue();
-                    hasCycle = false;
-                }
                 // Create the capture argument
-                final TypeVariable capturedArgument = TypeVariable.of(captureName, wildcard.getLowerBound(), IntersectionType.of(upperBound));
-                capturedArguments.set(index, capturedArgument);
+                final TypeVariable capturedArgument = TypeVariable.of("CAP#" + idCounter.nextValue(), wildcard.getLowerBound(), IntersectionType.of(upperBound), declaror, true);
+                capturedArguments.add(capturedArgument);
                 // Update the substitutions, unless we have a cycle, so we preserve the cycle-breaking substitution added earlier
-                if (!hasCycle) {
-                    namesToArguments.put(name, capturedArgument);
-                }
+                namesToArguments.put(name, capturedArgument);
             } else {
                 // Capture of any other type does nothing
-                capturedArguments.set(index, argument);
+                capturedArguments.add(argument);
                 // Update the substitution
                 namesToArguments.put(name, argument);
             }
         }
-        // Check that all the arguments were captured
-        for (int i = 0; i < capturedArguments.size(); i++) {
-            if (capturedArguments.get(i) == null) {
-                throw new IllegalStateException("Missing substitution for argument at position " + i + ": " + arguments.get(i));
-            }
+        // Generate substitutions for the parameters, so we can get the dependency ordering
+        final Map<String, TypeArgument> namesToParameters = new HashMap<>();
+        for (TypeVariable parameter : parameters) {
+            namesToParameters.put(parameter.getDeclaredName(), parameter.getUpperBound());
         }
-        // Create a new parametrized type with the new arguments and cache
-        return capture = new ParametrizedType(ownerCapture, erased, capturedArguments, parameters);
-    }
-
-    private int getParameterIndex(String name) {
+        final List<String> ordering = new Substitutions(namesToParameters).getOrder();
+        // Add the owner capture results if any, since the inner type might be dependent
+        if (ownerCapture != null) {
+            namesToArguments.putAll(ownerCapture.getSubstitutions().getMap());
+        }
+        // If a name isn't in the ordering then it is cyclical, so add it without bounds if it is type variable (to break the cycles)
         for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i].getDeclaredName().equals(name)) {
-                return i;
+            final TypeVariable parameter = parameters[i];
+            final String name = parameter.getDeclaredName();
+            final TypeArgument argument = capturedArguments.get(i);
+            if (!ordering.contains(name) && argument instanceof TypeVariable) {
+                namesToArguments.put(name, ((TypeVariable) argument).withoutBounds());
             }
         }
-        throw new UnsupportedOperationException("Not a parameter: " + name);
+        // Now perform the substitutions in the generated bounds to remove all traces of the parameters
+        final Substitutions substitutions = new Substitutions(namesToArguments);
+        for (int i = 0; i < capturedArguments.size(); i++) {
+            final TypeArgument argument = capturedArguments.get(i);
+            final TypeArgument substitutedArgument = argument.substituteTypeVariables(substitutions);
+            capturedArguments.set(i, substitutedArgument);
+            if (substitutedArgument instanceof TypeVariable) {
+                ((TypeVariable) substitutedArgument).checkBounds();
+            }
+        }
+        // Create a new parametrized type with the new arguments and cache it
+        return capture = new ParametrizedType(ownerCapture, erased, capturedArguments, this.parameters);
     }
 
     @Override
@@ -345,30 +325,22 @@ public class ParametrizedType extends LiteralReferenceType {
     }
 
     public static ParametrizedType of(Class<?> raw, List<TypeArgument> arguments) {
-        return of(null, raw, arguments, null);
-    }
-
-    public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments) {
-        return of(owner, LiteralReferenceType.of(raw), arguments, null);
-    }
-
-    public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments, Set<java.lang.reflect.TypeVariable<?>> cycles) {
-        return of(owner, LiteralReferenceType.of(raw), arguments, cycles);
+        return of(null, raw, arguments);
     }
 
     public static ParametrizedType of(LiteralReferenceType raw, List<TypeArgument> arguments) {
-        return of(null, raw, arguments, null);
+        return of(null, raw, arguments);
+    }
+
+    public static ParametrizedType of(ParametrizedType owner, Class<?> raw, List<TypeArgument> arguments) {
+        return of(owner, LiteralReferenceType.of(raw), arguments);
     }
 
     public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments) {
-        return of(owner, raw, arguments, null);
-    }
-
-    public static ParametrizedType of(ParametrizedType owner, LiteralReferenceType raw, List<TypeArgument> arguments, Set<java.lang.reflect.TypeVariable<?>> cycles) {
         if (arguments.size() < 1 && owner == null) {
             throw new UnsupportedOperationException("Expected at least one type argument or a parametrized owner");
         }
-        final TypeVariable[] parameters = wrapParameters(raw.getTypeParameters(), cycles);
+        final TypeVariable[] parameters = TypeCache.wrapTypeVariables(raw.getTypeParameters());
         final ParametrizedType type = new ParametrizedType(checkOwner(owner, raw.getTypeClass(), arguments), raw, arguments, parameters);
         if (parameters.length < 1 && owner == null) {
             throw new UnsupportedOperationException("Not a generic type: " + raw);
@@ -376,29 +348,21 @@ public class ParametrizedType extends LiteralReferenceType {
         if (parameters.length != arguments.size()) {
             throw new UnsupportedOperationException("Mismatch in type parameter and argument count: " + parameters.length + " != " + arguments.size());
         }
-        // The captured arguments must be subtypes of the parameter upper bounds resulting from substitution
+        // The captured arguments must be contained in the parameter bound resulting from substitution
         final ParametrizedType capture = type.capture();
         final List<TypeArgument> capturedArguments = capture.getArguments();
         final Substitutions substitutions = capture.getSubstitutions();
         for (int i = 0; i < parameters.length; i++) {
             final TypeVariable substitutedParameter = parameters[i].substituteBoundTypeVariables(substitutions);
             final TypeArgument capturedArgument = capturedArguments.get(i);
-            // Try to detect cycles where the upper bound of a parameter is the type itself
-            if (substitutedParameter.getUpperBound().isOnly(capture)) {
+            // Try to detect cycles where the upper bound of a parameter is the type itself (and has a contained lower bound)
+            if (substitutedParameter.getUpperBound().isOnly(capture) && substitutedParameter.getLowerBound().convertibleTo(capturedArgument)) {
                 continue;
             }
             if (!substitutedParameter.boundsContain(capturedArgument)) {
-                throw new UnsupportedOperationException("Cannot convert type argument " + capturedArgument + " to " + substitutedParameter);
+                throw new UnsupportedOperationException("Cannot assign type argument " + capturedArgument + " to " + substitutedParameter);
             }
         }
         return type;
-    }
-
-    private static TypeVariable[] wrapParameters(java.lang.reflect.TypeVariable<?>[] parameters, Set<java.lang.reflect.TypeVariable<?>> cycles) {
-        final TypeVariable[] wrapped = new TypeVariable[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            wrapped[i] = (TypeVariable) TypeUtil.wrap(parameters[i], cycles);
-        }
-        return wrapped;
     }
 }

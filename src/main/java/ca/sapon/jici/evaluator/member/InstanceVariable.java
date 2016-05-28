@@ -30,8 +30,8 @@ import ca.sapon.jici.evaluator.type.LiteralReferenceType;
 import ca.sapon.jici.evaluator.type.ReferenceType;
 import ca.sapon.jici.evaluator.type.Type;
 import ca.sapon.jici.evaluator.type.TypeArgument;
+import ca.sapon.jici.evaluator.type.TypeCache;
 import ca.sapon.jici.evaluator.value.Value;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  *
@@ -47,7 +47,7 @@ public class InstanceVariable implements ClassVariable {
         this.field = field;
         // Raw types require the erasure of all type information on non-static members
         if (declaror.isRaw() && !Modifier.isStatic(field.getModifiers())) {
-            Type type = TypeUtil.wrap(field.getGenericType());
+            Type type = TypeCache.wrapType(field.getGenericType());
             if (type instanceof ReferenceType) {
                 type = ((ReferenceType) type).getErasure();
             }
@@ -55,7 +55,7 @@ public class InstanceVariable implements ClassVariable {
             targetType = type;
         } else {
             // Get the type be applying the substitutions from the declaror capture
-            Type type = TypeUtil.wrap(field.getGenericType());
+            Type type = TypeCache.wrapType(field.getGenericType());
             if (type instanceof TypeArgument) {
                 type = ((TypeArgument) type).substituteTypeVariables(declaror.capture().getSubstitutions());
             }

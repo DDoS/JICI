@@ -51,7 +51,6 @@ import ca.sapon.jici.evaluator.member.InstanceVariable;
 import ca.sapon.jici.evaluator.member.MethodCallable;
 import ca.sapon.jici.util.ReflectionUtil;
 import ca.sapon.jici.util.StringUtil;
-import ca.sapon.jici.util.TypeUtil;
 
 /**
  * A reference type literally used in the code, such as {@code String}, {@code Outer.Inner}, {@code Outer.Inner<Integer>}, {@code Outer<String>.Inner} or {@code Outer<String>.Inner<Integer>}, {@code
@@ -249,7 +248,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
     public LiteralReferenceType getDirectSuperClass() {
         final java.lang.reflect.Type superClass = type.getGenericSuperclass();
         if (superClass != null) {
-            final LiteralReferenceType wrappedClass = (LiteralReferenceType) TypeUtil.wrap(superClass);
+            final LiteralReferenceType wrappedClass = (LiteralReferenceType) TypeCache.wrapType(superClass);
             return isRaw() ? wrappedClass.getErasure() : wrappedClass;
         }
         return null;
@@ -260,7 +259,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         final boolean raw = isRaw();
         final LiteralReferenceType[] wrapped = new LiteralReferenceType[interfaces.length];
         for (int i = 0; i < interfaces.length; i++) {
-            final LiteralReferenceType wrappedInterface = (LiteralReferenceType) TypeUtil.wrap(interfaces[i]);
+            final LiteralReferenceType wrappedInterface = (LiteralReferenceType) TypeCache.wrapType(interfaces[i]);
             wrapped[i] = raw ? wrappedInterface.getErasure() : wrappedInterface;
         }
         return wrapped;
@@ -277,7 +276,7 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         if (componentType == null) {
             throw new UnsupportedOperationException("Not an array type");
         }
-        return (ComponentType) TypeUtil.wrap(componentType);
+        return (ComponentType) TypeCache.wrapClass(componentType);
     }
 
     @Override

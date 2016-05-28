@@ -24,6 +24,7 @@
 package ca.sapon.jici.evaluator.type;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.GenericDeclaration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,14 +43,15 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     private final int dimensions;
     private final IntersectionType lowerBound;
     private final IntersectionType upperBound;
+    private final GenericDeclaration declaror;
     private final SingleReferenceType firstUpperBound;
-    private Boolean isCyclical = null;
 
-    private TypeVariable(String name, int dimensions, IntersectionType lowerBound, IntersectionType upperBound) {
+    private TypeVariable(String name, int dimensions, IntersectionType lowerBound, IntersectionType upperBound, GenericDeclaration declaror) {
         this.name = name;
         this.dimensions = dimensions;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
+        this.declaror = declaror;
         firstUpperBound = upperBound.getTypes().iterator().next();
     }
 
@@ -65,6 +67,10 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     @Override
     public IntersectionType getUpperBound() {
         return upperBound;
+    }
+
+    public GenericDeclaration getDeclaror() {
+        return declaror;
     }
 
     @Override
@@ -95,7 +101,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         if (!arrayLowerBound.equals(IntersectionType.EVERYTHING)) {
             arrayLowerBound = arrayLowerBound.asArray(dimensions);
         }
-        return new TypeVariable(name, this.dimensions + dimensions, arrayLowerBound, upperBound.asArray(dimensions));
+        return new TypeVariable(name, this.dimensions + dimensions, arrayLowerBound, upperBound.asArray(dimensions), declaror);
     }
 
     @Override
@@ -119,7 +125,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         if (!lowerBoundComponent.equals(IntersectionType.EVERYTHING)) {
             lowerBoundComponent = lowerBoundComponent.getComponentType();
         }
-        return new TypeVariable(name, dimensions - 1, lowerBoundComponent, upperBound.getComponentType());
+        return new TypeVariable(name, dimensions - 1, lowerBoundComponent, upperBound.getComponentType(), declaror);
     }
 
     @Override
@@ -145,19 +151,19 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
     @Override
     public TypeArgument substituteTypeVariables(Substitutions substitutions) {
         // If the variable is itself in the substitutions, return the substitution
-        final TypeArgument substitution = substitutions.forVariable(name);
+        TypeArgument substitution = substitutions.forVariable(name);
         if (substitution != null) {
             return substitution.asArray(dimensions);
         }
         // Else apply recursively on lower and upper bounds
         return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions),
-                upperBound.substituteTypeVariables(substitutions));
+                upperBound.substituteTypeVariables(substitutions), declaror);
     }
 
     public TypeVariable substituteBoundTypeVariables(Substitutions substitutions) {
         // Apply only on lower and upper bounds
         return new TypeVariable(name, dimensions, lowerBound.substituteTypeVariables(substitutions),
-                upperBound.substituteTypeVariables(substitutions));
+                upperBound.substituteTypeVariables(substitutions), declaror);
     }
 
     @Override
@@ -168,12 +174,12 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         return typeVariables;
     }
 
+    public TypeVariable withoutBounds() {
+        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, IntersectionType.NOTHING, declaror);
+    }
+
     @Override
     public boolean contains(TypeArgument other) {
-        if (other instanceof TypeVariable && ((TypeVariable) other).getDeclaredName().equals(getDeclaredName())) {
-            // If this is a reference of the variable itself we have to ignore the bounds since they where changed to break the cycle
-            return isCyclical();
-        }
         return equals(other);
     }
 
@@ -182,7 +188,8 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         // Can convert to a type variable if its bounds are within these ones
         if (to instanceof TypeVariable) {
             final TypeVariable target = (TypeVariable) to;
-            return upperBound.convertibleTo(target.getUpperBound()) && target.getLowerBound().convertibleTo(lowerBound);
+            return (upperBound.isOnly(target) || upperBound.convertibleTo(target.getUpperBound())) &&
+                    target.getLowerBound().convertibleTo(lowerBound);
         }
         // Can convert to an intersection type if can convert to all the types it contains
         if (to instanceof IntersectionType) {
@@ -226,16 +233,8 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         return superTypes;
     }
 
-    public boolean isCyclical() {
-        if (isCyclical != null) {
-            return isCyclical;
-        }
-        for (TypeVariable typeVariable : upperBound.getTypeVariables()) {
-            if (typeVariable.getDeclaredName().equals(getDeclaredName())) {
-                return isCyclical = true;
-            }
-        }
-        return isCyclical = false;
+    public void checkBounds() {
+        upperBound.checkIfValidUpperBound();
     }
 
     @Override
@@ -247,29 +246,34 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
             return false;
         }
         final TypeVariable that = (TypeVariable) other;
-        return name.equals(that.name) && lowerBound.equals(that.lowerBound) && upperBound.equals(that.upperBound);
+        return name.equals(that.name) && declaror.equals(that.declaror);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + lowerBound.hashCode();
-        result = 31 * result + upperBound.hashCode();
+        result = 31 * result + declaror.hashCode();
         return result;
     }
 
-    public static TypeVariable of(String name, List<SingleReferenceType> declaredUpperBound) {
+    public static TypeVariable of(String name, List<SingleReferenceType> declaredUpperBound, GenericDeclaration declaror) {
         if (declaredUpperBound.isEmpty()) {
             // Empty implies object
             declaredUpperBound.add(LiteralReferenceType.THE_OBJECT);
         }
         final IntersectionType upperBound = IntersectionType.of(declaredUpperBound);
         upperBound.checkIfValidUpperBound();
-        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, upperBound);
+        return new TypeVariable(name, 0, IntersectionType.EVERYTHING, upperBound, declaror);
     }
 
-    public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound) {
-        upperBound.checkIfValidUpperBound();
-        return new TypeVariable(name, 0, lowerBound, upperBound);
+    public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound, GenericDeclaration declaror) {
+        return of(name, lowerBound, upperBound, declaror, false);
+    }
+
+    public static TypeVariable of(String name, IntersectionType lowerBound, IntersectionType upperBound, GenericDeclaration declaror, boolean deferCheck) {
+        if (!deferCheck) {
+            upperBound.checkIfValidUpperBound();
+        }
+        return new TypeVariable(name, 0, lowerBound, upperBound, declaror);
     }
 }

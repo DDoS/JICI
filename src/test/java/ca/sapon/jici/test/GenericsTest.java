@@ -271,7 +271,7 @@ public class GenericsTest {
                 WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class)))
         ));
         Assert.assertEquals(
-                "ca.sapon.jici.test.GenericsTest.Y<CAP#2 extends (CAP#1 extends java.lang.Comparable & java.io.Serializable), CAP#1 extends java.lang.Comparable>",
+                "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends (CAP#2 extends java.lang.Comparable & java.io.Serializable), CAP#2 extends java.lang.Comparable>",
                 type.capture().getName()
         );
         // Y<? extends String, Serializable>
@@ -410,8 +410,12 @@ public class GenericsTest {
                 WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING))
         )).getSuperTypes();
         Assert.assertEquals(new LinkedHashSet<>(Arrays.asList(
-                ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
-                ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING)))),
+                ParametrizedType.of(N.class, Collections.<TypeArgument>singletonList(
+                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING), N.class)
+                )),
+                ParametrizedType.of(M.class, Collections.<TypeArgument>singletonList(
+                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_STRING), N.class)
+                )),
                 LiteralReferenceType.THE_OBJECT)
         ), superTypes4);
     }
@@ -985,6 +989,13 @@ public class GenericsTest {
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
                 )).capture().toString()
         );
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.CrazyCycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.CrazyCycles<CAP#1, CAP#2>, CAP#2 extends CAP#1>",
+                ParametrizedType.of(CrazyCycles.class, Arrays.<TypeArgument>asList(
+                        WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING),
+                        WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
+                )).capture().toString()
+        );
 
         Assert.assertEquals(
                 "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.SubCycle>]",
@@ -995,7 +1006,7 @@ public class GenericsTest {
                 LiteralReferenceType.of(SubDependentCycles.class).getDirectSuperTypes().toString()
         );
         Assert.assertEquals(
-                "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.Cycles<T extends ca.sapon.jici.test.GenericsTest.Cycles<T>>.InnerCycle>]",
+                "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.Cycles<T>.InnerCycle>]",
                 LiteralReferenceType.of(Cycles.InnerCycle.class).getDirectSuperTypes().toString()
         );
         Assert.assertEquals(
@@ -1200,6 +1211,9 @@ public class GenericsTest {
         public int compareTo(Cycle2 o) {
             return 0;
         }
+    }
+
+    public static class CrazyCycles<T extends CrazyCycles<T, S>, S extends T> {
     }
 
     public static <T extends Cycles<T>> T cyclicMethod() {

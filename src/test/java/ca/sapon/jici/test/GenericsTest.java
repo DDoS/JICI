@@ -26,6 +26,7 @@ package ca.sapon.jici.test;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -271,8 +272,13 @@ public class GenericsTest {
                 WildcardType.of(Collections.<SingleReferenceType>emptySet(), Collections.<SingleReferenceType>singleton(LiteralReferenceType.of(Comparable.class)))
         ));
         Assert.assertEquals(
-                "ca.sapon.jici.test.GenericsTest.Y<CAP#1 extends (CAP#2 extends java.lang.Comparable & java.io.Serializable), CAP#2 extends java.lang.Comparable>",
-                type.capture().getName()
+                ParametrizedType.of(Y.class, Arrays.<TypeArgument>asList(
+                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(
+                                TypeVariable.of("CAP#2", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.THE_SERIALIZABLE, LiteralReferenceType.of(Comparable.class)), Y.class)
+                        ), Y.class),
+                        TypeVariable.of("CAP#2", IntersectionType.EVERYTHING, IntersectionType.of(LiteralReferenceType.of(Comparable.class)), Y.class)
+                )),
+                type.capture()
         );
         // Y<? extends String, Serializable>
         type = ParametrizedType.of(LiteralReferenceType.of(Y.class), Arrays.asList(
@@ -497,9 +503,26 @@ public class GenericsTest {
         );
 
         final ParametrizedType type7 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Outer<? extends Comparable<?>>.Ref<? extends java.io.Serializable>")).getType(environment);
-        Assert.assertEquals("ca.sapon.jici.test.GenericsTest.Outer<CAP#1 extends java.lang.Comparable<?>>" +
-                        ".Ref<CAP#2 extends (CAP#1 extends java.lang.Comparable<?> & java.io.Serializable)>",
-                type7.capture().getName()
+        Assert.assertEquals(
+                ParametrizedType.of(
+                        ParametrizedType.of(Outer.class, Collections.<TypeArgument>singletonList(
+                                TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(
+                                        ParametrizedType.of(Comparable.class, Collections.<TypeArgument>singletonList(
+                                                WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
+                                        ))
+                                ), Outer.class)
+                        )),
+                        Ref.class, Collections.<TypeArgument>singletonList(
+                                TypeVariable.of("CAP#2", IntersectionType.EVERYTHING, IntersectionType.of(
+                                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(
+                                                LiteralReferenceType.THE_SERIALIZABLE, ParametrizedType.of(Comparable.class, Collections.<TypeArgument>singletonList(
+                                                        WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
+                                                ))
+                                        ), Outer.class)
+                                ), Ref.class)
+                        )
+                ),
+                type7.capture()
         );
 
         final ParametrizedType type8 = (ParametrizedType) Parser.parseTypeName(Lexer.lex("Z<?, String, Integer>")).getType(environment);
@@ -979,7 +1002,7 @@ public class GenericsTest {
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.Cycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.Cycles<CAP#1>>",
                 ParametrizedType.of(Cycles.class, Collections.<TypeArgument>singletonList(WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)))
-                        .capture().toString()
+                        .capture().getName()
         );
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.DependentCycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.DependentCycles<CAP#1, CAP#2>, " +
@@ -987,28 +1010,37 @@ public class GenericsTest {
                 ParametrizedType.of(DependentCycles.class, Arrays.<TypeArgument>asList(
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING),
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
-                )).capture().toString()
+                )).capture().getName()
         );
         Assert.assertEquals(
                 "ca.sapon.jici.test.GenericsTest.CrazyCycles<CAP#1 extends ca.sapon.jici.test.GenericsTest.CrazyCycles<CAP#1, CAP#2>, CAP#2 extends CAP#1>",
                 ParametrizedType.of(CrazyCycles.class, Arrays.<TypeArgument>asList(
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING),
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
-                )).capture().toString()
-        );
-        Assert.assertEquals(
-                "ca.sapon.jici.test.GenericsTest.Cycles3<CAP#1 extends (ca.sapon.jici.test.GenericsTest.Cycles3<CAP#1> & java.io.Serializable)>",
-                ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)))
-                        .capture().toString()
+                )).capture().getName()
         );
 
+        Assert.assertEquals(
+                ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(
+                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.of(
+                                ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(
+                                        TypeVariable.of("CAP#1", IntersectionType.EVERYTHING, IntersectionType.NOTHING, Cycles3.class))),
+                                LiteralReferenceType.THE_SERIALIZABLE
+                        ), Cycles3.class)
+                )),
+                ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)))
+                        .capture()
+        );
         Assert.assertEquals(
                 "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.SubCycle>]",
                 LiteralReferenceType.of(SubCycle.class).getDirectSuperTypes().toString()
         );
+        final Set<SingleReferenceType> superTypes = new HashSet<>();
+        superTypes.add(ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(LiteralReferenceType.of(SubCycles3.class))));
+        superTypes.add(LiteralReferenceType.THE_SERIALIZABLE);
         Assert.assertEquals(
-                "[ca.sapon.jici.test.GenericsTest.Cycles3<ca.sapon.jici.test.GenericsTest.SubCycles3>, java.io.Serializable]",
-                LiteralReferenceType.of(SubCycles3.class).getDirectSuperTypes().toString()
+                superTypes,
+                LiteralReferenceType.of(SubCycles3.class).getDirectSuperTypes()
         );
         Assert.assertEquals(
                 "[ca.sapon.jici.test.GenericsTest.DependentCycles<ca.sapon.jici.test.GenericsTest.SubDependentCycles, ca.sapon.jici.test.GenericsTest.SubDependentCycles>]",

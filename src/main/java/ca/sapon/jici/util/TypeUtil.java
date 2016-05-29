@@ -77,7 +77,7 @@ public final class TypeUtil {
             return Collections.singleton(types.iterator().next());
         }
         // Discard any member that is a super type of another
-        final Set<T> filteredTypes = new HashSet<>();
+        final Set<T> filteredTypes = new LinkedHashSet<>();
         potentialCandidates:
         for (T potentialCandidate : types) {
             for (Iterator<T> iterator = filteredTypes.iterator(); iterator.hasNext(); ) {

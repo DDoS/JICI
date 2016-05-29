@@ -26,6 +26,7 @@ package ca.sapon.jici.evaluator.type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import ca.sapon.jici.evaluator.Substitutions;
@@ -141,7 +142,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public IntersectionType asArray(int dimensions) {
-        final Set<SingleReferenceType> componentTypes = new HashSet<>();
+        final Set<SingleReferenceType> componentTypes = new LinkedHashSet<>();
         for (SingleReferenceType type : getTypes()) {
             componentTypes.add(type.asArray(dimensions));
         }
@@ -163,7 +164,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
         if (!isArray()) {
             throw new UnsupportedOperationException("Not an array type");
         }
-        final Set<SingleReferenceType> componentTypes = new HashSet<>();
+        final Set<SingleReferenceType> componentTypes = new LinkedHashSet<>();
         for (SingleReferenceType type : getTypes()) {
             final ComponentType componentType = type.getComponentType();
             if (!(componentType instanceof SingleReferenceType)) {
@@ -297,7 +298,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public IntersectionType getErasure() {
-        final Set<SingleReferenceType> erasures = new HashSet<>();
+        final Set<SingleReferenceType> erasures = new LinkedHashSet<>();
         for (SingleReferenceType type : getTypes()) {
             erasures.add(type.getErasure());
         }
@@ -321,7 +322,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
 
     @Override
     public IntersectionType substituteTypeVariables(Substitutions substitution) {
-        final Set<ReferenceType> newIntersection = new HashSet<>();
+        final Set<ReferenceType> newIntersection = new LinkedHashSet<>();
         for (SingleReferenceType type : getTypes()) {
             if (type instanceof TypeArgument) {
                 // Apply to type arguments
@@ -351,7 +352,7 @@ public class IntersectionType implements ReferenceType, ComponentType, TypeArgum
     }
 
     public SingleReferenceType checkIfValidUpperBound() {
-        final Set<LiteralReferenceType> interfaces = new HashSet<>();
+        final Set<LiteralReferenceType> interfaces = new LinkedHashSet<>();
         SingleReferenceType nonInterface = null;
         SingleReferenceType firstInterface = null;
         // Check for a single non interface type in the upper bound

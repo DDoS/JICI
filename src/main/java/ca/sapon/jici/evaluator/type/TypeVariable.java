@@ -188,7 +188,7 @@ public class TypeVariable extends SingleReferenceType implements TypeArgument, B
         // Can convert to a type variable if its bounds are within these ones
         if (to instanceof TypeVariable) {
             final TypeVariable target = (TypeVariable) to;
-            return (upperBound.isOnly(target) || upperBound.convertibleTo(target.getUpperBound())) &&
+            return (upperBound.is(target) || upperBound.convertibleTo(target.getUpperBound())) &&
                     target.getLowerBound().convertibleTo(lowerBound);
         }
         // Can convert to an intersection type if can convert to all the types it contains

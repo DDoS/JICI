@@ -996,10 +996,19 @@ public class GenericsTest {
                         WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)
                 )).capture().toString()
         );
+        Assert.assertEquals(
+                "ca.sapon.jici.test.GenericsTest.Cycles3<CAP#1 extends (ca.sapon.jici.test.GenericsTest.Cycles3<CAP#1> & java.io.Serializable)>",
+                ParametrizedType.of(Cycles3.class, Collections.<TypeArgument>singletonList(WildcardType.of(IntersectionType.EVERYTHING, IntersectionType.NOTHING)))
+                        .capture().toString()
+        );
 
         Assert.assertEquals(
                 "[ca.sapon.jici.test.GenericsTest.Cycles<ca.sapon.jici.test.GenericsTest.SubCycle>]",
                 LiteralReferenceType.of(SubCycle.class).getDirectSuperTypes().toString()
+        );
+        Assert.assertEquals(
+                "[ca.sapon.jici.test.GenericsTest.Cycles3<ca.sapon.jici.test.GenericsTest.SubCycles3>, java.io.Serializable]",
+                LiteralReferenceType.of(SubCycles3.class).getDirectSuperTypes().toString()
         );
         Assert.assertEquals(
                 "[ca.sapon.jici.test.GenericsTest.DependentCycles<ca.sapon.jici.test.GenericsTest.SubDependentCycles, ca.sapon.jici.test.GenericsTest.SubDependentCycles>]",
@@ -1211,6 +1220,13 @@ public class GenericsTest {
         public int compareTo(Cycle2 o) {
             return 0;
         }
+    }
+
+    public static class Cycles3<T extends Cycles3<T> & Serializable> {
+    }
+
+    public static class SubCycles3 extends Cycles3<SubCycles3> implements Serializable {
+        private static final long serialVersionUID = 1;
     }
 
     public static class CrazyCycles<T extends CrazyCycles<T, S>, S extends T> {

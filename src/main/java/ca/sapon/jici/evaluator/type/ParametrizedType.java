@@ -356,7 +356,7 @@ public class ParametrizedType extends LiteralReferenceType {
             final TypeVariable substitutedParameter = parameters[i].substituteBoundTypeVariables(substitutions);
             final TypeArgument capturedArgument = capturedArguments.get(i);
             // Try to detect cycles where the upper bound of a parameter is the type itself (and has a contained lower bound)
-            if (substitutedParameter.getUpperBound().isOnly(capture) && substitutedParameter.getLowerBound().convertibleTo(capturedArgument)) {
+            if (substitutedParameter.getUpperBound().has(capture) && substitutedParameter.getLowerBound().convertibleTo(capturedArgument)) {
                 continue;
             }
             if (!substitutedParameter.boundsContain(capturedArgument)) {

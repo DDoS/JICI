@@ -501,6 +501,11 @@ public class LiteralReferenceType extends SingleReferenceType implements Literal
         final Set<Callable> varargCandidates = new HashSet<>();
         final LinkedHashSet<LiteralReferenceType> superTypes = getSuperTypes();
         for (LiteralReferenceType type : superTypes) {
+            // Check that the type is accessible
+            if (!type.isPublic()) {
+                // TODO: proper access control, for now exclude non-public types
+                continue;
+            }
             for (Callable method : type.getDeclaredMethods(name, typeArguments)) {
                 if (method.isApplicable(arguments)) {
                     regularCandidates.add(method);
